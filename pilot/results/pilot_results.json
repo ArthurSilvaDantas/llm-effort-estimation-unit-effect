@@ -1,0 +1,1009 @@
+[
+  {
+    "model_id": "tencent/hy3",
+    "spec_id": "spring-xd-001",
+    "treatment": "WH",
+    "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Use container-side cleanup triggered by `stream destroy --clean` option, leveraging RabbitAdmin.getQueueProperties() and RabbitManagementTemplate/REST API to remove queues, bindings, and fanout exchanges when no consumers remain.\",\n    \"Implement per-stream/module error channels using Spring Integration, with a user-subscribable error sink for failure notifications.\",\n    \"For security, use Spring Security with Spring Boot auto-configuration; secure REST endpoints with HTTP Basic and configurable user credentials; apply same security context to DSL shell and Admin UI.\",\n    \"Document available property placeholders (${xd.stream.name}, ${xd.job.name}, ${xd.container.id}, etc.) in the user guide.\",\n    \"Develop new `http-mvc` source module based on Spring Boot with embedded Tomcat and Spring MVC controller, supporting content negotiation and full header mapping, leaving existing `http` module intact.\",\n    \"Implement status change detection via client-side polling API plus server-side event propagation using Spring ApplicationEvents and WebSocket/SSE to push updates to UI clients.\",\n    \"Implement SFTP source module using Spring Integration SFTP inbound adapter with embedded test SFTP server (Apache Mina) for testing.\",\n    \"Implement ElasticSearch sink module using Spring Data Elasticsearch (or REST client) to write documents with configurable index/type mapping.\"\n  ],\n  \"assumptions\": [\n    \"The work is performed by a single experienced Java/Spring developer familiar with Spring XD.\",\n    \"Existing Spring XD build (Gradle) and codebase are available; effort is for incremental changes only.\",\n    \"Java 17 and Spring Boot 3.x (or compatible) are used as baseline, consistent with Spring Framework 6 requirement mentioned in the spec.\",\n    \"For U3, the spike includes a basic but functional implementation of REST security, not just a paper design.\",\n    \"Test infrastructure (RabbitMQ, Elasticsearch, SFTP server) is available via embedded/test containers; no separate environment setup effort counted.\",\n    \"Documentation is written in the project's existing format (AsciiDoc) and included in the same repo.\",\n    \"Effort estimates exclude lengthy performance tuning, production deployment, and user training.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"U1-DES\",\n      \"activity_name\": \"Design optional queue/topic cleanup\",\n      \"activity_description\": \"Analyze and design the --clean option for stream destroy, including use of RabbitAdmin.getQueueProperties, handling fanout exchanges, and container-side cleanup logic.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U1-IMP\",\n      \"activity_name\": \"Implement stream destroy --clean\",\n      \"activity_description\": \"Implement CLI option and container-side logic to delete queues/topics/bindings/exchanges when no consumers remain, using RabbitAdmin and/or RabbitManagementTemplate/REST.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"U1-TST\",\n      \"activity_name\": \"Test queue/topic cleanup\",\n      \"activity_description\": \"Integration tests with RabbitMQ verifying cleanup behavior, including producers/queues with data and fanout exchange scenarios.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U2-DES\",\n      \"activity_name\": \"Design error channel notifications\",\n      \"activity_description\": \"Design per-stream/module error channel wiring and mechanism for users to tap into failures.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U2-IMP\",\n      \"activity_name\": \"Implement error channel\",\n      \"activity_description\": \"Implement error channel routing for module exceptions and a user-subscribable error sink/endpoint.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"U2-TST\",\n      \"activity_name\": \"Test error channel\",\n      \"activity_description\": \"Tests verifying exceptions are captured and delivered to error channel per stream/module.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U3-RES\",\n      \"activity_name\": \"Security research spike\",\n      \"activity_description\": \"Research Spring Security and Spring Boot OOTB features; design considerations for XD REST security, DSL shell, and Admin UI.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U3-IMP\",\n      \"activity_name\": \"Implement REST security\",\n      \"activity_description\": \"Implement configurable security layer (e.g., HTTP Basic) for all listed REST endpoints using Spring Security.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"U3-SHU\",\n      \"activity_name\": \"Integrate shell and UI security\",\n      \"activity_description\": \"Apply authentication/security to DSL shell and Admin UI based on designed approach.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U3-TST\",\n      \"activity_name\": \"Test security configuration\",\n      \"activity_description\": \"Test secured endpoints, shell, and UI access with configured credentials.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U4-DOC\",\n      \"activity_name\": \"Document property placeholders\",\n      \"activity_description\": \"Audit and document keys such as ${xd.stream.name}, ${xd.job.name}, ${xd.container.id} available to users.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U5-DES\",\n      \"activity_name\": \"Design MVC HTTP source module\",\n      \"activity_description\": \"Design new OOTB MVC-aware HTTP module with embedded Tomcat, leveraging Spring MVC and Spring Security.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U5-IMP\",\n      \"activity_name\": \"Implement MVC HTTP source\",\n      \"activity_description\": \"Implement http-mvc module with richer content-type support and full header mapping, delegating to message channel.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"U5-TST\",\n      \"activity_name\": \"Test MVC HTTP source\",\n      \"activity_description\": \"Unit and integration tests for http-mvc module including content-type and header mapping.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U6-DES\",\n      \"activity_name\": \"Design status change detection\",\n      \"activity_description\": \"Design common polling strategy and server-side event propagation between containers/admin/UI.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U6-CLI\",\n      \"activity_name\": \"Implement client polling\",\n      \"activity_description\": \"Implement client-side polling API to detect status changes of jobs/streams.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U6-SRV\",\n      \"activity_name\": \"Implement server-side events\",\n      \"activity_description\": \"Implement event propagation (e.g., WebSocket/SSE) from server to UI clients for status changes.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"U6-TST\",\n      \"activity_name\": \"Test status notifications\",\n      \"activity_description\": \"Test polling and pushed events for deployment/status changes.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U7-DES\",\n      \"activity_name\": \"Design SFTP source module\",\n      \"activity_description\": \"Design SFTP source using Spring Integration SFTP adapter, including test infrastructure.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U7-IMP\",\n      \"activity_name\": \"Implement SFTP source\",\n      \"activity_description\": \"Implement SFTP source module for file access/transfer/management with embedded test SFTP server.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"U7-TST\",\n      \"activity_name\": \"Test SFTP source\",\n      \"activity_description\": \"Integration tests for SFTP module covering transfer and cleanup.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"U8-DES\",\n      \"activity_name\": \"Design ElasticSearch sink\",\n      \"activity_description\": \"Design native ElasticSearch sink module for real-time aggregation/search.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"U8-IMP\",\n      \"activity_name\": \"Implement ElasticSearch sink\",\n      \"activity_description\": \"Implement ElasticSearch sink using Spring Data Elasticsearch/REST client with configurable index/mapping.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"U8-TST\",\n      \"activity_name\": \"Test ElasticSearch sink\",\n      \"activity_description\": \"Integration tests writing to Elasticsearch test container.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"DOC-UPD\",\n      \"activity_name\": \"Update user documentation\",\n      \"activity_description\": \"Update user guide for new modules, cleanup option, security config, and property keys.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"FIN-INT\",\n      \"activity_name\": \"Final integration and verification\",\n      \"activity_description\": \"Final build, integration of all changes, and overall verification of the increment.\",\n      \"most_likely_effort\": 16\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 424\n  }\n}",
+    "estimation": {
+      "technical_and_design_decisions": [
+        "Use container-side cleanup triggered by `stream destroy --clean` option, leveraging RabbitAdmin.getQueueProperties() and RabbitManagementTemplate/REST API to remove queues, bindings, and fanout exchanges when no consumers remain.",
+        "Implement per-stream/module error channels using Spring Integration, with a user-subscribable error sink for failure notifications.",
+        "For security, use Spring Security with Spring Boot auto-configuration; secure REST endpoints with HTTP Basic and configurable user credentials; apply same security context to DSL shell and Admin UI.",
+        "Document available property placeholders (${xd.stream.name}, ${xd.job.name}, ${xd.container.id}, etc.) in the user guide.",
+        "Develop new `http-mvc` source module based on Spring Boot with embedded Tomcat and Spring MVC controller, supporting content negotiation and full header mapping, leaving existing `http` module intact.",
+        "Implement status change detection via client-side polling API plus server-side event propagation using Spring ApplicationEvents and WebSocket/SSE to push updates to UI clients.",
+        "Implement SFTP source module using Spring Integration SFTP inbound adapter with embedded test SFTP server (Apache Mina) for testing.",
+        "Implement ElasticSearch sink module using Spring Data Elasticsearch (or REST client) to write documents with configurable index/type mapping."
+      ],
+      "assumptions": [
+        "The work is performed by a single experienced Java/Spring developer familiar with Spring XD.",
+        "Existing Spring XD build (Gradle) and codebase are available; effort is for incremental changes only.",
+        "Java 17 and Spring Boot 3.x (or compatible) are used as baseline, consistent with Spring Framework 6 requirement mentioned in the spec.",
+        "For U3, the spike includes a basic but functional implementation of REST security, not just a paper design.",
+        "Test infrastructure (RabbitMQ, Elasticsearch, SFTP server) is available via embedded/test containers; no separate environment setup effort counted.",
+        "Documentation is written in the project's existing format (AsciiDoc) and included in the same repo.",
+        "Effort estimates exclude lengthy performance tuning, production deployment, and user training."
+      ],
+      "activities": [
+        {
+          "activity_id": "U1-DES",
+          "activity_name": "Design optional queue/topic cleanup",
+          "activity_description": "Analyze and design the --clean option for stream destroy, including use of RabbitAdmin.getQueueProperties, handling fanout exchanges, and container-side cleanup logic.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U1-IMP",
+          "activity_name": "Implement stream destroy --clean",
+          "activity_description": "Implement CLI option and container-side logic to delete queues/topics/bindings/exchanges when no consumers remain, using RabbitAdmin and/or RabbitManagementTemplate/REST.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "U1-TST",
+          "activity_name": "Test queue/topic cleanup",
+          "activity_description": "Integration tests with RabbitMQ verifying cleanup behavior, including producers/queues with data and fanout exchange scenarios.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U2-DES",
+          "activity_name": "Design error channel notifications",
+          "activity_description": "Design per-stream/module error channel wiring and mechanism for users to tap into failures.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U2-IMP",
+          "activity_name": "Implement error channel",
+          "activity_description": "Implement error channel routing for module exceptions and a user-subscribable error sink/endpoint.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "U2-TST",
+          "activity_name": "Test error channel",
+          "activity_description": "Tests verifying exceptions are captured and delivered to error channel per stream/module.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U3-RES",
+          "activity_name": "Security research spike",
+          "activity_description": "Research Spring Security and Spring Boot OOTB features; design considerations for XD REST security, DSL shell, and Admin UI.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U3-IMP",
+          "activity_name": "Implement REST security",
+          "activity_description": "Implement configurable security layer (e.g., HTTP Basic) for all listed REST endpoints using Spring Security.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "U3-SHU",
+          "activity_name": "Integrate shell and UI security",
+          "activity_description": "Apply authentication/security to DSL shell and Admin UI based on designed approach.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U3-TST",
+          "activity_name": "Test security configuration",
+          "activity_description": "Test secured endpoints, shell, and UI access with configured credentials.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U4-DOC",
+          "activity_name": "Document property placeholders",
+          "activity_description": "Audit and document keys such as ${xd.stream.name}, ${xd.job.name}, ${xd.container.id} available to users.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U5-DES",
+          "activity_name": "Design MVC HTTP source module",
+          "activity_description": "Design new OOTB MVC-aware HTTP module with embedded Tomcat, leveraging Spring MVC and Spring Security.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U5-IMP",
+          "activity_name": "Implement MVC HTTP source",
+          "activity_description": "Implement http-mvc module with richer content-type support and full header mapping, delegating to message channel.",
+          "most_likely_effort": 32
+        },
+        {
+          "activity_id": "U5-TST",
+          "activity_name": "Test MVC HTTP source",
+          "activity_description": "Unit and integration tests for http-mvc module including content-type and header mapping.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U6-DES",
+          "activity_name": "Design status change detection",
+          "activity_description": "Design common polling strategy and server-side event propagation between containers/admin/UI.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U6-CLI",
+          "activity_name": "Implement client polling",
+          "activity_description": "Implement client-side polling API to detect status changes of jobs/streams.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U6-SRV",
+          "activity_name": "Implement server-side events",
+          "activity_description": "Implement event propagation (e.g., WebSocket/SSE) from server to UI clients for status changes.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "U6-TST",
+          "activity_name": "Test status notifications",
+          "activity_description": "Test polling and pushed events for deployment/status changes.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U7-DES",
+          "activity_name": "Design SFTP source module",
+          "activity_description": "Design SFTP source using Spring Integration SFTP adapter, including test infrastructure.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U7-IMP",
+          "activity_name": "Implement SFTP source",
+          "activity_description": "Implement SFTP source module for file access/transfer/management with embedded test SFTP server.",
+          "most_likely_effort": 32
+        },
+        {
+          "activity_id": "U7-TST",
+          "activity_name": "Test SFTP source",
+          "activity_description": "Integration tests for SFTP module covering transfer and cleanup.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "U8-DES",
+          "activity_name": "Design ElasticSearch sink",
+          "activity_description": "Design native ElasticSearch sink module for real-time aggregation/search.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "U8-IMP",
+          "activity_name": "Implement ElasticSearch sink",
+          "activity_description": "Implement ElasticSearch sink using Spring Data Elasticsearch/REST client with configurable index/mapping.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "U8-TST",
+          "activity_name": "Test ElasticSearch sink",
+          "activity_description": "Integration tests writing to Elasticsearch test container.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "DOC-UPD",
+          "activity_name": "Update user documentation",
+          "activity_description": "Update user guide for new modules, cleanup option, security config, and property keys.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "FIN-INT",
+          "activity_name": "Final integration and verification",
+          "activity_description": "Final build, integration of all changes, and overall verification of the increment.",
+          "most_likely_effort": 16
+        }
+      ],
+      "reported_total": {
+        "most_likely_effort": 424
+      }
+    },
+    "usage": {
+      "prompt_tokens": 1766,
+      "completion_tokens": 11209,
+      "total_tokens": 12975,
+      "cost": 0.00725562,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1664,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00725562,
+        "upstream_inference_prompt_cost": 8.186e-05,
+        "upstream_inference_completions_cost": 0.00717376
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 9056,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  {
+    "model_id": "tencent/hy3",
+    "spec_id": "spring-xd-001",
+    "treatment": "WD",
+    "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement optional queue/topic cleanup (U1) on the container side using Spring AMQP's RabbitAdmin and RabbitManagementTemplate (or direct REST API), triggered by an optional '--clean' flag on the stream destroy command.\",\n    \"For error notifications (U2), leverage Spring Integration error channels; create a per-stream/module error channel and expose failures via a dedicated REST endpoint or message bus.\",\n    \"For security (U3), use Spring Security with Spring Boot auto-configuration to secure REST endpoints; configure via properties and support shell/UI authentication.\",\n    \"For HTTP module (U5), build a new Spring Boot MVC module with embedded Tomcat, reusing Spring MVC controllers for richer content-type negotiation and full header mapping instead of rewriting in existing HTTP source.\",\n    \"For status notifications (U6), implement a common client-side polling strategy and augment with server-side event propagation over the existing message bus (e.g., Rabbit) to notify UI clients.\",\n    \"For SFTP source (U7), use Spring Integration SFTP inbound adapter; use an embedded SFTP server (Apache Mina) for testing.\",\n    \"For ElasticSearch sink (U8), use Spring Data Elasticsearch (or official client) to index data in real-time with batching.\"\n  ],\n  \"assumptions\": [\n    \"The increment targets the Spring XD codebase; existing build, CI, and test infrastructure are available and reusable.\",\n    \"The developer is a single experienced Spring engineer performing all tasks (analysis, dev, test, docs).\",\n    \"Workdays are 8-hour days; estimates are single most-likely (mode) efforts excluding calendar delays.\",\n    \"U3 is treated as a spike that includes research, design, and a basic implementation of REST security configuration as part of the deliverable.\",\n    \"For U1, cleanup will remove queues/bindings/exchanges only when no active producers/consumers remain; fanout exchanges are removed if they have no bindings.\",\n    \"For U6, server-side event propagation will use the existing Rabbit message bus; UI client notification will be via polling endpoints updated by those events.\",\n    \"Testing for SFTP and ElasticSearch uses embedded servers (Mina SSHD, Embedded Elasticsearch) to avoid external dependencies.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A01\",\n      \"activity_name\": \"U1 Design cleanup feature\",\n      \"activity_description\": \"Analyze RabbitAdmin/RabbitManagementTemplate capabilities and design optional '--clean' flag for stream destroy command, including handling of producers, consumers, and fanout exchanges.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A02\",\n      \"activity_name\": \"U1 Implement cleanup logic\",\n      \"activity_description\": \"Implement stream destroy --clean option on container side to delete queues/topics, bindings, and exchanges when safe, using Rabbit management API.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A03\",\n      \"activity_name\": \"U1 Integration tests\",\n      \"activity_description\": \"Write integration tests simulating stream deployment, active consumers, and cleanup to verify queues/topics are removed only when appropriate.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A04\",\n      \"activity_name\": \"U2 Design error notification\",\n      \"activity_description\": \"Design per-stream/module error channel approach and how failures are exposed to users (error channel + REST endpoint).\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A05\",\n      \"activity_name\": \"U2 Implement error channel\",\n      \"activity_description\": \"Implement error channel wiring for modules, and a REST/event endpoint to receive exception notifications per stream/module.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A06\",\n      \"activity_name\": \"U2 Tests for error notification\",\n      \"activity_description\": \"Write unit and integration tests that force module exceptions and verify they appear on the error channel/endpoint.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A07\",\n      \"activity_name\": \"U3 Research security\",\n      \"activity_description\": \"Spike: research Spring Security and Spring Boot OOTB features for securing REST endpoints, shell, and UI.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A08\",\n      \"activity_name\": \"U3 Design security approach\",\n      \"activity_description\": \"Design configuration model for security credentials, DSL shell handling, and Admin UI integration based on research.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A09\",\n      \"activity_name\": \"U3 Implement REST security\",\n      \"activity_description\": \"Implement basic security layer (e.g., HTTP basic/OAuth2) for listed REST endpoints using Spring Security auto-configuration.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U3 Document security config\",\n      \"activity_description\": \"Document developer experience: how to configure credentials, shell, and UI security.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U4 Document property placeholders\",\n      \"activity_description\": \"Audit codebase for keys like ${xd.stream.name}, ${xd.job.name}, ${xd.container.*} and update user documentation.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U5 Design HTTP module\",\n      \"activity_description\": \"Design new MVC-aware HTTP source module with embedded Tomcat, content-type negotiation, and header mapping.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"U5 Implement HTTP module\",\n      \"activity_description\": \"Implement the new HTTP source module using Spring Boot MVC, embedded Tomcat, richer content-type support, and full header mapping.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"U5 Test HTTP module\",\n      \"activity_description\": \"Write tests for content-type handling, header mapping, and security integration.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"U6 Design status notification\",\n      \"activity_description\": \"Design common polling strategy and server-side event propagation between containers and admin server.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"U6 Implement client polling\",\n      \"activity_description\": \"Implement client-side common polling component to detect status changes of jobs/streams.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"U6 Implement server events\",\n      \"activity_description\": \"Implement server-side event propagation via message bus to inform admin and containers of status changes.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"U6 Notify UI clients\",\n      \"activity_description\": \"Expose status change events to UI clients (e.g., via updated polling endpoints or SSE).\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"U7 Design SFTP source\",\n      \"activity_description\": \"Design SFTP source module using Spring Integration SFTP adapter.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"U7 Implement SFTP source\",\n      \"activity_description\": \"Implement SFTP source module for file access/transfer/management.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"U7 Test SFTP source\",\n      \"activity_description\": \"Set up embedded SFTP server and write integration tests for the SFTP source.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A22\",\n      \"activity_name\": \"U8 Design ElasticSearch sink\",\n      \"activity_description\": \"Design native ElasticSearch sink module for real-time indexing/search.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A23\",\n      \"activity_name\": \"U8 Implement ElasticSearch sink\",\n      \"activity_description\": \"Implement ElasticSearch sink using Spring Data Elasticsearch/client with batching.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A24\",\n      \"activity_name\": \"U8 Test ElasticSearch sink\",\n      \"activity_description\": \"Write tests using embedded Elasticsearch to verify indexing and search.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A25\",\n      \"activity_name\": \"Final integration and docs\",\n      \"activity_description\": \"Integrate all modules, run full build, and review documentation for the increment.\",\n      \"most_likely_effort\": 2.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 40.0\n  }\n}",
+    "estimation": {
+      "technical_and_design_decisions": [
+        "Implement optional queue/topic cleanup (U1) on the container side using Spring AMQP's RabbitAdmin and RabbitManagementTemplate (or direct REST API), triggered by an optional '--clean' flag on the stream destroy command.",
+        "For error notifications (U2), leverage Spring Integration error channels; create a per-stream/module error channel and expose failures via a dedicated REST endpoint or message bus.",
+        "For security (U3), use Spring Security with Spring Boot auto-configuration to secure REST endpoints; configure via properties and support shell/UI authentication.",
+        "For HTTP module (U5), build a new Spring Boot MVC module with embedded Tomcat, reusing Spring MVC controllers for richer content-type negotiation and full header mapping instead of rewriting in existing HTTP source.",
+        "For status notifications (U6), implement a common client-side polling strategy and augment with server-side event propagation over the existing message bus (e.g., Rabbit) to notify UI clients.",
+        "For SFTP source (U7), use Spring Integration SFTP inbound adapter; use an embedded SFTP server (Apache Mina) for testing.",
+        "For ElasticSearch sink (U8), use Spring Data Elasticsearch (or official client) to index data in real-time with batching."
+      ],
+      "assumptions": [
+        "The increment targets the Spring XD codebase; existing build, CI, and test infrastructure are available and reusable.",
+        "The developer is a single experienced Spring engineer performing all tasks (analysis, dev, test, docs).",
+        "Workdays are 8-hour days; estimates are single most-likely (mode) efforts excluding calendar delays.",
+        "U3 is treated as a spike that includes research, design, and a basic implementation of REST security configuration as part of the deliverable.",
+        "For U1, cleanup will remove queues/bindings/exchanges only when no active producers/consumers remain; fanout exchanges are removed if they have no bindings.",
+        "For U6, server-side event propagation will use the existing Rabbit message bus; UI client notification will be via polling endpoints updated by those events.",
+        "Testing for SFTP and ElasticSearch uses embedded servers (Mina SSHD, Embedded Elasticsearch) to avoid external dependencies."
+      ],
+      "activities": [
+        {
+          "activity_id": "A01",
+          "activity_name": "U1 Design cleanup feature",
+          "activity_description": "Analyze RabbitAdmin/RabbitManagementTemplate capabilities and design optional '--clean' flag for stream destroy command, including handling of producers, consumers, and fanout exchanges.",
+          "most_likely_effort": 0.5
+        },
+        {
+          "activity_id": "A02",
+          "activity_name": "U1 Implement cleanup logic",
+          "activity_description": "Implement stream destroy --clean option on container side to delete queues/topics, bindings, and exchanges when safe, using Rabbit management API.",
+          "most_likely_effort": 3.0
+        },
+        {
+          "activity_id": "A03",
+          "activity_name": "U1 Integration tests",
+          "activity_description": "Write integration tests simulating stream deployment, active consumers, and cleanup to verify queues/topics are removed only when appropriate.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A04",
+          "activity_name": "U2 Design error notification",
+          "activity_description": "Design per-stream/module error channel approach and how failures are exposed to users (error channel + REST endpoint).",
+          "most_likely_effort": 0.5
+        },
+        {
+          "activity_id": "A05",
+          "activity_name": "U2 Implement error channel",
+          "activity_description": "Implement error channel wiring for modules, and a REST/event endpoint to receive exception notifications per stream/module.",
+          "most_likely_effort": 2.0
+        },
+        {
+          "activity_id": "A06",
+          "activity_name": "U2 Tests for error notification",
+          "activity_description": "Write unit and integration tests that force module exceptions and verify they appear on the error channel/endpoint.",
+          "most_likely_effort": 1.0
+        },
+        {
+          "activity_id": "A07",
+          "activity_name": "U3 Research security",
+          "activity_description": "Spike: research Spring Security and Spring Boot OOTB features for securing REST endpoints, shell, and UI.",
+          "most_likely_effort": 2.0
+        },
+        {
+          "activity_id": "A08",
+          "activity_name": "U3 Design security approach",
+          "activity_description": "Design configuration model for security credentials, DSL shell handling, and Admin UI integration based on research.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A09",
+          "activity_name": "U3 Implement REST security",
+          "activity_description": "Implement basic security layer (e.g., HTTP basic/OAuth2) for listed REST endpoints using Spring Security auto-configuration.",
+          "most_likely_effort": 2.5
+        },
+        {
+          "activity_id": "A10",
+          "activity_name": "U3 Document security config",
+          "activity_description": "Document developer experience: how to configure credentials, shell, and UI security.",
+          "most_likely_effort": 0.5
+        },
+        {
+          "activity_id": "A11",
+          "activity_name": "U4 Document property placeholders",
+          "activity_description": "Audit codebase for keys like ${xd.stream.name}, ${xd.job.name}, ${xd.container.*} and update user documentation.",
+          "most_likely_effort": 1.0
+        },
+        {
+          "activity_id": "A12",
+          "activity_name": "U5 Design HTTP module",
+          "activity_description": "Design new MVC-aware HTTP source module with embedded Tomcat, content-type negotiation, and header mapping.",
+          "most_likely_effort": 1.0
+        },
+        {
+          "activity_id": "A13",
+          "activity_name": "U5 Implement HTTP module",
+          "activity_description": "Implement the new HTTP source module using Spring Boot MVC, embedded Tomcat, richer content-type support, and full header mapping.",
+          "most_likely_effort": 4.0
+        },
+        {
+          "activity_id": "A14",
+          "activity_name": "U5 Test HTTP module",
+          "activity_description": "Write tests for content-type handling, header mapping, and security integration.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A15",
+          "activity_name": "U6 Design status notification",
+          "activity_description": "Design common polling strategy and server-side event propagation between containers and admin server.",
+          "most_likely_effort": 1.0
+        },
+        {
+          "activity_id": "A16",
+          "activity_name": "U6 Implement client polling",
+          "activity_description": "Implement client-side common polling component to detect status changes of jobs/streams.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A17",
+          "activity_name": "U6 Implement server events",
+          "activity_description": "Implement server-side event propagation via message bus to inform admin and containers of status changes.",
+          "most_likely_effort": 2.5
+        },
+        {
+          "activity_id": "A18",
+          "activity_name": "U6 Notify UI clients",
+          "activity_description": "Expose status change events to UI clients (e.g., via updated polling endpoints or SSE).",
+          "most_likely_effort": 1.0
+        },
+        {
+          "activity_id": "A19",
+          "activity_name": "U7 Design SFTP source",
+          "activity_description": "Design SFTP source module using Spring Integration SFTP adapter.",
+          "most_likely_effort": 0.5
+        },
+        {
+          "activity_id": "A20",
+          "activity_name": "U7 Implement SFTP source",
+          "activity_description": "Implement SFTP source module for file access/transfer/management.",
+          "most_likely_effort": 2.5
+        },
+        {
+          "activity_id": "A21",
+          "activity_name": "U7 Test SFTP source",
+          "activity_description": "Set up embedded SFTP server and write integration tests for the SFTP source.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A22",
+          "activity_name": "U8 Design ElasticSearch sink",
+          "activity_description": "Design native ElasticSearch sink module for real-time indexing/search.",
+          "most_likely_effort": 0.5
+        },
+        {
+          "activity_id": "A23",
+          "activity_name": "U8 Implement ElasticSearch sink",
+          "activity_description": "Implement ElasticSearch sink using Spring Data Elasticsearch/client with batching.",
+          "most_likely_effort": 3.0
+        },
+        {
+          "activity_id": "A24",
+          "activity_name": "U8 Test ElasticSearch sink",
+          "activity_description": "Write tests using embedded Elasticsearch to verify indexing and search.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A25",
+          "activity_name": "Final integration and docs",
+          "activity_description": "Integrate all modules, run full build, and review documentation for the increment.",
+          "most_likely_effort": 2.0
+        }
+      ],
+      "reported_total": {
+        "most_likely_effort": 40.0
+      }
+    },
+    "usage": {
+      "prompt_tokens": 1766,
+      "completion_tokens": 9390,
+      "total_tokens": 11156,
+      "cost": 0.0049314804,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0049314804,
+        "upstream_inference_prompt_cost": 0.0002214564,
+        "upstream_inference_completions_cost": 0.004710024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 7205,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    },
+    "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+    "conversion": {
+      "work_hours_per_workday": 8
+    }
+  },
+  {
+    "model_id": "tencent/hy3",
+    "spec_id": "hyperledger-001",
+    "treatment": "WH",
+    "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"All new code will be written in Go, consistent with the existing Hyperledger Fabric codebase.\",\n    \"Solo ordering service will be implemented as a pluggable orderer type using gRPC Broadcast/Deliver services, with an in-memory ledger (slice/map) and block indexing to support seek and reconnection.\",\n    \"Friendly chaincode names and deployment policies will be stored as additional metadata in the Lifecycle System Chaincode (LSCC) world state, keyed by chaincode ID.\",\n    \"State cache will be implemented as a local in-memory read cache inside the peer's transaction simulator, populated on read and invalidated upon block commit.\",\n    \"The CLI will be extracted into a separate Go module that interacts with peers and orderers via gRPC, eliminating the link dependency on RocksDB and other peer internal packages.\",\n    \"Documentation will be authored in Markdown and published to the Hyperledger documentation site / GitHub Pages with a central index linked from hyperledger.org.\",\n    \"GitHub mirror will be achieved by configuring Gerrit replication to a public GitHub repository; no new application code required beyond configuration.\"\n  ],\n  \"assumptions\": [\n    \"The developer is familiar with the existing Fabric architecture, Go, and the relevant toolchains.\",\n    \"Existing CI, build, and test infrastructure can be extended with minor configuration for new modules and binaries.\",\n    \"Solo orderer does not require persistent storage or crash recovery, as per the specification.\",\n    \"Existing signature/endorsement policy formats are sufficient for deployment policies; no new policy language is needed.\",\n    \"State cache consistency is maintained by invalidating entries on commit; no distributed caching is required.\",\n    \"Documentation tasks are limited to upgrade flow authoring and indexing; they do not include a full documentation rewrite.\",\n    \"CLI binaries for Mac and Windows are provided as cross-compiled executables without graphical installers.\",\n    \"Effort includes unit and basic integration testing but excludes extensive performance tuning, security audits, and production deployment.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"ACT-01\",\n      \"activity_name\": \"Requirements analysis and detailed design\",\n      \"activity_description\": \"Analyze all user stories (U1-U8) and produce detailed design for friendly names, lifecycle policies, Solo orderer, state cache, CLI extraction, docs, and mirror.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"ACT-02\",\n      \"activity_name\": \"Implement friendly chaincode name support (U1)\",\n      \"activity_description\": \"Extend chaincode registration/lifecycle to accept and store a friendly name, map it to chaincode ID, and expose it via CLI/API for management and debugging.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"ACT-03\",\n      \"activity_name\": \"Implement deployment policy management in LSCC (U2)\",\n      \"activity_description\": \"Enhance the lifecycle system chaincode to store and validate deployment/endorsement policies for chaincodes, including APIs and policy checks.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"ACT-04\",\n      \"activity_name\": \"Author upgrade flows documentation (U3)\",\n      \"activity_description\": \"Write clear documentation describing chaincode and system upgrade flows for application developers.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"ACT-05\",\n      \"activity_name\": \"Implement Solo orderer broadcast and batching (U4)\",\n      \"activity_description\": \"Develop the Solo ordering service: buffered channel for incoming broadcasts, single-threaded batch/block creation, integration with orderer gRPC interface.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"ACT-06\",\n      \"activity_name\": \"Implement Solo in-RAM ledger and Deliver/Seek (U4)\",\n      \"activity_description\": \"Implement simple in-memory ledger, block indexing, and Deliver service supporting seek, history discovery, and client reconnection.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"ACT-07\",\n      \"activity_name\": \"Test Solo orderer (U4)\",\n      \"activity_description\": \"Create unit and integration tests for Solo orderer broadcast, batching, seek, and reconnection scenarios.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"ACT-08\",\n      \"activity_name\": \"Configure GitHub mirror of Fabric code (U5)\",\n      \"activity_description\": \"Set up Gerrit replication to a public GitHub repository and verify code is browsable without Gerrit access.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"ACT-09\",\n      \"activity_name\": \"Design and implement state cache module (U6)\",\n      \"activity_description\": \"Create an in-memory state cache component that caches world-state reads to accelerate rw-set construction.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"ACT-10\",\n      \"activity_name\": \"Integrate state cache with transaction simulator (U6)\",\n      \"activity_description\": \"Wire the state cache into the peer transaction simulator, including population on read and invalidation on commit.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"ACT-11\",\n      \"activity_name\": \"Test state cache (U6)\",\n      \"activity_description\": \"Write unit and integration tests verifying cache correctness, performance gain, and invalidation behavior.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-12\",\n      \"activity_name\": \"Publish and index documentation (U7)\",\n      \"activity_description\": \"Publish Fabric docs to an easily findable site and ensure linking/indexing from hyperledger.org.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-13\",\n      \"activity_name\": \"Extract CLI into standalone module (U8)\",\n      \"activity_description\": \"Refactor existing peer CLI commands into a separate component/module independent of validating peer internals.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"ACT-14\",\n      \"activity_name\": \"Remove peer internal dependencies from CLI (U8)\",\n      \"activity_description\": \"Replace direct internal peer calls (e.g., RocksDB) with gRPC client calls to peer/orderer, enabling simple builds.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"ACT-15\",\n      \"activity_name\": \"Package and test CLI binaries for Mac/Windows (U8)\",\n      \"activity_description\": \"Set up cross-compilation and packaging of platform-specific CLI binaries and verify installation/usage.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"ACT-16\",\n      \"activity_name\": \"Final integration testing and build verification\",\n      \"activity_description\": \"Integrate all new features, run end-to-end tests, verify builds for all target platforms, and validate documentation/mirror.\",\n      \"most_likely_effort\": 40\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 624\n  }\n}",
+    "estimation": {
+      "technical_and_design_decisions": [
+        "All new code will be written in Go, consistent with the existing Hyperledger Fabric codebase.",
+        "Solo ordering service will be implemented as a pluggable orderer type using gRPC Broadcast/Deliver services, with an in-memory ledger (slice/map) and block indexing to support seek and reconnection.",
+        "Friendly chaincode names and deployment policies will be stored as additional metadata in the Lifecycle System Chaincode (LSCC) world state, keyed by chaincode ID.",
+        "State cache will be implemented as a local in-memory read cache inside the peer's transaction simulator, populated on read and invalidated upon block commit.",
+        "The CLI will be extracted into a separate Go module that interacts with peers and orderers via gRPC, eliminating the link dependency on RocksDB and other peer internal packages.",
+        "Documentation will be authored in Markdown and published to the Hyperledger documentation site / GitHub Pages with a central index linked from hyperledger.org.",
+        "GitHub mirror will be achieved by configuring Gerrit replication to a public GitHub repository; no new application code required beyond configuration."
+      ],
+      "assumptions": [
+        "The developer is familiar with the existing Fabric architecture, Go, and the relevant toolchains.",
+        "Existing CI, build, and test infrastructure can be extended with minor configuration for new modules and binaries.",
+        "Solo orderer does not require persistent storage or crash recovery, as per the specification.",
+        "Existing signature/endorsement policy formats are sufficient for deployment policies; no new policy language is needed.",
+        "State cache consistency is maintained by invalidating entries on commit; no distributed caching is required.",
+        "Documentation tasks are limited to upgrade flow authoring and indexing; they do not include a full documentation rewrite.",
+        "CLI binaries for Mac and Windows are provided as cross-compiled executables without graphical installers.",
+        "Effort includes unit and basic integration testing but excludes extensive performance tuning, security audits, and production deployment."
+      ],
+      "activities": [
+        {
+          "activity_id": "ACT-01",
+          "activity_name": "Requirements analysis and detailed design",
+          "activity_description": "Analyze all user stories (U1-U8) and produce detailed design for friendly names, lifecycle policies, Solo orderer, state cache, CLI extraction, docs, and mirror.",
+          "most_likely_effort": 40
+        },
+        {
+          "activity_id": "ACT-02",
+          "activity_name": "Implement friendly chaincode name support (U1)",
+          "activity_description": "Extend chaincode registration/lifecycle to accept and store a friendly name, map it to chaincode ID, and expose it via CLI/API for management and debugging.",
+          "most_likely_effort": 48
+        },
+        {
+          "activity_id": "ACT-03",
+          "activity_name": "Implement deployment policy management in LSCC (U2)",
+          "activity_description": "Enhance the lifecycle system chaincode to store and validate deployment/endorsement policies for chaincodes, including APIs and policy checks.",
+          "most_likely_effort": 64
+        },
+        {
+          "activity_id": "ACT-04",
+          "activity_name": "Author upgrade flows documentation (U3)",
+          "activity_description": "Write clear documentation describing chaincode and system upgrade flows for application developers.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "ACT-05",
+          "activity_name": "Implement Solo orderer broadcast and batching (U4)",
+          "activity_description": "Develop the Solo ordering service: buffered channel for incoming broadcasts, single-threaded batch/block creation, integration with orderer gRPC interface.",
+          "most_likely_effort": 56
+        },
+        {
+          "activity_id": "ACT-06",
+          "activity_name": "Implement Solo in-RAM ledger and Deliver/Seek (U4)",
+          "activity_description": "Implement simple in-memory ledger, block indexing, and Deliver service supporting seek, history discovery, and client reconnection.",
+          "most_likely_effort": 48
+        },
+        {
+          "activity_id": "ACT-07",
+          "activity_name": "Test Solo orderer (U4)",
+          "activity_description": "Create unit and integration tests for Solo orderer broadcast, batching, seek, and reconnection scenarios.",
+          "most_likely_effort": 32
+        },
+        {
+          "activity_id": "ACT-08",
+          "activity_name": "Configure GitHub mirror of Fabric code (U5)",
+          "activity_description": "Set up Gerrit replication to a public GitHub repository and verify code is browsable without Gerrit access.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "ACT-09",
+          "activity_name": "Design and implement state cache module (U6)",
+          "activity_description": "Create an in-memory state cache component that caches world-state reads to accelerate rw-set construction.",
+          "most_likely_effort": 48
+        },
+        {
+          "activity_id": "ACT-10",
+          "activity_name": "Integrate state cache with transaction simulator (U6)",
+          "activity_description": "Wire the state cache into the peer transaction simulator, including population on read and invalidation on commit.",
+          "most_likely_effort": 40
+        },
+        {
+          "activity_id": "ACT-11",
+          "activity_name": "Test state cache (U6)",
+          "activity_description": "Write unit and integration tests verifying cache correctness, performance gain, and invalidation behavior.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "ACT-12",
+          "activity_name": "Publish and index documentation (U7)",
+          "activity_description": "Publish Fabric docs to an easily findable site and ensure linking/indexing from hyperledger.org.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "ACT-13",
+          "activity_name": "Extract CLI into standalone module (U8)",
+          "activity_description": "Refactor existing peer CLI commands into a separate component/module independent of validating peer internals.",
+          "most_likely_effort": 64
+        },
+        {
+          "activity_id": "ACT-14",
+          "activity_name": "Remove peer internal dependencies from CLI (U8)",
+          "activity_description": "Replace direct internal peer calls (e.g., RocksDB) with gRPC client calls to peer/orderer, enabling simple builds.",
+          "most_likely_effort": 40
+        },
+        {
+          "activity_id": "ACT-15",
+          "activity_name": "Package and test CLI binaries for Mac/Windows (U8)",
+          "activity_description": "Set up cross-compilation and packaging of platform-specific CLI binaries and verify installation/usage.",
+          "most_likely_effort": 32
+        },
+        {
+          "activity_id": "ACT-16",
+          "activity_name": "Final integration testing and build verification",
+          "activity_description": "Integrate all new features, run end-to-end tests, verify builds for all target platforms, and validate documentation/mirror.",
+          "most_likely_effort": 40
+        }
+      ],
+      "reported_total": {
+        "most_likely_effort": 624
+      }
+    },
+    "usage": {
+      "prompt_tokens": 1076,
+      "completion_tokens": 9516,
+      "total_tokens": 10592,
+      "cost": 0.00625164,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00625164,
+        "upstream_inference_prompt_cost": 0.0001614,
+        "upstream_inference_completions_cost": 0.00609024
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 7905,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  {
+    "model_id": "tencent/hy3",
+    "spec_id": "hyperledger-001",
+    "treatment": "WD",
+    "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Use Go and the existing modular Hyperledger Fabric architecture as the base.\",\n    \"Implement the Solo ordering service as a new independent package using a buffered channel and a single batching goroutine, with a simple in-RAM ledger that supports seek by offset for deliver/reconnection.\",\n    \"Implement a lifecycle system chaincode (LSCC) to store and enforce chaincode deployment policies.\",\n    \"Add a friendly name field to chaincode deployment metadata and maintain a name-to-chaincode-ID mapping.\",\n    \"Implement an in-process state cache (e.g., LRU) inside the peer transaction simulator to accelerate rw-set construction; no distributed caching.\",\n    \"Extract peer CLI commands into a separate lightweight client component that uses gRPC and has no dependency on RocksDB or peer internals, built as platform-specific binaries.\",\n    \"Publish documentation as Markdown and deploy to hyperledger.org; provide a read-only GitHub mirror of the Gerrit repository for code browsing.\"\n  ],\n  \"assumptions\": [\n    \"A single developer familiar with the Fabric codebase performs all activities.\",\n    \"Estimates include unit and basic integration tests but exclude extensive performance/load testing and external code review cycles.\",\n    \"The Solo orderer requires only in-RAM persistence, with no crash recovery or disk ledger.\",\n    \"The lifecycle system chaincode is implemented from scratch as part of this increment.\",\n    \"Documentation tasks assume existing publishing tooling; effort covers writing, linking, and verifying discoverability.\",\n    \"GitHub mirror is primarily an infrastructure concern; developer effort is limited to verification and README/pointer updates.\",\n    \"All effort estimates are in 8-hour workdays and represent the most likely scenario with no major blockers.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"ACT-01\",\n      \"activity_name\": \"Requirements analysis and detailed design\",\n      \"activity_description\": \"Analyze all user stories (U1-U8), define architecture, APIs, and data models, and produce detailed design for friendly naming, lifecycle system chaincode, Solo orderer, state cache, and CLI extraction.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"ACT-02\",\n      \"activity_name\": \"Friendly chaincode naming (U1)\",\n      \"activity_description\": \"Implement friendly name metadata for chaincodes, including storage mapping, API/SDK changes, and CLI support to manage/debug by name.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-03\",\n      \"activity_name\": \"Lifecycle system chaincode for deployment policies (U2)\",\n      \"activity_description\": \"Design and implement the lifecycle system chaincode that stores and validates deployment policies for chaincodes, with integration into peer instantiate/upgrade flows and tests.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"ACT-04\",\n      \"activity_name\": \"Solo ordering service (U4)\",\n      \"activity_description\": \"Implement the Solo orderer: buffered channel intake, single-threaded batching, in-RAM ledger, seek/deliver with history, reconnection support, configuration, and unit/integration tests.\",\n      \"most_likely_effort\": 11\n    },\n    {\n      \"activity_id\": \"ACT-05\",\n      \"activity_name\": \"State cache for rw-set building (U6)\",\n      \"activity_description\": \"Implement an in-memory state cache within the peer transaction simulator to speed up rw-set construction, including invalidation and tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"ACT-06\",\n      \"activity_name\": \"Standalone CLI extraction (U8)\",\n      \"activity_description\": \"Refactor peer commands into a separate client component that communicates via gRPC, remove RocksDB/peer internal dependencies, and produce cross-platform binaries with tests.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"ACT-07\",\n      \"activity_name\": \"Upgrade flow documentation (U3)\",\n      \"activity_description\": \"Write and publish documentation describing chaincode and system upgrade flows with examples.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-08\",\n      \"activity_name\": \"GitHub code mirror (U5)\",\n      \"activity_description\": \"Verify and configure a read-only GitHub mirror of the Fabric code, add README and pointers so developers can explore without Gerrit.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"ACT-09\",\n      \"activity_name\": \"Documentation discoverability (U7)\",\n      \"activity_description\": \"Consolidate and publish Fabric documentation to hyperledger.org, improve landing pages and navigation for chaincode and application developers.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-10\",\n      \"activity_name\": \"Integration testing and system verification\",\n      \"activity_description\": \"Perform end-to-end integration testing of Solo orderer, CLI, lifecycle policies, state cache, and friendly naming; verify upgrade flows and fix defects.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"ACT-11\",\n      \"activity_name\": \"Build, packaging, and release\",\n      \"activity_description\": \"Create/build platform-specific CLI and orderer binaries, packaging scripts, versioning, and release notes for the increment.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 58\n  }\n}",
+    "estimation": {
+      "technical_and_design_decisions": [
+        "Use Go and the existing modular Hyperledger Fabric architecture as the base.",
+        "Implement the Solo ordering service as a new independent package using a buffered channel and a single batching goroutine, with a simple in-RAM ledger that supports seek by offset for deliver/reconnection.",
+        "Implement a lifecycle system chaincode (LSCC) to store and enforce chaincode deployment policies.",
+        "Add a friendly name field to chaincode deployment metadata and maintain a name-to-chaincode-ID mapping.",
+        "Implement an in-process state cache (e.g., LRU) inside the peer transaction simulator to accelerate rw-set construction; no distributed caching.",
+        "Extract peer CLI commands into a separate lightweight client component that uses gRPC and has no dependency on RocksDB or peer internals, built as platform-specific binaries.",
+        "Publish documentation as Markdown and deploy to hyperledger.org; provide a read-only GitHub mirror of the Gerrit repository for code browsing."
+      ],
+      "assumptions": [
+        "A single developer familiar with the Fabric codebase performs all activities.",
+        "Estimates include unit and basic integration tests but exclude extensive performance/load testing and external code review cycles.",
+        "The Solo orderer requires only in-RAM persistence, with no crash recovery or disk ledger.",
+        "The lifecycle system chaincode is implemented from scratch as part of this increment.",
+        "Documentation tasks assume existing publishing tooling; effort covers writing, linking, and verifying discoverability.",
+        "GitHub mirror is primarily an infrastructure concern; developer effort is limited to verification and README/pointer updates.",
+        "All effort estimates are in 8-hour workdays and represent the most likely scenario with no major blockers."
+      ],
+      "activities": [
+        {
+          "activity_id": "ACT-01",
+          "activity_name": "Requirements analysis and detailed design",
+          "activity_description": "Analyze all user stories (U1-U8), define architecture, APIs, and data models, and produce detailed design for friendly naming, lifecycle system chaincode, Solo orderer, state cache, and CLI extraction.",
+          "most_likely_effort": 5
+        },
+        {
+          "activity_id": "ACT-02",
+          "activity_name": "Friendly chaincode naming (U1)",
+          "activity_description": "Implement friendly name metadata for chaincodes, including storage mapping, API/SDK changes, and CLI support to manage/debug by name.",
+          "most_likely_effort": 3
+        },
+        {
+          "activity_id": "ACT-03",
+          "activity_name": "Lifecycle system chaincode for deployment policies (U2)",
+          "activity_description": "Design and implement the lifecycle system chaincode that stores and validates deployment policies for chaincodes, with integration into peer instantiate/upgrade flows and tests.",
+          "most_likely_effort": 9
+        },
+        {
+          "activity_id": "ACT-04",
+          "activity_name": "Solo ordering service (U4)",
+          "activity_description": "Implement the Solo orderer: buffered channel intake, single-threaded batching, in-RAM ledger, seek/deliver with history, reconnection support, configuration, and unit/integration tests.",
+          "most_likely_effort": 11
+        },
+        {
+          "activity_id": "ACT-05",
+          "activity_name": "State cache for rw-set building (U6)",
+          "activity_description": "Implement an in-memory state cache within the peer transaction simulator to speed up rw-set construction, including invalidation and tests.",
+          "most_likely_effort": 7
+        },
+        {
+          "activity_id": "ACT-06",
+          "activity_name": "Standalone CLI extraction (U8)",
+          "activity_description": "Refactor peer commands into a separate client component that communicates via gRPC, remove RocksDB/peer internal dependencies, and produce cross-platform binaries with tests.",
+          "most_likely_effort": 9
+        },
+        {
+          "activity_id": "ACT-07",
+          "activity_name": "Upgrade flow documentation (U3)",
+          "activity_description": "Write and publish documentation describing chaincode and system upgrade flows with examples.",
+          "most_likely_effort": 2
+        },
+        {
+          "activity_id": "ACT-08",
+          "activity_name": "GitHub code mirror (U5)",
+          "activity_description": "Verify and configure a read-only GitHub mirror of the Fabric code, add README and pointers so developers can explore without Gerrit.",
+          "most_likely_effort": 1
+        },
+        {
+          "activity_id": "ACT-09",
+          "activity_name": "Documentation discoverability (U7)",
+          "activity_description": "Consolidate and publish Fabric documentation to hyperledger.org, improve landing pages and navigation for chaincode and application developers.",
+          "most_likely_effort": 3
+        },
+        {
+          "activity_id": "ACT-10",
+          "activity_name": "Integration testing and system verification",
+          "activity_description": "Perform end-to-end integration testing of Solo orderer, CLI, lifecycle policies, state cache, and friendly naming; verify upgrade flows and fix defects.",
+          "most_likely_effort": 5
+        },
+        {
+          "activity_id": "ACT-11",
+          "activity_name": "Build, packaging, and release",
+          "activity_description": "Create/build platform-specific CLI and orderer binaries, packaging scripts, versioning, and release notes for the increment.",
+          "most_likely_effort": 3
+        }
+      ],
+      "reported_total": {
+        "most_likely_effort": 58
+      }
+    },
+    "usage": {
+      "prompt_tokens": 1076,
+      "completion_tokens": 8841,
+      "total_tokens": 9917,
+      "cost": 0.0045515184,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 192,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0045515184,
+        "upstream_inference_prompt_cost": 0.0001168728,
+        "upstream_inference_completions_cost": 0.0044346456
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 7604,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    },
+    "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+    "conversion": {
+      "work_hours_per_workday": 8
+    }
+  },
+  {
+    "model_id": "tencent/hy3",
+    "spec_id": "mule-001",
+    "treatment": "WH",
+    "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Use existing Mule module/connector architecture for new WebSocket and JDBC components.\",\n    \"NIO stack activation controlled by a new boolean property in deploy.properties, read at startup to select transport layer.\",\n    \"WebSocket components implemented as standard Mule message source/processor using Java WebSocket/NIO APIs.\",\n    \"Registry features (pairing, endpoint management, dynamic resolution, throttling) integrated via an assumed RESTful JSON API client.\",\n    \"Dynamic router implemented as a router message processor that queries the Registry for endpoint resolution at runtime.\",\n    \"Throttling policies enforced by a flow interceptor/message processor using a token-bucket algorithm, configured from Registry.\",\n    \"Business events and transaction IDs exposed through SLF4J MDC and logged at DEBUG/INFO level during development.\",\n    \"MVEL dependency upgraded to 2.1.8 with minimal compatibility wrappers for DataMapper and expression evaluation.\",\n    \"JDBC connectivity for Oracle, PostgreSQL, Sybase, MS SQL Server, DB2 provided as pre-configured datasource templates on top of existing Mule JDBC connector.\",\n    \"JDBC query logging implemented via statement wrapper that logs SQL at DEBUG level when enabled.\"\n  ],\n  \"assumptions\": [\n    \"Detailed specifications on the referenced internal wiki pages are unavailable; functionality is inferred from the user story descriptions.\",\n    \"The Registry exposes REST APIs for account pairing, endpoint management, dynamic endpoint resolution, and throttling policy application.\",\n    \"Database JDBC drivers are available in the runtime/classpath; only configuration templates and defaults are delivered.\",\n    \"The developer is experienced with the Mule codebase and has a working build environment; no environment setup effort is included.\",\n    \"Effort covers design, implementation, and automated testing by the same developer, excluding separate manual QA, user training, and production deployment.\",\n    \"MySQL JDBC support is already present and requires no additional work.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Analyze user stories U1-U8, infer missing wiki specs, and produce detailed technical design for all features.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"NIO stack deploy.properties toggle\",\n      \"activity_description\": \"Add and document a deploy.properties toggle to enable the NIO stack in the Mule ESB runtime.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"WebSocket flow components\",\n      \"activity_description\": \"Implement new WebSocket message source/processor components usable within Mule flows.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Registry key pairing configuration\",\n      \"activity_description\": \"Implement configuration of registry key and pairing of Mule instance with Registry account.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Registry-managed HTTP endpoints\",\n      \"activity_description\": \"Enable HTTP endpoints of deployed apps to be managed by the paired Registry instance.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Dynamic lookup/router component\",\n      \"activity_description\": \"Develop dynamic router component that resolves endpoints via Registry dynamic endpoint resolution.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Throttling policies on endpoints\",\n      \"activity_description\": \"Implement support for Registry-defined throttling policies enforced on Mule flow endpoints.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Business events and transaction ID logging\",\n      \"activity_description\": \"Ensure custom business events and transaction IDs are printed to logs for development verification.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Upgrade MVEL to 2.1.8\",\n      \"activity_description\": \"Update MVEL dependency, adapt DataMapper and expression code, and perform regression checks.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"JDBC template for Oracle\",\n      \"activity_description\": \"Provide low-configuration JDBC connectivity template for Oracle database.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"JDBC template for PostgreSQL\",\n      \"activity_description\": \"Provide low-configuration JDBC connectivity template for PostgreSQL database.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"JDBC template for Sybase\",\n      \"activity_description\": \"Provide low-configuration JDBC connectivity template for Sybase database.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"JDBC template for MS SQL Server\",\n      \"activity_description\": \"Provide low-configuration JDBC connectivity template for Microsoft SQL Server.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"JDBC template for DB2\",\n      \"activity_description\": \"Provide low-configuration JDBC connectivity template for DB2 database.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"JDBC query logging in DEBUG\",\n      \"activity_description\": \"Implement optional logging of all executed SQL queries in Mule logs at DEBUG level.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"Integration testing and defect fixing\",\n      \"activity_description\": \"Perform integration, regression, and automated testing across all new features and fix defects.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"Documentation and examples\",\n      \"activity_description\": \"Write user documentation, configuration examples, and release notes for the increment.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"Build, release, and final verification\",\n      \"activity_description\": \"Update build scripts, produce artifacts, and verify the increment in a staging environment.\",\n      \"most_likely_effort\": 24\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 524\n  }\n}",
+    "estimation": {
+      "technical_and_design_decisions": [
+        "Use existing Mule module/connector architecture for new WebSocket and JDBC components.",
+        "NIO stack activation controlled by a new boolean property in deploy.properties, read at startup to select transport layer.",
+        "WebSocket components implemented as standard Mule message source/processor using Java WebSocket/NIO APIs.",
+        "Registry features (pairing, endpoint management, dynamic resolution, throttling) integrated via an assumed RESTful JSON API client.",
+        "Dynamic router implemented as a router message processor that queries the Registry for endpoint resolution at runtime.",
+        "Throttling policies enforced by a flow interceptor/message processor using a token-bucket algorithm, configured from Registry.",
+        "Business events and transaction IDs exposed through SLF4J MDC and logged at DEBUG/INFO level during development.",
+        "MVEL dependency upgraded to 2.1.8 with minimal compatibility wrappers for DataMapper and expression evaluation.",
+        "JDBC connectivity for Oracle, PostgreSQL, Sybase, MS SQL Server, DB2 provided as pre-configured datasource templates on top of existing Mule JDBC connector.",
+        "JDBC query logging implemented via statement wrapper that logs SQL at DEBUG level when enabled."
+      ],
+      "assumptions": [
+        "Detailed specifications on the referenced internal wiki pages are unavailable; functionality is inferred from the user story descriptions.",
+        "The Registry exposes REST APIs for account pairing, endpoint management, dynamic endpoint resolution, and throttling policy application.",
+        "Database JDBC drivers are available in the runtime/classpath; only configuration templates and defaults are delivered.",
+        "The developer is experienced with the Mule codebase and has a working build environment; no environment setup effort is included.",
+        "Effort covers design, implementation, and automated testing by the same developer, excluding separate manual QA, user training, and production deployment.",
+        "MySQL JDBC support is already present and requires no additional work."
+      ],
+      "activities": [
+        {
+          "activity_id": "A1",
+          "activity_name": "Requirements analysis and technical design",
+          "activity_description": "Analyze user stories U1-U8, infer missing wiki specs, and produce detailed technical design for all features.",
+          "most_likely_effort": 40
+        },
+        {
+          "activity_id": "A2",
+          "activity_name": "NIO stack deploy.properties toggle",
+          "activity_description": "Add and document a deploy.properties toggle to enable the NIO stack in the Mule ESB runtime.",
+          "most_likely_effort": 8
+        },
+        {
+          "activity_id": "A3",
+          "activity_name": "WebSocket flow components",
+          "activity_description": "Implement new WebSocket message source/processor components usable within Mule flows.",
+          "most_likely_effort": 40
+        },
+        {
+          "activity_id": "A4",
+          "activity_name": "Registry key pairing configuration",
+          "activity_description": "Implement configuration of registry key and pairing of Mule instance with Registry account.",
+          "most_likely_effort": 32
+        },
+        {
+          "activity_id": "A5",
+          "activity_name": "Registry-managed HTTP endpoints",
+          "activity_description": "Enable HTTP endpoints of deployed apps to be managed by the paired Registry instance.",
+          "most_likely_effort": 48
+        },
+        {
+          "activity_id": "A6",
+          "activity_name": "Dynamic lookup/router component",
+          "activity_description": "Develop dynamic router component that resolves endpoints via Registry dynamic endpoint resolution.",
+          "most_likely_effort": 40
+        },
+        {
+          "activity_id": "A7",
+          "activity_name": "Throttling policies on endpoints",
+          "activity_description": "Implement support for Registry-defined throttling policies enforced on Mule flow endpoints.",
+          "most_likely_effort": 56
+        },
+        {
+          "activity_id": "A8",
+          "activity_name": "Business events and transaction ID logging",
+          "activity_description": "Ensure custom business events and transaction IDs are printed to logs for development verification.",
+          "most_likely_effort": 24
+        },
+        {
+          "activity_id": "A9",
+          "activity_name": "Upgrade MVEL to 2.1.8",
+          "activity_description": "Update MVEL dependency, adapt DataMapper and expression code, and perform regression checks.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "A10",
+          "activity_name": "JDBC template for Oracle",
+          "activity_description": "Provide low-configuration JDBC connectivity template for Oracle database.",
+          "most_likely_effort": 14
+        },
+        {
+          "activity_id": "A11",
+          "activity_name": "JDBC template for PostgreSQL",
+          "activity_description": "Provide low-configuration JDBC connectivity template for PostgreSQL database.",
+          "most_likely_effort": 10
+        },
+        {
+          "activity_id": "A12",
+          "activity_name": "JDBC template for Sybase",
+          "activity_description": "Provide low-configuration JDBC connectivity template for Sybase database.",
+          "most_likely_effort": 12
+        },
+        {
+          "activity_id": "A13",
+          "activity_name": "JDBC template for MS SQL Server",
+          "activity_description": "Provide low-configuration JDBC connectivity template for Microsoft SQL Server.",
+          "most_likely_effort": 12
+        },
+        {
+          "activity_id": "A14",
+          "activity_name": "JDBC template for DB2",
+          "activity_description": "Provide low-configuration JDBC connectivity template for DB2 database.",
+          "most_likely_effort": 12
+        },
+        {
+          "activity_id": "A15",
+          "activity_name": "JDBC query logging in DEBUG",
+          "activity_description": "Implement optional logging of all executed SQL queries in Mule logs at DEBUG level.",
+          "most_likely_effort": 16
+        },
+        {
+          "activity_id": "A16",
+          "activity_name": "Integration testing and defect fixing",
+          "activity_description": "Perform integration, regression, and automated testing across all new features and fix defects.",
+          "most_likely_effort": 80
+        },
+        {
+          "activity_id": "A17",
+          "activity_name": "Documentation and examples",
+          "activity_description": "Write user documentation, configuration examples, and release notes for the increment.",
+          "most_likely_effort": 40
+        },
+        {
+          "activity_id": "A18",
+          "activity_name": "Build, release, and final verification",
+          "activity_description": "Update build scripts, produce artifacts, and verify the increment in a staging environment.",
+          "most_likely_effort": 24
+        }
+      ],
+      "reported_total": {
+        "most_likely_effort": 524
+      }
+    },
+    "usage": {
+      "prompt_tokens": 1174,
+      "completion_tokens": 7668,
+      "total_tokens": 8842,
+      "cost": 0.00508362,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00508362,
+        "upstream_inference_prompt_cost": 0.0001761,
+        "upstream_inference_completions_cost": 0.00490752
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 6140,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  {
+    "model_id": "tencent/hy3",
+    "spec_id": "mule-001",
+    "treatment": "WD",
+    "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Add a deploy.properties toggle (e.g., mule.nio.enabled) to conditionally activate the existing NIO transport stack at startup.\",\n    \"Implement WebSocket support as a new Mule module using a standard WebSocket library (Netty/Jetty) following Mule source/processor patterns.\",\n    \"Integrate with Mule Registry via REST/HTTP using the registry key for authentication; poll or receive webhooks for endpoint and policy updates.\",\n    \"Implement dynamic router as a message processor that resolves target endpoints via Registry dynamic endpoint resolution.\",\n    \"Implement throttling as an intercepting message processor using a token-bucket algorithm driven by Registry policies.\",\n    \"Provide ready-to-use JDBC connection templates for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 to minimize configuration.\",\n    \"Use SLF4J/Log4j with MDC for custom business events and transaction IDs; guard JDBC query logging behind DEBUG level.\",\n    \"Upgrade MVEL to 2.1.8 in Maven build and adapt DataMapper/expression modules as needed.\"\n  ],\n  \"assumptions\": [\n    \"Wiki-based detailed specs for Registry, Dynamic Router, etc. are accessible and consistent with standard Mule extension points.\",\n    \"NIO stack already exists in code but is disabled, so only configuration and wiring are required.\",\n    \"MySQL JDBC support is already complete and excluded from effort.\",\n    \"JDBC drivers for target databases are available and licensed; only configuration templates are built.\",\n    \"Effort estimates are in workdays (8 hours) and include coding, unit tests, and developer-level integration verification.\",\n    \"A single experienced Mule/Java developer performs all work; no external QA or parallel tasks included.\",\n    \"No production deployment, user documentation beyond basic config notes, or training is required beyond development.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"NIO stack deploy.properties toggle\",\n      \"activity_description\": \"Add deploy.properties toggle and startup logic to enable the existing NIO stack for transports; include unit tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"WebSocket components for flows\",\n      \"activity_description\": \"Develop new WebSocket connector/module with inbound/outbound endpoints and message processors, integrated with Mule flows; unit and integration tests.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Registry key configuration and pairing\",\n      \"activity_description\": \"Implement configuration of registry key per ESB instance, secure storage, and pairing logic with Registry account via API; tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Registry-managed HTTP endpoints\",\n      \"activity_description\": \"Enable HTTP endpoints of all deployed apps to be managed by paired Registry instance; implement sync and control hooks; tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Dynamic lookup/router component\",\n      \"activity_description\": \"Implement dynamic router message processor that resolves endpoints via Registry dynamic endpoint resolution; tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Throttling policy enforcement\",\n      \"activity_description\": \"Implement throttling policy enforcer for flow endpoints driven by Registry policies; rate limiting and tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Business events and transaction ID logging\",\n      \"activity_description\": \"Add logging of custom business events and transaction IDs to logs for development verification using MDC; tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Upgrade MVEL to 2.1.8\",\n      \"activity_description\": \"Update Maven dependency, adapt DataMapper and MVEL expression usage, run regression tests; fix incompatibilities.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"JDBC connector template: Oracle\",\n      \"activity_description\": \"Provide pre-configured JDBC connection factory/template for Oracle with minimal user config; tests.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"JDBC connector template: PostgreSQL\",\n      \"activity_description\": \"Provide pre-configured JDBC connection factory/template for PostgreSQL; tests.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"JDBC connector template: Sybase\",\n      \"activity_description\": \"Provide pre-configured JDBC connection factory/template for Sybase; tests.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"JDBC connector template: MS SQL Server\",\n      \"activity_description\": \"Provide pre-configured JDBC connection factory/template for MS SQL Server; tests.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"JDBC connector template: DB2\",\n      \"activity_description\": \"Provide pre-configured JDBC connection factory/template for DB2; tests.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"JDBC query DEBUG logging\",\n      \"activity_description\": \"Add optional DEBUG-level logging of all SQL queries executed via JDBC connectors; config flag and tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"Integration testing, docs, and build\",\n      \"activity_description\": \"End-to-end integration testing of all features, basic documentation of new configs/components, build/release verification.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 47\n  }\n}",
+    "estimation": {
+      "technical_and_design_decisions": [
+        "Add a deploy.properties toggle (e.g., mule.nio.enabled) to conditionally activate the existing NIO transport stack at startup.",
+        "Implement WebSocket support as a new Mule module using a standard WebSocket library (Netty/Jetty) following Mule source/processor patterns.",
+        "Integrate with Mule Registry via REST/HTTP using the registry key for authentication; poll or receive webhooks for endpoint and policy updates.",
+        "Implement dynamic router as a message processor that resolves target endpoints via Registry dynamic endpoint resolution.",
+        "Implement throttling as an intercepting message processor using a token-bucket algorithm driven by Registry policies.",
+        "Provide ready-to-use JDBC connection templates for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 to minimize configuration.",
+        "Use SLF4J/Log4j with MDC for custom business events and transaction IDs; guard JDBC query logging behind DEBUG level.",
+        "Upgrade MVEL to 2.1.8 in Maven build and adapt DataMapper/expression modules as needed."
+      ],
+      "assumptions": [
+        "Wiki-based detailed specs for Registry, Dynamic Router, etc. are accessible and consistent with standard Mule extension points.",
+        "NIO stack already exists in code but is disabled, so only configuration and wiring are required.",
+        "MySQL JDBC support is already complete and excluded from effort.",
+        "JDBC drivers for target databases are available and licensed; only configuration templates are built.",
+        "Effort estimates are in workdays (8 hours) and include coding, unit tests, and developer-level integration verification.",
+        "A single experienced Mule/Java developer performs all work; no external QA or parallel tasks included.",
+        "No production deployment, user documentation beyond basic config notes, or training is required beyond development."
+      ],
+      "activities": [
+        {
+          "activity_id": "A1",
+          "activity_name": "NIO stack deploy.properties toggle",
+          "activity_description": "Add deploy.properties toggle and startup logic to enable the existing NIO stack for transports; include unit tests.",
+          "most_likely_effort": 2
+        },
+        {
+          "activity_id": "A2",
+          "activity_name": "WebSocket components for flows",
+          "activity_description": "Develop new WebSocket connector/module with inbound/outbound endpoints and message processors, integrated with Mule flows; unit and integration tests.",
+          "most_likely_effort": 10
+        },
+        {
+          "activity_id": "A3",
+          "activity_name": "Registry key configuration and pairing",
+          "activity_description": "Implement configuration of registry key per ESB instance, secure storage, and pairing logic with Registry account via API; tests.",
+          "most_likely_effort": 3
+        },
+        {
+          "activity_id": "A4",
+          "activity_name": "Registry-managed HTTP endpoints",
+          "activity_description": "Enable HTTP endpoints of all deployed apps to be managed by paired Registry instance; implement sync and control hooks; tests.",
+          "most_likely_effort": 5
+        },
+        {
+          "activity_id": "A5",
+          "activity_name": "Dynamic lookup/router component",
+          "activity_description": "Implement dynamic router message processor that resolves endpoints via Registry dynamic endpoint resolution; tests.",
+          "most_likely_effort": 4
+        },
+        {
+          "activity_id": "A6",
+          "activity_name": "Throttling policy enforcement",
+          "activity_description": "Implement throttling policy enforcer for flow endpoints driven by Registry policies; rate limiting and tests.",
+          "most_likely_effort": 4
+        },
+        {
+          "activity_id": "A7",
+          "activity_name": "Business events and transaction ID logging",
+          "activity_description": "Add logging of custom business events and transaction IDs to logs for development verification using MDC; tests.",
+          "most_likely_effort": 2
+        },
+        {
+          "activity_id": "A8",
+          "activity_name": "Upgrade MVEL to 2.1.8",
+          "activity_description": "Update Maven dependency, adapt DataMapper and MVEL expression usage, run regression tests; fix incompatibilities.",
+          "most_likely_effort": 3
+        },
+        {
+          "activity_id": "A9",
+          "activity_name": "JDBC connector template: Oracle",
+          "activity_description": "Provide pre-configured JDBC connection factory/template for Oracle with minimal user config; tests.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A10",
+          "activity_name": "JDBC connector template: PostgreSQL",
+          "activity_description": "Provide pre-configured JDBC connection factory/template for PostgreSQL; tests.",
+          "most_likely_effort": 1
+        },
+        {
+          "activity_id": "A11",
+          "activity_name": "JDBC connector template: Sybase",
+          "activity_description": "Provide pre-configured JDBC connection factory/template for Sybase; tests.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A12",
+          "activity_name": "JDBC connector template: MS SQL Server",
+          "activity_description": "Provide pre-configured JDBC connection factory/template for MS SQL Server; tests.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A13",
+          "activity_name": "JDBC connector template: DB2",
+          "activity_description": "Provide pre-configured JDBC connection factory/template for DB2; tests.",
+          "most_likely_effort": 1.5
+        },
+        {
+          "activity_id": "A14",
+          "activity_name": "JDBC query DEBUG logging",
+          "activity_description": "Add optional DEBUG-level logging of all SQL queries executed via JDBC connectors; config flag and tests.",
+          "most_likely_effort": 2
+        },
+        {
+          "activity_id": "A15",
+          "activity_name": "Integration testing, docs, and build",
+          "activity_description": "End-to-end integration testing of all features, basic documentation of new configs/components, build/release verification.",
+          "most_likely_effort": 5
+        }
+      ],
+      "reported_total": {
+        "most_likely_effort": 47
+      }
+    },
+    "usage": {
+      "prompt_tokens": 1174,
+      "completion_tokens": 6892,
+      "total_tokens": 8066,
+      "cost": 0.0035861892,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 192,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0035861892,
+        "upstream_inference_prompt_cost": 0.000129162,
+        "upstream_inference_completions_cost": 0.0034570272
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 5471,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    },
+    "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+    "conversion": {
+      "work_hours_per_workday": 8
+    }
+  }
+]
