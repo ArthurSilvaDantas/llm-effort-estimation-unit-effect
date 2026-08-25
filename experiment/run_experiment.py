@@ -69,20 +69,37 @@ def run_single(model_id: str, provider: str, spec_id: str, treatment: str) -> di
     estimation_prompt = build_estimation_prompt(spec_text, treatment)
     messages = [{"role": "user", "content": estimation_prompt}]
 
-    raw = call_model(model_id, provider, messages)
-
     result = {
         "model_id": model_id,
         "spec_id": spec_id,
         "treatment": treatment,
-        "estimation_response": raw,
-        "usage": raw.get("usage"),
-        "model_used": raw.get("model"),
+        "collection": {
+            "estimation": {
+                "status": "pending",
+                "attempts": 1,
+            }
+        },
     }
+
+    if treatment == "WD":
+        result["collection"]["conversion"] = {
+            "status": "pending",
+            "attempts": 0,
+        }
+
+    save_result(model_id, spec_id, treatment, result)
+
+    raw = call_model(model_id, provider, messages)
+
+    result["estimation_response"] = raw
+    result["usage"] = raw.get("usage")
+    result["model_used"] = raw.get("model")
 
     save_result(model_id, spec_id, treatment, result)
 
     content = extract_content(raw)
+
+    result["collection"]["estimation"]["status"] = "received"
 
     result["estimation_raw"] = content
     save_result(model_id, spec_id, treatment, result)
@@ -91,12 +108,17 @@ def run_single(model_id: str, provider: str, spec_id: str, treatment: str) -> di
         messages.append({"role": "assistant", "content": content})
         messages.append({"role": "user", "content": build_conversion_prompt()})
 
+        result["collection"]["conversion"]["attempts"] = 1
+        save_result(model_id, spec_id, treatment, result)
+
         raw_conv = call_model(model_id, provider, messages)
 
         result["conversion_response"] = raw_conv
         save_result(model_id, spec_id, treatment, result)
 
         conv_content = extract_content(raw_conv)
+
+        result["collection"]["conversion"]["status"] = "received"
 
         result["conversion_raw"] = conv_content
         save_result(model_id, spec_id, treatment, result)
