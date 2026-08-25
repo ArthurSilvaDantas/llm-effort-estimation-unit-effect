@@ -52,6 +52,24 @@ def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
     return response.json()
 
 
+def is_retryable_error(error: Exception) -> bool:
+    if isinstance(
+        error,
+        (requests.exceptions.Timeout, requests.exceptions.ConnectionError),
+    ):
+        return True
+
+    if isinstance(error, requests.exceptions.HTTPError):
+        response = error.response
+        if response is None:
+            return False
+
+        status_code = response.status_code
+        return status_code == 429 or 500 <= status_code < 600
+
+    return False
+
+
 def extract_content(response: dict) -> str:
     """Extrai o texto da resposta, tratando modelos com 'thinking' separado."""
     message = response["choices"][0]["message"]
