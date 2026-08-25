@@ -47,12 +47,12 @@ def load_spec(spec_id: str) -> str:
     return specs_path.read_text()
 
 
-def run_single(model_id: str, spec_id: str, treatment: str) -> dict:
+def run_single(model_id: str, provider: str, spec_id: str, treatment: str) -> dict:
     spec_text = load_spec(spec_id)
     estimation_prompt = build_estimation_prompt(spec_text, treatment)
 
     messages = [{"role": "user", "content": estimation_prompt}]
-    raw_estimation = call_model(model_id, messages)
+    raw_estimation = call_model(model_id, provider, messages)
     estimation_content = extract_content(raw_estimation)
     estimation_json = parse_json_response(estimation_content)
 
@@ -70,7 +70,7 @@ def run_single(model_id: str, spec_id: str, treatment: str) -> dict:
         messages.append({"role": "assistant", "content": estimation_content})
         messages.append({"role": "user", "content": build_conversion_prompt()})
 
-        raw_conversion = call_model(model_id, messages)
+        raw_conversion = call_model(model_id, provider, messages)
         conversion_content = extract_content(raw_conversion)
         conversion_json = parse_json_response(conversion_content)
 
@@ -89,6 +89,7 @@ def main():
     # Piloto usa apenas o modelo #1 do ranking
     pilot_model = models[0]
     model_id = pilot_model["id"]
+    provider = pilot_model["provider"]
     print(f"Modelo piloto: {pilot_model['name']} ({model_id})")
 
     all_results = []
@@ -96,7 +97,7 @@ def main():
         for treatment in TREATMENTS:
             print(f"  spec={spec_id} treatment={treatment} ... ", end="", flush=True)
             try:
-                result = run_single(model_id, spec_id, treatment)
+                result = run_single(model_id, provider, spec_id, treatment)
                 all_results.append(result)
                 print("OK")
             except Exception as e:

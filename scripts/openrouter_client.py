@@ -13,25 +13,39 @@ MAX_TOKENS  = int(os.getenv("MAX_TOKENS", 4096))
 TEMPERATURE = float(os.getenv("TEMPERATURE", 0))
 
 
-def load_models() -> list[dict]:
+def load_config() -> dict:
     config_path = Path(__file__).parent.parent / "config" / "models.yaml"
     with open(config_path) as f:
-        cfg = yaml.safe_load(f)
-    return cfg.get("models") or []
+        return yaml.safe_load(f) or {}
 
 
-def call_model(model_id: str, messages: list[dict]) -> dict:
+def load_models() -> list[dict]:
+    return load_config().get("models") or []
+
+
+def load_execution_config() -> dict:
+    return load_config().get("execution") or {}
+
+
+def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
     """Chama um modelo no OpenRouter e retorna o objeto de resposta completo."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json",
     }
+
+    execution_config = load_execution_config()
+
     payload = {
         "model": model_id,
         "messages": messages,
         "max_tokens": MAX_TOKENS,
         "temperature": TEMPERATURE,
         "tool_choice": "none",    # sem ferramentas externas
+        "provider": {
+            "order": [provider],
+            "allow_fallbacks": execution_config["fallbacks"],
+        },
     }
     response = requests.post(f"{BASE_URL}/chat/completions", headers=headers, json=payload)
     response.raise_for_status()
