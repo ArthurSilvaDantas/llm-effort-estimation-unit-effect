@@ -43,6 +43,15 @@ def result_path(model_id: str, spec_id: str, treatment: str) -> Path:
     safe_model = model_id.replace("/", "__")
     return RESULTS_DIR / safe_model / f"{spec_id}__{treatment}.json"
 
+def load_result(model_id: str, spec_id: str, treatment: str) -> dict | None:
+    path = result_path(model_id, spec_id, treatment)
+
+    if not path.exists():
+        return None
+
+    with open(path) as f:
+        return json.load(f)
+
 
 def already_done(model_id: str, spec_id: str, treatment: str) -> bool:
     return result_path(model_id, spec_id, treatment).exists()
