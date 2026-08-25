@@ -33,12 +33,19 @@ def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json",
     }
+
+    execution_config = load_execution_config()
+
     payload = {
         "model": model_id,
         "messages": messages,
         "max_tokens": MAX_TOKENS,
         "temperature": TEMPERATURE,
         "tool_choice": "none",    # sem ferramentas externas
+        "provider": {
+            "order": [provider],
+            "allow_fallbacks": execution_config["fallbacks"],
+        },
     }
     response = requests.post(f"{BASE_URL}/chat/completions", headers=headers, json=payload)
     response.raise_for_status()
