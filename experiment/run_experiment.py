@@ -67,32 +67,48 @@ def save_result(model_id: str, spec_id: str, treatment: str, data: dict):
 def run_single(model_id: str, provider: str, spec_id: str, treatment: str) -> dict:
     spec_text = load_spec(spec_id)
     estimation_prompt = build_estimation_prompt(spec_text, treatment)
-
     messages = [{"role": "user", "content": estimation_prompt}]
+
     raw = call_model(model_id, provider, messages)
-    content = extract_content(raw)
-    estimation = parse_json_response(content)
 
     result = {
-        "model_id":        model_id,
-        "spec_id":         spec_id,
-        "treatment":       treatment,
-        "estimation_raw":  content,
-        "estimation":      estimation,
-        "usage":           raw.get("usage"),
-        "model_used":      raw.get("model"),
+        "model_id": model_id,
+        "spec_id": spec_id,
+        "treatment": treatment,
+        "estimation_response": raw,
+        "usage": raw.get("usage"),
+        "model_used": raw.get("model"),
     }
+
+    save_result(model_id, spec_id, treatment, result)
+
+    content = extract_content(raw)
+
+    result["estimation_raw"] = content
+    save_result(model_id, spec_id, treatment, result)
 
     if treatment == "WD":
         messages.append({"role": "assistant", "content": content})
         messages.append({"role": "user", "content": build_conversion_prompt()})
 
         raw_conv = call_model(model_id, provider, messages)
+
+        result["conversion_response"] = raw_conv
+        save_result(model_id, spec_id, treatment, result)
+
         conv_content = extract_content(raw_conv)
-        conversion = parse_json_response(conv_content)
 
         result["conversion_raw"] = conv_content
-        result["conversion"]     = conversion
+        save_result(model_id, spec_id, treatment, result)
+
+    estimation = parse_json_response(content)
+    result["estimation"] = estimation
+    save_result(model_id, spec_id, treatment, result)
+
+    if treatment == "WD":
+        conversion = parse_json_response(conv_content)
+        result["conversion"] = conversion
+        save_result(model_id, spec_id, treatment, result)
 
     return result
 
