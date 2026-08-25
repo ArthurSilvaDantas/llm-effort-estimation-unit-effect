@@ -13,11 +13,18 @@ MAX_TOKENS  = int(os.getenv("MAX_TOKENS", 4096))
 TEMPERATURE = float(os.getenv("TEMPERATURE", 0))
 
 
-def load_models() -> list[dict]:
+def load_config() -> dict:
     config_path = Path(__file__).parent.parent / "config" / "models.yaml"
     with open(config_path) as f:
-        cfg = yaml.safe_load(f)
-    return cfg.get("models") or []
+        return yaml.safe_load(f) or {}
+
+
+def load_models() -> list[dict]:
+    return load_config().get("models") or []
+
+
+def load_execution_config() -> dict:
+    return load_config().get("execution") or {}
 
 
 def call_model(model_id: str, messages: list[dict]) -> dict:
