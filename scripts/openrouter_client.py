@@ -47,7 +47,12 @@ def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
             "allow_fallbacks": execution_config["fallbacks"],
         },
     }
-    response = requests.post(f"{BASE_URL}/chat/completions", headers=headers, json=payload)
+    response = requests.post(
+    f"{BASE_URL}/chat/completions",
+    headers=headers,
+    json=payload,
+    timeout=execution_config["request_timeout_seconds"],
+)
     response.raise_for_status()
     return response.json()
 
