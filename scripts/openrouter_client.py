@@ -27,7 +27,7 @@ def load_execution_config() -> dict:
     return load_config().get("execution") or {}
 
 
-def call_model(model_id: str, messages: list[dict]) -> dict:
+def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
     """Chama um modelo no OpenRouter e retorna o objeto de resposta completo."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",

@@ -55,12 +55,12 @@ def save_result(model_id: str, spec_id: str, treatment: str, data: dict):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def run_single(model_id: str, spec_id: str, treatment: str) -> dict:
+def run_single(model_id: str, provider: str, spec_id: str, treatment: str) -> dict:
     spec_text = load_spec(spec_id)
     estimation_prompt = build_estimation_prompt(spec_text, treatment)
 
     messages = [{"role": "user", "content": estimation_prompt}]
-    raw = call_model(model_id, messages)
+    raw = call_model(model_id, provider, messages)
     content = extract_content(raw)
     estimation = parse_json_response(content)
 
@@ -78,7 +78,7 @@ def run_single(model_id: str, spec_id: str, treatment: str) -> dict:
         messages.append({"role": "assistant", "content": content})
         messages.append({"role": "user", "content": build_conversion_prompt()})
 
-        raw_conv = call_model(model_id, messages)
+        raw_conv = call_model(model_id, provider, messages)
         conv_content = extract_content(raw_conv)
         conversion = parse_json_response(conv_content)
 
@@ -90,6 +90,7 @@ def run_single(model_id: str, spec_id: str, treatment: str) -> dict:
 
 def run_model(model: dict, randomization: dict):
     model_id   = model["id"]
+    provider = model["provider"]
     model_rand = randomization["models"].get(model_id, {})
 
     sequences = [
@@ -103,7 +104,7 @@ def run_model(model: dict, randomization: dict):
                 if already_done(model_id, spec_id, treatment):
                     continue
                 try:
-                    result = run_single(model_id, spec_id, treatment)
+                    result = run_single(model_id, provider, spec_id, treatment)
                     save_result(model_id, spec_id, treatment, result)
                     print(f"  OK  {spec_id} {treatment}")
                 except Exception as e:
