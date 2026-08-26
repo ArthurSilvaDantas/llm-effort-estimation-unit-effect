@@ -60,12 +60,14 @@ def is_valid_conversion(data: dict) -> bool:
 
 def get_reported_total(data: dict):
     try:
-        rt = data["estimation"]["reported_total"]
-        # reported_total pode ser número direto ou objeto {"most_likely_effort": N}
-        if isinstance(rt, dict):
-            return float(rt["most_likely_effort"])
-        return float(rt)
-    except (KeyError, TypeError, ValueError):
+        value = data["estimation"]["reported_total"]["most_likely_effort"]
+
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return None
+
+        return float(value)
+
+    except (KeyError, TypeError):
         return None
 
 
