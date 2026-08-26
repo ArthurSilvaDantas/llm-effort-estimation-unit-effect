@@ -9,7 +9,6 @@ load_dotenv()
 
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 API_KEY  = os.getenv("OPENROUTER_API_KEY")
-MAX_TOKENS  = int(os.getenv("MAX_TOKENS", 4096))
 TEMPERATURE = float(os.getenv("TEMPERATURE", 0))
 
 
@@ -39,7 +38,7 @@ def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
     payload = {
         "model": model_id,
         "messages": messages,
-        "max_tokens": MAX_TOKENS,
+        "max_tokens": execution_config["max_tokens"],
         "temperature": TEMPERATURE,
         "tool_choice": "none",    # sem ferramentas externas
         "provider": {
