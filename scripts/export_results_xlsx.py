@@ -17,15 +17,153 @@ import json
 import math
 import argparse
 from pathlib import Path
+from jsonschema import Draft202012Validator
+from decimal import Decimal, InvalidOperation
 
 ROOT        = Path(__file__).parent.parent
 RESULTS_DIR = ROOT / "experiment" / "results"
 DEFAULT_OUT = ROOT / "experiment" / "resultados_experimento.xlsx"
+ESTIMATION_SCHEMA_PATH = ROOT / "prompts" / "estimation_schema.json"
+CONVERSION_SCHEMA_PATH = ROOT / "prompts" / "conversion_schema.json"
+
+
+def load_schema(path: Path) -> dict:
+    with open(path) as f:
+        return json.load(f)
+
+
+ESTIMATION_SCHEMA = load_schema(ESTIMATION_SCHEMA_PATH)
+CONVERSION_SCHEMA = load_schema(CONVERSION_SCHEMA_PATH)
+
+Draft202012Validator.check_schema(ESTIMATION_SCHEMA)
+Draft202012Validator.check_schema(CONVERSION_SCHEMA)
+
+ESTIMATION_VALIDATOR = Draft202012Validator(ESTIMATION_SCHEMA)
+CONVERSION_VALIDATOR = Draft202012Validator(CONVERSION_SCHEMA)
 
 
 # ---------------------------------------------------------------------------
 # Leitura e validação
-# ---------------------------------------------------------------------------
+# --
+
+def to_decimal(value) -> Decimal | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+
+    try:
+        decimal_value = Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return None
+
+    if not decimal_value.is_finite():
+        return None
+
+    return decimal_value
+
+
+def validate_estimation(data: dict) -> dict:
+    result = {
+        "schema_valid": False,
+        "positive_efforts": False,
+        "total_matches_activities": False,
+        "valid": False,
+    }
+
+    estimation = data.get("estimation")
+
+    if not isinstance(estimation, dict):
+        return result
+
+    result["schema_valid"] = ESTIMATION_VALIDATOR.is_valid(estimation)
+
+    activities = estimation.get("activities")
+    reported_total = estimation.get("reported_total")
+
+    if not isinstance(activities, list) or not activities:
+        return result
+
+    activity_efforts = []
+
+    for activity in activities:
+        if not isinstance(activity, dict):
+            return result
+
+        effort = to_decimal(activity.get("most_likely_effort"))
+
+        if effort is None or effort <= 0:
+            return result
+
+        activity_efforts.append(effort)
+
+    total = None
+
+    if isinstance(reported_total, dict):
+        total = to_decimal(
+            reported_total.get("most_likely_effort")
+        )
+
+    if total is None or total <= 0:
+        return result
+
+    result["positive_efforts"] = True
+
+    activity_sum = sum(activity_efforts, Decimal("0"))
+
+    result["total_matches_activities"] = (
+        total == activity_sum
+    )
+
+    result["valid"] = (
+        result["schema_valid"]
+        and result["positive_efforts"]
+        and result["total_matches_activities"]
+    )
+
+    return result
+
+
+def validate_conversion(data: dict) -> dict:
+    result = {
+        "schema_valid": False,
+        "within_bounds": False,
+        "exceptional": False,
+        "valid": False,
+    }
+
+    conversion = data.get("conversion")
+
+    if not isinstance(conversion, dict):
+        return result
+
+    result["schema_valid"] = CONVERSION_VALIDATOR.is_valid(
+        conversion
+    )
+
+    factor = to_decimal(
+        conversion.get("work_hours_per_workday")
+    )
+
+    if factor is None:
+        return result
+
+    result["within_bounds"] = (
+        Decimal("0") < factor <= Decimal("24")
+    )
+
+    result["exceptional"] = (
+        Decimal("12") < factor <= Decimal("24")
+    )
+
+    result["valid"] = (
+        result["schema_valid"]
+        and result["within_bounds"]
+    )
+
+    return result
+#-------------------------------------------------------------------------
 
 def iter_results():
     """Itera sobre todos os arquivos JSON em experiment/results/."""
@@ -38,44 +176,39 @@ def iter_results():
 
 
 def is_valid_estimation(data: dict) -> bool:
-    est = data.get("estimation")
-    if not isinstance(est, dict):
-        return False
-    activities = est.get("activities")
-    if not isinstance(activities, list) or len(activities) == 0:
-        return False
-    total = est.get("reported_total")
-    if not isinstance(total, (int, float)) or total <= 0:
-        return False
-    return True
+    return validate_estimation(data)["valid"]
 
 
 def is_valid_conversion(data: dict) -> bool:
-    conv = data.get("conversion")
-    if not isinstance(conv, dict):
-        return False
-    c = conv.get("work_hours_per_workday")
-    return isinstance(c, (int, float)) and c > 0
+    return validate_conversion(data)["valid"]
 
 
 def get_reported_total(data: dict):
     try:
         value = data["estimation"]["reported_total"]["most_likely_effort"]
-
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
-            return None
-
-        return float(value)
-
     except (KeyError, TypeError):
         return None
+
+    decimal_value = to_decimal(value)
+
+    if decimal_value is None:
+        return None
+
+    return float(decimal_value)
 
 
 def get_conversion_factor(data: dict):
     try:
-        return float(data["conversion"]["work_hours_per_workday"])
-    except (KeyError, TypeError, ValueError):
+        value = data["conversion"]["work_hours_per_workday"]
+    except (KeyError, TypeError):
         return None
+
+    decimal_value = to_decimal(value)
+
+    if decimal_value is None:
+        return None
+
+    return float(decimal_value)
 
 
 # ---------------------------------------------------------------------------
