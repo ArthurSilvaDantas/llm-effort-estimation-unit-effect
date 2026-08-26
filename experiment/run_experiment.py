@@ -101,6 +101,9 @@ def execution_complete(
         "estimation",
     )
 
+    if (estimation_processing == "failed" and "estimation_raw" not in result):
+        return True
+
     if treatment == "WH":
         return estimation_processing in {"parsed", "failed"}
 
@@ -223,7 +226,7 @@ def collect_stage(
     content_key = f"{stage}_raw"
 
     if state["status"] == "received":
-        return result[content_key]
+        return result.get(content_key)
 
     if state["status"] == "failed":
         return None
@@ -251,16 +254,15 @@ def collect_stage(
         content = extract_content(raw_response)
 
     except Exception as error:
-        state["status"] = "failed"
+        state["status"] = "received"
+        result["processing"][stage] = "failed"
 
-        record_failure(
-            result,
-            stage,
-            state["attempts"],
-            error,
-            False,
-            "response_processing_failure",
-        )
+        result.setdefault("processing_log", []).append({
+            "stage": stage,
+            "outcome": "content_extraction_failure",
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+        })
 
         save_result(model_id, spec_id, treatment, result)
         raise
