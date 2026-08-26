@@ -170,9 +170,28 @@ def iter_results():
     for model_dir in sorted(RESULTS_DIR.iterdir()):
         if not model_dir.is_dir():
             continue
+
         for json_file in sorted(model_dir.glob("*.json")):
             with open(json_file) as f:
-                yield json.load(f)
+                record = json.load(f)
+
+            stem = json_file.stem
+
+            if stem.endswith("__WH"):
+                source_spec_id = stem[:-4]
+                source_treatment = "WH"
+            elif stem.endswith("__WD"):
+                source_spec_id = stem[:-4]
+                source_treatment = "WD"
+            else:
+                source_spec_id = None
+                source_treatment = None
+
+            record["_source_model_dir"] = model_dir.name
+            record["_source_spec_id"] = source_spec_id
+            record["_source_treatment"] = source_treatment
+
+            yield record
 
 
 def is_valid_estimation(data: dict) -> bool:
@@ -181,6 +200,58 @@ def is_valid_estimation(data: dict) -> bool:
 
 def is_valid_conversion(data: dict) -> bool:
     return validate_conversion(data)["valid"]
+
+def validate_metadata(data: dict) -> dict:
+    model_id = data.get("model_id")
+    spec_id = data.get("spec_id")
+    treatment = data.get("treatment")
+
+    source_model_dir = data.get("_source_model_dir")
+    source_spec_id = data.get("_source_spec_id")
+    source_treatment = data.get("_source_treatment")
+
+    source_available = all(
+        value is not None
+        for value in (
+            source_model_dir,
+            source_spec_id,
+            source_treatment,
+        )
+    )
+
+    if not source_available:
+        return {
+            "model_matches": None,
+            "spec_matches": None,
+            "treatment_matches": None,
+            "valid": None,
+        }
+
+    model_matches = (
+        isinstance(model_id, str)
+        and model_id.replace("/", "__") == source_model_dir
+    )
+
+    spec_matches = (
+        isinstance(spec_id, str)
+        and spec_id == source_spec_id
+    )
+
+    treatment_matches = (
+        treatment in {"WH", "WD"}
+        and treatment == source_treatment
+    )
+
+    return {
+        "model_matches": model_matches,
+        "spec_matches": spec_matches,
+        "treatment_matches": treatment_matches,
+        "valid": (
+            model_matches
+            and spec_matches
+            and treatment_matches
+        ),
+    }
 
 
 def get_reported_total(data: dict):
@@ -219,38 +290,77 @@ def build_results_rows(records: list[dict]) -> tuple[list, list]:
     """Retorna (headers, rows) para a aba Resultados."""
     headers = [
         "model_id", "model_used", "spec_id", "treatment",
-        "valid_estimation", "valid_conversion",
+        "metadata_model_matches",
+        "metadata_spec_matches",
+        "metadata_treatment_matches",
+        "metadata_valid",
+        "estimation_schema_valid",
+        "estimation_positive_efforts",
+        "estimation_total_matches_activities",
+        "valid_estimation",
+        "conversion_schema_valid",
+        "conversion_within_bounds",
+        "conversion_exceptional",
+        "valid_conversion",
         "reported_total", "num_activities",
         "conversion_factor_Cim",
         "prompt_tokens", "completion_tokens", "total_tokens",
         "estimation_raw", "conversion_raw",
         "assumptions", "technical_decisions",
     ]
+
     rows = []
+
     for r in records:
-        est     = r.get("estimation") or {}
-        usage   = r.get("usage") or {}
-        total   = get_reported_total(r)
-        c_im    = get_conversion_factor(r)
-        acts    = est.get("activities") or []
+        est = r.get("estimation") or {}
+        usage = r.get("usage") or {}
+        total = get_reported_total(r)
+        c_im = get_conversion_factor(r)
+        acts = est.get("activities") or []
+
+        est_validation = validate_estimation(r)
+        metadata_validation = validate_metadata(r)
+
+        if r.get("treatment") == "WD":
+            conv_validation = validate_conversion(r)
+        else:
+            conv_validation = None
+
         rows.append([
             r.get("model_id", ""),
             r.get("model_used", ""),
             r.get("spec_id", ""),
             r.get("treatment", ""),
-            is_valid_estimation(r),
-            is_valid_conversion(r) if r.get("treatment") == "WD" else "N/A",
+            metadata_validation["model_matches"],
+            metadata_validation["spec_matches"],
+            metadata_validation["treatment_matches"],
+            metadata_validation["valid"],
+
+            est_validation["schema_valid"],
+            est_validation["positive_efforts"],
+            est_validation["total_matches_activities"],
+            est_validation["valid"],
+
+            conv_validation["schema_valid"] if conv_validation else "N/A",
+            conv_validation["within_bounds"] if conv_validation else "N/A",
+            conv_validation["exceptional"] if conv_validation else "N/A",
+            conv_validation["valid"] if conv_validation else "N/A",
+
             total,
             len(acts),
             c_im,
+
             usage.get("prompt_tokens"),
             usage.get("completion_tokens"),
             usage.get("total_tokens"),
+
             r.get("estimation_raw", ""),
             r.get("conversion_raw", ""),
+
             "; ".join(est.get("assumptions") or []),
             "; ".join(est.get("technical_and_design_decisions") or []),
         ])
+
     return headers, rows
 
 
@@ -314,8 +424,18 @@ def build_pairs_rows(records: list[dict]) -> tuple[list, list]:
     ]
     rows = []
     for model_id, spec_id, wh, wd in sorted(pairs):
-        wh_valid = wh is not None and is_valid_estimation(wh)
-        wd_valid = wd is not None and is_valid_estimation(wd) and is_valid_conversion(wd)
+        wh_valid = (
+            wh is not None
+            and validate_metadata(wh)["valid"] is True
+            and is_valid_estimation(wh)
+        )
+
+        wd_valid = (
+            wd is not None
+            and validate_metadata(wd)["valid"] is True
+            and is_valid_estimation(wd)
+            and is_valid_conversion(wd)
+        )
 
         y_wh  = get_reported_total(wh) if wh else None
         y_wd  = get_reported_total(wd) if wd else None
