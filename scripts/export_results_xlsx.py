@@ -504,21 +504,29 @@ def build_summary_rows(pairs_headers: list, pairs_rows: list) -> tuple[list, lis
         return math.sqrt(sum((v - mu) ** 2 for v in vals) / (n - 1))
 
     rows = []
+
     for model_id, model_rows in sorted(groups.items()):
+        complete_rows = [
+            r for r in model_rows
+            if r[idx["pair_complete"]]
+        ]
+
         rows.append([
             model_id,
             len(model_rows),
-            sum(1 for r in model_rows if r[idx["pair_complete"]]),
+            len(complete_rows),
             sum(1 for r in model_rows if r[idx["wh_valid"]]),
             sum(1 for r in model_rows if r[idx["wd_valid"]]),
-            safe_mean([r[idx["Y_WH"]]  for r in model_rows]),
-            safe_mean([r[idx["Y_WD"]]  for r in model_rows]),
-            safe_mean([r[idx["C_im"]]  for r in model_rows]),
-            safe_mean([r[idx["Y_WDh"]] for r in model_rows]),
-            safe_mean([r[idx["L_im"]]  for r in model_rows]),
-            safe_median([r[idx["L_im"]] for r in model_rows]),
-            safe_std([r[idx["L_im"]]   for r in model_rows]),
+
+            safe_mean([r[idx["Y_WH"]] for r in complete_rows]),
+            safe_mean([r[idx["Y_WD"]] for r in complete_rows]),
+            safe_mean([r[idx["C_im"]] for r in complete_rows]),
+            safe_mean([r[idx["Y_WDh"]] for r in complete_rows]),
+            safe_mean([r[idx["L_im"]] for r in complete_rows]),
+            safe_median([r[idx["L_im"]] for r in complete_rows]),
+            safe_std([r[idx["L_im"]] for r in complete_rows]),
         ])
+
     return headers, rows
 
 
