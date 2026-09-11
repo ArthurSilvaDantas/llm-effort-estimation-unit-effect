@@ -1,0 +1,188 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-046",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788417855-yDFLl75yaYRvh7WjFolc",
+    "object": "chat.completion",
+    "created": 1788417855,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Netflix Eureka (spring-cloud-netflix) as the service registry for module and admin-server discovery (U1, U4).\",\n    \"Define a new Admin SPI layer with separate interfaces/impls per deployment target; existing controllers (Containers, Streams, Modules, Jobs) will delegate to SPI implementations rather than calling internal services directly (U2).\",\n    \"Adopt Spring Boot Actuator metrics endpoint as the primary module metrics source, with a MessageChannel-based metrics publisher as a secondary path, exposed via REST APIs (U3).\",\n    \"Use Spring Boot's MetricsExport auto-configuration (Redis repository) for periodic metrics snapshotting with default 5s interval (U7).\",\n    \"Use Jenkins (or equivalent CI server) to drive s-c-s CI builds and Docker image builds; upload the resulting module-launcher image to the springcloud DockerHub org (U5, U8).\",\n    \"Port the XD FTP source module by reusing the existing XD ftp client code, wrapping it as a s-c-s source module with a Spring Boot-style auto-configuration and integration test (U6).\",\n    \"Build and test will be done by a single experienced Java/Spring developer; effort is in work-hours, not elapsed time.\"\n  ],\n  \"assumptions\": [\n    \"A working Spring XD 1.x code base and Spring Cloud Stream 1.x code base are available as references; porting is not from-scratch development.\",\n    \"Eureka server is already deployed and available in the target environment; only the client/integration side is implemented here.\",\n    \"The SPI refactor (U2) is purely an internal structural change with no functional behavior changes; existing API contracts are preserved.\",\n    \"CI infrastructure (build agents, DockerHub credentials, Eureka endpoints) is available and only the pipeline-as-code/scripts are authored.\",\n    \"FTP module porting covers one source module (inbound) only; a separate sink/processor FTP module is out of scope unless explicitly noted.\",\n    \"Metrics persistence uses Redis as the backing store per the default of Spring Boot's export() API; no alternate stores are added.\",\n    \"All four controllers listed in U2 are refactored in this increment; partial refactors are not delivered.\",\n    \"Unit and integration tests are included in each activity's effort; a separate, end-to-end integration activity covers cross-feature interaction.\",\n    \"Documentation effort is limited to high-level README updates and SPI/design notes; full reference documentation is out of scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup, dependency analysis and high-level design\",\n      \"activity_description\": \"Review existing s-c-s and XD code bases, identify required Spring Cloud / Spring Boot dependencies (Eureka, Actuator, Redis export), set up the module skeleton, and produce a short design note covering the Admin SPI shape, metrics flow, and CI/Docker pipeline layout. This work precedes the feature-specific activities.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Eureka registration and state update for modules (U1)\",\n      \"activity_description\": \"Add Eureka client configuration to s-c-s modules, implement add/update of module state on lifecycle events (deploy/start/stop/unregister), expose the state via the s-c-s discovery repository, and add unit + integration tests against a local Eureka instance.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Refactor XD controllers to use Admin SPI (U2)\",\n      \"activity_description\": \"Define the Admin SPI interfaces (Containers, Streams, Modules, Jobs), provide a default XD-compatible implementation, refactor ContainersController, StreamsController, ModulesController and JobsController to call the SPI instead of internal services, and add unit tests for the controllers and the SPI contract.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Capture module metrics via channel/actuator (U3)\",\n      \"activity_description\": \"Explore SI channel() and Spring Boot actuator() APIs as metric sources, implement a metrics capture component in s-c-s that publishes per-module metrics, expose them through new REST endpoints decoupled from xd-container, and add tests verifying the captured values.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Self-register xd-admin with Eureka (U4)\",\n      \"activity_description\": \"Add Eureka client support to xd-admin, configure the admin server's metadata (context path, management port), verify the admin endpoint is discoverable in Eureka, and add integration tests confirming registration and lookup.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Set up CI builds for s-c-s (U5)\",\n      \"activity_description\": \"Author Jenkinsfile / CI pipeline-as-code for s-c-s: checkout, build, unit and integration test execution, artifact publishing, and notification on failure; verify a representative build runs green end-to-end on the shared CI infrastructure.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Port FTP source module from XD to s-c-s (U6)\",\n      \"activity_description\": \"Analyze the XD FTP source module, re-implement it as a s-c-s source module (options, auto-configuration, channel binding), port existing tests, and add a streaming pipeline integration test that uses the ported module as a source.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Persist module metrics with Redis export (U7)\",\n      \"activity_description\": \"Configure Spring Boot MetricsExport with Redis as the metrics repository, set default snapshot interval to 5s, expose a REST API to query persisted metrics, and add tests verifying metrics are written to Redis and retrievable through the API.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"CI workflow to build, bundle and publish module-launcher Docker image (U8)\",\n      \"activity_description\": \"Add a Docker image build step for module-launcher to the CI pipeline, tag the image appropriately, authenticate to DockerHub, push to the springcloud org, and verify the image can be pulled and started from the published location.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"End-to-end integration testing\",\n      \"activity_description\": \"Run cross-feature integration tests: modules register with Eureka, admin server is discoverable, SPI-driven controllers behave identically to the previous implementation, metrics are captured and persisted, FTP source module streams into a pipeline, and the module-launcher image runs the integrated system.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update READMEs and short design notes covering the new Eureka-based discovery, Admin SPI, metrics REST APIs, FTP module usage, and CI/Docker publishing steps.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 260\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. The specification describes several user stories for what appears to be Spring Cloud Stream (s-c-s) and Spring XD related work. Let me break down the user stories:\n\nU1: Eureka integration for module state (service discovery)\nU2: Refactor controllers (Containers, Streams, Modules, Jobs) with SPI calls\nU3: Capture module metrics (channel/actuator APIs)\nU4: Self-register xd-admin with Eureka\nU5: Setup CI builds for s-c-s\nU6: Port FTP modules from XD to s-c-s\nU7: Persist module metrics (Spring Boot export API with Redis)\nU8: Setup CI workflow to build/push module-launcher Docker image\n\nNow let me create a WBS-based estimation:\n\nActivities:\n1. Eureka client integration for modules (U1) - including adding/updating state\n2. Controller refactoring with SPI (U2) - 4 controllers\n3. Module metrics capture (U3) - exploring channel/actuator APIs\n4. Admin server Eureka self-registration (U4)\n5. CI build setup for s-c-s (U5)\n6. FTP module porting from XD to s-c-s (U6)\n7. Module metrics persistence (U7) - Redis integration\n8. Docker image CI workflow for module-launcher (U8)\n9. Integration testing across all features\n10. Documentation\n\nLet me think about effort estimates for each:\n\nU1 - Eureka integration: requires understanding Eureka client, modifying modules to register/update state, repository changes\n- Implementation: 16-24 hours\n- Testing: 8 hours\n- Total: ~24 hours\n\nU2 - SPI refactoring of 4 controllers: significant refactoring\n- Design SPI interfaces: 8 hours\n- Refactor ContainersController: 6 hours\n- Refactor StreamsController: 6 hours\n- Refactor ModulesController: 6 hours\n- Refactor JobsController: 6 hours\n- Testing: 12 hours\n- Total: ~44 hours\n\nU3 - Module metrics capture (exploring channel/actuator):\n- Design/exploration: 8 hours\n- Implementation: 16 hours\n- Testing: 8 hours\n- Total: ~32 hours\n\nU4 - Admin Eureka registration:\n- Implementation: 8 hours\n- Testing: 4 hours\n- Total: ~12 hours\n\nU5 - CI builds setup:\n- Setup CI configuration: 12 hours\n- Testing/debugging: 8 hours\n- Total: ~20 hours\n\nU6 - Port FTP modules from XD to s-c-s:\n- Understand XD FTP module: 8 hours\n- Port source module: 16 hours\n- Testing: 8 hours\n- Total: ~32 hours\n\nU7 - Metrics persistence (Redis):\n- Implementation: 16 hours\n- Configuration: 8 hours\n- Testing: 8 hours\n- Total: ~32 hours\n\nU8 - Docker image CI workflow:\n- Docker image configuration: 8 hours\n- CI workflow setup: 12 hours\n- Testing: 8 hours\n- Total: ~28 hours\n\nPlus integration and documentation:\n- Integration testing: 16 hours\n- Documentation: 8 hours\n\nLet me organize this into a proper WBS:\n\nA1: Project setup and design (overarching)\nA2: Eureka integration for module state (U1)\nA3: Controller SPI refactoring (U2)\nA4: Module metrics capture (U3)\nA5: Admin Eureka self-registration (U4)\nA6: CI build setup for s-c-s (U5)\nA7: FTP module porting (U6)\nA8: Module metrics persistence (U7)\nA9: Docker image CI workflow (U8)\nA10: Integration testing\nA11: Documentation\n\nLet me refine the estimates:\n\nA1: 16 hours (initial design, dependency analysis, environment setup)\nA2: 24 hours (Eureka client integration, state updates, tests)\nA3: 40 hours (4 controllers refactoring, SPI design, tests)\nA4: 32 hours (metrics capture implementation)\nA5: 12 hours (admin registration)\nA6: 20 hours (CI setup)\nA7: 32 hours (FTP module porting)\nA8: 32 hours (metrics persistence with Redis)\nA9: 28 hours (Docker image CI)\nA10: 16 hours (integration testing)\nA11: 8 hours (documentation)\n\nTotal: 16+24+40+32+12+20+32+32+28+16+8 = 260 hours\n\nLet me make sure my decisions and assumptions are clear. I'll finalize the WBS with reasonable estimates.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. The specification describes several user stories for what appears to be Spring Cloud Stream (s-c-s) and Spring XD related work. Let me break down the user stories:\n\nU1: Eureka integration for module state (service discovery)\nU2: Refactor controllers (Containers, Streams, Modules, Jobs) with SPI calls\nU3: Capture module metrics (channel/actuator APIs)\nU4: Self-register xd-admin with Eureka\nU5: Setup CI builds for s-c-s\nU6: Port FTP modules from XD to s-c-s\nU7: Persist module metrics (Spring Boot export API with Redis)\nU8: Setup CI workflow to build/push module-launcher Docker image\n\nNow let me create a WBS-based estimation:\n\nActivities:\n1. Eureka client integration for modules (U1) - including adding/updating state\n2. Controller refactoring with SPI (U2) - 4 controllers\n3. Module metrics capture (U3) - exploring channel/actuator APIs\n4. Admin server Eureka self-registration (U4)\n5. CI build setup for s-c-s (U5)\n6. FTP module porting from XD to s-c-s (U6)\n7. Module metrics persistence (U7) - Redis integration\n8. Docker image CI workflow for module-launcher (U8)\n9. Integration testing across all features\n10. Documentation\n\nLet me think about effort estimates for each:\n\nU1 - Eureka integration: requires understanding Eureka client, modifying modules to register/update state, repository changes\n- Implementation: 16-24 hours\n- Testing: 8 hours\n- Total: ~24 hours\n\nU2 - SPI refactoring of 4 controllers: significant refactoring\n- Design SPI interfaces: 8 hours\n- Refactor ContainersController: 6 hours\n- Refactor StreamsController: 6 hours\n- Refactor ModulesController: 6 hours\n- Refactor JobsController: 6 hours\n- Testing: 12 hours\n- Total: ~44 hours\n\nU3 - Module metrics capture (exploring channel/actuator):\n- Design/exploration: 8 hours\n- Implementation: 16 hours\n- Testing: 8 hours\n- Total: ~32 hours\n\nU4 - Admin Eureka registration:\n- Implementation: 8 hours\n- Testing: 4 hours\n- Total: ~12 hours\n\nU5 - CI builds setup:\n- Setup CI configuration: 12 hours\n- Testing/debugging: 8 hours\n- Total: ~20 hours\n\nU6 - Port FTP modules from XD to s-c-s:\n- Understand XD FTP module: 8 hours\n- Port source module: 16 hours\n- Testing: 8 hours\n- Total: ~32 hours\n\nU7 - Metrics persistence (Redis):\n- Implementation: 16 hours\n- Configuration: 8 hours\n- Testing: 8 hours\n- Total: ~32 hours\n\nU8 - Docker image CI workflow:\n- Docker image configuration: 8 hours\n- CI workflow setup: 12 hours\n- Testing: 8 hours\n- Total: ~28 hours\n\nPlus integration and documentation:\n- Integration testing: 16 hours\n- Documentation: 8 hours\n\nLet me organize this into a proper WBS:\n\nA1: Project setup and design (overarching)\nA2: Eureka integration for module state (U1)\nA3: Controller SPI refactoring (U2)\nA4: Module metrics capture (U3)\nA5: Admin Eureka self-registration (U4)\nA6: CI build setup for s-c-s (U5)\nA7: FTP module porting (U6)\nA8: Module metrics persistence (U7)\nA9: Docker image CI workflow (U8)\nA10: Integration testing\nA11: Documentation\n\nLet me refine the estimates:\n\nA1: 16 hours (initial design, dependency analysis, environment setup)\nA2: 24 hours (Eureka client integration, state updates, tests)\nA3: 40 hours (4 controllers refactoring, SPI design, tests)\nA4: 32 hours (metrics capture implementation)\nA5: 12 hours (admin registration)\nA6: 20 hours (CI setup)\nA7: 32 hours (FTP module porting)\nA8: 32 hours (metrics persistence with Redis)\nA9: 28 hours (Docker image CI)\nA10: 16 hours (integration testing)\nA11: 8 hours (documentation)\n\nTotal: 16+24+40+32+12+20+32+32+28+16+8 = 260 hours\n\nLet me make sure my decisions and assumptions are clear. I'll finalize the WBS with reasonable estimates.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1522,
+      "completion_tokens": 2614,
+      "total_tokens": 4136,
+      "cost": 0.00355596,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00355596,
+        "upstream_inference_prompt_cost": 0.00041916,
+        "upstream_inference_completions_cost": 0.0031368
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 990,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Netflix Eureka (spring-cloud-netflix) as the service registry for module and admin-server discovery (U1, U4).\",\n    \"Define a new Admin SPI layer with separate interfaces/impls per deployment target; existing controllers (Containers, Streams, Modules, Jobs) will delegate to SPI implementations rather than calling internal services directly (U2).\",\n    \"Adopt Spring Boot Actuator metrics endpoint as the primary module metrics source, with a MessageChannel-based metrics publisher as a secondary path, exposed via REST APIs (U3).\",\n    \"Use Spring Boot's MetricsExport auto-configuration (Redis repository) for periodic metrics snapshotting with default 5s interval (U7).\",\n    \"Use Jenkins (or equivalent CI server) to drive s-c-s CI builds and Docker image builds; upload the resulting module-launcher image to the springcloud DockerHub org (U5, U8).\",\n    \"Port the XD FTP source module by reusing the existing XD ftp client code, wrapping it as a s-c-s source module with a Spring Boot-style auto-configuration and integration test (U6).\",\n    \"Build and test will be done by a single experienced Java/Spring developer; effort is in work-hours, not elapsed time.\"\n  ],\n  \"assumptions\": [\n    \"A working Spring XD 1.x code base and Spring Cloud Stream 1.x code base are available as references; porting is not from-scratch development.\",\n    \"Eureka server is already deployed and available in the target environment; only the client/integration side is implemented here.\",\n    \"The SPI refactor (U2) is purely an internal structural change with no functional behavior changes; existing API contracts are preserved.\",\n    \"CI infrastructure (build agents, DockerHub credentials, Eureka endpoints) is available and only the pipeline-as-code/scripts are authored.\",\n    \"FTP module porting covers one source module (inbound) only; a separate sink/processor FTP module is out of scope unless explicitly noted.\",\n    \"Metrics persistence uses Redis as the backing store per the default of Spring Boot's export() API; no alternate stores are added.\",\n    \"All four controllers listed in U2 are refactored in this increment; partial refactors are not delivered.\",\n    \"Unit and integration tests are included in each activity's effort; a separate, end-to-end integration activity covers cross-feature interaction.\",\n    \"Documentation effort is limited to high-level README updates and SPI/design notes; full reference documentation is out of scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup, dependency analysis and high-level design\",\n      \"activity_description\": \"Review existing s-c-s and XD code bases, identify required Spring Cloud / Spring Boot dependencies (Eureka, Actuator, Redis export), set up the module skeleton, and produce a short design note covering the Admin SPI shape, metrics flow, and CI/Docker pipeline layout. This work precedes the feature-specific activities.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Eureka registration and state update for modules (U1)\",\n      \"activity_description\": \"Add Eureka client configuration to s-c-s modules, implement add/update of module state on lifecycle events (deploy/start/stop/unregister), expose the state via the s-c-s discovery repository, and add unit + integration tests against a local Eureka instance.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Refactor XD controllers to use Admin SPI (U2)\",\n      \"activity_description\": \"Define the Admin SPI interfaces (Containers, Streams, Modules, Jobs), provide a default XD-compatible implementation, refactor ContainersController, StreamsController, ModulesController and JobsController to call the SPI instead of internal services, and add unit tests for the controllers and the SPI contract.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Capture module metrics via channel/actuator (U3)\",\n      \"activity_description\": \"Explore SI channel() and Spring Boot actuator() APIs as metric sources, implement a metrics capture component in s-c-s that publishes per-module metrics, expose them through new REST endpoints decoupled from xd-container, and add tests verifying the captured values.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Self-register xd-admin with Eureka (U4)\",\n      \"activity_description\": \"Add Eureka client support to xd-admin, configure the admin server's metadata (context path, management port), verify the admin endpoint is discoverable in Eureka, and add integration tests confirming registration and lookup.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Set up CI builds for s-c-s (U5)\",\n      \"activity_description\": \"Author Jenkinsfile / CI pipeline-as-code for s-c-s: checkout, build, unit and integration test execution, artifact publishing, and notification on failure; verify a representative build runs green end-to-end on the shared CI infrastructure.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Port FTP source module from XD to s-c-s (U6)\",\n      \"activity_description\": \"Analyze the XD FTP source module, re-implement it as a s-c-s source module (options, auto-configuration, channel binding), port existing tests, and add a streaming pipeline integration test that uses the ported module as a source.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Persist module metrics with Redis export (U7)\",\n      \"activity_description\": \"Configure Spring Boot MetricsExport with Redis as the metrics repository, set default snapshot interval to 5s, expose a REST API to query persisted metrics, and add tests verifying metrics are written to Redis and retrievable through the API.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"CI workflow to build, bundle and publish module-launcher Docker image (U8)\",\n      \"activity_description\": \"Add a Docker image build step for module-launcher to the CI pipeline, tag the image appropriately, authenticate to DockerHub, push to the springcloud org, and verify the image can be pulled and started from the published location.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"End-to-end integration testing\",\n      \"activity_description\": \"Run cross-feature integration tests: modules register with Eureka, admin server is discoverable, SPI-driven controllers behave identically to the previous implementation, metrics are captured and persisted, FTP source module streams into a pipeline, and the module-launcher image runs the integrated system.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update READMEs and short design notes covering the new Eureka-based discovery, Admin SPI, metrics REST APIs, FTP module usage, and CI/Docker publishing steps.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 260\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1522,
+    "completion_tokens": 2614,
+    "total_tokens": 4136,
+    "cost": 0.00355596,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00355596,
+      "upstream_inference_prompt_cost": 0.00041916,
+      "upstream_inference_completions_cost": 0.0031368
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 990,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Use Netflix Eureka (spring-cloud-netflix) as the service registry for module and admin-server discovery (U1, U4).",
+      "Define a new Admin SPI layer with separate interfaces/impls per deployment target; existing controllers (Containers, Streams, Modules, Jobs) will delegate to SPI implementations rather than calling internal services directly (U2).",
+      "Adopt Spring Boot Actuator metrics endpoint as the primary module metrics source, with a MessageChannel-based metrics publisher as a secondary path, exposed via REST APIs (U3).",
+      "Use Spring Boot's MetricsExport auto-configuration (Redis repository) for periodic metrics snapshotting with default 5s interval (U7).",
+      "Use Jenkins (or equivalent CI server) to drive s-c-s CI builds and Docker image builds; upload the resulting module-launcher image to the springcloud DockerHub org (U5, U8).",
+      "Port the XD FTP source module by reusing the existing XD ftp client code, wrapping it as a s-c-s source module with a Spring Boot-style auto-configuration and integration test (U6).",
+      "Build and test will be done by a single experienced Java/Spring developer; effort is in work-hours, not elapsed time."
+    ],
+    "assumptions": [
+      "A working Spring XD 1.x code base and Spring Cloud Stream 1.x code base are available as references; porting is not from-scratch development.",
+      "Eureka server is already deployed and available in the target environment; only the client/integration side is implemented here.",
+      "The SPI refactor (U2) is purely an internal structural change with no functional behavior changes; existing API contracts are preserved.",
+      "CI infrastructure (build agents, DockerHub credentials, Eureka endpoints) is available and only the pipeline-as-code/scripts are authored.",
+      "FTP module porting covers one source module (inbound) only; a separate sink/processor FTP module is out of scope unless explicitly noted.",
+      "Metrics persistence uses Redis as the backing store per the default of Spring Boot's export() API; no alternate stores are added.",
+      "All four controllers listed in U2 are refactored in this increment; partial refactors are not delivered.",
+      "Unit and integration tests are included in each activity's effort; a separate, end-to-end integration activity covers cross-feature interaction.",
+      "Documentation effort is limited to high-level README updates and SPI/design notes; full reference documentation is out of scope."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Project setup, dependency analysis and high-level design",
+        "activity_description": "Review existing s-c-s and XD code bases, identify required Spring Cloud / Spring Boot dependencies (Eureka, Actuator, Redis export), set up the module skeleton, and produce a short design note covering the Admin SPI shape, metrics flow, and CI/Docker pipeline layout. This work precedes the feature-specific activities.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Eureka registration and state update for modules (U1)",
+        "activity_description": "Add Eureka client configuration to s-c-s modules, implement add/update of module state on lifecycle events (deploy/start/stop/unregister), expose the state via the s-c-s discovery repository, and add unit + integration tests against a local Eureka instance.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Refactor XD controllers to use Admin SPI (U2)",
+        "activity_description": "Define the Admin SPI interfaces (Containers, Streams, Modules, Jobs), provide a default XD-compatible implementation, refactor ContainersController, StreamsController, ModulesController and JobsController to call the SPI instead of internal services, and add unit tests for the controllers and the SPI contract.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Capture module metrics via channel/actuator (U3)",
+        "activity_description": "Explore SI channel() and Spring Boot actuator() APIs as metric sources, implement a metrics capture component in s-c-s that publishes per-module metrics, expose them through new REST endpoints decoupled from xd-container, and add tests verifying the captured values.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Self-register xd-admin with Eureka (U4)",
+        "activity_description": "Add Eureka client support to xd-admin, configure the admin server's metadata (context path, management port), verify the admin endpoint is discoverable in Eureka, and add integration tests confirming registration and lookup.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Set up CI builds for s-c-s (U5)",
+        "activity_description": "Author Jenkinsfile / CI pipeline-as-code for s-c-s: checkout, build, unit and integration test execution, artifact publishing, and notification on failure; verify a representative build runs green end-to-end on the shared CI infrastructure.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Port FTP source module from XD to s-c-s (U6)",
+        "activity_description": "Analyze the XD FTP source module, re-implement it as a s-c-s source module (options, auto-configuration, channel binding), port existing tests, and add a streaming pipeline integration test that uses the ported module as a source.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Persist module metrics with Redis export (U7)",
+        "activity_description": "Configure Spring Boot MetricsExport with Redis as the metrics repository, set default snapshot interval to 5s, expose a REST API to query persisted metrics, and add tests verifying metrics are written to Redis and retrievable through the API.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "CI workflow to build, bundle and publish module-launcher Docker image (U8)",
+        "activity_description": "Add a Docker image build step for module-launcher to the CI pipeline, tag the image appropriately, authenticate to DockerHub, push to the springcloud org, and verify the image can be pulled and started from the published location.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "End-to-end integration testing",
+        "activity_description": "Run cross-feature integration tests: modules register with Eureka, admin server is discoverable, SPI-driven controllers behave identically to the previous implementation, metrics are captured and persisted, FTP source module streams into a pipeline, and the module-launcher image runs the integrated system.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation updates",
+        "activity_description": "Update READMEs and short design notes covering the new Eureka-based discovery, Admin SPI, metrics REST APIs, FTP module usage, and CI/Docker publishing steps.",
+        "most_likely_effort": 8
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 260
+    }
+  }
+}

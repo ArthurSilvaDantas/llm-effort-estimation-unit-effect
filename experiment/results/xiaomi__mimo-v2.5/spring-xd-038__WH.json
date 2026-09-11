@@ -1,0 +1,169 @@
+{
+  "model_id": "xiaomi/mimo-v2.5",
+  "spec_id": "spring-xd-038",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1787805564-KyNMVJKalLVC1ArGJugL",
+    "object": "chat.completion",
+    "created": 1787805564,
+    "model": "xiaomi/mimo-v2.5",
+    "provider": "Xiaomi",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"For U1 (gpfdist sink): Refactor existing Spring XD module code (from gpfdist repository) into the core Spring XD module structure. Integrate with the project-reactor based data pipeline architecture. Maintain compatibility with existing GPDB/HAWQ writing capabilities.\",\n    \"For U2 (Centralized Module Registry): Implement a new `ModuleRegistry` implementation that uses Git (specifically GitHub) as the backend storage. Use JGit library for Git operations. The REST API for module upload/deploy will interact with this new registry.\",\n    \"For U3 (Rabbit benchmark): Design a benchmark suite using JMeter or a similar tool. The benchmark will simulate increasing load by adding more simulated xd-container nodes (threads) publishing messages to a RabbitMQ instance hosted on Rackspace infrastructure.\",\n    \"For U4 (Flo parser error reporting): Enhance the existing Flo parser endpoint logic to capture, structure, and propagate more detailed error information (e.g., specific syntax errors, line numbers) back to the client in a standardized format (likely JSON).\",\n    \"For U5 (Secure Mail source): Extend the existing `mail` source module configuration to support a new property (`java-mail-properties`) that accepts a reference to a Spring `java.util.Properties` bean. This bean will contain the standard JavaMail SSL/TLS properties (e.g., `mail.imaps.ssl.enable`). Leverage Spring Integration's existing `MailReceivingChannelAdapter` and its property-passing mechanisms.\",\n    \"For U6 (HDFS as default module registry): Modify the module upload process (both via `xd-shell` and REST API) to target HDFS as the storage location for custom module JARs. Update the deployment logic to fetch modules from HDFS. Remove the `custom-modules.zip` packaging step from the YARN distribution build process.\",\n    \"For U7 (Shell auto-configuration): Implement a startup initialization mechanism for `xd-shell`. This will involve: 1) Checking for a well-known configuration file location (e.g., `/etc/springxd/conf/xd-shell.init`). 2) Parsing and executing the commands within that file (e.g., `server config ...`, `hadoop config ...`) automatically upon shell launch, before presenting the user prompt.\",\n    \"For U8 (Graceful stream shutdown): Modify the stream undeployment process to implement a 'drain' phase. This involves: 1) Sending a signal to the stream's source to stop accepting new messages. 2) Allowing in-flight messages already in the pipeline (channels, queues) to be fully processed and delivered to the sink. 3) Implementing a configurable timeout to prevent indefinite waiting. 4) Only after the drain completes (or times out) will the stream's components be destroyed.\"\n  ],\n  \"assumptions\": [\n    \"The development team has prior experience with the Spring XD codebase, Spring Integration, and the respective technologies mentioned (Project Reactor, JGit, JavaMail, RabbitMQ, HDFS, YARN).\",\n    \"The existing code for the gpfdist module (in the spring-xd-modules repository) is available and its functionality is well-understood.\",\n    \"A working development and integration testing environment is available, including access to a Hadoop cluster (HDFS/YARN), a RabbitMQ instance, and a sample GPDB/HAWQ database for U1 and U3.\",\n    \"Existing unit and integration tests for the affected modules (e.g., mail source, Flo parser, module deployment) exist and can be extended.\",\n    \"The scope is limited to the implementation of the features described in the user stories. This includes necessary refactoring, configuration changes, and writing of unit/integration tests. It excludes extensive performance tuning beyond the baseline measurement for U3.\",\n    \"For U7, the auto-configuration file format will be the same as the manual script file format, and the shell's existing `script` command parser will be reused.\",\n    \"For U8, the 'graceful shutdown' is scoped to the stream's data flow (messages in channels/queues). It does not include transaction management or guaranteed delivery across external systems that are already unreachable.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"ACT-01\",\n      \"activity_name\": \"Refactor and Integrate gpfdist Sink (U1)\",\n      \"activity_description\": \"Move gpfdist sink code from the spring-xd-modules repository into the core Spring XD module structure. Refactor it to use the project-reactor based pipeline. Adjust package names, update internal references, and ensure it compiles and passes unit tests within the core project.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-02\",\n      \"activity_name\": \"Implement Git-backed Module Registry (U2)\",\n      \"activity_description\": \"Develop a new `ModuleRegistry` interface implementation that uses JGit to interact with a GitHub repository. Implement methods for deploying modules (committing and pushing JAR files), retrieving modules, and listing modules. Integrate this new registry into the module upload REST endpoint and the deployment service. Write unit and integration tests.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"ACT-03\",\n      \"activity_name\": \"Design and Execute RabbitMQ Benchmark (U3)\",\n      \"activity_description\": \"Design a benchmark test plan to measure throughput and latency as simulated xd-container nodes are added. Set up a script/tool (e.g., JMeter) to publish messages to a RabbitMQ instance on Rackspace. Execute the benchmark for varying node counts, collect metrics (throughput, latency percentiles, CPU/memory usage on the RabbitMQ server), and produce a summary report.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"ACT-04\",\n      \"activity_name\": \"Enhance Flo Parser Error Reporting (U4)\",\n      \"activity_description\": \"Modify the Flo parser endpoint(s) to catch parsing exceptions in a more granular way. Implement logic to extract detailed error information (line number, column, expected token, actual token) from the parser's exception hierarchy. Structure this information into a standard error response object (JSON) and ensure it is returned to the client. Update or add tests for the new error paths.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"ACT-05\",\n      \"activity_name\": \"Add Secure IMAP/SMTP Support to Mail Source (U5)\",\n      \"activity_description\": \"Extend the mail source module configuration XML schema (or bean definition parser) to accept a `java-mail-properties` attribute. Update the module's runtime logic to retrieve the referenced `Properties` bean and merge it with the adapter's configuration. Test with sample SSL properties for both IMAP and SMTP protocols.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-06\",\n      \"activity_name\": \"Default Custom Module Registry to HDFS (U6)\",\n      \"activity_description\": \"Modify the module deployment logic to use HDFS as the default storage location. Update the `xd-shell` 'module upload' command and the corresponding REST API handler to write module JARs to a designated HDFS directory. Update the container deployment process to fetch modules from HDFS. Remove the `custom-modules.zip` artifact from the build scripts and YARN distribution configuration.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-07\",\n      \"activity_name\": \"Implement Shell Auto-Configuration (U7)\",\n      \"activity_description\": \"Implement an initialization hook in `xd-shell` that looks for a configuration file (e.g., `/etc/springxd/conf/xd-shell.init`) at startup. If found, the shell will automatically parse and execute the commands in the file before presenting the user prompt. This reuses the existing `script` command execution engine. Add unit tests for the file detection and parsing logic.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"ACT-08\",\n      \"activity_name\": \"Implement Graceful Stream Shutdown (U8)\",\n      \"activity_description\": \"Modify the stream undeployment logic to implement a drain phase. Before destroying a stream's components: 1) Send a stop signal to the stream's source. 2) Allow a configurable timeout (default e.g., 30 seconds) for in-flight messages in the stream's internal channels and any associated message channels to be processed and delivered to the sink. 3) Log the drain progress and completion/timeout. Write integration tests that verify a message sent just before undeployment is fully processed.\",\n      \"most_likely_effort\": 32\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 200\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "好的，用户提供了一个相当复杂的软件规格说明，包含了8个用户故事，看起来是Spring XD项目的一些增强和修复任务。我需要以开发者的身份来估算这些任务的工作量。\n\n首先，我需要理解每个用户故事的具体内容。U1是关于把gpfdist模块从spring-xd-module移到核心部分，这是一个迁移任务。U2是关于模块注册表集中到GitHub仓库。U3是性能基准测试。U4是改进Flo解析器端点的错误报告。U5是关于邮件源支持安全IMAP/SMTP。U6是关于HDFS作为自定义模块注册表的默认位置。U7是关于shell的自动配置。U8是关于优雅关闭流的功能。\n\n我需要把这些故事分解成具体的开发活动。对于U1，虽然移动代码是主要的，但可能还需要调整包结构、更新依赖、编写单元测试来确保功能正常。U2涉及到开发一个基于Git的模块注册表，需要设计REST API、实现Git操作、处理并发、进行测试。\n\nU3是基准测试，需要设计测试场景、搭建测试环境、运行测试并分析结果。U4是改进错误报告，可能需要分析现有问题、设计更好的错误处理策略、实现并测试。\n\nU5是添加安全邮件支持，需要集成JavaMail的安全特性、更新配置、进行测试。U6是修改HDFS支持，需要更新模块上传机制、调整YARN分布配置、测试。\n\nU7是shell自动配置，需要设计配置发现机制、实现自动加载、处理不同环境。U8是优雅关闭，需要设计流停止策略、实现消息完成机制、测试确保消息不丢失。\n\n考虑到这些活动，我需要做出一些技术和设计决策。比如对于U2，选择使用JGit库来操作GitHub仓库。对于U5，依赖Spring Integration的现有邮件支持。对于U6，设计基于HDFS的REST端点。\n\n还需要做一些假设。比如假设有现有的代码库和架构可以复用，团队熟悉这些技术，测试环境已经部分可用，不需要从零搭建。\n\n现在来估算每个活动的工作量。迁移gpfdist模块需要24小时，包括代码移动、包结构调整和测试。Git注册表开发需要40小时，涵盖REST API、Git操作和测试。基准测试需要16小时，包括环境搭建和分析。错误报告改进需要20小时。安全邮件支持需要24小时。HDFS注册表开发需要24小时。Shell自动配置需要20小时。优雅关闭功能需要32小时。\n\n把这些加起来，总工作量是200小时。这个估算看起来合理，覆盖了所有主要活动，也考虑到了测试和集成。\n\n我需要确保输出是符合指定JSON格式的，包括技术决策、假设、活动列表和总估算。每个活动都要有ID、名称、描述和工作量估算。技术决策和假设要清晰列出，这样用户就能理解我的估算基础。",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "好的，用户提供了一个相当复杂的软件规格说明，包含了8个用户故事，看起来是Spring XD项目的一些增强和修复任务。我需要以开发者的身份来估算这些任务的工作量。\n\n首先，我需要理解每个用户故事的具体内容。U1是关于把gpfdist模块从spring-xd-module移到核心部分，这是一个迁移任务。U2是关于模块注册表集中到GitHub仓库。U3是性能基准测试。U4是改进Flo解析器端点的错误报告。U5是关于邮件源支持安全IMAP/SMTP。U6是关于HDFS作为自定义模块注册表的默认位置。U7是关于shell的自动配置。U8是关于优雅关闭流的功能。\n\n我需要把这些故事分解成具体的开发活动。对于U1，虽然移动代码是主要的，但可能还需要调整包结构、更新依赖、编写单元测试来确保功能正常。U2涉及到开发一个基于Git的模块注册表，需要设计REST API、实现Git操作、处理并发、进行测试。\n\nU3是基准测试，需要设计测试场景、搭建测试环境、运行测试并分析结果。U4是改进错误报告，可能需要分析现有问题、设计更好的错误处理策略、实现并测试。\n\nU5是添加安全邮件支持，需要集成JavaMail的安全特性、更新配置、进行测试。U6是修改HDFS支持，需要更新模块上传机制、调整YARN分布配置、测试。\n\nU7是shell自动配置，需要设计配置发现机制、实现自动加载、处理不同环境。U8是优雅关闭，需要设计流停止策略、实现消息完成机制、测试确保消息不丢失。\n\n考虑到这些活动，我需要做出一些技术和设计决策。比如对于U2，选择使用JGit库来操作GitHub仓库。对于U5，依赖Spring Integration的现有邮件支持。对于U6，设计基于HDFS的REST端点。\n\n还需要做一些假设。比如假设有现有的代码库和架构可以复用，团队熟悉这些技术，测试环境已经部分可用，不需要从零搭建。\n\n现在来估算每个活动的工作量。迁移gpfdist模块需要24小时，包括代码移动、包结构调整和测试。Git注册表开发需要40小时，涵盖REST API、Git操作和测试。基准测试需要16小时，包括环境搭建和分析。错误报告改进需要20小时。安全邮件支持需要24小时。HDFS注册表开发需要24小时。Shell自动配置需要20小时。优雅关闭功能需要32小时。\n\n把这些加起来，总工作量是200小时。这个估算看起来合理，覆盖了所有主要活动，也考虑到了测试和集成。\n\n我需要确保输出是符合指定JSON格式的，包括技术决策、假设、活动列表和总估算。每个活动都要有ID、名称、描述和工作量估算。技术决策和假设要清晰列出，这样用户就能理解我的估算基础。",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1978,
+      "completion_tokens": 2507,
+      "total_tokens": 4485,
+      "cost": 0.0009086336,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0009086336,
+        "upstream_inference_prompt_cost": 0.0002066736,
+        "upstream_inference_completions_cost": 0.00070196
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"For U1 (gpfdist sink): Refactor existing Spring XD module code (from gpfdist repository) into the core Spring XD module structure. Integrate with the project-reactor based data pipeline architecture. Maintain compatibility with existing GPDB/HAWQ writing capabilities.\",\n    \"For U2 (Centralized Module Registry): Implement a new `ModuleRegistry` implementation that uses Git (specifically GitHub) as the backend storage. Use JGit library for Git operations. The REST API for module upload/deploy will interact with this new registry.\",\n    \"For U3 (Rabbit benchmark): Design a benchmark suite using JMeter or a similar tool. The benchmark will simulate increasing load by adding more simulated xd-container nodes (threads) publishing messages to a RabbitMQ instance hosted on Rackspace infrastructure.\",\n    \"For U4 (Flo parser error reporting): Enhance the existing Flo parser endpoint logic to capture, structure, and propagate more detailed error information (e.g., specific syntax errors, line numbers) back to the client in a standardized format (likely JSON).\",\n    \"For U5 (Secure Mail source): Extend the existing `mail` source module configuration to support a new property (`java-mail-properties`) that accepts a reference to a Spring `java.util.Properties` bean. This bean will contain the standard JavaMail SSL/TLS properties (e.g., `mail.imaps.ssl.enable`). Leverage Spring Integration's existing `MailReceivingChannelAdapter` and its property-passing mechanisms.\",\n    \"For U6 (HDFS as default module registry): Modify the module upload process (both via `xd-shell` and REST API) to target HDFS as the storage location for custom module JARs. Update the deployment logic to fetch modules from HDFS. Remove the `custom-modules.zip` packaging step from the YARN distribution build process.\",\n    \"For U7 (Shell auto-configuration): Implement a startup initialization mechanism for `xd-shell`. This will involve: 1) Checking for a well-known configuration file location (e.g., `/etc/springxd/conf/xd-shell.init`). 2) Parsing and executing the commands within that file (e.g., `server config ...`, `hadoop config ...`) automatically upon shell launch, before presenting the user prompt.\",\n    \"For U8 (Graceful stream shutdown): Modify the stream undeployment process to implement a 'drain' phase. This involves: 1) Sending a signal to the stream's source to stop accepting new messages. 2) Allowing in-flight messages already in the pipeline (channels, queues) to be fully processed and delivered to the sink. 3) Implementing a configurable timeout to prevent indefinite waiting. 4) Only after the drain completes (or times out) will the stream's components be destroyed.\"\n  ],\n  \"assumptions\": [\n    \"The development team has prior experience with the Spring XD codebase, Spring Integration, and the respective technologies mentioned (Project Reactor, JGit, JavaMail, RabbitMQ, HDFS, YARN).\",\n    \"The existing code for the gpfdist module (in the spring-xd-modules repository) is available and its functionality is well-understood.\",\n    \"A working development and integration testing environment is available, including access to a Hadoop cluster (HDFS/YARN), a RabbitMQ instance, and a sample GPDB/HAWQ database for U1 and U3.\",\n    \"Existing unit and integration tests for the affected modules (e.g., mail source, Flo parser, module deployment) exist and can be extended.\",\n    \"The scope is limited to the implementation of the features described in the user stories. This includes necessary refactoring, configuration changes, and writing of unit/integration tests. It excludes extensive performance tuning beyond the baseline measurement for U3.\",\n    \"For U7, the auto-configuration file format will be the same as the manual script file format, and the shell's existing `script` command parser will be reused.\",\n    \"For U8, the 'graceful shutdown' is scoped to the stream's data flow (messages in channels/queues). It does not include transaction management or guaranteed delivery across external systems that are already unreachable.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"ACT-01\",\n      \"activity_name\": \"Refactor and Integrate gpfdist Sink (U1)\",\n      \"activity_description\": \"Move gpfdist sink code from the spring-xd-modules repository into the core Spring XD module structure. Refactor it to use the project-reactor based pipeline. Adjust package names, update internal references, and ensure it compiles and passes unit tests within the core project.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-02\",\n      \"activity_name\": \"Implement Git-backed Module Registry (U2)\",\n      \"activity_description\": \"Develop a new `ModuleRegistry` interface implementation that uses JGit to interact with a GitHub repository. Implement methods for deploying modules (committing and pushing JAR files), retrieving modules, and listing modules. Integrate this new registry into the module upload REST endpoint and the deployment service. Write unit and integration tests.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"ACT-03\",\n      \"activity_name\": \"Design and Execute RabbitMQ Benchmark (U3)\",\n      \"activity_description\": \"Design a benchmark test plan to measure throughput and latency as simulated xd-container nodes are added. Set up a script/tool (e.g., JMeter) to publish messages to a RabbitMQ instance on Rackspace. Execute the benchmark for varying node counts, collect metrics (throughput, latency percentiles, CPU/memory usage on the RabbitMQ server), and produce a summary report.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"ACT-04\",\n      \"activity_name\": \"Enhance Flo Parser Error Reporting (U4)\",\n      \"activity_description\": \"Modify the Flo parser endpoint(s) to catch parsing exceptions in a more granular way. Implement logic to extract detailed error information (line number, column, expected token, actual token) from the parser's exception hierarchy. Structure this information into a standard error response object (JSON) and ensure it is returned to the client. Update or add tests for the new error paths.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"ACT-05\",\n      \"activity_name\": \"Add Secure IMAP/SMTP Support to Mail Source (U5)\",\n      \"activity_description\": \"Extend the mail source module configuration XML schema (or bean definition parser) to accept a `java-mail-properties` attribute. Update the module's runtime logic to retrieve the referenced `Properties` bean and merge it with the adapter's configuration. Test with sample SSL properties for both IMAP and SMTP protocols.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-06\",\n      \"activity_name\": \"Default Custom Module Registry to HDFS (U6)\",\n      \"activity_description\": \"Modify the module deployment logic to use HDFS as the default storage location. Update the `xd-shell` 'module upload' command and the corresponding REST API handler to write module JARs to a designated HDFS directory. Update the container deployment process to fetch modules from HDFS. Remove the `custom-modules.zip` artifact from the build scripts and YARN distribution configuration.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"ACT-07\",\n      \"activity_name\": \"Implement Shell Auto-Configuration (U7)\",\n      \"activity_description\": \"Implement an initialization hook in `xd-shell` that looks for a configuration file (e.g., `/etc/springxd/conf/xd-shell.init`) at startup. If found, the shell will automatically parse and execute the commands in the file before presenting the user prompt. This reuses the existing `script` command execution engine. Add unit tests for the file detection and parsing logic.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"ACT-08\",\n      \"activity_name\": \"Implement Graceful Stream Shutdown (U8)\",\n      \"activity_description\": \"Modify the stream undeployment logic to implement a drain phase. Before destroying a stream's components: 1) Send a stop signal to the stream's source. 2) Allow a configurable timeout (default e.g., 30 seconds) for in-flight messages in the stream's internal channels and any associated message channels to be processed and delivered to the sink. 3) Log the drain progress and completion/timeout. Write integration tests that verify a message sent just before undeployment is fully processed.\",\n      \"most_likely_effort\": 32\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 200\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1978,
+    "completion_tokens": 2507,
+    "total_tokens": 4485,
+    "cost": 0.0009086336,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0009086336,
+      "upstream_inference_prompt_cost": 0.0002066736,
+      "upstream_inference_completions_cost": 0.00070196
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "xiaomi/mimo-v2.5",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "For U1 (gpfdist sink): Refactor existing Spring XD module code (from gpfdist repository) into the core Spring XD module structure. Integrate with the project-reactor based data pipeline architecture. Maintain compatibility with existing GPDB/HAWQ writing capabilities.",
+      "For U2 (Centralized Module Registry): Implement a new `ModuleRegistry` implementation that uses Git (specifically GitHub) as the backend storage. Use JGit library for Git operations. The REST API for module upload/deploy will interact with this new registry.",
+      "For U3 (Rabbit benchmark): Design a benchmark suite using JMeter or a similar tool. The benchmark will simulate increasing load by adding more simulated xd-container nodes (threads) publishing messages to a RabbitMQ instance hosted on Rackspace infrastructure.",
+      "For U4 (Flo parser error reporting): Enhance the existing Flo parser endpoint logic to capture, structure, and propagate more detailed error information (e.g., specific syntax errors, line numbers) back to the client in a standardized format (likely JSON).",
+      "For U5 (Secure Mail source): Extend the existing `mail` source module configuration to support a new property (`java-mail-properties`) that accepts a reference to a Spring `java.util.Properties` bean. This bean will contain the standard JavaMail SSL/TLS properties (e.g., `mail.imaps.ssl.enable`). Leverage Spring Integration's existing `MailReceivingChannelAdapter` and its property-passing mechanisms.",
+      "For U6 (HDFS as default module registry): Modify the module upload process (both via `xd-shell` and REST API) to target HDFS as the storage location for custom module JARs. Update the deployment logic to fetch modules from HDFS. Remove the `custom-modules.zip` packaging step from the YARN distribution build process.",
+      "For U7 (Shell auto-configuration): Implement a startup initialization mechanism for `xd-shell`. This will involve: 1) Checking for a well-known configuration file location (e.g., `/etc/springxd/conf/xd-shell.init`). 2) Parsing and executing the commands within that file (e.g., `server config ...`, `hadoop config ...`) automatically upon shell launch, before presenting the user prompt.",
+      "For U8 (Graceful stream shutdown): Modify the stream undeployment process to implement a 'drain' phase. This involves: 1) Sending a signal to the stream's source to stop accepting new messages. 2) Allowing in-flight messages already in the pipeline (channels, queues) to be fully processed and delivered to the sink. 3) Implementing a configurable timeout to prevent indefinite waiting. 4) Only after the drain completes (or times out) will the stream's components be destroyed."
+    ],
+    "assumptions": [
+      "The development team has prior experience with the Spring XD codebase, Spring Integration, and the respective technologies mentioned (Project Reactor, JGit, JavaMail, RabbitMQ, HDFS, YARN).",
+      "The existing code for the gpfdist module (in the spring-xd-modules repository) is available and its functionality is well-understood.",
+      "A working development and integration testing environment is available, including access to a Hadoop cluster (HDFS/YARN), a RabbitMQ instance, and a sample GPDB/HAWQ database for U1 and U3.",
+      "Existing unit and integration tests for the affected modules (e.g., mail source, Flo parser, module deployment) exist and can be extended.",
+      "The scope is limited to the implementation of the features described in the user stories. This includes necessary refactoring, configuration changes, and writing of unit/integration tests. It excludes extensive performance tuning beyond the baseline measurement for U3.",
+      "For U7, the auto-configuration file format will be the same as the manual script file format, and the shell's existing `script` command parser will be reused.",
+      "For U8, the 'graceful shutdown' is scoped to the stream's data flow (messages in channels/queues). It does not include transaction management or guaranteed delivery across external systems that are already unreachable."
+    ],
+    "activities": [
+      {
+        "activity_id": "ACT-01",
+        "activity_name": "Refactor and Integrate gpfdist Sink (U1)",
+        "activity_description": "Move gpfdist sink code from the spring-xd-modules repository into the core Spring XD module structure. Refactor it to use the project-reactor based pipeline. Adjust package names, update internal references, and ensure it compiles and passes unit tests within the core project.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "ACT-02",
+        "activity_name": "Implement Git-backed Module Registry (U2)",
+        "activity_description": "Develop a new `ModuleRegistry` interface implementation that uses JGit to interact with a GitHub repository. Implement methods for deploying modules (committing and pushing JAR files), retrieving modules, and listing modules. Integrate this new registry into the module upload REST endpoint and the deployment service. Write unit and integration tests.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "ACT-03",
+        "activity_name": "Design and Execute RabbitMQ Benchmark (U3)",
+        "activity_description": "Design a benchmark test plan to measure throughput and latency as simulated xd-container nodes are added. Set up a script/tool (e.g., JMeter) to publish messages to a RabbitMQ instance on Rackspace. Execute the benchmark for varying node counts, collect metrics (throughput, latency percentiles, CPU/memory usage on the RabbitMQ server), and produce a summary report.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "ACT-04",
+        "activity_name": "Enhance Flo Parser Error Reporting (U4)",
+        "activity_description": "Modify the Flo parser endpoint(s) to catch parsing exceptions in a more granular way. Implement logic to extract detailed error information (line number, column, expected token, actual token) from the parser's exception hierarchy. Structure this information into a standard error response object (JSON) and ensure it is returned to the client. Update or add tests for the new error paths.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "ACT-05",
+        "activity_name": "Add Secure IMAP/SMTP Support to Mail Source (U5)",
+        "activity_description": "Extend the mail source module configuration XML schema (or bean definition parser) to accept a `java-mail-properties` attribute. Update the module's runtime logic to retrieve the referenced `Properties` bean and merge it with the adapter's configuration. Test with sample SSL properties for both IMAP and SMTP protocols.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "ACT-06",
+        "activity_name": "Default Custom Module Registry to HDFS (U6)",
+        "activity_description": "Modify the module deployment logic to use HDFS as the default storage location. Update the `xd-shell` 'module upload' command and the corresponding REST API handler to write module JARs to a designated HDFS directory. Update the container deployment process to fetch modules from HDFS. Remove the `custom-modules.zip` artifact from the build scripts and YARN distribution configuration.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "ACT-07",
+        "activity_name": "Implement Shell Auto-Configuration (U7)",
+        "activity_description": "Implement an initialization hook in `xd-shell` that looks for a configuration file (e.g., `/etc/springxd/conf/xd-shell.init`) at startup. If found, the shell will automatically parse and execute the commands in the file before presenting the user prompt. This reuses the existing `script` command execution engine. Add unit tests for the file detection and parsing logic.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "ACT-08",
+        "activity_name": "Implement Graceful Stream Shutdown (U8)",
+        "activity_description": "Modify the stream undeployment logic to implement a drain phase. Before destroying a stream's components: 1) Send a stop signal to the stream's source. 2) Allow a configurable timeout (default e.g., 30 seconds) for in-flight messages in the stream's internal channels and any associated message channels to be processed and delivered to the sink. 3) Log the drain progress and completion/timeout. Write integration tests that verify a message sent just before undeployment is fully processed.",
+        "most_likely_effort": 32
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 200
+    }
+  }
+}

@@ -1,0 +1,268 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "hyperledger-014",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788409528-FJvnI7DoSsKr3OBj9pAc",
+    "object": "chat.completion",
+    "created": 1788409528,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the library changes in Go using the existing fabric-config object model and protobuf ConfigGroup, ConfigValue, and ConfigPolicy representations.\",\n    \"Preserve the existing GetConfiguration/SetConfiguration and GetMSP/SetMSP APIs while adding focused mutator methods that update only the requested field.\",\n    \"Represent removal of legacy OrdererAddresses and KafkaBrokers as explicit removal methods; do not expose general setters for those legacy top-level values.\",\n    \"Add consortium creation as a group-level operation and allow creation without organizations, while ensuring examples add organizations afterward.\",\n    \"Generate ConfigUpdateEnvelope values without signatures when requested, leaving signing and submission to peer or orderer command workflows.\",\n    \"Implement consenter removal using an exact match on host, port, client TLS certificate, and server TLS certificate.\",\n    \"Use existing Fabric validation and protobuf marshaling behavior wherever possible, adding certificate and field validation only where required by the API contract.\",\n    \"Implement orderer and MSP focused setters by cloning or preserving existing nested configuration values so unrelated fields remain unchanged.\",\n    \"Implement the bulk CLI as a JSON-driven batch processor with ordered, stackable operations applied independently to each selected channel.\",\n    \"Use Fabric connection profile data to locate peers and orderers, fetch channel configuration through Fabric discovery or the applicable client APIs, and submit signed config updates through the orderer.\",\n    \"Make dry-run mode calculate and print the resulting update without signing submission or changing the network.\",\n    \"Return explicit validation errors for unsupported operations, malformed JSON, missing identities, invalid channel selections, and incompatible operation values.\"\n  ],\n  \"assumptions\": [\n    \"The implementation extends an existing Hyperledger Fabric fabric-config Go repository with established build, protobuf, and test infrastructure.\",\n    \"The target Fabric APIs and protobuf definitions are compatible with the Fabric 2.x-era requirements described in the specification; migration support for arbitrary future Fabric versions is out of scope.\",\n    \"The CLI is implemented in the same Go module or repository and may reuse existing configtx, Fabric SDK, discovery, signing, and transaction-submission utilities where available.\",\n    \"Connection profiles contain sufficient peer and orderer endpoints, TLS material, and organization information for configuration retrieval and transaction submission.\",\n    \"Signing identities are supplied as local private-key and certificate material in the specified JSON format; secure external key stores and HSM integration are out of scope.\",\n    \"The CLI operates on already existing channels and does not create channels, enroll users, or bootstrap networks.\",\n    \"The requested operations are limited to the operations listed in U6: MSP replacement, consenter add/remove/update/replace, and anchor-peer add/remove/replace.\",\n    \"Configuration updates requiring multiple organizations are signed using the identities supplied by the caller; the tool does not automatically discover or obtain missing signatures.\",\n    \"Examples, unit tests, integration tests, CLI help text, and relevant API documentation are considered part of the increment.\",\n    \"Effort includes implementation, code-level debugging, tests, documentation, and local review, but excludes elapsed waiting time for external network operators or production deployment.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository analysis and increment design\",\n      \"activity_description\": \"Inspect the existing configtx object model, update-generation flow, protobuf mappings, examples, CLI structure, and test conventions; produce an implementation plan covering U1 through U8 and compatibility constraints.\",\n      \"most_likely_effort\": 36\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Consortium group API\",\n      \"activity_description\": \"Implement the function to add a consortium group, define behavior for an initially empty consortium, preserve existing consortium structures, and add focused unit tests.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Unsigned ConfigUpdateEnvelope generation\",\n      \"activity_description\": \"Add an update-generation path that returns a cb.ConfigUpdateEnvelope without requiring signing identities, while retaining the existing signed path and validating resulting envelope contents.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Legacy OrdererAddresses removal\",\n      \"activity_description\": \"Implement RemoveLegacyOrdererAddresses on the top-level channel group, prevent unsupported direct updates to the legacy field, update genesis/config construction behavior, and test migration and preservation cases.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"KafkaBrokers removal and migration support\",\n      \"activity_description\": \"Implement complete removal of KafkaBrokers, verify behavior for etcdraft and migrated configurations, and add or improve the Kafka-to-etcdraft migration example.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"EtcdRaft consenter mutation APIs\",\n      \"activity_description\": \"Implement add and remove consenter methods, including exact four-field matching for safe removal, duplicate and missing-entry handling, certificate validation, and unit tests.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Orderer focused setter APIs\",\n      \"activity_description\": \"Implement individual OrdererGroup setters for batch-size fields, batch timeout, max channels, consensus type, and consensus state while preserving unrelated values and existing APIs.\",\n      \"most_likely_effort\": 84\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"EtcdRaft metadata and consensus option setters\",\n      \"activity_description\": \"Implement focused updates for supported etcdraft metadata/options, including preservation of existing consenters and consensus-specific values; define and test interactions with consensus type and state.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Shared API validation and configuration helpers\",\n      \"activity_description\": \"Refactor or add shared helpers for nested ConfigGroup access, field-preserving updates, repeated-value matching, certificate validation, deletion semantics, and consistent error reporting.\",\n      \"most_likely_effort\": 36\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Organization MSP focused APIs\",\n      \"activity_description\": \"Implement OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup methods for root and intermediate certificates, admin certificates, CRLs, OU identifiers, crypto configuration, TLS certificates, individual OU identifiers, and node-OU enable/disable operations.\",\n      \"most_likely_effort\": 132\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"MSP API compatibility and edge-case tests\",\n      \"activity_description\": \"Test preservation of unrelated MSP fields, duplicate and missing certificate behavior, removal matching, malformed certificates, repeated operations, and compatibility with existing GetMSP/SetMSP behavior.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Library unit and regression test suite\",\n      \"activity_description\": \"Add or update broad tests for consortiums, unsigned envelopes, legacy-field removal, Kafka migration, consenters, orderer setters, MSP setters, protobuf serialization, and negative cases.\",\n      \"most_likely_effort\": 132\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Library examples and API documentation\",\n      \"activity_description\": \"Update examples to demonstrate adding a consortium followed by organizations, both focused and whole-configuration update styles, MSP mutations, and migration operations; update public API documentation and comments.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Bulk CLI architecture and input model\",\n      \"activity_description\": \"Define the CLI command and flags, parse batchUpdate, connection-profile, and signing-identity JSON files, validate schemas, model operation sequencing, and integrate command help and error handling.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"CLI Fabric connectivity and identity handling\",\n      \"activity_description\": \"Implement connection-profile loading, TLS setup, peer config retrieval, channel selection, signing identity loading, config-update envelope signing, and orderer transaction submission with actionable failures.\",\n      \"most_likely_effort\": 128\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"CLI configuration operation engine\",\n      \"activity_description\": \"Implement batch application of MSP replacement, consenter add/remove/update/replace, and anchor-peer add/remove/replace operations using the new library APIs, including operation ordering and per-channel processing.\",\n      \"most_likely_effort\": 136\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"CLI dry-run, unsupported-operation, and output behavior\",\n      \"activity_description\": \"Implement --dryrun output of calculated updates to stdout, ensure no submission occurs in dry-run mode, support redirected output, provide clear errors for unsupported operations, and handle stacked operations deterministically.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"CLI automated tests and fixtures\",\n      \"activity_description\": \"Create unit and integration-style tests for JSON parsing, validation, operation dispatch, dry-run behavior, identity handling, multi-channel processing, signing/submission boundaries, and representative Fabric configuration fixtures.\",\n      \"most_likely_effort\": 128\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"CLI examples, documentation, and usage packaging\",\n      \"activity_description\": \"Add sample batch updates, connection profiles, signing identities, migration and certificate-expiry scenarios, command examples, dry-run instructions, and documentation for supported operations and limitations.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"Build, compatibility, acceptance review, and final cleanup\",\n      \"activity_description\": \"Run formatting, static analysis, full unit and integration test suites, verify backward compatibility, review public API naming and errors, fix discovered defects, and perform final acceptance checks against U1 through U8.\",\n      \"most_likely_effort\": 32\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 1372\n  }\n}",
+          "refusal": null,
+          "reasoning": "**Estimating project scope**\n\nI'm focusing on crafting a JSON format for a significant project scope estimation. This involves breaking down the work into WBS activities, summing them accurately, and considering just one developer. Including all phases like analysis, design, implementation, testing, and documentation, I anticipate roughly 1000+ work hours. It’s crucial to be reasonable and granular about the activities without mentioning specific calendars. I’m aiming to formulate an estimate of around 1350 hours.**Breaking down activities**\n\nI'm listing activities and their estimated hours for a project. Here's a quick rundown: repo reconnaissance/design, consortium work, and several tasks related to legacy systems, Kafka, and various CLI functionalities. The total estimates for these activities sum up to around 1144 hours. I wonder if that's adequate for the project's complexity. It seems like a more realistic estimate might be around 1300 hours when I factor in additional items like proto/API compatibility. Overall, I need to ensure the workload is clear and manageable.**Considering project requirements**\n\nI need to include certificate validation and make some technical decisions regarding arrays and strings. It's important to specify the scope, considering the Fabric version, Go, and any existing CLI. The specification mentions possibly using the configtx tool, so I might extend the existing Go repository while utilizing protobuf for configuration structures. I wonder if the CLI submits requests via SDK or gRPC, and if I need to consider identity signing for security. I must ensure the output JSON is valid and includes all required fields, tallying everything carefully.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.summary",
+              "summary": "**Estimating project scope**\n\nI'm focusing on crafting a JSON format for a significant project scope estimation. This involves breaking down the work into WBS activities, summing them accurately, and considering just one developer. Including all phases like analysis, design, implementation, testing, and documentation, I anticipate roughly 1000+ work hours. It’s crucial to be reasonable and granular about the activities without mentioning specific calendars. I’m aiming to formulate an estimate of around 1350 hours.**Breaking down activities**\n\nI'm listing activities and their estimated hours for a project. Here's a quick rundown: repo reconnaissance/design, consortium work, and several tasks related to legacy systems, Kafka, and various CLI functionalities. The total estimates for these activities sum up to around 1144 hours. I wonder if that's adequate for the project's complexity. It seems like a more realistic estimate might be around 1300 hours when I factor in additional items like proto/API compatibility. Overall, I need to ensure the workload is clear and manageable.**Considering project requirements**\n\nI need to include certificate validation and make some technical decisions regarding arrays and strings. It's important to specify the scope, considering the Fabric version, Go, and any existing CLI. The specification mentions possibly using the configtx tool, so I might extend the existing Go repository while utilizing protobuf for configuration structures. I wonder if the CLI submits requests via SDK or gRPC, and if I need to consider identity signing for security. I must ensure the output JSON is valid and includes all required fields, tallying everything carefully.",
+              "format": "openai-responses-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmPbDQHN7a-FA0iMSd8rEcpgDMmbUVKfEbQkXfsdlTgGDNHOHyTkcyz2HZWimu8aZB0tQmWNlXe5iOVvsPkSMvvRPZc0KVcoQHE2BEuouyuLA7NNL-sZP9xrA9shzvxDNu2NJkI6UWs_3fZWjx1zmcBocNpjmc3ZNA7aIpFxL9EmM-Yhq4yQp37S35zwlzgF_oBFlYljLggAG9zknQJK4DMuMvC7wr4oAmwpGg9X1hd8DQbAZZPhpOXLt1qc8z6emSftEJIqh1WjGA7oY0n7xUZAmDzOP5wTdXT-1P88vDd2lkVZFjcIrcv3H8NhVmD6RHZHj61iQs0WaZN8NZKMpuBtX5ids9DTsiO4JCU3A_PeVanYE-laGnQNgZme2srg7AnWWDQdb7KMgBzugZDgT3siki2Ou4vFcm7oBMC-z1hdyxH8JpbtQnBcO3VW0cXMuImAZInmnH3pdaPHZs3tfmpSOn6Fu6dLxnLGubothn3jFA2I0GGMUui8TOw-MlczNRe1-c3By1fW_UlGpRc3o0ajSWMbmUFF4euEjgtUQP-KC8THljE3VMdJ6MWBQAyXYrH1O8GaxqLGXSenH3RYddDT98xhEE7iR9tzs0Zr1R4KUGUeQHw5gMoNGEKJSm-2eoDAo3rIiNvhKyIWoKyU1fKTCGHX9OUgXoVJOpzRcjDlaT0tplc95KBB5_pHXwKEYzmaStxVjjC5Kg6Yb8bufHR7ybS8rqdT06BRLbxM2CJJmzy-Y8gG8hiQXP8pt-NGifLIyimaZsVXt7lG5GgnhEWJbddImFOhVpHtKzy20-Fr_cFLBxT_GmrWCVvDKiVLT2ORNVINA4axs4YvsEjiqLrwIYYSGFdQUh_xYSQ5PRBKV_rcKhKEIEMbmhkEs7lUY7Kpr0KWxZzh153u8Cy9lLOsi-AK5xGE9Qj8-CYbgwOCMRIp7a7di70uMzGEkffEiBcRxm7l1zhkIGhG8AUcNr8I3muhooWDdPjeTt1qnE2Fiv1RX-aQIvgfo19DFOUi--seFVVcxnBji42alvgmT4al5w47uefYrMZ3s9XPq5kvKgtTb4JbZJszOgAn8D15T2xHgoFVJkxntRFWrIqEhbK88O9uGgEwnqBB1wxFNETYBzvaDVouSJ8erhGYe8Gg0N8az8nPSIz8XiLgTmng98hUfvDY45ABmYy1Ko60xC2lY2pRYHX-okxn4uZYmgXC13ws6AOFcjFpEiXEAXTiMbuFzjYVtfqiYyL3bf8KK21Lbee7f0CPEQU5U2U36nrx0zN0XEIUwk3fU2D6U92_wrYv6MoL5LnGOraDQiO5G10eib-Y84rs1X-EmyP8ZRRfztc-ZGye65m5Crbd8IOr-mDp6UZKpQWbnu9lJm9jYCKa1b8Q-bmfzIgBIr_FXe3Z7Zn38ms-_ItXA5kxbWoAzwVWxI45J2GYcYzDokC4QFs6cElZVwzHpykawWfceoUv1CWRIhp0zel-fHQwz0-nkc0RuwYiTPRwGXH9xooWakuzHY6z4v76WXWn4hwJSNKciiVpYMOKgRv3ovu3yr5mvkVHg15rk9d5VkgfMcjXcakJ6YHZ_AW-7w9zIP2sKsq_hrPFkRIH90PL2Gd0m1s9pSyVXDnMupETtJxa2Xchyq3hOah3ML_hNFOiB2a9flwFt7_u6xbnE5lI6stQzXCqS2Y-B4LrsoeiG0Hxtp6AGT8UkohtwVgSl0opHTtyuOTot0KY14tYLZ6utzkIZynwJAEvcYI7f6xNaaI3-eY0JYfMawnXdNqbT92m34UkBr61W1xBu0X7xUzqSzEyEcKG6GIcNeIag_tGiQK4e8FMwcBVhHQJ1A6GomOVrrLnUyXOKrdc74FDL7s_rVuZzRf8ot17OOBhkimuTqedgxbov78084medB5dH0zD8SO6pA3-filw0ecnU63ph1HXhp1dqlW89w8HBNFpDoL4Y9HpSo_SXNAYT5D7h2hFsCejkHoDSIUFbdXlgvoEcEqxs9xWHXrOMw4gR2RxcPaDhOMfLCZ1WVMxeV1td4eUjVYecCzOQdGZ7ChCSiiPsL32dXPC5IUFva4X9EzZEc_8l04on15MomzX-2FMi0yxVa8M3feQkayBy6mSw-trAW6xyBTk62LmzZVpVQkUG6tj2AwqcYzbTR08tXxMVz7ZaDnytU75rS1Yxoyvv0EFuJqDItl0_qQ2PXN_bZN-GManp6HNs_sUWoj9d-2djzKapmVj5Df0mBBWokeuaF8gdQ4Xl-fkcQ8aPmpL-mogNJl3frOv6KRLfTfnF6HmlHn_KpFYxbSKeR_GTZ1QNJne7uJJFwzOzuFtRNzPAMNKQcdkSYoB1IGqflp0pRInsACuwmUY75h_dP15Fj7sGII5xwhfsUv4WIcZsVflMPgkx-0-qcKDuPejILN25YnyvaDX_YaBqS1ifXoJAsIC-djsEcKnye2P1Hb3eHscMVJawK0vz6wOHyuY-pW9LaSw5sGR68iusYOS9IjLm1xyDiulu--vLjqJd2xLXT-D7PgBBYuKwf5PHeU_td5VJCuq-HM4rXW8G2qJ_p1xlcIXGZjtAR0XfUaz4fxz4eluUaelKW34rm1gT2tmcpG8jfNHBFeOr9TPcLMrbg2WQuaP4GTA1uQPSu3X0wNhn0_YePDFzZyJ-I-hsB42yhT1D_VLuK8gnbKf9RQuIN_1eFDcshF8sJ8WlL68lMiXuJTXPFpg1gSljOFYsA4RtMxkQcyRiHaWzzS6YqIJ8m7NEGaOg02TKItO5C6eoFPGWvm9WdIDd1h4AdVTxmZ-SN3sUvbFyn0li2buF3kITT2lgB66b3JoDa4BReWR79ZindpdrV5VxDX0F1pZXaPKo--T9DGKpSlZut2Qg0iY3s1PH-bV0vUVjCPBPgVXHhpRWDcLLGnR63hqdEEVxPTTHKUgamDIozMvcvvTc1cXpa1GH4o_BwPP1yHXz9D-MX6cX5JXVDRkjltMH1ofZRJpfFqGbdBL2iMm4SnJE18SJfNDmzBJFg2HMIsmW6dfHMYON9e1pKhgqOUCN2pw3sdWIei7bKqh1sOPiXb_3flX-hN_lAVBBebwbQyklv_6K0OAHLMESc0u3ZkRaDa0MYWqcxPKeIqBXfi6EaG3IU-V9WbkkqYqlDSpQNTvo2tn0s7dduQVRBmRYfOUoTivyJbrhiMlQAP5ag2loDqvYrTQFXFt6Zi8WiPo7ceMWL2mBVm2qaCbyy2IobfdST5uEJYfjdKWC0u7swwbQHMQuhW-VRyJcXHwnoYbsQQqYlg3Cpy0xV3F1h32SPVbpJflLA0WiEoDDwlMa_FAseLnqFLhFhB1f2pSC_wnSFBmK45pPcAb4a5Wh9bcf-Tvu4qwBtp7XXs2lfaF_n9k6YhpkoTv2Zf0OtCFUoTC0fhT-ORL9vJPFHGEf5YSb-RxrPyQOhyYoxtRRwf57YCxbePmzMx9Q2idWBiCZYUFJqitp6xgEH_enZBsSNFZY8_U_2X93tEFsPkUIcaWjpWkvdym9mB3rjpxsvXeME61WqqOI9dLLFAUaL8GXbt5Pfxi5rZQ8r4UeX-9JCjjA9Z26HtIHFt1e_C7VpX3tmZ9HB639DUl6NNB2vCzGX2MmCR7VhUcEC_lnEWtOQx9pFx49uEUO9qrg32-mgYCgNX11VmzrsAIIvT728ivfbfy4NRUDPktu5VMQ7RBQnb9a-dmnkCSMMYQBAIw_8npldUSncGfeUZmwbbP8TBFSPLqvmzb6O7yFGB5wpbzx8lf7Hktt7kss04UnG5RkQB9c10tO87diff_nUHbRNgUkaj5V4EUfVcW37sjvxZYr6slb_F-VzFuwg0BdpiJzW7qzUZt0t-F6ATYvat_3yWCkz6WDjR-J-E-DW3Rocsj8YOiBv1DkPwBx9tiQEfb7axeJNVo2rTbfaNMJD4z-hcrb-kD9U5PLNOJq3FIMjaY4LGSpmpD5qEgs3798OpmC0goPOUquVxA_ZAYdcCzW7w==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_0475afaf036718f9016a98f6b916b487d1a289c384a9828ed1",
+              "index": 1
+            },
+            {
+              "type": "reasoning.summary",
+              "summary": "**Clarifying development effort**\n\nI’m working with different numbers and their calculations. I need to ensure I provide enough activity descriptions and consider separating the tests into sections like U1-U6. The CLI operation implementation at 136 seems to cover everything I need, and integration is at 128. \n\nAlso, “total software development effort” should include testing documentation, and maybe I should mention code review too. I’ll make sure to keep everything in valid JSON format!",
+              "format": "openai-responses-v1",
+              "index": 2
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmPbEgLksYw78S3eE1QwjwYOnmsmVnU7a-s73_-etUhVEeo4c4Juq5N8JRQJCX_TVDsynbPY77MsV9_vd3uzMhfuyBZydIOWEUKfMt_f63u-b-xVtiR1QRSLoESiLXpSSJwrrsDGFXFBWsUolNHYhHUihH2bW79eLL5doT_8RDIAgz-WXXSau_1YrwODzewzkU0ovohg892pD8sL0AwUF3lAIKxuqAUqXwqsUdjw4Oc3K5YQrFXG2u22khNLY9VTCHyFDNlBWxC7FoHsmb181Ow_WvU8_lGXLj907XtBddPnRFAYhzsjsMg7wn9aD9R6wS1Gm_bZYkK6396EA_ONI87nDVQSqhjOHjIucv_KxJAPeZ7fL6fH7DL8Xw41UKNtsWmVjzIlRk3m1nvt8JNCUaUcTrhGM96sApRYJGrIuoPWZsjK_-lCC3vssgtqhCjsr6A7VIjtvDbp1RIJr7Qmbpg5QQfAeKUX1z97m5kG6u0ODYnjNBIi46d5ox7HJbwiFDoF_sxDDjJSNOtdrGbKyoxfvAp_pJe7N9B_Mua5ZayMhZi6HgyR2-xNIF-esW-mbpIaEbK1q4-8sjDn2IPSSMYvxm9ZWuEajdK-Lil0jK5bPw8TWe5pfXeVSNJy7JxZcjGp5e5bfCHq9QgYvFX7t7Emb1Tn1xkYmzWgaZae1gIgiAhdYegtIwI-Fr66kZM6MwXxeqUYzxbyZ8bl-ZVY0p8tVYEqUKP9tBjedux2kEx9S-dySGtdZ81b0X6IFV9MUjxG95QaYQQ6XrWlU3jDUKVtLvN361aqRiOsQxRl2XZ28YuUesSXE3WAP7ITXjBlxro_6L2F9jlXg-jcEDAUzePpzlbQcyRBea6XdihO7YIVThYv46gOk24nX2L7D2pQ0cgKg2fUq-n9oNMkGCs8A22piI5dq1ZEayfWkTKKBauzc-AANqDW5o1Wr4rCMRes5sftUJHgvvDNhfKzwZodY03upYrFucW6ww0p2sifjpNRIKo7lI93v7ztxh5merxRRouyOoh6kdpirR_TRWz-h2phFOvKqcZMrRWILue3X-deItkZLY2TVhcKh1qQfmJuK_b77TBqk6CYnLUStbLwt1BCP0rBMPQULWNn5IDgjcUubYME0L27vaHb3DdaZjKh9LR2umYrjWZ600MJqj8UInEV-zYH5GmsT81pj1lAJz9BQvPWmbcIJa88C_NighmQnX7rM8YHwE-8dTK-6682rxMOR2vMMS9oZL1rIHMxCZ-sz-Fo4NNZ0RwX2onjcAAgq8i7nUqxdo2gzsJGUGXYxcMD1B06sE0L-yqGI32tbnEd7xdi2T2YUwT78hsrN7qrAQOd_Vic5KWzhHrNdVLrkyvQN7Zoo07R3qsCa_0Tb4RHeDZUeLb7719_xneHzu9xAqvwsfV-YUA9WO_vaYs7nGMMGxC2DYvzIKk1Sj8Y5DngNjfzqcqRP4m8rKPzbPHA2JSIvIg9gcJ32BwCjdvinGB-gXkEt5mIv0T8mgx5gGf-CA5a0uomKRXvhD961_gvVpznink-djs8bvqRHDsShgrdEwMyLKtw8rUSoINS-VuOXIfKWYvWW_sGlMzIQy-glBIAb8Su7TcFS32sKHzXk9-MLoXXKxaX0Lswfi__O-oblsGgYRTgO2t1novRablegjXvLgQFy-PsPhzhyRCjNFO1fjF8P1Dm1ZiufQ9kGiNDYpEnHu_sHdc7mUUpYf7QRGGxnTZY4Ek-3wSJ7PXmrLpj27w1w3a5DOCjYt7b7psQbVGrLu-gV-7PZgECLFAvbSG5SOVGsGjBBahO2erQ2FXdocNnITiEi85mtYXApRIWRtGHVHL1nWPJ4MMZNB39Ys5oM.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_0475afaf036718f9016a98f6c35ca487d1a4f61e5828ab9786",
+              "index": 3
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3124,
+      "completion_tokens": 2875,
+      "total_tokens": 5999,
+      "cost": 0.00423085,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 3121,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00423085,
+        "upstream_inference_prompt_cost": 0.00078085,
+        "upstream_inference_completions_cost": 0.00345
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 627,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the library changes in Go using the existing fabric-config object model and protobuf ConfigGroup, ConfigValue, and ConfigPolicy representations.\",\n    \"Preserve the existing GetConfiguration/SetConfiguration and GetMSP/SetMSP APIs while adding focused mutator methods that update only the requested field.\",\n    \"Represent removal of legacy OrdererAddresses and KafkaBrokers as explicit removal methods; do not expose general setters for those legacy top-level values.\",\n    \"Add consortium creation as a group-level operation and allow creation without organizations, while ensuring examples add organizations afterward.\",\n    \"Generate ConfigUpdateEnvelope values without signatures when requested, leaving signing and submission to peer or orderer command workflows.\",\n    \"Implement consenter removal using an exact match on host, port, client TLS certificate, and server TLS certificate.\",\n    \"Use existing Fabric validation and protobuf marshaling behavior wherever possible, adding certificate and field validation only where required by the API contract.\",\n    \"Implement orderer and MSP focused setters by cloning or preserving existing nested configuration values so unrelated fields remain unchanged.\",\n    \"Implement the bulk CLI as a JSON-driven batch processor with ordered, stackable operations applied independently to each selected channel.\",\n    \"Use Fabric connection profile data to locate peers and orderers, fetch channel configuration through Fabric discovery or the applicable client APIs, and submit signed config updates through the orderer.\",\n    \"Make dry-run mode calculate and print the resulting update without signing submission or changing the network.\",\n    \"Return explicit validation errors for unsupported operations, malformed JSON, missing identities, invalid channel selections, and incompatible operation values.\"\n  ],\n  \"assumptions\": [\n    \"The implementation extends an existing Hyperledger Fabric fabric-config Go repository with established build, protobuf, and test infrastructure.\",\n    \"The target Fabric APIs and protobuf definitions are compatible with the Fabric 2.x-era requirements described in the specification; migration support for arbitrary future Fabric versions is out of scope.\",\n    \"The CLI is implemented in the same Go module or repository and may reuse existing configtx, Fabric SDK, discovery, signing, and transaction-submission utilities where available.\",\n    \"Connection profiles contain sufficient peer and orderer endpoints, TLS material, and organization information for configuration retrieval and transaction submission.\",\n    \"Signing identities are supplied as local private-key and certificate material in the specified JSON format; secure external key stores and HSM integration are out of scope.\",\n    \"The CLI operates on already existing channels and does not create channels, enroll users, or bootstrap networks.\",\n    \"The requested operations are limited to the operations listed in U6: MSP replacement, consenter add/remove/update/replace, and anchor-peer add/remove/replace.\",\n    \"Configuration updates requiring multiple organizations are signed using the identities supplied by the caller; the tool does not automatically discover or obtain missing signatures.\",\n    \"Examples, unit tests, integration tests, CLI help text, and relevant API documentation are considered part of the increment.\",\n    \"Effort includes implementation, code-level debugging, tests, documentation, and local review, but excludes elapsed waiting time for external network operators or production deployment.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository analysis and increment design\",\n      \"activity_description\": \"Inspect the existing configtx object model, update-generation flow, protobuf mappings, examples, CLI structure, and test conventions; produce an implementation plan covering U1 through U8 and compatibility constraints.\",\n      \"most_likely_effort\": 36\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Consortium group API\",\n      \"activity_description\": \"Implement the function to add a consortium group, define behavior for an initially empty consortium, preserve existing consortium structures, and add focused unit tests.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Unsigned ConfigUpdateEnvelope generation\",\n      \"activity_description\": \"Add an update-generation path that returns a cb.ConfigUpdateEnvelope without requiring signing identities, while retaining the existing signed path and validating resulting envelope contents.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Legacy OrdererAddresses removal\",\n      \"activity_description\": \"Implement RemoveLegacyOrdererAddresses on the top-level channel group, prevent unsupported direct updates to the legacy field, update genesis/config construction behavior, and test migration and preservation cases.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"KafkaBrokers removal and migration support\",\n      \"activity_description\": \"Implement complete removal of KafkaBrokers, verify behavior for etcdraft and migrated configurations, and add or improve the Kafka-to-etcdraft migration example.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"EtcdRaft consenter mutation APIs\",\n      \"activity_description\": \"Implement add and remove consenter methods, including exact four-field matching for safe removal, duplicate and missing-entry handling, certificate validation, and unit tests.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Orderer focused setter APIs\",\n      \"activity_description\": \"Implement individual OrdererGroup setters for batch-size fields, batch timeout, max channels, consensus type, and consensus state while preserving unrelated values and existing APIs.\",\n      \"most_likely_effort\": 84\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"EtcdRaft metadata and consensus option setters\",\n      \"activity_description\": \"Implement focused updates for supported etcdraft metadata/options, including preservation of existing consenters and consensus-specific values; define and test interactions with consensus type and state.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Shared API validation and configuration helpers\",\n      \"activity_description\": \"Refactor or add shared helpers for nested ConfigGroup access, field-preserving updates, repeated-value matching, certificate validation, deletion semantics, and consistent error reporting.\",\n      \"most_likely_effort\": 36\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Organization MSP focused APIs\",\n      \"activity_description\": \"Implement OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup methods for root and intermediate certificates, admin certificates, CRLs, OU identifiers, crypto configuration, TLS certificates, individual OU identifiers, and node-OU enable/disable operations.\",\n      \"most_likely_effort\": 132\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"MSP API compatibility and edge-case tests\",\n      \"activity_description\": \"Test preservation of unrelated MSP fields, duplicate and missing certificate behavior, removal matching, malformed certificates, repeated operations, and compatibility with existing GetMSP/SetMSP behavior.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Library unit and regression test suite\",\n      \"activity_description\": \"Add or update broad tests for consortiums, unsigned envelopes, legacy-field removal, Kafka migration, consenters, orderer setters, MSP setters, protobuf serialization, and negative cases.\",\n      \"most_likely_effort\": 132\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Library examples and API documentation\",\n      \"activity_description\": \"Update examples to demonstrate adding a consortium followed by organizations, both focused and whole-configuration update styles, MSP mutations, and migration operations; update public API documentation and comments.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Bulk CLI architecture and input model\",\n      \"activity_description\": \"Define the CLI command and flags, parse batchUpdate, connection-profile, and signing-identity JSON files, validate schemas, model operation sequencing, and integrate command help and error handling.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"CLI Fabric connectivity and identity handling\",\n      \"activity_description\": \"Implement connection-profile loading, TLS setup, peer config retrieval, channel selection, signing identity loading, config-update envelope signing, and orderer transaction submission with actionable failures.\",\n      \"most_likely_effort\": 128\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"CLI configuration operation engine\",\n      \"activity_description\": \"Implement batch application of MSP replacement, consenter add/remove/update/replace, and anchor-peer add/remove/replace operations using the new library APIs, including operation ordering and per-channel processing.\",\n      \"most_likely_effort\": 136\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"CLI dry-run, unsupported-operation, and output behavior\",\n      \"activity_description\": \"Implement --dryrun output of calculated updates to stdout, ensure no submission occurs in dry-run mode, support redirected output, provide clear errors for unsupported operations, and handle stacked operations deterministically.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"CLI automated tests and fixtures\",\n      \"activity_description\": \"Create unit and integration-style tests for JSON parsing, validation, operation dispatch, dry-run behavior, identity handling, multi-channel processing, signing/submission boundaries, and representative Fabric configuration fixtures.\",\n      \"most_likely_effort\": 128\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"CLI examples, documentation, and usage packaging\",\n      \"activity_description\": \"Add sample batch updates, connection profiles, signing identities, migration and certificate-expiry scenarios, command examples, dry-run instructions, and documentation for supported operations and limitations.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"Build, compatibility, acceptance review, and final cleanup\",\n      \"activity_description\": \"Run formatting, static analysis, full unit and integration test suites, verify backward compatibility, review public API naming and errors, fix discovered defects, and perform final acceptance checks against U1 through U8.\",\n      \"most_likely_effort\": 32\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 1372\n  }\n}",
+  "usage": {
+    "prompt_tokens": 3124,
+    "completion_tokens": 2875,
+    "total_tokens": 5999,
+    "cost": 0.00423085,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 3121,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00423085,
+      "upstream_inference_prompt_cost": 0.00078085,
+      "upstream_inference_completions_cost": 0.00345
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 627,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement the library changes in Go using the existing fabric-config object model and protobuf ConfigGroup, ConfigValue, and ConfigPolicy representations.",
+      "Preserve the existing GetConfiguration/SetConfiguration and GetMSP/SetMSP APIs while adding focused mutator methods that update only the requested field.",
+      "Represent removal of legacy OrdererAddresses and KafkaBrokers as explicit removal methods; do not expose general setters for those legacy top-level values.",
+      "Add consortium creation as a group-level operation and allow creation without organizations, while ensuring examples add organizations afterward.",
+      "Generate ConfigUpdateEnvelope values without signatures when requested, leaving signing and submission to peer or orderer command workflows.",
+      "Implement consenter removal using an exact match on host, port, client TLS certificate, and server TLS certificate.",
+      "Use existing Fabric validation and protobuf marshaling behavior wherever possible, adding certificate and field validation only where required by the API contract.",
+      "Implement orderer and MSP focused setters by cloning or preserving existing nested configuration values so unrelated fields remain unchanged.",
+      "Implement the bulk CLI as a JSON-driven batch processor with ordered, stackable operations applied independently to each selected channel.",
+      "Use Fabric connection profile data to locate peers and orderers, fetch channel configuration through Fabric discovery or the applicable client APIs, and submit signed config updates through the orderer.",
+      "Make dry-run mode calculate and print the resulting update without signing submission or changing the network.",
+      "Return explicit validation errors for unsupported operations, malformed JSON, missing identities, invalid channel selections, and incompatible operation values."
+    ],
+    "assumptions": [
+      "The implementation extends an existing Hyperledger Fabric fabric-config Go repository with established build, protobuf, and test infrastructure.",
+      "The target Fabric APIs and protobuf definitions are compatible with the Fabric 2.x-era requirements described in the specification; migration support for arbitrary future Fabric versions is out of scope.",
+      "The CLI is implemented in the same Go module or repository and may reuse existing configtx, Fabric SDK, discovery, signing, and transaction-submission utilities where available.",
+      "Connection profiles contain sufficient peer and orderer endpoints, TLS material, and organization information for configuration retrieval and transaction submission.",
+      "Signing identities are supplied as local private-key and certificate material in the specified JSON format; secure external key stores and HSM integration are out of scope.",
+      "The CLI operates on already existing channels and does not create channels, enroll users, or bootstrap networks.",
+      "The requested operations are limited to the operations listed in U6: MSP replacement, consenter add/remove/update/replace, and anchor-peer add/remove/replace.",
+      "Configuration updates requiring multiple organizations are signed using the identities supplied by the caller; the tool does not automatically discover or obtain missing signatures.",
+      "Examples, unit tests, integration tests, CLI help text, and relevant API documentation are considered part of the increment.",
+      "Effort includes implementation, code-level debugging, tests, documentation, and local review, but excludes elapsed waiting time for external network operators or production deployment."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Repository analysis and increment design",
+        "activity_description": "Inspect the existing configtx object model, update-generation flow, protobuf mappings, examples, CLI structure, and test conventions; produce an implementation plan covering U1 through U8 and compatibility constraints.",
+        "most_likely_effort": 36
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Consortium group API",
+        "activity_description": "Implement the function to add a consortium group, define behavior for an initially empty consortium, preserve existing consortium structures, and add focused unit tests.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Unsigned ConfigUpdateEnvelope generation",
+        "activity_description": "Add an update-generation path that returns a cb.ConfigUpdateEnvelope without requiring signing identities, while retaining the existing signed path and validating resulting envelope contents.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Legacy OrdererAddresses removal",
+        "activity_description": "Implement RemoveLegacyOrdererAddresses on the top-level channel group, prevent unsupported direct updates to the legacy field, update genesis/config construction behavior, and test migration and preservation cases.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "KafkaBrokers removal and migration support",
+        "activity_description": "Implement complete removal of KafkaBrokers, verify behavior for etcdraft and migrated configurations, and add or improve the Kafka-to-etcdraft migration example.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "EtcdRaft consenter mutation APIs",
+        "activity_description": "Implement add and remove consenter methods, including exact four-field matching for safe removal, duplicate and missing-entry handling, certificate validation, and unit tests.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Orderer focused setter APIs",
+        "activity_description": "Implement individual OrdererGroup setters for batch-size fields, batch timeout, max channels, consensus type, and consensus state while preserving unrelated values and existing APIs.",
+        "most_likely_effort": 84
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "EtcdRaft metadata and consensus option setters",
+        "activity_description": "Implement focused updates for supported etcdraft metadata/options, including preservation of existing consenters and consensus-specific values; define and test interactions with consensus type and state.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Shared API validation and configuration helpers",
+        "activity_description": "Refactor or add shared helpers for nested ConfigGroup access, field-preserving updates, repeated-value matching, certificate validation, deletion semantics, and consistent error reporting.",
+        "most_likely_effort": 36
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Organization MSP focused APIs",
+        "activity_description": "Implement OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup methods for root and intermediate certificates, admin certificates, CRLs, OU identifiers, crypto configuration, TLS certificates, individual OU identifiers, and node-OU enable/disable operations.",
+        "most_likely_effort": 132
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "MSP API compatibility and edge-case tests",
+        "activity_description": "Test preservation of unrelated MSP fields, duplicate and missing certificate behavior, removal matching, malformed certificates, repeated operations, and compatibility with existing GetMSP/SetMSP behavior.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Library unit and regression test suite",
+        "activity_description": "Add or update broad tests for consortiums, unsigned envelopes, legacy-field removal, Kafka migration, consenters, orderer setters, MSP setters, protobuf serialization, and negative cases.",
+        "most_likely_effort": 132
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "Library examples and API documentation",
+        "activity_description": "Update examples to demonstrate adding a consortium followed by organizations, both focused and whole-configuration update styles, MSP mutations, and migration operations; update public API documentation and comments.",
+        "most_likely_effort": 56
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "Bulk CLI architecture and input model",
+        "activity_description": "Define the CLI command and flags, parse batchUpdate, connection-profile, and signing-identity JSON files, validate schemas, model operation sequencing, and integrate command help and error handling.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A15",
+        "activity_name": "CLI Fabric connectivity and identity handling",
+        "activity_description": "Implement connection-profile loading, TLS setup, peer config retrieval, channel selection, signing identity loading, config-update envelope signing, and orderer transaction submission with actionable failures.",
+        "most_likely_effort": 128
+      },
+      {
+        "activity_id": "A16",
+        "activity_name": "CLI configuration operation engine",
+        "activity_description": "Implement batch application of MSP replacement, consenter add/remove/update/replace, and anchor-peer add/remove/replace operations using the new library APIs, including operation ordering and per-channel processing.",
+        "most_likely_effort": 136
+      },
+      {
+        "activity_id": "A17",
+        "activity_name": "CLI dry-run, unsupported-operation, and output behavior",
+        "activity_description": "Implement --dryrun output of calculated updates to stdout, ensure no submission occurs in dry-run mode, support redirected output, provide clear errors for unsupported operations, and handle stacked operations deterministically.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A18",
+        "activity_name": "CLI automated tests and fixtures",
+        "activity_description": "Create unit and integration-style tests for JSON parsing, validation, operation dispatch, dry-run behavior, identity handling, multi-channel processing, signing/submission boundaries, and representative Fabric configuration fixtures.",
+        "most_likely_effort": 128
+      },
+      {
+        "activity_id": "A19",
+        "activity_name": "CLI examples, documentation, and usage packaging",
+        "activity_description": "Add sample batch updates, connection profiles, signing identities, migration and certificate-expiry scenarios, command examples, dry-run instructions, and documentation for supported operations and limitations.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A20",
+        "activity_name": "Build, compatibility, acceptance review, and final cleanup",
+        "activity_description": "Run formatting, static analysis, full unit and integration test suites, verify backward compatibility, review public API naming and errors, fix discovered defects, and perform final acceptance checks against U1 through U8.",
+        "most_likely_effort": 32
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 1372
+    }
+  }
+}

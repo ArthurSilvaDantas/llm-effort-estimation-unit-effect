@@ -1,0 +1,261 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-027",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788418741-KppaQDGnw5Wb3NR1bGhX",
+    "object": "chat.completion",
+    "created": 1788418741,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: Use Asciidoc format in the project repo (under src/main/asciidoc) for migrated wiki content, with Maven/Gradle plugin to generate versioned HTML docs.\",\n    \"U2: Add namenode property (xd.hadoop.namenode) to the global XD config (servers.yml / xd-config), read at DSL session startup, with sensible default fallback.\",\n    \"U3: Introduce a 'passthrough' mode flag for the jdbchdfs job, bypassing ItemReader/ItemWriter chunk abstraction while preserving job semantics, logs, and metrics.\",\n    \"U4: Upgrade to a Spring Batch release that decouples JobExecution/StepExecution context from job-launch lifecycle, then remove the XD-2486 workaround in the XD codebase.\",\n    \"U5: Add a JavaConfig-based Job module registration path alongside the existing XML-based path, using a custom ModuleFactory SPI that detects @Configuration class modules.\",\n    \"U6: Design a generic ContainerRuntime SPI (Receptor as one implementation) so XD can run on Lattice, Diego, or other runtimes without code changes; deliver as a PoC.\",\n    \"U7: Add a 'shortDescription' field to the module metadata descriptor, populate it for every shipped module, and surface it in module listings and the shell UI.\",\n    \"U8: Modify the shell processor to read Python scripts from HDFS (using Hadoop FS APIs) and execute them via a CPython subprocess with stdin/stdout pipelining back into XD.\",\n    \"Use Java 17+ as required by Spring Framework 6.0+; update all build configurations accordingly.\",\n    \"Maintain backward compatibility for existing module deployments and configuration files.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Spring/XD developer performs all work; estimates are person-days, not elapsed calendar time.\",\n    \"The Spring XD codebase is available, buildable, and already familiar in terms of module architecture and job-launch internals.\",\n    \"A HDFS test environment is available locally or in CI for validating U2, U3, and U8.\",\n    \"A Spring Batch release containing the execution-context decoupling fix is available; if not, the work expands to include backporting the fix.\",\n    \"U6 is scoped as a Proof of Concept (design + minimal viable implementation) rather than a fully production-ready feature.\",\n    \"U5 is limited to supporting the deploy/launch error reported; broader JavaConfig support (for all module types) is out of scope.\",\n    \"U7 only updates metadata, not the actual docs content; mechanical work spread across all existing modules.\",\n    \"U8 assumes the shell processor already supports arbitrary command execution; only the script source location and transport need to be HDFS-enabled.\",\n    \"No production hardening (HA, security hardening beyond defaults, performance benchmarking) is included unless stated in the user story.\",\n    \"Dependencies on external systems (Hadoop, Cloud Foundry, Diego) are assumed pre-provisioned.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Codebase exploration and environment setup\",\n      \"activity_description\": \"Review Spring XD module/job architecture, confirm Java 17+ toolchain, ensure HDFS test fixture is reachable, and align branch/build setup for the increment.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Migrate wiki into project repository\",\n      \"activity_description\": \"Export existing wiki pages, commit them as Asciidoc under the repo, configure the docs build (Asciidoctor Maven/Gradle plugin) so docs are versioned and tagged with code.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Add Hadoop namenode to configuration\",\n      \"activity_description\": \"Introduce xd.hadoop.namenode property in the global XD config, wire it into HDFS client construction in the relevant source modules (HDFS sinks, sources, jdbchdfs, etc.), and add unit/integration tests covering default and override behavior.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - jdbchdfs passthrough (no chunk processing) batch mode\",\n      \"activity_description\": \"Add a 'passthrough' option to the jdbchdfs job module, implement a Tasklet-based path that reads JDBC rows and writes to HDFS row-by-row without ItemReader/ItemWriter, retain metrics, and add tests for both modes.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Decouple execution context from job launch lifecycle\",\n      \"activity_description\": \"Upgrade Spring Batch to the release containing the context-decoupling fix, refactor XD-2486 workaround out of the codebase, and re-validate cluster-mode and serialization scenarios with regression tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Custom job module with Java Config support\",\n      \"activity_description\": \"Extend the module-loading pipeline to recognize @Configuration-style JavaConfig job modules, fix the deploy/launch detection bug for the reported CDK_Global scenario, and add tests covering the full module upload -> job launch flow.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Pluggable Container Runtime SPI (Lattice/Diego PoC)\",\n      \"activity_description\": \"Design a ContainerRuntime interface, implement a Receptor-based adapter, integrate it into XD's container lifecycle, and demonstrate end-to-end running on Lattice/Diego with a smoke test.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - shortDescription in module documentation\",\n      \"activity_description\": \"Add shortDescription to the module metadata schema, populate it for every module shipped in XD, and surface it in the module list/describe commands and any web UI listings.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Host/read Python script from HDFS in shell processor\",\n      \"activity_description\": \"Extend the shell processor to resolve Python scripts from HDFS paths, copy locally or stream to a CPython subprocess, pipe data via stdin/stdout, and add unit + integration tests with HDFS-backed scripts.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and system testing\",\n      \"activity_description\": \"Run end-to-end system tests combining the new config, passthrough, JavaConfig, SPI, and HDFS-Python features to confirm no regressions across module interactions.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Build, CI/CD, and deployment configuration updates\",\n      \"activity_description\": \"Update Maven/Gradle build files, dependency versions, CI pipeline scripts, and any deployment manifests impacted by Spring Batch upgrade, Java 17+, and new module metadata.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Final code review, cleanup, and release notes\",\n      \"activity_description\": \"Self-review, address code-style and test-coverage gaps, write release notes summarizing the increment, and prepare a changelog entry per user story.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 40.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the specification and break down the work into activities for estimation.\n\nThe specification describes Spring XD (Spring Data integration/streaming) with 8 user stories. I need to estimate effort for implementing all these user stories as a single developer.\n\nLet me break down each user story:\n\nU1: Migrate wiki to project repo (tagged with code, versioned) - Documentation migration\nU2: Add Hadoop namenode specifics in config file - Configuration enhancement\nU3: Use jdbchdfs batch job as passthrough without chunk processing - Feature modification\nU4: Decouple execution context from job launch lifecycle, refactor XD-2486 workaround, upgrade Spring Batch - Significant refactoring\nU5: Create custom job module using Java Config - Java Config support for custom modules\nU6: XD-on-Lattice/Diego PoC with pluggable SPI - Research/design work\nU7: Update all module docs to include shortDescription - Documentation update\nU8: Host/read Python script from HDFS in XD shell processor - Python HDFS integration\n\nLet me think about each in terms of effort:\n\nU1: Wiki migration - involves exporting existing wiki content, setting up new docs structure, migrating content, setting up versioning. 2-3 days.\n\nU2: Hadoop namenode config - relatively small change to config files. 1-2 days.\n\nU3: Jdbchdfs passthrough mode - need to add an option/configuration to skip chunk processing. Moderate change. 2-3 days.\n\nU4: Decouple execution context from job launch lifecycle - this is a significant change. Needs refactoring in XD-2486 workaround, testing, and waiting for/using Spring Batch release. This could be 5-8 days.\n\nU5: Custom job module using Java Config - need to add support for Java Config based job modules. The error suggests the module isn't being detected. This involves understanding the module deployment mechanism and adding Java Config support. 3-5 days.\n\nU6: XD-on-Lattice/Diego PoC with pluggable SPI - This is a Proof of Concept with design work. The Receptor API being one implementation. This is research-heavy and design-heavy. 5-10 days.\n\nU7: Update module docs with shortDescription - straightforward documentation update across many modules. 2-3 days.\n\nU8: Python script HDFS hosting/reading - need to modify the shell processor to support HDFS Python scripts. 3-5 days.\n\nAdditional activities:\n- Project setup, dependency management, build configuration\n- Testing (unit tests, integration tests)\n- Code review and documentation\n- Deployment configuration\n\nLet me also think about technical decisions:\n- Will need to use existing Spring XD codebase\n- Spring Batch upgrade dependencies\n- HDFS configuration for Python scripts\n- Java Config support approach\n- SPI design pattern for U6\n- Module registration mechanism for U5\n\nAssumptions:\n- Single developer with Spring/XD experience\n- Spring XD codebase is available and understood\n- Spring Batch has the relevant fix available\n- Hadoop environment is set up for testing\n- HDFS Python is feasible with available libraries\n\nLet me create a more detailed WBS:\n\n1. U1: Wiki migration to project repo - 3 days\n2. U2: Hadoop namenode config file addition - 1 day\n3. U3: Jdbchdfs passthrough mode - 3 days\n4. U4: Decouple execution context from job launch - 7 days\n5. U5: Java Config custom job module support - 5 days\n6. U6: Lattice/Diego pluggable SPI PoC - 8 days\n7. U7: Module docs shortDescription update - 2 days\n8. U8: Python HDFS shell processor - 5 days\n9. Integration testing across all changes - 3 days\n10. Build, CI/CD, deployment configuration updates - 2 days\n\nTotal: ~39 days\n\nLet me reconsider - some of these are bigger than I thought. U4 involves upgrading Spring Batch which is a big undertaking. U6 is a PoC which is design-heavy.\n\nLet me be more careful:\n\nU1 (Wiki migration): \n- Export wiki content, set up markdown/asciidoc in repo, link versions\n- Estimate: 2-3 days, use 2.5 → let's say 3 days\n\nU2 (Hadoop namenode config):\n- Add namenode property to config, handle defaults, test\n- Estimate: 1-2 days, use 1.5 → 2 days\n\nU3 (Jdbchdfs passthrough):\n- Add passthrough option to JDBC HDFS job, modify batch processing\n- Estimate: 3-4 days, use 3.5 → 4 days\n\nU4 (Decouple execution context):\n- Upgrade Spring Batch, refactor XD-2486 workaround, extensive testing\n- Estimate: 7-10 days, use 8 → 8 days\n\nU5 (Java Config custom job module):\n- Add Java Config support, fix module registration, testing\n- Estimate: 4-6 days, use 5 → 5 days\n\nU6 (Pluggable SPI for Lattice/Diego):\n- Design SPI, implement Receptor, integration\n- Estimate: 8-12 days, use 10 → 10 days\n\nU7 (Module docs shortDescription):\n- Update all module documentation\n- Estimate: 2-3 days, use 2.5 → 3 days\n\nU8 (Python HDFS shell processor):\n- Implement HDFS Python script support\n- Estimate: 4-6 days, use 5 → 5 days\n\nCross-cutting:\n- Integration testing: 3 days\n- Build/CI setup: 2 days\n- Code review and fixes: 2 days\n\nTotal: 3+2+4+8+5+10+3+5+3+2+2 = 47 days\n\nThat seems reasonable for this set of features. Let me finalize the estimates.\n\nActually, let me reconsider some estimates to be more realistic for a single developer:\n\nU1: 2 days (mostly mechanical migration)\nU2: 1.5 days\nU3: 3 days\nU4: 7 days (significant refactoring)\nU5: 4 days\nU6: 8 days (PoC scope)\nU7: 2 days\nU8: 4 days\nIntegration testing: 3 days\nBuild/config: 2 days\nFinal code review and cleanup: 2 days\n\nTotal: ~38.5 days → 39 days\n\nLet me think again. I'll make the estimates slightly more granular and accurate.\n\nFinal breakdown:\n\nA1: Project setup and exploration (understand existing codebase): 2 days\nA2: U1 - Wiki migration: 2 days\nA3: U2 - Hadoop namenode config: 1.5 days\nA4: U3 - Jdbchdfs passthrough: 3 days\nA5: U4 - Decouple execution context (refactor + Batch upgrade): 7 days\nA6: U5 - Java Config custom job module: 4 days\nA7: U6 - Pluggable SPI for Lattice/Diego: 8 days\nA8: U7 - Module docs shortDescription: 2 days\nA9: U8 - Python HDFS shell processor: 4 days\nA10: Integration and system testing: 3 days\nA11: Build/CI/CD and deployment config: 2 days\nA12: Final code review, fixes, documentation: 2 days\n\nTotal: 40.5 → round to 41 days, or use 40.5 as exact\n\nActually, I'll just keep decimal estimates. Let me finalize.\n\nLet me also make the effort estimates be whole days for simplicity, since the schema requires positive numbers (could be decimals but cleaner as whole numbers).\n\nA1: 2\nA2: 2\nA3: 2\nA4: 3\nA5: 7\nA6: 4\nA7: 8\nA8: 2\nA9: 4\nA10: 3\nA11: 2\nA12: 2\n\nTotal: 41 days\n\nThat seems reasonable. Let me also think about the technical decisions and assumptions carefully.\n\nTechnical decisions:\n- Use Asciidoc/Markdown for new wiki format in repo\n- Add namenode property to a global XD config file (e.g., xd-config.yml)\n- Add passthrough mode flag to jdbchdfs job\n- Upgrade to latest Spring Batch release containing the fix\n- Implement JavaConfig based module loader\n- Design Pluggable SPI with interface for container runtimes\n- Add shortDescription to module metadata\n- Use Jython or CPython subprocess for HDFS Python script execution\n\nAssumptions:\n- Single experienced Spring/XD developer\n- HDFS environment available for testing\n- Spring Batch has released the fix for the execution context decoupling\n- All existing code is accessible and buildable\n- Java 17+ used (per spec)\n- XD on Cloud Foundry is the target deployment\n\nLet me format this as JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the specification and break down the work into activities for estimation.\n\nThe specification describes Spring XD (Spring Data integration/streaming) with 8 user stories. I need to estimate effort for implementing all these user stories as a single developer.\n\nLet me break down each user story:\n\nU1: Migrate wiki to project repo (tagged with code, versioned) - Documentation migration\nU2: Add Hadoop namenode specifics in config file - Configuration enhancement\nU3: Use jdbchdfs batch job as passthrough without chunk processing - Feature modification\nU4: Decouple execution context from job launch lifecycle, refactor XD-2486 workaround, upgrade Spring Batch - Significant refactoring\nU5: Create custom job module using Java Config - Java Config support for custom modules\nU6: XD-on-Lattice/Diego PoC with pluggable SPI - Research/design work\nU7: Update all module docs to include shortDescription - Documentation update\nU8: Host/read Python script from HDFS in XD shell processor - Python HDFS integration\n\nLet me think about each in terms of effort:\n\nU1: Wiki migration - involves exporting existing wiki content, setting up new docs structure, migrating content, setting up versioning. 2-3 days.\n\nU2: Hadoop namenode config - relatively small change to config files. 1-2 days.\n\nU3: Jdbchdfs passthrough mode - need to add an option/configuration to skip chunk processing. Moderate change. 2-3 days.\n\nU4: Decouple execution context from job launch lifecycle - this is a significant change. Needs refactoring in XD-2486 workaround, testing, and waiting for/using Spring Batch release. This could be 5-8 days.\n\nU5: Custom job module using Java Config - need to add support for Java Config based job modules. The error suggests the module isn't being detected. This involves understanding the module deployment mechanism and adding Java Config support. 3-5 days.\n\nU6: XD-on-Lattice/Diego PoC with pluggable SPI - This is a Proof of Concept with design work. The Receptor API being one implementation. This is research-heavy and design-heavy. 5-10 days.\n\nU7: Update module docs with shortDescription - straightforward documentation update across many modules. 2-3 days.\n\nU8: Python script HDFS hosting/reading - need to modify the shell processor to support HDFS Python scripts. 3-5 days.\n\nAdditional activities:\n- Project setup, dependency management, build configuration\n- Testing (unit tests, integration tests)\n- Code review and documentation\n- Deployment configuration\n\nLet me also think about technical decisions:\n- Will need to use existing Spring XD codebase\n- Spring Batch upgrade dependencies\n- HDFS configuration for Python scripts\n- Java Config support approach\n- SPI design pattern for U6\n- Module registration mechanism for U5\n\nAssumptions:\n- Single developer with Spring/XD experience\n- Spring XD codebase is available and understood\n- Spring Batch has the relevant fix available\n- Hadoop environment is set up for testing\n- HDFS Python is feasible with available libraries\n\nLet me create a more detailed WBS:\n\n1. U1: Wiki migration to project repo - 3 days\n2. U2: Hadoop namenode config file addition - 1 day\n3. U3: Jdbchdfs passthrough mode - 3 days\n4. U4: Decouple execution context from job launch - 7 days\n5. U5: Java Config custom job module support - 5 days\n6. U6: Lattice/Diego pluggable SPI PoC - 8 days\n7. U7: Module docs shortDescription update - 2 days\n8. U8: Python HDFS shell processor - 5 days\n9. Integration testing across all changes - 3 days\n10. Build, CI/CD, deployment configuration updates - 2 days\n\nTotal: ~39 days\n\nLet me reconsider - some of these are bigger than I thought. U4 involves upgrading Spring Batch which is a big undertaking. U6 is a PoC which is design-heavy.\n\nLet me be more careful:\n\nU1 (Wiki migration): \n- Export wiki content, set up markdown/asciidoc in repo, link versions\n- Estimate: 2-3 days, use 2.5 → let's say 3 days\n\nU2 (Hadoop namenode config):\n- Add namenode property to config, handle defaults, test\n- Estimate: 1-2 days, use 1.5 → 2 days\n\nU3 (Jdbchdfs passthrough):\n- Add passthrough option to JDBC HDFS job, modify batch processing\n- Estimate: 3-4 days, use 3.5 → 4 days\n\nU4 (Decouple execution context):\n- Upgrade Spring Batch, refactor XD-2486 workaround, extensive testing\n- Estimate: 7-10 days, use 8 → 8 days\n\nU5 (Java Config custom job module):\n- Add Java Config support, fix module registration, testing\n- Estimate: 4-6 days, use 5 → 5 days\n\nU6 (Pluggable SPI for Lattice/Diego):\n- Design SPI, implement Receptor, integration\n- Estimate: 8-12 days, use 10 → 10 days\n\nU7 (Module docs shortDescription):\n- Update all module documentation\n- Estimate: 2-3 days, use 2.5 → 3 days\n\nU8 (Python HDFS shell processor):\n- Implement HDFS Python script support\n- Estimate: 4-6 days, use 5 → 5 days\n\nCross-cutting:\n- Integration testing: 3 days\n- Build/CI setup: 2 days\n- Code review and fixes: 2 days\n\nTotal: 3+2+4+8+5+10+3+5+3+2+2 = 47 days\n\nThat seems reasonable for this set of features. Let me finalize the estimates.\n\nActually, let me reconsider some estimates to be more realistic for a single developer:\n\nU1: 2 days (mostly mechanical migration)\nU2: 1.5 days\nU3: 3 days\nU4: 7 days (significant refactoring)\nU5: 4 days\nU6: 8 days (PoC scope)\nU7: 2 days\nU8: 4 days\nIntegration testing: 3 days\nBuild/config: 2 days\nFinal code review and cleanup: 2 days\n\nTotal: ~38.5 days → 39 days\n\nLet me think again. I'll make the estimates slightly more granular and accurate.\n\nFinal breakdown:\n\nA1: Project setup and exploration (understand existing codebase): 2 days\nA2: U1 - Wiki migration: 2 days\nA3: U2 - Hadoop namenode config: 1.5 days\nA4: U3 - Jdbchdfs passthrough: 3 days\nA5: U4 - Decouple execution context (refactor + Batch upgrade): 7 days\nA6: U5 - Java Config custom job module: 4 days\nA7: U6 - Pluggable SPI for Lattice/Diego: 8 days\nA8: U7 - Module docs shortDescription: 2 days\nA9: U8 - Python HDFS shell processor: 4 days\nA10: Integration and system testing: 3 days\nA11: Build/CI/CD and deployment config: 2 days\nA12: Final code review, fixes, documentation: 2 days\n\nTotal: 40.5 → round to 41 days, or use 40.5 as exact\n\nActually, I'll just keep decimal estimates. Let me finalize.\n\nLet me also make the effort estimates be whole days for simplicity, since the schema requires positive numbers (could be decimals but cleaner as whole numbers).\n\nA1: 2\nA2: 2\nA3: 2\nA4: 3\nA5: 7\nA6: 4\nA7: 8\nA8: 2\nA9: 4\nA10: 3\nA11: 2\nA12: 2\n\nTotal: 41 days\n\nThat seems reasonable. Let me also think about the technical decisions and assumptions carefully.\n\nTechnical decisions:\n- Use Asciidoc/Markdown for new wiki format in repo\n- Add namenode property to a global XD config file (e.g., xd-config.yml)\n- Add passthrough mode flag to jdbchdfs job\n- Upgrade to latest Spring Batch release containing the fix\n- Implement JavaConfig based module loader\n- Design Pluggable SPI with interface for container runtimes\n- Add shortDescription to module metadata\n- Use Jython or CPython subprocess for HDFS Python script execution\n\nAssumptions:\n- Single experienced Spring/XD developer\n- HDFS environment available for testing\n- Spring Batch has released the fix for the execution context decoupling\n- All existing code is accessible and buildable\n- Java 17+ used (per spec)\n- XD on Cloud Foundry is the target deployment\n\nLet me format this as JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1516,
+      "completion_tokens": 3641,
+      "total_tokens": 5157,
+      "cost": 0.00478656,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00478656,
+        "upstream_inference_prompt_cost": 0.00041736,
+        "upstream_inference_completions_cost": 0.0043692
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1919,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: Use Asciidoc format in the project repo (under src/main/asciidoc) for migrated wiki content, with Maven/Gradle plugin to generate versioned HTML docs.\",\n    \"U2: Add namenode property (xd.hadoop.namenode) to the global XD config (servers.yml / xd-config), read at DSL session startup, with sensible default fallback.\",\n    \"U3: Introduce a 'passthrough' mode flag for the jdbchdfs job, bypassing ItemReader/ItemWriter chunk abstraction while preserving job semantics, logs, and metrics.\",\n    \"U4: Upgrade to a Spring Batch release that decouples JobExecution/StepExecution context from job-launch lifecycle, then remove the XD-2486 workaround in the XD codebase.\",\n    \"U5: Add a JavaConfig-based Job module registration path alongside the existing XML-based path, using a custom ModuleFactory SPI that detects @Configuration class modules.\",\n    \"U6: Design a generic ContainerRuntime SPI (Receptor as one implementation) so XD can run on Lattice, Diego, or other runtimes without code changes; deliver as a PoC.\",\n    \"U7: Add a 'shortDescription' field to the module metadata descriptor, populate it for every shipped module, and surface it in module listings and the shell UI.\",\n    \"U8: Modify the shell processor to read Python scripts from HDFS (using Hadoop FS APIs) and execute them via a CPython subprocess with stdin/stdout pipelining back into XD.\",\n    \"Use Java 17+ as required by Spring Framework 6.0+; update all build configurations accordingly.\",\n    \"Maintain backward compatibility for existing module deployments and configuration files.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Spring/XD developer performs all work; estimates are person-days, not elapsed calendar time.\",\n    \"The Spring XD codebase is available, buildable, and already familiar in terms of module architecture and job-launch internals.\",\n    \"A HDFS test environment is available locally or in CI for validating U2, U3, and U8.\",\n    \"A Spring Batch release containing the execution-context decoupling fix is available; if not, the work expands to include backporting the fix.\",\n    \"U6 is scoped as a Proof of Concept (design + minimal viable implementation) rather than a fully production-ready feature.\",\n    \"U5 is limited to supporting the deploy/launch error reported; broader JavaConfig support (for all module types) is out of scope.\",\n    \"U7 only updates metadata, not the actual docs content; mechanical work spread across all existing modules.\",\n    \"U8 assumes the shell processor already supports arbitrary command execution; only the script source location and transport need to be HDFS-enabled.\",\n    \"No production hardening (HA, security hardening beyond defaults, performance benchmarking) is included unless stated in the user story.\",\n    \"Dependencies on external systems (Hadoop, Cloud Foundry, Diego) are assumed pre-provisioned.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Codebase exploration and environment setup\",\n      \"activity_description\": \"Review Spring XD module/job architecture, confirm Java 17+ toolchain, ensure HDFS test fixture is reachable, and align branch/build setup for the increment.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Migrate wiki into project repository\",\n      \"activity_description\": \"Export existing wiki pages, commit them as Asciidoc under the repo, configure the docs build (Asciidoctor Maven/Gradle plugin) so docs are versioned and tagged with code.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Add Hadoop namenode to configuration\",\n      \"activity_description\": \"Introduce xd.hadoop.namenode property in the global XD config, wire it into HDFS client construction in the relevant source modules (HDFS sinks, sources, jdbchdfs, etc.), and add unit/integration tests covering default and override behavior.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - jdbchdfs passthrough (no chunk processing) batch mode\",\n      \"activity_description\": \"Add a 'passthrough' option to the jdbchdfs job module, implement a Tasklet-based path that reads JDBC rows and writes to HDFS row-by-row without ItemReader/ItemWriter, retain metrics, and add tests for both modes.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Decouple execution context from job launch lifecycle\",\n      \"activity_description\": \"Upgrade Spring Batch to the release containing the context-decoupling fix, refactor XD-2486 workaround out of the codebase, and re-validate cluster-mode and serialization scenarios with regression tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Custom job module with Java Config support\",\n      \"activity_description\": \"Extend the module-loading pipeline to recognize @Configuration-style JavaConfig job modules, fix the deploy/launch detection bug for the reported CDK_Global scenario, and add tests covering the full module upload -> job launch flow.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Pluggable Container Runtime SPI (Lattice/Diego PoC)\",\n      \"activity_description\": \"Design a ContainerRuntime interface, implement a Receptor-based adapter, integrate it into XD's container lifecycle, and demonstrate end-to-end running on Lattice/Diego with a smoke test.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - shortDescription in module documentation\",\n      \"activity_description\": \"Add shortDescription to the module metadata schema, populate it for every module shipped in XD, and surface it in the module list/describe commands and any web UI listings.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Host/read Python script from HDFS in shell processor\",\n      \"activity_description\": \"Extend the shell processor to resolve Python scripts from HDFS paths, copy locally or stream to a CPython subprocess, pipe data via stdin/stdout, and add unit + integration tests with HDFS-backed scripts.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and system testing\",\n      \"activity_description\": \"Run end-to-end system tests combining the new config, passthrough, JavaConfig, SPI, and HDFS-Python features to confirm no regressions across module interactions.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Build, CI/CD, and deployment configuration updates\",\n      \"activity_description\": \"Update Maven/Gradle build files, dependency versions, CI pipeline scripts, and any deployment manifests impacted by Spring Batch upgrade, Java 17+, and new module metadata.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Final code review, cleanup, and release notes\",\n      \"activity_description\": \"Self-review, address code-style and test-coverage gaps, write release notes summarizing the increment, and prepare a changelog entry per user story.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 40.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1516,
+    "completion_tokens": 3641,
+    "total_tokens": 5157,
+    "cost": 0.00478656,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00478656,
+      "upstream_inference_prompt_cost": 0.00041736,
+      "upstream_inference_completions_cost": 0.0043692
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1919,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788418772-azNcXlLAfPQHHfHX7ky8",
+    "object": "chat.completion",
+    "created": 1788418772,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking a simple follow-up question: how many work-hours do I consider equivalent to one estimated workday. This is a standard assumption in software engineering estimation.\n\nCommon conventions:\n- 8 hours per workday is the most standard assumption\n- Some use 6 or 7 for more realistic focused development time\n- ISO standards and most estimation methodologies use 8\n\nI should pick a reasonable value. 8 hours is the most common and standard. However, in many agile/realistic estimation contexts, 6 productive hours per day is often cited as more realistic (due to meetings, emails, interruptions, etc.).\n\nI'll go with 8 hours as it's the standard, most widely accepted conversion. But actually, looking at it more carefully, for a software developer's focused implementation work (which is what this is), 6-7 hours of productive coding time is often considered more realistic.\n\nI'll go with 8 as the standard workday conversion. This is the most common assumption used in software estimation methodologies like COCOMO, function point analysis, etc.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple follow-up question: how many work-hours do I consider equivalent to one estimated workday. This is a standard assumption in software engineering estimation.\n\nCommon conventions:\n- 8 hours per workday is the most standard assumption\n- Some use 6 or 7 for more realistic focused development time\n- ISO standards and most estimation methodologies use 8\n\nI should pick a reasonable value. 8 hours is the most common and standard. However, in many agile/realistic estimation contexts, 6 productive hours per day is often cited as more realistic (due to meetings, emails, interruptions, etc.).\n\nI'll go with 8 hours as it's the standard, most widely accepted conversion. But actually, looking at it more carefully, for a software developer's focused implementation work (which is what this is), 6-7 hours of productive coding time is often considered more realistic.\n\nI'll go with 8 as the standard workday conversion. This is the most common assumption used in software estimation methodologies like COCOMO, function point analysis, etc.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3365,
+      "completion_tokens": 233,
+      "total_tokens": 3598,
+      "cost": 0.00092886,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1501,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00092886,
+        "upstream_inference_prompt_cost": 0.00064926,
+        "upstream_inference_completions_cost": 0.0002796
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 215,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "U1: Use Asciidoc format in the project repo (under src/main/asciidoc) for migrated wiki content, with Maven/Gradle plugin to generate versioned HTML docs.",
+      "U2: Add namenode property (xd.hadoop.namenode) to the global XD config (servers.yml / xd-config), read at DSL session startup, with sensible default fallback.",
+      "U3: Introduce a 'passthrough' mode flag for the jdbchdfs job, bypassing ItemReader/ItemWriter chunk abstraction while preserving job semantics, logs, and metrics.",
+      "U4: Upgrade to a Spring Batch release that decouples JobExecution/StepExecution context from job-launch lifecycle, then remove the XD-2486 workaround in the XD codebase.",
+      "U5: Add a JavaConfig-based Job module registration path alongside the existing XML-based path, using a custom ModuleFactory SPI that detects @Configuration class modules.",
+      "U6: Design a generic ContainerRuntime SPI (Receptor as one implementation) so XD can run on Lattice, Diego, or other runtimes without code changes; deliver as a PoC.",
+      "U7: Add a 'shortDescription' field to the module metadata descriptor, populate it for every shipped module, and surface it in module listings and the shell UI.",
+      "U8: Modify the shell processor to read Python scripts from HDFS (using Hadoop FS APIs) and execute them via a CPython subprocess with stdin/stdout pipelining back into XD.",
+      "Use Java 17+ as required by Spring Framework 6.0+; update all build configurations accordingly.",
+      "Maintain backward compatibility for existing module deployments and configuration files."
+    ],
+    "assumptions": [
+      "A single experienced Spring/XD developer performs all work; estimates are person-days, not elapsed calendar time.",
+      "The Spring XD codebase is available, buildable, and already familiar in terms of module architecture and job-launch internals.",
+      "A HDFS test environment is available locally or in CI for validating U2, U3, and U8.",
+      "A Spring Batch release containing the execution-context decoupling fix is available; if not, the work expands to include backporting the fix.",
+      "U6 is scoped as a Proof of Concept (design + minimal viable implementation) rather than a fully production-ready feature.",
+      "U5 is limited to supporting the deploy/launch error reported; broader JavaConfig support (for all module types) is out of scope.",
+      "U7 only updates metadata, not the actual docs content; mechanical work spread across all existing modules.",
+      "U8 assumes the shell processor already supports arbitrary command execution; only the script source location and transport need to be HDFS-enabled.",
+      "No production hardening (HA, security hardening beyond defaults, performance benchmarking) is included unless stated in the user story.",
+      "Dependencies on external systems (Hadoop, Cloud Foundry, Diego) are assumed pre-provisioned."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Codebase exploration and environment setup",
+        "activity_description": "Review Spring XD module/job architecture, confirm Java 17+ toolchain, ensure HDFS test fixture is reachable, and align branch/build setup for the increment.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Migrate wiki into project repository",
+        "activity_description": "Export existing wiki pages, commit them as Asciidoc under the repo, configure the docs build (Asciidoctor Maven/Gradle plugin) so docs are versioned and tagged with code.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Add Hadoop namenode to configuration",
+        "activity_description": "Introduce xd.hadoop.namenode property in the global XD config, wire it into HDFS client construction in the relevant source modules (HDFS sinks, sources, jdbchdfs, etc.), and add unit/integration tests covering default and override behavior.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - jdbchdfs passthrough (no chunk processing) batch mode",
+        "activity_description": "Add a 'passthrough' option to the jdbchdfs job module, implement a Tasklet-based path that reads JDBC rows and writes to HDFS row-by-row without ItemReader/ItemWriter, retain metrics, and add tests for both modes.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Decouple execution context from job launch lifecycle",
+        "activity_description": "Upgrade Spring Batch to the release containing the context-decoupling fix, refactor XD-2486 workaround out of the codebase, and re-validate cluster-mode and serialization scenarios with regression tests.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - Custom job module with Java Config support",
+        "activity_description": "Extend the module-loading pipeline to recognize @Configuration-style JavaConfig job modules, fix the deploy/launch detection bug for the reported CDK_Global scenario, and add tests covering the full module upload -> job launch flow.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - Pluggable Container Runtime SPI (Lattice/Diego PoC)",
+        "activity_description": "Design a ContainerRuntime interface, implement a Receptor-based adapter, integrate it into XD's container lifecycle, and demonstrate end-to-end running on Lattice/Diego with a smoke test.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 - shortDescription in module documentation",
+        "activity_description": "Add shortDescription to the module metadata schema, populate it for every module shipped in XD, and surface it in the module list/describe commands and any web UI listings.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8 - Host/read Python script from HDFS in shell processor",
+        "activity_description": "Extend the shell processor to resolve Python scripts from HDFS paths, copy locally or stream to a CPython subprocess, pipe data via stdin/stdout, and add unit + integration tests with HDFS-backed scripts.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature integration and system testing",
+        "activity_description": "Run end-to-end system tests combining the new config, passthrough, JavaConfig, SPI, and HDFS-Python features to confirm no regressions across module interactions.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Build, CI/CD, and deployment configuration updates",
+        "activity_description": "Update Maven/Gradle build files, dependency versions, CI pipeline scripts, and any deployment manifests impacted by Spring Batch upgrade, Java 17+, and new module metadata.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Final code review, cleanup, and release notes",
+        "activity_description": "Self-review, address code-style and test-coverage gaps, write release notes summarizing the increment, and prepare a changelog entry per user story.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 40.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

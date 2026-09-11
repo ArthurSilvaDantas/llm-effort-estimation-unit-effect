@@ -1,0 +1,246 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-024",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788420987-kDGC6hB9kIufzV2qvgSA",
+    "object": "chat.completion",
+    "created": 1788420987,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement stream resource cleanup as lifecycle hooks attached to the stream definition's deploy/destroy operations, leveraging the existing MessageBus SPI to query and delete queues/topics.\",\n    \"Implement stream edit (U3) as an update-in-place operation that diffs current and desired properties and re-issues only the module-level changes, avoiding a full destroy/redeploy when possible.\",\n    \"Support manifest file loading (U4) via a standard YAML format (Spring Boot-compatible) parsed using SnakeYAML, with inline --properties taking precedence over file values.\",\n    \"Implement module tracing (U6) by re-using Spring Integration's existing global wiretap pattern (channel-global-wiretap), with property keys resolved via wildcard expansion (module.*.trace).\",\n    \"Implement side channels (U7) as first-class named MessageBus channels declared in module definitions, exposed via a ChannelRegistry SPI so taps and external publishers can bind to them.\",\n    \"Deliver the reference architectures (U5) as a set of runnable Maven-based sample projects (POC templates) accompanied by architectural documentation, not as production-ready deployments.\",\n    \"Implement the taxi trips sample (U8) as a self-contained Spring XD stream definition plus a small custom module that performs windowed aggregations on the DEBS 2015 dataset.\",\n    \"Reuse the existing XD test harness (xd-test) and the in-memory/integration-test MessageBus for unit and integration tests; no new test infrastructure is built.\"\n  ],\n  \"assumptions\": [\n    \"The developer is a senior Java/Spring engineer with working knowledge of Spring XD internals (Module SPI, MessageBus SPI, stream deployment lifecycle).\",\n    \"Spring XD source code is available, buildable, and the developer is familiar with the relevant modules (stream, deployer, messagebus).\",\n    \"A single work product owner-style developer performs all activities sequentially; no parallel work or team coordination overhead is included.\",\n    \"A work day equals 8 productive hours; calendar time is not the constraint.\",\n    \"Underlying message broker (e.g., RabbitMQ) provides APIs sufficient to enumerate and delete the queues and topics the stream created.\",\n    \"Java 8+ is the runtime, matching the Spring XD era; no JDK upgrade or migration work is in scope.\",\n    \"No new UI work is required — all features are exposed through the existing xd:> shell DSL and REST API surface.\",\n    \"Module property resolution and wildcard expansion logic already exists in XD's deployment code and only needs to be extended for the new 'trace' property.\",\n    \"The DEBS 2015 NYC taxi trip dataset is publicly downloadable and the sample can reference it as an external resource (no large dataset shipping).\",\n    \"No production hardening, security review, performance tuning, or back-porting to older Spring versions is in scope.\",\n    \"Documentation updates are limited to the new features; existing XD reference docs are not rewritten.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Review all 8 user stories, study the existing XD stream lifecycle, MessageBus SPI, and module property resolution; produce a short design note covering cleanup hooks, edit semantics, manifest format, tracing via wiretap, side-channel SPI, and the two deliverables (reference archs, taxi sample).\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Stream resource cleanup on destroy (U1, U2)\",\n      \"activity_description\": \"Track all queues/topics created during stream deployment in the stream definition metadata, expose a stale-resource detector, and hook them into the destroy path so they are removed via the MessageBus SPI. Includes detection of stale resources left by previous crashed deployments.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Stream edit capability (U3)\",\n      \"activity_description\": \"Add an 'stream update' command (REST + shell) that accepts new deployment properties, computes a diff against the currently deployed definition, and applies only changed module properties without destroying the stream. Handle both deployed and undeployed states.\",\n      \"most_likely_effort\": 7.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Deployment manifest from file (U4)\",\n      \"activity_description\": \"Extend the stream create/deploy commands to accept a --manifest option pointing to a YAML file; parse the file with SnakeYAML, merge its properties with any inline --properties (inline wins), and pass the combined map through the existing deploy path.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Reference architectures on Spring XD (U5)\",\n      \"activity_description\": \"Identify 2-3 representative XD domain scenarios (e.g., real-time analytics, data ingestion, ETL); create runnable Maven-based POC projects for each and write concise architecture-overview documentation describing components, message flows, and extension points.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Module tracing via inline deployment properties (U6)\",\n      \"activity_description\": \"Recognize 'module.<name>.trace' / 'module.*.trace' deployment properties, expand wildcards against the deployed module set, and wire a Spring Integration global wiretap on the named module's output channel that logs/notifies per message. Document the property syntax.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Optional side channels (U7)\",\n      \"activity_description\": \"Introduce a side-channel declaration in module metadata so non-primary channels (input/output) can be created on the bus at deploy time; expose a ChannelRegistry so module code and external taps can publish or subscribe to these named channels for tracing/observability.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Taxi trips reference sample for DEBS 2015 (U8)\",\n      \"activity_description\": \"Build a runnable Spring XD sample that ingests the NYC taxi trip event stream, applies a sliding-window aggregation (e.g., frequent routes / average fare over time windows), and writes results to a sink module. Include a README with run instructions.\",\n      \"most_likely_effort\": 6.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Unit testing across all new features\",\n      \"activity_description\": \"Write JUnit tests for the cleanup hooks, stream-update diff logic, manifest parser, property/wildcard expansion for tracing, side-channel registry, and sample module. Use the in-memory test MessageBus where possible.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing\",\n      \"activity_description\": \"End-to-end tests using a local single-node XD deployment with an embedded or lightweight broker to verify deploy → edit → destroy lifecycles, manifest loading, tracing activation, and side-channel flow. Also smoke-test the two reference samples.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and release notes\",\n      \"activity_description\": \"Update the XD reference guide sections for stream lifecycle, deploy command (manifest, update), tracing properties, and side channels; add release notes for U1-U8 and a short user-facing summary for the new samples.\",\n      \"most_likely_effort\": 3.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 48.0\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully. The specification describes Spring Framework and lists several user stories (U1-U8) that appear to be related to Spring XD (a predecessor to Spring Cloud Data Flow).\n\nLet me break down the user stories:\n\nU1: Cleanup of message bus resources (queues/topics) when stream is destroyed\nU2: Cleanup of stale queues/topics when stream is destroyed\nU3: Option to edit deployed/undeployed stream without destroying first\nU4: Include deployment manifest from file\nU5: Reference architectures built on Spring XD\nU6: Optional trace as inline deployment properties\nU7: Optional arbitrary \"side channels\" for tracing\nU8: Taxi trips study with Spring XD (DEBS 2015 challenge)\n\nNow I need to break this down into development activities and estimate the effort. Let me think about this carefully.\n\nThe specification is about Spring XD which deals with stream processing, message buses, and deployment. Let me identify the technical components:\n\n1. Stream lifecycle management (U1, U2) - cleanup of resources\n2. Stream editing (U3) - update without destroy\n3. Manifest file support (U4) - load deployment properties from file\n4. Reference architectures documentation (U5)\n5. Tracing support (U6, U7) - module-level tracing via wiretap\n6. Sample/evaluation application (U8) - taxi trips analytics\n\nLet me create a WBS:\n\n1. **Requirements & Design Analysis**\n   - Analyze all 8 user stories\n   - Design stream lifecycle cleanup mechanism\n   - Design stream editing mechanism\n   - Design manifest file loading\n   - Design tracing/side channels\n   - Design reference architectures\n\n2. **Stream Resource Cleanup (U1, U2)**\n   - Implement cleanup of message bus resources on stream destroy\n   - Implement stale queue/topic detection and cleanup\n   - Testing\n\n3. **Stream Editing (U3)**\n   - Implement edit command for deployed/undeployed streams\n   - Property update logic\n   - State management\n   - Testing\n\n4. **Manifest File Support (U4)**\n   - Implement file-based deployment manifest loading\n   - Parser for manifest files\n   - Integration with deploy command\n   - Testing\n\n5. **Reference Architectures (U5)**\n   - Design reference architectures\n   - Documentation\n   - POC templates\n\n6. **Tracing Support (U6)**\n   - Implement trace property in deployment\n   - Wildcard trace support (module.*.trace)\n   - Wiretap integration\n   - Testing\n\n7. **Side Channels (U7)**\n   - Implement side channel creation\n   - Channel management\n   - Integration with module configuration\n   - Testing\n\n8. **Taxi Trips Sample (U8)**\n   - Implement stream processing for taxi trip reports\n   - Real-time analytics\n   - Documentation\n\n9. **Integration & Testing**\n   - End-to-end integration testing\n   - Performance testing\n   - Documentation\n\nLet me think about effort estimates. These are mid-complexity features in a framework like Spring XD. A senior developer might take:\n\n- Requirements analysis: 2-3 days\n- Design: 3-5 days\n- Implementation of each feature: 3-8 days depending on complexity\n- Testing: 2-4 days per feature\n- Documentation: 1-2 days\n\nLet me refine my estimates:\n\n1. Requirements & Design: 4 days\n2. U1+U2 (cleanup): 6 days\n3. U3 (edit): 8 days (most complex)\n4. U4 (manifest): 4 days\n5. U5 (reference arch): 5 days\n6. U6 (tracing): 6 days\n7. U7 (side channels): 5 days\n8. U8 (taxi sample): 7 days\n9. Integration testing: 4 days\n10. Documentation: 3 days\n\nLet me also consider technical decisions and assumptions.\n\nTechnical/Design Decisions:\n- Use existing message bus abstraction (e.g., RabbitMQ/Kafka bindings) for cleanup\n- Use Spring Integration's wiretap pattern for tracing\n- Manifest file format: YAML/Properties\n- Stream edit implemented as update operation\n- Reference architectures documented as Maven archetypes\n- Side channels as named channels on the bus\n\nAssumptions:\n- Single developer performing all work\n- Spring XD codebase is available and well understood\n- Existing module deployment framework is in place\n- Message bus provider already integrated\n- Java 8+ is available\n- Workdays = 8 hours\n- No major architectural changes needed\n- Existing test infrastructure can be reused\n- Reference architectures are documentation/POC focused\n- Trace implementation leverages existing logging infrastructure\n- No need to support legacy versions\n- Sample application can use existing NYC taxi data sources\n\nLet me reconsider some estimates. These are actually substantial features in a distributed system framework. Let me adjust:\n\nFor a senior developer with framework experience:\n\n1. Requirements analysis & architecture: 3 days\n2. Stream resource cleanup (U1+U2): 5 days\n3. Stream editing (U3): 7 days\n4. Manifest file support (U4): 3 days\n5. Reference architectures (U5): 4 days\n6. Tracing via deployment properties (U6): 5 days\n7. Side channels (U7): 5 days\n8. Taxi trip sample app (U8): 6 days\n9. Integration testing across features: 4 days\n10. Documentation: 3 days\n\nTotal: 45 days\n\nActually, let me think more carefully. The user stories include:\n- Some are clearly developer-facing features (U1-U4, U6, U7) - implementation heavy\n- U5 is reference documentation/POC\n- U8 is a sample application showing usage\n\nLet me finalize my WBS:\n\n1. A1: Requirements Analysis & Technical Design - 3 days\n2. A2: Implement Stream Resource Cleanup (U1, U2) - 5 days\n3. A3: Implement Stream Edit Capability (U3) - 7 days\n4. A4: Implement Manifest File Loading (U4) - 3 days\n5. A5: Create Reference Architectures (U5) - 4 days\n6. A6: Implement Module Tracing (U6) - 5 days\n7. A7: Implement Side Channels (U7) - 5 days\n8. A8: Build Taxi Trips Sample (U8) - 6 days\n9. A9: Unit Testing for All Features - 4 days\n10. A10: Integration Testing - 3 days\n11. A11: Documentation - 3 days\n\nTotal: 48 days\n\nLet me make sure these are realistic. For an experienced developer working on a framework like Spring XD:\n\n- Designing the approach: 3 days (good)\n- U1+U2 cleanup: 5 days - involves understanding message bus lifecycle, tracking resources, implementing cleanup hooks. Reasonable.\n- U3 stream edit: 7 days - more complex, requires state management and update semantics. Reasonable.\n- U4 manifest: 3 days - file parsing, integration. Reasonable.\n- U5 reference: 4 days - mostly documentation, some sample code. Reasonable.\n- U6 tracing: 5 days - wiretap integration, property handling. Reasonable.\n- U7 side channels: 5 days - channel abstraction, tap mechanism. Reasonable.\n- U8 taxi app: 6 days - sample application. Reasonable.\n- Unit testing: 4 days - across all features. Reasonable.\n- Integration testing: 3 days. Reasonable.\n- Documentation: 3 days. Reasonable.\n\nI'll go with this. Let me format the JSON response.\n\nWait, I need to double check on the technical decisions. Let me think about what assumptions I'm making:\n\n1. Spring XD is the framework being modified (the spec mentions it)\n2. The user is a senior Java developer familiar with Spring ecosystem\n3. Existing module/spi abstractions can be leveraged\n4. Message bus implementation (RabbitMQ) provides resource management APIs\n5. The features can be developed sequentially\n6. Testing is performed in-process (no separate QA team)\n\nLet me finalize the response.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully. The specification describes Spring Framework and lists several user stories (U1-U8) that appear to be related to Spring XD (a predecessor to Spring Cloud Data Flow).\n\nLet me break down the user stories:\n\nU1: Cleanup of message bus resources (queues/topics) when stream is destroyed\nU2: Cleanup of stale queues/topics when stream is destroyed\nU3: Option to edit deployed/undeployed stream without destroying first\nU4: Include deployment manifest from file\nU5: Reference architectures built on Spring XD\nU6: Optional trace as inline deployment properties\nU7: Optional arbitrary \"side channels\" for tracing\nU8: Taxi trips study with Spring XD (DEBS 2015 challenge)\n\nNow I need to break this down into development activities and estimate the effort. Let me think about this carefully.\n\nThe specification is about Spring XD which deals with stream processing, message buses, and deployment. Let me identify the technical components:\n\n1. Stream lifecycle management (U1, U2) - cleanup of resources\n2. Stream editing (U3) - update without destroy\n3. Manifest file support (U4) - load deployment properties from file\n4. Reference architectures documentation (U5)\n5. Tracing support (U6, U7) - module-level tracing via wiretap\n6. Sample/evaluation application (U8) - taxi trips analytics\n\nLet me create a WBS:\n\n1. **Requirements & Design Analysis**\n   - Analyze all 8 user stories\n   - Design stream lifecycle cleanup mechanism\n   - Design stream editing mechanism\n   - Design manifest file loading\n   - Design tracing/side channels\n   - Design reference architectures\n\n2. **Stream Resource Cleanup (U1, U2)**\n   - Implement cleanup of message bus resources on stream destroy\n   - Implement stale queue/topic detection and cleanup\n   - Testing\n\n3. **Stream Editing (U3)**\n   - Implement edit command for deployed/undeployed streams\n   - Property update logic\n   - State management\n   - Testing\n\n4. **Manifest File Support (U4)**\n   - Implement file-based deployment manifest loading\n   - Parser for manifest files\n   - Integration with deploy command\n   - Testing\n\n5. **Reference Architectures (U5)**\n   - Design reference architectures\n   - Documentation\n   - POC templates\n\n6. **Tracing Support (U6)**\n   - Implement trace property in deployment\n   - Wildcard trace support (module.*.trace)\n   - Wiretap integration\n   - Testing\n\n7. **Side Channels (U7)**\n   - Implement side channel creation\n   - Channel management\n   - Integration with module configuration\n   - Testing\n\n8. **Taxi Trips Sample (U8)**\n   - Implement stream processing for taxi trip reports\n   - Real-time analytics\n   - Documentation\n\n9. **Integration & Testing**\n   - End-to-end integration testing\n   - Performance testing\n   - Documentation\n\nLet me think about effort estimates. These are mid-complexity features in a framework like Spring XD. A senior developer might take:\n\n- Requirements analysis: 2-3 days\n- Design: 3-5 days\n- Implementation of each feature: 3-8 days depending on complexity\n- Testing: 2-4 days per feature\n- Documentation: 1-2 days\n\nLet me refine my estimates:\n\n1. Requirements & Design: 4 days\n2. U1+U2 (cleanup): 6 days\n3. U3 (edit): 8 days (most complex)\n4. U4 (manifest): 4 days\n5. U5 (reference arch): 5 days\n6. U6 (tracing): 6 days\n7. U7 (side channels): 5 days\n8. U8 (taxi sample): 7 days\n9. Integration testing: 4 days\n10. Documentation: 3 days\n\nLet me also consider technical decisions and assumptions.\n\nTechnical/Design Decisions:\n- Use existing message bus abstraction (e.g., RabbitMQ/Kafka bindings) for cleanup\n- Use Spring Integration's wiretap pattern for tracing\n- Manifest file format: YAML/Properties\n- Stream edit implemented as update operation\n- Reference architectures documented as Maven archetypes\n- Side channels as named channels on the bus\n\nAssumptions:\n- Single developer performing all work\n- Spring XD codebase is available and well understood\n- Existing module deployment framework is in place\n- Message bus provider already integrated\n- Java 8+ is available\n- Workdays = 8 hours\n- No major architectural changes needed\n- Existing test infrastructure can be reused\n- Reference architectures are documentation/POC focused\n- Trace implementation leverages existing logging infrastructure\n- No need to support legacy versions\n- Sample application can use existing NYC taxi data sources\n\nLet me reconsider some estimates. These are actually substantial features in a distributed system framework. Let me adjust:\n\nFor a senior developer with framework experience:\n\n1. Requirements analysis & architecture: 3 days\n2. Stream resource cleanup (U1+U2): 5 days\n3. Stream editing (U3): 7 days\n4. Manifest file support (U4): 3 days\n5. Reference architectures (U5): 4 days\n6. Tracing via deployment properties (U6): 5 days\n7. Side channels (U7): 5 days\n8. Taxi trip sample app (U8): 6 days\n9. Integration testing across features: 4 days\n10. Documentation: 3 days\n\nTotal: 45 days\n\nActually, let me think more carefully. The user stories include:\n- Some are clearly developer-facing features (U1-U4, U6, U7) - implementation heavy\n- U5 is reference documentation/POC\n- U8 is a sample application showing usage\n\nLet me finalize my WBS:\n\n1. A1: Requirements Analysis & Technical Design - 3 days\n2. A2: Implement Stream Resource Cleanup (U1, U2) - 5 days\n3. A3: Implement Stream Edit Capability (U3) - 7 days\n4. A4: Implement Manifest File Loading (U4) - 3 days\n5. A5: Create Reference Architectures (U5) - 4 days\n6. A6: Implement Module Tracing (U6) - 5 days\n7. A7: Implement Side Channels (U7) - 5 days\n8. A8: Build Taxi Trips Sample (U8) - 6 days\n9. A9: Unit Testing for All Features - 4 days\n10. A10: Integration Testing - 3 days\n11. A11: Documentation - 3 days\n\nTotal: 48 days\n\nLet me make sure these are realistic. For an experienced developer working on a framework like Spring XD:\n\n- Designing the approach: 3 days (good)\n- U1+U2 cleanup: 5 days - involves understanding message bus lifecycle, tracking resources, implementing cleanup hooks. Reasonable.\n- U3 stream edit: 7 days - more complex, requires state management and update semantics. Reasonable.\n- U4 manifest: 3 days - file parsing, integration. Reasonable.\n- U5 reference: 4 days - mostly documentation, some sample code. Reasonable.\n- U6 tracing: 5 days - wiretap integration, property handling. Reasonable.\n- U7 side channels: 5 days - channel abstraction, tap mechanism. Reasonable.\n- U8 taxi app: 6 days - sample application. Reasonable.\n- Unit testing: 4 days - across all features. Reasonable.\n- Integration testing: 3 days. Reasonable.\n- Documentation: 3 days. Reasonable.\n\nI'll go with this. Let me format the JSON response.\n\nWait, I need to double check on the technical decisions. Let me think about what assumptions I'm making:\n\n1. Spring XD is the framework being modified (the spec mentions it)\n2. The user is a senior Java developer familiar with Spring ecosystem\n3. Existing module/spi abstractions can be leveraged\n4. Message bus implementation (RabbitMQ) provides resource management APIs\n5. The features can be developed sequentially\n6. Testing is performed in-process (no separate QA team)\n\nLet me finalize the response.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1510,
+      "completion_tokens": 3454,
+      "total_tokens": 4964,
+      "cost": 0.00456036,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00456036,
+        "upstream_inference_prompt_cost": 0.00041556,
+        "upstream_inference_completions_cost": 0.0041448
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1736,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement stream resource cleanup as lifecycle hooks attached to the stream definition's deploy/destroy operations, leveraging the existing MessageBus SPI to query and delete queues/topics.\",\n    \"Implement stream edit (U3) as an update-in-place operation that diffs current and desired properties and re-issues only the module-level changes, avoiding a full destroy/redeploy when possible.\",\n    \"Support manifest file loading (U4) via a standard YAML format (Spring Boot-compatible) parsed using SnakeYAML, with inline --properties taking precedence over file values.\",\n    \"Implement module tracing (U6) by re-using Spring Integration's existing global wiretap pattern (channel-global-wiretap), with property keys resolved via wildcard expansion (module.*.trace).\",\n    \"Implement side channels (U7) as first-class named MessageBus channels declared in module definitions, exposed via a ChannelRegistry SPI so taps and external publishers can bind to them.\",\n    \"Deliver the reference architectures (U5) as a set of runnable Maven-based sample projects (POC templates) accompanied by architectural documentation, not as production-ready deployments.\",\n    \"Implement the taxi trips sample (U8) as a self-contained Spring XD stream definition plus a small custom module that performs windowed aggregations on the DEBS 2015 dataset.\",\n    \"Reuse the existing XD test harness (xd-test) and the in-memory/integration-test MessageBus for unit and integration tests; no new test infrastructure is built.\"\n  ],\n  \"assumptions\": [\n    \"The developer is a senior Java/Spring engineer with working knowledge of Spring XD internals (Module SPI, MessageBus SPI, stream deployment lifecycle).\",\n    \"Spring XD source code is available, buildable, and the developer is familiar with the relevant modules (stream, deployer, messagebus).\",\n    \"A single work product owner-style developer performs all activities sequentially; no parallel work or team coordination overhead is included.\",\n    \"A work day equals 8 productive hours; calendar time is not the constraint.\",\n    \"Underlying message broker (e.g., RabbitMQ) provides APIs sufficient to enumerate and delete the queues and topics the stream created.\",\n    \"Java 8+ is the runtime, matching the Spring XD era; no JDK upgrade or migration work is in scope.\",\n    \"No new UI work is required — all features are exposed through the existing xd:> shell DSL and REST API surface.\",\n    \"Module property resolution and wildcard expansion logic already exists in XD's deployment code and only needs to be extended for the new 'trace' property.\",\n    \"The DEBS 2015 NYC taxi trip dataset is publicly downloadable and the sample can reference it as an external resource (no large dataset shipping).\",\n    \"No production hardening, security review, performance tuning, or back-porting to older Spring versions is in scope.\",\n    \"Documentation updates are limited to the new features; existing XD reference docs are not rewritten.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Review all 8 user stories, study the existing XD stream lifecycle, MessageBus SPI, and module property resolution; produce a short design note covering cleanup hooks, edit semantics, manifest format, tracing via wiretap, side-channel SPI, and the two deliverables (reference archs, taxi sample).\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Stream resource cleanup on destroy (U1, U2)\",\n      \"activity_description\": \"Track all queues/topics created during stream deployment in the stream definition metadata, expose a stale-resource detector, and hook them into the destroy path so they are removed via the MessageBus SPI. Includes detection of stale resources left by previous crashed deployments.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Stream edit capability (U3)\",\n      \"activity_description\": \"Add an 'stream update' command (REST + shell) that accepts new deployment properties, computes a diff against the currently deployed definition, and applies only changed module properties without destroying the stream. Handle both deployed and undeployed states.\",\n      \"most_likely_effort\": 7.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Deployment manifest from file (U4)\",\n      \"activity_description\": \"Extend the stream create/deploy commands to accept a --manifest option pointing to a YAML file; parse the file with SnakeYAML, merge its properties with any inline --properties (inline wins), and pass the combined map through the existing deploy path.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Reference architectures on Spring XD (U5)\",\n      \"activity_description\": \"Identify 2-3 representative XD domain scenarios (e.g., real-time analytics, data ingestion, ETL); create runnable Maven-based POC projects for each and write concise architecture-overview documentation describing components, message flows, and extension points.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Module tracing via inline deployment properties (U6)\",\n      \"activity_description\": \"Recognize 'module.<name>.trace' / 'module.*.trace' deployment properties, expand wildcards against the deployed module set, and wire a Spring Integration global wiretap on the named module's output channel that logs/notifies per message. Document the property syntax.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Optional side channels (U7)\",\n      \"activity_description\": \"Introduce a side-channel declaration in module metadata so non-primary channels (input/output) can be created on the bus at deploy time; expose a ChannelRegistry so module code and external taps can publish or subscribe to these named channels for tracing/observability.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Taxi trips reference sample for DEBS 2015 (U8)\",\n      \"activity_description\": \"Build a runnable Spring XD sample that ingests the NYC taxi trip event stream, applies a sliding-window aggregation (e.g., frequent routes / average fare over time windows), and writes results to a sink module. Include a README with run instructions.\",\n      \"most_likely_effort\": 6.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Unit testing across all new features\",\n      \"activity_description\": \"Write JUnit tests for the cleanup hooks, stream-update diff logic, manifest parser, property/wildcard expansion for tracing, side-channel registry, and sample module. Use the in-memory test MessageBus where possible.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing\",\n      \"activity_description\": \"End-to-end tests using a local single-node XD deployment with an embedded or lightweight broker to verify deploy → edit → destroy lifecycles, manifest loading, tracing activation, and side-channel flow. Also smoke-test the two reference samples.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and release notes\",\n      \"activity_description\": \"Update the XD reference guide sections for stream lifecycle, deploy command (manifest, update), tracing properties, and side channels; add release notes for U1-U8 and a short user-facing summary for the new samples.\",\n      \"most_likely_effort\": 3.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 48.0\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1510,
+    "completion_tokens": 3454,
+    "total_tokens": 4964,
+    "cost": 0.00456036,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00456036,
+      "upstream_inference_prompt_cost": 0.00041556,
+      "upstream_inference_completions_cost": 0.0041448
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1736,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788421024-jwazaFVTHIH3hFfC5ZAA",
+    "object": "chat.completion",
+    "created": 1788421024,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8.0\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3354,
+      "completion_tokens": 21,
+      "total_tokens": 3375,
+      "cost": 0.00099396,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00099396,
+        "upstream_inference_prompt_cost": 0.00096876,
+        "upstream_inference_completions_cost": 2.52e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8.0\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement stream resource cleanup as lifecycle hooks attached to the stream definition's deploy/destroy operations, leveraging the existing MessageBus SPI to query and delete queues/topics.",
+      "Implement stream edit (U3) as an update-in-place operation that diffs current and desired properties and re-issues only the module-level changes, avoiding a full destroy/redeploy when possible.",
+      "Support manifest file loading (U4) via a standard YAML format (Spring Boot-compatible) parsed using SnakeYAML, with inline --properties taking precedence over file values.",
+      "Implement module tracing (U6) by re-using Spring Integration's existing global wiretap pattern (channel-global-wiretap), with property keys resolved via wildcard expansion (module.*.trace).",
+      "Implement side channels (U7) as first-class named MessageBus channels declared in module definitions, exposed via a ChannelRegistry SPI so taps and external publishers can bind to them.",
+      "Deliver the reference architectures (U5) as a set of runnable Maven-based sample projects (POC templates) accompanied by architectural documentation, not as production-ready deployments.",
+      "Implement the taxi trips sample (U8) as a self-contained Spring XD stream definition plus a small custom module that performs windowed aggregations on the DEBS 2015 dataset.",
+      "Reuse the existing XD test harness (xd-test) and the in-memory/integration-test MessageBus for unit and integration tests; no new test infrastructure is built."
+    ],
+    "assumptions": [
+      "The developer is a senior Java/Spring engineer with working knowledge of Spring XD internals (Module SPI, MessageBus SPI, stream deployment lifecycle).",
+      "Spring XD source code is available, buildable, and the developer is familiar with the relevant modules (stream, deployer, messagebus).",
+      "A single work product owner-style developer performs all activities sequentially; no parallel work or team coordination overhead is included.",
+      "A work day equals 8 productive hours; calendar time is not the constraint.",
+      "Underlying message broker (e.g., RabbitMQ) provides APIs sufficient to enumerate and delete the queues and topics the stream created.",
+      "Java 8+ is the runtime, matching the Spring XD era; no JDK upgrade or migration work is in scope.",
+      "No new UI work is required — all features are exposed through the existing xd:> shell DSL and REST API surface.",
+      "Module property resolution and wildcard expansion logic already exists in XD's deployment code and only needs to be extended for the new 'trace' property.",
+      "The DEBS 2015 NYC taxi trip dataset is publicly downloadable and the sample can reference it as an external resource (no large dataset shipping).",
+      "No production hardening, security review, performance tuning, or back-porting to older Spring versions is in scope.",
+      "Documentation updates are limited to the new features; existing XD reference docs are not rewritten."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and technical design",
+        "activity_description": "Review all 8 user stories, study the existing XD stream lifecycle, MessageBus SPI, and module property resolution; produce a short design note covering cleanup hooks, edit semantics, manifest format, tracing via wiretap, side-channel SPI, and the two deliverables (reference archs, taxi sample).",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Stream resource cleanup on destroy (U1, U2)",
+        "activity_description": "Track all queues/topics created during stream deployment in the stream definition metadata, expose a stale-resource detector, and hook them into the destroy path so they are removed via the MessageBus SPI. Includes detection of stale resources left by previous crashed deployments.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Stream edit capability (U3)",
+        "activity_description": "Add an 'stream update' command (REST + shell) that accepts new deployment properties, computes a diff against the currently deployed definition, and applies only changed module properties without destroying the stream. Handle both deployed and undeployed states.",
+        "most_likely_effort": 7.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Deployment manifest from file (U4)",
+        "activity_description": "Extend the stream create/deploy commands to accept a --manifest option pointing to a YAML file; parse the file with SnakeYAML, merge its properties with any inline --properties (inline wins), and pass the combined map through the existing deploy path.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Reference architectures on Spring XD (U5)",
+        "activity_description": "Identify 2-3 representative XD domain scenarios (e.g., real-time analytics, data ingestion, ETL); create runnable Maven-based POC projects for each and write concise architecture-overview documentation describing components, message flows, and extension points.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Module tracing via inline deployment properties (U6)",
+        "activity_description": "Recognize 'module.<name>.trace' / 'module.*.trace' deployment properties, expand wildcards against the deployed module set, and wire a Spring Integration global wiretap on the named module's output channel that logs/notifies per message. Document the property syntax.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Optional side channels (U7)",
+        "activity_description": "Introduce a side-channel declaration in module metadata so non-primary channels (input/output) can be created on the bus at deploy time; expose a ChannelRegistry so module code and external taps can publish or subscribe to these named channels for tracing/observability.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Taxi trips reference sample for DEBS 2015 (U8)",
+        "activity_description": "Build a runnable Spring XD sample that ingests the NYC taxi trip event stream, applies a sliding-window aggregation (e.g., frequent routes / average fare over time windows), and writes results to a sink module. Include a README with run instructions.",
+        "most_likely_effort": 6.0
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Unit testing across all new features",
+        "activity_description": "Write JUnit tests for the cleanup hooks, stream-update diff logic, manifest parser, property/wildcard expansion for tracing, side-channel registry, and sample module. Use the in-memory test MessageBus where possible.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Integration testing",
+        "activity_description": "End-to-end tests using a local single-node XD deployment with an embedded or lightweight broker to verify deploy → edit → destroy lifecycles, manifest loading, tracing activation, and side-channel flow. Also smoke-test the two reference samples.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation and release notes",
+        "activity_description": "Update the XD reference guide sections for stream lifecycle, deploy command (manifest, update), tracing properties, and side channels; add release notes for U1-U8 and a short user-facing summary for the new samples.",
+        "most_likely_effort": 3.0
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 48.0
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8.0
+  }
+}

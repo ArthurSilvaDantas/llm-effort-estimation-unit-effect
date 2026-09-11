@@ -1,0 +1,250 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-005",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788418613-gRJHrWo028YTi7IueSbW",
+    "object": "chat.completion",
+    "created": 1788418613,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: Choose per-transaction instance creation for the Java contract context (favoring thread-safety over performance), analogous to the implicit first-parameter context that Node.js already provides.\",\n    \"U2/U3: Introduce a new top-level 'protoutils' package (sibling of 'protos') for utilities and extensions, leaving 'protos' to contain only externally consumable generated artifacts.\",\n    \"U4: Treat the backport as a cherry-pick/adapt task: identify the Kafka health-check commits on master and reapply (with minor adaptations) onto the Fabric 1.4 LTS branch, accepting that some upstream changes may be dropped if they require non-LTS dependencies.\",\n    \"U5: Implement explicit read-only Invoke support in the endorsement/validation flow that only permits Get-style operations, while keeping the existing access checks as a fallback; new 'read-only' chaincode metadata will drive the decision so Reader permission is sufficient.\",\n    \"U6: Add a new peer configuration option (e.g., CORE_PEER_GOSSIP_EXTERNAL_ENDPOINT_ADVERTISED) that overrides what Service Discovery advertises to SDKs, separate from the binding/internal endpoint used by the peer process.\",\n    \"U7: Extend the existing operations service (gRPC) on both peer and orderer with a GetVersion() handler, returning the same version metadata currently exposed by 'peer version' / 'orderer version' CLI commands.\",\n    \"U8: Refactor the Go sample chaincode to use idiomatic Go (package-level error returns, short variable names, conventional receiver names, table-driven examples) rather than Java- or Node.js-style patterns.\"\n  ],\n  \"assumptions\": [\n    \"The increment is implemented by a single experienced developer familiar with the Hyperledger Fabric codebase, in an 8-hour workday.\",\n    \"U2 and U3 are duplicates and treated as a single refactoring effort.\",\n    \"The Fabric 1.4 LTS branch is available with its toolchain ready; the Kafka ordering cluster is locally available for backport testing.\",\n    \"The Java contract shim is in place and only requires the per-transaction context wiring, not a from-scratch port.\",\n    \"Service Discovery changes only affect the peer side; SDK changes are out of scope for this increment.\",\n    \"Documentation updates are limited to inline GoDoc/Javadoc, the relevant docs/source files, and the sample READMEs; no new tutorial site content is produced.\",\n    \"Unit tests are written alongside each activity; the dedicated 'integration testing' activity covers cross-story and end-to-end verification.\",\n    \"No upstream rebases or large dependency upgrades are required beyond what each individual story already implies.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and overall design\",\n      \"activity_description\": \"Review all eight user stories, clarify dependencies between them, and produce a brief design note covering the per-story approach, the protos/protoutils split, the 1.4 LTS backport strategy, the read-only invoke semantics, and the new peer config option.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Transactional context for Java contracts\",\n      \"activity_description\": \"Modify the Java chaincode shim so each transaction gets a fresh context object exposing the stub and APIs (mirroring the Node.js first-parameter pattern). Update the shim's lifecycle hooks, add unit tests covering concurrent invocations, and verify thread-safety.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2/U3: Clean up protos package (move utils to protoutils)\",\n      \"activity_description\": \"Create a new protoutils package, move existing protos/utils code into it, and update all import paths across the codebase. Ensure generated protobuf artifacts remain the only contents of the protos package. Add build/lint checks to prevent regression.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4: Backport Kafka health checks to Fabric 1.4 LTS\",\n      \"activity_description\": \"Identify the Kafka health-check commits on master, adapt them to the 1.4 LTS APIs and dependencies, resolve any conflicts, and add tests that exercise health-check behaviour against a local Kafka cluster.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5: Read-only invoke for channel Readers\",\n      \"activity_description\": \"Introduce explicit read-only chaincode metadata, plumb it through proposal endorsement and validation, and update the access-control check so that invocations marked read-only pass for channel Readers but still reject Put operations. Add unit and integration tests covering both allowed and denied scenarios.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6: Explicit external endpoint for Service Discovery\",\n      \"activity_description\": \"Add a new peer configuration option for the advertised external endpoint, wire it into the Service Discovery implementation, ensure it overrides the gossip external endpoint only for discovery responses, and document the behaviour. Test with a simulated docker-network scenario.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7: Version endpoint in operations service\",\n      \"activity_description\": \"Add a GetVersion RPC to the operations service proto/service, implement it on the peer and orderer servers reusing the same version metadata as the CLI, and add a small client helper plus tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8: Idiomatic Go sample chaincode\",\n      \"activity_description\": \"Refactor the Go sample chaincode and supporting sample applications to use idiomatic Go error handling, naming, and structure, keeping external behaviour identical. Update sample README to call out the idiomatic patterns used.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-story integration testing\",\n      \"activity_description\": \"Run the Fabric end-to-end and integration test suites covering Kafka ordering, service discovery, operations service, and the new read-only invoke path; investigate and fix any cross-story regressions surfaced by the backport or protos refactor.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update relevant docs (config reference, operations service reference, sample READMEs, protos layout) to reflect the new external endpoint option, the read-only invoke semantics, the version endpoint, and the protos/protoutils split.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Code review, rework, and finalization\",\n      \"activity_description\": \"Self-review all changes, address review comments from maintainers, finalize commit messages and changelogs, and ensure CI is green for the increment.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 32\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the specification carefully and break down the development work into activities for each user story.\n\nThe specification contains 8 user stories (U1-U8) for Hyperledger Fabric improvements:\n\n1. **U1**: Contract developers need access to \"transactional context\" - the stub and APIs. Node.js passes it as first parameter, but Java needs consideration for thread-safety vs performance (create instance per transaction).\n\n2. **U2**: Move protos/utils to protoutils to clean up protos package to include only externally consumable artifacts.\n\n3. **U3**: Same as U2 - appears to be a duplicate of U2.\n\n4. **U4**: Backport Kafka health checks from master branch to Fabric 1.4 LTS.\n\n5. **U5**: Channel Reader permission holders should be able to invoke chaincode that only queries (reads) ledger data, not requiring Writer permission. Need either access control based on actual operations or a read-only Invoke.\n\n6. **U6**: Add ability to explicitly set peer's external endpoint advertised to SDK in Service Discovery, so users don't need to implement DNS for Docker networks.\n\n7. **U7**: Operations service should expose orderer/peer version info to help operators know when to upgrade channel capabilities.\n\n8. **U8**: Samples should be written in idiomatic Go for beginners.\n\nLet me think about the WBS for this:\n\n**Phase 1: Planning & Design**\n- Requirements analysis and design decisions\n- Architecture review for the changes\n\n**Phase 2: Implementation per user story**\n\nFor U1 (transactional context for Java contracts):\n- Design transactional context API for Java chaincode\n- Implement per-transaction instance creation\n- Update Java chaincode shim to provide context\n- Update documentation and tests\n\nFor U2/U3 (protos cleanup - note this is duplicate, treat as one task):\n- Identify all utilities in protos/utils\n- Move them to a new protoutils package\n- Update import references throughout codebase\n- Update documentation\n\nFor U4 (Kafka health checks backport to 1.4 LTS):\n- Identify the Kafka health check changes in master\n- Cherry-pick/port changes to 1.4 LTS branch\n- Verify compatibility with 1.4 dependencies\n- Test\n\nFor U5 (Reader permission for query-only chaincode):\n- Design access control mechanism for read-only invocations\n- Implement check for read-only chaincode\n- Update endorsement/validation flow\n- Add tests\n\nFor U6 (External endpoint for Service Discovery):\n- Design new configuration option for external endpoint\n- Update Service Discovery to use the new option\n- Update documentation\n- Test\n\nFor U7 (Version info in operations service):\n- Add version endpoint to operations service\n- Update both peer and orderer\n- Update documentation\n- Test\n\nFor U8 (Idiomatic Go samples):\n- Review existing samples\n- Refactor to use idiomatic Go patterns\n- Update documentation\n\n**Phase 3: Integration & Testing**\n- Unit tests\n- Integration tests\n- System tests\n- Documentation\n- Code review and final integration\n\nLet me think more carefully about effort estimates. As an experienced developer working on this:\n\n- U1: Thread-safety/performance tradeoff in Java is a meaningful design discussion. Implementing per-transaction context requires changes to chaincode shim. I'd say 3-5 days.\n- U2/U3: Package refactoring is relatively mechanical but touches many files. 2-3 days.\n- U4: Backporting is non-trivial because master may have different dependencies. 3-5 days.\n- U5: This is a security/access control change - high stakes. Design + implementation + tests = 5-7 days.\n- U6: Adding a config option to Service Discovery. 2-3 days.\n- U7: Adding version endpoint. 1-2 days.\n- U8: Refactoring samples. 1-2 days.\n\nPlus common activities:\n- Requirements/design: 1-2 days\n- Integration testing: 2-3 days\n- Documentation: 1-2 days\n- Code review/rework: 1-2 days\n\nLet me structure this more carefully. I'll provide single most likely estimates.\n\nLet me think about this in a WBS:\n\n1. Requirements analysis and overall design (combined for all stories)\n2. U1 implementation\n3. U2/U3 implementation (combined since duplicate)\n4. U4 implementation\n5. U5 implementation\n6. U6 implementation\n7. U7 implementation\n8. U8 implementation\n9. Integration testing\n10. Documentation\n11. Code review and finalization\n\nTechnical/design decisions:\n- For U1: Create per-transaction instance for Java chaincode context (safety over performance is mentioned in story)\n- For U2/U3: Create new protoutils package outside protos\n- For U4: Cherry-pick approach, adapting to 1.4 LTS dependencies\n- For U5: Implement access control check based on chaincode operations (puts vs gets)\n- For U6: Add new peer config option for external endpoint in service discovery\n- For U7: Extend operations service with version handler\n- For U8: Refactor samples using idiomatic Go patterns (e.g., error handling, naming)\n\nAssumptions:\n- Working in Go primarily (with some Java for U1)\n- Have access to existing Fabric codebase\n- Single developer doing the work (me)\n- 8-hour workday\n- 1.4 LTS branch is available and stable for backporting\n- Samples are written in Go for Node.js and Java SDKs\n\nLet me finalize the estimates:\n\n1. Requirements analysis & design: 2 days\n2. U1 (transactional context for Java): 4 days\n3. U2/U3 (protos cleanup): 2 days\n4. U4 (Kafka health checks backport): 4 days\n5. U5 (Reader permission for queries): 6 days\n6. U6 (External endpoint for Service Discovery): 3 days\n7. U7 (Version in operations service): 2 days\n8. U8 (Idiomatic Go samples): 2 days\n9. Integration testing: 3 days\n10. Documentation: 2 days\n11. Code review & finalization: 2 days\n\nTotal: 32 days\n\nLet me reconsider - this should be a reasonable estimate. The user stories are quite varied in complexity. Let me adjust:\n\nActually, U5 is significant - it's a security/access control change. Could be 5-7 days.\nU1 is also significant with Java thread-safety considerations.\n\nLet me settle on:\n\n1. Requirements analysis & overall design: 2 days\n2. U1 implementation (transactional context for Java contracts): 4 days\n3. U2/U3 implementation (protos package cleanup): 2 days\n4. U4 implementation (Kafka health checks backport to 1.4 LTS): 4 days\n5. U5 implementation (Reader permission for query-only chaincode): 6 days\n6. U6 implementation (External endpoint for Service Discovery): 3 days\n7. U7 implementation (Version info in operations service): 2 days\n8. U8 implementation (Idiomatic Go samples refactor): 2 days\n9. Integration testing across stories: 3 days\n10. Documentation updates: 2 days\n11. Code review, rework, and finalization: 2 days\n\nTotal: 32 days\n\nI'll go with this estimate. Let me format the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the specification carefully and break down the development work into activities for each user story.\n\nThe specification contains 8 user stories (U1-U8) for Hyperledger Fabric improvements:\n\n1. **U1**: Contract developers need access to \"transactional context\" - the stub and APIs. Node.js passes it as first parameter, but Java needs consideration for thread-safety vs performance (create instance per transaction).\n\n2. **U2**: Move protos/utils to protoutils to clean up protos package to include only externally consumable artifacts.\n\n3. **U3**: Same as U2 - appears to be a duplicate of U2.\n\n4. **U4**: Backport Kafka health checks from master branch to Fabric 1.4 LTS.\n\n5. **U5**: Channel Reader permission holders should be able to invoke chaincode that only queries (reads) ledger data, not requiring Writer permission. Need either access control based on actual operations or a read-only Invoke.\n\n6. **U6**: Add ability to explicitly set peer's external endpoint advertised to SDK in Service Discovery, so users don't need to implement DNS for Docker networks.\n\n7. **U7**: Operations service should expose orderer/peer version info to help operators know when to upgrade channel capabilities.\n\n8. **U8**: Samples should be written in idiomatic Go for beginners.\n\nLet me think about the WBS for this:\n\n**Phase 1: Planning & Design**\n- Requirements analysis and design decisions\n- Architecture review for the changes\n\n**Phase 2: Implementation per user story**\n\nFor U1 (transactional context for Java contracts):\n- Design transactional context API for Java chaincode\n- Implement per-transaction instance creation\n- Update Java chaincode shim to provide context\n- Update documentation and tests\n\nFor U2/U3 (protos cleanup - note this is duplicate, treat as one task):\n- Identify all utilities in protos/utils\n- Move them to a new protoutils package\n- Update import references throughout codebase\n- Update documentation\n\nFor U4 (Kafka health checks backport to 1.4 LTS):\n- Identify the Kafka health check changes in master\n- Cherry-pick/port changes to 1.4 LTS branch\n- Verify compatibility with 1.4 dependencies\n- Test\n\nFor U5 (Reader permission for query-only chaincode):\n- Design access control mechanism for read-only invocations\n- Implement check for read-only chaincode\n- Update endorsement/validation flow\n- Add tests\n\nFor U6 (External endpoint for Service Discovery):\n- Design new configuration option for external endpoint\n- Update Service Discovery to use the new option\n- Update documentation\n- Test\n\nFor U7 (Version info in operations service):\n- Add version endpoint to operations service\n- Update both peer and orderer\n- Update documentation\n- Test\n\nFor U8 (Idiomatic Go samples):\n- Review existing samples\n- Refactor to use idiomatic Go patterns\n- Update documentation\n\n**Phase 3: Integration & Testing**\n- Unit tests\n- Integration tests\n- System tests\n- Documentation\n- Code review and final integration\n\nLet me think more carefully about effort estimates. As an experienced developer working on this:\n\n- U1: Thread-safety/performance tradeoff in Java is a meaningful design discussion. Implementing per-transaction context requires changes to chaincode shim. I'd say 3-5 days.\n- U2/U3: Package refactoring is relatively mechanical but touches many files. 2-3 days.\n- U4: Backporting is non-trivial because master may have different dependencies. 3-5 days.\n- U5: This is a security/access control change - high stakes. Design + implementation + tests = 5-7 days.\n- U6: Adding a config option to Service Discovery. 2-3 days.\n- U7: Adding version endpoint. 1-2 days.\n- U8: Refactoring samples. 1-2 days.\n\nPlus common activities:\n- Requirements/design: 1-2 days\n- Integration testing: 2-3 days\n- Documentation: 1-2 days\n- Code review/rework: 1-2 days\n\nLet me structure this more carefully. I'll provide single most likely estimates.\n\nLet me think about this in a WBS:\n\n1. Requirements analysis and overall design (combined for all stories)\n2. U1 implementation\n3. U2/U3 implementation (combined since duplicate)\n4. U4 implementation\n5. U5 implementation\n6. U6 implementation\n7. U7 implementation\n8. U8 implementation\n9. Integration testing\n10. Documentation\n11. Code review and finalization\n\nTechnical/design decisions:\n- For U1: Create per-transaction instance for Java chaincode context (safety over performance is mentioned in story)\n- For U2/U3: Create new protoutils package outside protos\n- For U4: Cherry-pick approach, adapting to 1.4 LTS dependencies\n- For U5: Implement access control check based on chaincode operations (puts vs gets)\n- For U6: Add new peer config option for external endpoint in service discovery\n- For U7: Extend operations service with version handler\n- For U8: Refactor samples using idiomatic Go patterns (e.g., error handling, naming)\n\nAssumptions:\n- Working in Go primarily (with some Java for U1)\n- Have access to existing Fabric codebase\n- Single developer doing the work (me)\n- 8-hour workday\n- 1.4 LTS branch is available and stable for backporting\n- Samples are written in Go for Node.js and Java SDKs\n\nLet me finalize the estimates:\n\n1. Requirements analysis & design: 2 days\n2. U1 (transactional context for Java): 4 days\n3. U2/U3 (protos cleanup): 2 days\n4. U4 (Kafka health checks backport): 4 days\n5. U5 (Reader permission for queries): 6 days\n6. U6 (External endpoint for Service Discovery): 3 days\n7. U7 (Version in operations service): 2 days\n8. U8 (Idiomatic Go samples): 2 days\n9. Integration testing: 3 days\n10. Documentation: 2 days\n11. Code review & finalization: 2 days\n\nTotal: 32 days\n\nLet me reconsider - this should be a reasonable estimate. The user stories are quite varied in complexity. Let me adjust:\n\nActually, U5 is significant - it's a security/access control change. Could be 5-7 days.\nU1 is also significant with Java thread-safety considerations.\n\nLet me settle on:\n\n1. Requirements analysis & overall design: 2 days\n2. U1 implementation (transactional context for Java contracts): 4 days\n3. U2/U3 implementation (protos package cleanup): 2 days\n4. U4 implementation (Kafka health checks backport to 1.4 LTS): 4 days\n5. U5 implementation (Reader permission for query-only chaincode): 6 days\n6. U6 implementation (External endpoint for Service Discovery): 3 days\n7. U7 implementation (Version info in operations service): 2 days\n8. U8 implementation (Idiomatic Go samples refactor): 2 days\n9. Integration testing across stories: 3 days\n10. Documentation updates: 2 days\n11. Code review, rework, and finalization: 2 days\n\nTotal: 32 days\n\nI'll go with this estimate. Let me format the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1474,
+      "completion_tokens": 3185,
+      "total_tokens": 4659,
+      "cost": 0.00418596,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 326,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00418596,
+        "upstream_inference_prompt_cost": 0.00036396,
+        "upstream_inference_completions_cost": 0.003822
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1570,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: Choose per-transaction instance creation for the Java contract context (favoring thread-safety over performance), analogous to the implicit first-parameter context that Node.js already provides.\",\n    \"U2/U3: Introduce a new top-level 'protoutils' package (sibling of 'protos') for utilities and extensions, leaving 'protos' to contain only externally consumable generated artifacts.\",\n    \"U4: Treat the backport as a cherry-pick/adapt task: identify the Kafka health-check commits on master and reapply (with minor adaptations) onto the Fabric 1.4 LTS branch, accepting that some upstream changes may be dropped if they require non-LTS dependencies.\",\n    \"U5: Implement explicit read-only Invoke support in the endorsement/validation flow that only permits Get-style operations, while keeping the existing access checks as a fallback; new 'read-only' chaincode metadata will drive the decision so Reader permission is sufficient.\",\n    \"U6: Add a new peer configuration option (e.g., CORE_PEER_GOSSIP_EXTERNAL_ENDPOINT_ADVERTISED) that overrides what Service Discovery advertises to SDKs, separate from the binding/internal endpoint used by the peer process.\",\n    \"U7: Extend the existing operations service (gRPC) on both peer and orderer with a GetVersion() handler, returning the same version metadata currently exposed by 'peer version' / 'orderer version' CLI commands.\",\n    \"U8: Refactor the Go sample chaincode to use idiomatic Go (package-level error returns, short variable names, conventional receiver names, table-driven examples) rather than Java- or Node.js-style patterns.\"\n  ],\n  \"assumptions\": [\n    \"The increment is implemented by a single experienced developer familiar with the Hyperledger Fabric codebase, in an 8-hour workday.\",\n    \"U2 and U3 are duplicates and treated as a single refactoring effort.\",\n    \"The Fabric 1.4 LTS branch is available with its toolchain ready; the Kafka ordering cluster is locally available for backport testing.\",\n    \"The Java contract shim is in place and only requires the per-transaction context wiring, not a from-scratch port.\",\n    \"Service Discovery changes only affect the peer side; SDK changes are out of scope for this increment.\",\n    \"Documentation updates are limited to inline GoDoc/Javadoc, the relevant docs/source files, and the sample READMEs; no new tutorial site content is produced.\",\n    \"Unit tests are written alongside each activity; the dedicated 'integration testing' activity covers cross-story and end-to-end verification.\",\n    \"No upstream rebases or large dependency upgrades are required beyond what each individual story already implies.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and overall design\",\n      \"activity_description\": \"Review all eight user stories, clarify dependencies between them, and produce a brief design note covering the per-story approach, the protos/protoutils split, the 1.4 LTS backport strategy, the read-only invoke semantics, and the new peer config option.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Transactional context for Java contracts\",\n      \"activity_description\": \"Modify the Java chaincode shim so each transaction gets a fresh context object exposing the stub and APIs (mirroring the Node.js first-parameter pattern). Update the shim's lifecycle hooks, add unit tests covering concurrent invocations, and verify thread-safety.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2/U3: Clean up protos package (move utils to protoutils)\",\n      \"activity_description\": \"Create a new protoutils package, move existing protos/utils code into it, and update all import paths across the codebase. Ensure generated protobuf artifacts remain the only contents of the protos package. Add build/lint checks to prevent regression.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4: Backport Kafka health checks to Fabric 1.4 LTS\",\n      \"activity_description\": \"Identify the Kafka health-check commits on master, adapt them to the 1.4 LTS APIs and dependencies, resolve any conflicts, and add tests that exercise health-check behaviour against a local Kafka cluster.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5: Read-only invoke for channel Readers\",\n      \"activity_description\": \"Introduce explicit read-only chaincode metadata, plumb it through proposal endorsement and validation, and update the access-control check so that invocations marked read-only pass for channel Readers but still reject Put operations. Add unit and integration tests covering both allowed and denied scenarios.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6: Explicit external endpoint for Service Discovery\",\n      \"activity_description\": \"Add a new peer configuration option for the advertised external endpoint, wire it into the Service Discovery implementation, ensure it overrides the gossip external endpoint only for discovery responses, and document the behaviour. Test with a simulated docker-network scenario.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7: Version endpoint in operations service\",\n      \"activity_description\": \"Add a GetVersion RPC to the operations service proto/service, implement it on the peer and orderer servers reusing the same version metadata as the CLI, and add a small client helper plus tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8: Idiomatic Go sample chaincode\",\n      \"activity_description\": \"Refactor the Go sample chaincode and supporting sample applications to use idiomatic Go error handling, naming, and structure, keeping external behaviour identical. Update sample README to call out the idiomatic patterns used.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-story integration testing\",\n      \"activity_description\": \"Run the Fabric end-to-end and integration test suites covering Kafka ordering, service discovery, operations service, and the new read-only invoke path; investigate and fix any cross-story regressions surfaced by the backport or protos refactor.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update relevant docs (config reference, operations service reference, sample READMEs, protos layout) to reflect the new external endpoint option, the read-only invoke semantics, the version endpoint, and the protos/protoutils split.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Code review, rework, and finalization\",\n      \"activity_description\": \"Self-review all changes, address review comments from maintainers, finalize commit messages and changelogs, and ensure CI is green for the increment.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 32\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1474,
+    "completion_tokens": 3185,
+    "total_tokens": 4659,
+    "cost": 0.00418596,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 326,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00418596,
+      "upstream_inference_prompt_cost": 0.00036396,
+      "upstream_inference_completions_cost": 0.003822
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1570,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788418641-Mm56bsdxS42gzbXwECSn",
+    "object": "chat.completion",
+    "created": 1788418641,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking a simple question: how many work-hours do I consider equivalent to one estimated workday. This is a follow-up to the previous effort estimate task. I should not revise, recalculate, or restate the previous effort estimate.\n\nA standard software development workday is typically 8 hours. I'll go with 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple question: how many work-hours do I consider equivalent to one estimated workday. This is a follow-up to the previous effort estimate task. I should not revise, recalculate, or restate the previous effort estimate.\n\nA standard software development workday is typically 8 hours. I'll go with 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3214,
+      "completion_tokens": 86,
+      "total_tokens": 3300,
+      "cost": 0.00071724,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1459,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00071724,
+        "upstream_inference_prompt_cost": 0.00061404,
+        "upstream_inference_completions_cost": 0.0001032
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 68,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "U1: Choose per-transaction instance creation for the Java contract context (favoring thread-safety over performance), analogous to the implicit first-parameter context that Node.js already provides.",
+      "U2/U3: Introduce a new top-level 'protoutils' package (sibling of 'protos') for utilities and extensions, leaving 'protos' to contain only externally consumable generated artifacts.",
+      "U4: Treat the backport as a cherry-pick/adapt task: identify the Kafka health-check commits on master and reapply (with minor adaptations) onto the Fabric 1.4 LTS branch, accepting that some upstream changes may be dropped if they require non-LTS dependencies.",
+      "U5: Implement explicit read-only Invoke support in the endorsement/validation flow that only permits Get-style operations, while keeping the existing access checks as a fallback; new 'read-only' chaincode metadata will drive the decision so Reader permission is sufficient.",
+      "U6: Add a new peer configuration option (e.g., CORE_PEER_GOSSIP_EXTERNAL_ENDPOINT_ADVERTISED) that overrides what Service Discovery advertises to SDKs, separate from the binding/internal endpoint used by the peer process.",
+      "U7: Extend the existing operations service (gRPC) on both peer and orderer with a GetVersion() handler, returning the same version metadata currently exposed by 'peer version' / 'orderer version' CLI commands.",
+      "U8: Refactor the Go sample chaincode to use idiomatic Go (package-level error returns, short variable names, conventional receiver names, table-driven examples) rather than Java- or Node.js-style patterns."
+    ],
+    "assumptions": [
+      "The increment is implemented by a single experienced developer familiar with the Hyperledger Fabric codebase, in an 8-hour workday.",
+      "U2 and U3 are duplicates and treated as a single refactoring effort.",
+      "The Fabric 1.4 LTS branch is available with its toolchain ready; the Kafka ordering cluster is locally available for backport testing.",
+      "The Java contract shim is in place and only requires the per-transaction context wiring, not a from-scratch port.",
+      "Service Discovery changes only affect the peer side; SDK changes are out of scope for this increment.",
+      "Documentation updates are limited to inline GoDoc/Javadoc, the relevant docs/source files, and the sample READMEs; no new tutorial site content is produced.",
+      "Unit tests are written alongside each activity; the dedicated 'integration testing' activity covers cross-story and end-to-end verification.",
+      "No upstream rebases or large dependency upgrades are required beyond what each individual story already implies."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and overall design",
+        "activity_description": "Review all eight user stories, clarify dependencies between them, and produce a brief design note covering the per-story approach, the protos/protoutils split, the 1.4 LTS backport strategy, the read-only invoke semantics, and the new peer config option.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1: Transactional context for Java contracts",
+        "activity_description": "Modify the Java chaincode shim so each transaction gets a fresh context object exposing the stub and APIs (mirroring the Node.js first-parameter pattern). Update the shim's lifecycle hooks, add unit tests covering concurrent invocations, and verify thread-safety.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2/U3: Clean up protos package (move utils to protoutils)",
+        "activity_description": "Create a new protoutils package, move existing protos/utils code into it, and update all import paths across the codebase. Ensure generated protobuf artifacts remain the only contents of the protos package. Add build/lint checks to prevent regression.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U4: Backport Kafka health checks to Fabric 1.4 LTS",
+        "activity_description": "Identify the Kafka health-check commits on master, adapt them to the 1.4 LTS APIs and dependencies, resolve any conflicts, and add tests that exercise health-check behaviour against a local Kafka cluster.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U5: Read-only invoke for channel Readers",
+        "activity_description": "Introduce explicit read-only chaincode metadata, plumb it through proposal endorsement and validation, and update the access-control check so that invocations marked read-only pass for channel Readers but still reject Put operations. Add unit and integration tests covering both allowed and denied scenarios.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U6: Explicit external endpoint for Service Discovery",
+        "activity_description": "Add a new peer configuration option for the advertised external endpoint, wire it into the Service Discovery implementation, ensure it overrides the gossip external endpoint only for discovery responses, and document the behaviour. Test with a simulated docker-network scenario.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7: Version endpoint in operations service",
+        "activity_description": "Add a GetVersion RPC to the operations service proto/service, implement it on the peer and orderer servers reusing the same version metadata as the CLI, and add a small client helper plus tests.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8: Idiomatic Go sample chaincode",
+        "activity_description": "Refactor the Go sample chaincode and supporting sample applications to use idiomatic Go error handling, naming, and structure, keeping external behaviour identical. Update sample README to call out the idiomatic patterns used.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Cross-story integration testing",
+        "activity_description": "Run the Fabric end-to-end and integration test suites covering Kafka ordering, service discovery, operations service, and the new read-only invoke path; investigate and fix any cross-story regressions surfaced by the backport or protos refactor.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Documentation updates",
+        "activity_description": "Update relevant docs (config reference, operations service reference, sample READMEs, protos layout) to reflect the new external endpoint option, the read-only invoke semantics, the version endpoint, and the protos/protoutils split.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Code review, rework, and finalization",
+        "activity_description": "Self-review all changes, address review comments from maintainers, finalize commit messages and changelogs, and ensure CI is green for the increment.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 32
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

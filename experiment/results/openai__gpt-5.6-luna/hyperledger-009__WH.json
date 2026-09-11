@@ -1,0 +1,184 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "hyperledger-009",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788411477-tsFCuHDPTUYYo2sNOfze",
+    "object": "chat.completion",
+    "created": 1788411477,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the increment in Go using the existing Hyperledger Fabric channel configuration and protobuf types and preserve the library's existing public API conventions.\",\n    \"Represent all changes as mutations of an in-memory configuration derived from an existing Config block or Config transaction, then use the existing configuration-delta mechanism to produce a ConfigUpdate transaction.\",\n    \"Use defensive copying of configuration structures where necessary so callers can compare original and modified configurations and so helper operations do not unexpectedly mutate shared input state.\",\n    \"Implement anchor-peer operations at the organization application-group level and identify the target organization by its MSP ID.\",\n    \"Implement certificate revocation by parsing the supplied certificate, converting it to the Fabric MSP revocation-list representation, and updating the target MSP's FabricMSPConfig revocation_list attribute.\",\n    \"Implement root-CA addition by parsing the certificate and rejecting certificates that are not CA certificates or that do not include the KeyUsageCertSign capability.\",\n    \"Expose retrieval helpers that return existing anchor peers and an orderer configuration in forms directly usable by the existing update functions.\",\n    \"Use existing Fabric signing and envelope-building utilities in documentation examples rather than introducing a new signing abstraction.\"\n  ],\n  \"assumptions\": [\n    \"The work is performed in an existing Go repository containing configuration parsing, configuration update, signing, and protobuf helper functionality.\",\n    \"The existing library already supports computing ConfigUpdate transactions; this increment extends that functionality rather than implementing Fabric configuration-update serialization from scratch.\",\n    \"The APIs will accept parsed configuration objects or serialized Config blocks/transactions according to the repository's established conventions; no new wire protocol is introduced.\",\n    \"Certificate revocation input is an X.509 certificate in PEM or DER form, and the target MSP is identified by its MSP ID.\",\n    \"A revoked certificate is appended to the MSP revocation list unless an equivalent entry already exists; duplicate handling will be consistent with existing library conventions.\",\n    \"Root CA validation covers parseability, CA basic constraints, and the KeyUsageCertSign/CertSign requirement, but does not implement full chain validation or certificate-policy validation.\",\n    \"Tests can use generated or repository-provided test certificates, keys, channel configurations, and signing identities; no external Fabric network deployment is required.\",\n    \"Documentation examples are added to GoDoc/example tests and demonstrate signing with existing test or example credentials.\",\n    \"The estimate includes implementation, unit tests, example-test updates, documentation, local build/test troubleshooting, and code review preparation, but excludes release management and elapsed waiting time.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository and Fabric configuration analysis\",\n      \"activity_description\": \"Inspect the existing package structure, public APIs, protobuf types, configuration-tree representation, update-generation flow, signing helpers, and current tests to determine integration points and compatibility constraints.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"API and configuration mutation design\",\n      \"activity_description\": \"Define function signatures, organization/MSP lookup behavior, input and error handling, copy-versus-mutate semantics, certificate representations, duplicate handling, and how each operation feeds the existing ConfigUpdate generation workflow.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Anchor-peer add and remove implementation\",\n      \"activity_description\": \"Implement U1 and U2 by locating an organization's application group, adding or removing anchor-peer entries, handling absent or malformed organization configuration, and integrating the result with generation of a signature-ready ConfigUpdate transaction.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"MSP certificate revocation implementation\",\n      \"activity_description\": \"Implement U3 by parsing the certificate, locating the organization's FabricMSPConfig, creating the appropriate revocation-list entry, updating the configuration while preserving unrelated MSP fields, and returning errors for invalid inputs or missing MSP configuration.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Root CA addition and certificate validation\",\n      \"activity_description\": \"Implement U4 by adding a validated root CA certificate to the MSP configuration, preserving existing roots and unrelated fields, rejecting malformed certificates and certificates missing CA or CertSign usage attributes, and integrating with ConfigUpdate generation.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Configuration retrieval helpers\",\n      \"activity_description\": \"Implement U7 and U8 helpers to retrieve anchor peers for a selected organization and return an orderer configuration as config.Orderer, including organization lookup, absent-field behavior, defensive copying, and compatibility with UpdateOrdererConfiguration.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Unit and integration test coverage\",\n      \"activity_description\": \"Add tests for successful and failure paths covering anchor-peer addition and removal, revocation-list updates, root CA validation and insertion, retrieval helpers, preservation of unrelated configuration, generated ConfigUpdate contents, and repeated or missing-entry operations.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"GoDoc and example implementation\",\n      \"activity_description\": \"Implement U5 and U6 documentation examples showing multiple configuration changes, state management, ConfigUpdate creation, envelope signing, new-channel-create transaction construction, and signing using idiomatic package APIs.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Build, compatibility verification, and defect correction\",\n      \"activity_description\": \"Run formatting, static checks, package tests, example tests, and repository-wide tests; resolve protobuf/API compatibility issues, serialization differences, edge-case failures, and documentation-example build failures.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Final review and delivery preparation\",\n      \"activity_description\": \"Review exported API documentation and error messages, verify acceptance criteria against tests and examples, inspect the final diff for unintended configuration mutation, and prepare the completed increment for submission.\",\n      \"most_likely_effort\": 6\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 130\n  }\n}",
+          "refusal": null,
+          "reasoning": null,
+          "reasoning_details": [
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmP5cV1ZHszK8uJGjDV2z_2F6kkS0vdEbMOcab6Uh2mtsMBWB6ADSD5dFnCDGk07EQdKOZf72TrOmLixkcMRsEB4gV5kUxH3URfLh10Y8wQELi66JA8leMTY8UkJVCJn4kvjkOgzkdEyp3ApbJsiTRbZC0sIgNYcpT1ITDpqRZXgZg8gaBS3yPPlxeuMkPyKClBwIzNKHARYaEBSBTVu829IImOGLU6DvnfwJd0RhFfXMZU_fgG1LHvUYLmvvDWJqAYejj1vQ5xRb_eenFThX2h7qk3uxQNVIlqH5zXlJVEEzo0FuEYif39jGf38V3-SaPuz06Y6wFvQB18a3aM8B5UX7vXjtfDhBewzszWO53nXHyv-2EMzJ0KNFdgLAVZqYqpPh84WTkyu5nkpflPXbQWrkmbgPQkFzfl-3DBMoQ1rRfX9v-A50DNajAWiW9Mk-4c9V548zYzNF5JvdVoYOyYjygwszp5gsVS_EGKfYlmWg6lO2I5i_H7TFokTGZ2vnaEV0gxQfD-akB-2ArO5FcwmuX9kvHUtuqxl3ivXF2XAxxfQejtA0s4MwM31Yk7-H757E-BxqCjLfX8ulD25gIo6MRxnIzEI2R7uMkL-jCFkdcNz8yVKfUuuUtEh92qiVx700hBm3ZNz1o3cfMrnyta_Gk3byMSHs1bIW2bEyTRxuwmCS7njIF9QKJB7Qt8sj4smr-RFc7KxrxiV7JAqFx-3QG1U3DAqLe9ZlXxV3EkNdM9_YUPAJKdB9eSDiJiR2r08CBRG8awcVIsnE-_e2s-xncFgikAFH96V-ODyqMS3G7KblJb0VhhYIKAtS9CJXVSsQBDY2ydKjsE_gEy5U_n2P1Uaz-D15B_MH3pGxHBqQNR3ZrBAExVRXEVMnU4_wpLgPNPYbR52g6cK-tnUgg9TB8LmwnX9KEjSFQw6CM-K5oqE5dywGX87IWoLPyXPBRe2YPqQC8BPsf4CfkXIMYwSvAxwZjMU1oka6XTgyyFYDF0S8piOPdB9ve5qmf9P5tc_VlqiTjp8gQeYcHPEcL3HONq1gkhOKHmT5cAO5nRBm82Vvo1ugpWFsIxmsoGYaNk9BeksNEaqZ98-_HyAKt8zuNzAmI2nyIVS2K8G3sXcGq7HAav7Tb9J5a_GaYnOEFFZyVZS8WvElPvIze7GFguw1BprqczW5Ylfe_smuO0wUCghbdpxF2jMvy0zwIJ0vVAXdSm2CjNjgcOdKQG5Z2Rdef247LK3SP3MhWhk6s-OrLfsptrs4UY_mm9F1ckdcxyMUhZJlR7iWAPDaPqcpvjdysl6PegzB1lFf4wjJ2BLhPgP9Lzu9udRtK8KS0kRCW7v1iqoOMahwPCjY6g-wqF8Nx_xYgrBjxBRl8hkAJIHjcob7nlhxHvZSXpCT59vl1XdbVRSJPlUvNFBaKkW0YM3Id2T1R5ZzdwARfjImgNdErGKo5a0Zvyqp4cyCipOl6XFUVYFWJO-dffMuwdc5XjjMT0CczSTURE_qqZUmFNsI4Fm7BqsQODpxVKKg7WNjaC7KjK1ee58Gxi_yQlNdZDYqKbRf4eYj94GdBwROgLiKKu4Oo0Rui4ftvdc0XxCjotd6UVgdk-n4J1Xk2BwEpJURCegyBl560I50kveqbhT9pP215K27Tudlevi88KqG37m3Xq5cEXL1I9ZxgO2qeoPJqp17vCowIoOtlS019RKdV8CqrNmQfDKCUZRLqy3_uCN6HYpg6Hfl4NY8zrv8PDabHEYF-G7anIEdWrNp8Am_K1SYSS9J9MrlWajD29dqcJ7r98QG3zn1gMWjs1PtGo0J6Yot3H77S_nh-21c4T9PgHhWl2RqwdVVeQG-7l-IcEB7w6C-3XZVopBq0krMVBT8uUwi04TVVRIrK7g3x9nXOmDd13GrObGj0tnymrAY5NXX_DhOCfXKpdPVgiKcwSQjkyJ7ZknOyrLA2BpJqUeGTBjjHrvK6qbOmeVd2JsoxHtrlTq1gSwrN4QnJTdpLdeG3ais_XLbAoA2voLr2CTmDyxuSpA56jr5e9Sq9TKJd1bQC06M9gGp1h2AtP0XBecO7Rvuiq9c2kw5mNayMu6_SGK1Wjcurutw5268vvGSe1WDRbk_UHwddDEwlRrPO1M7Tmc4SKGfPyRi0CkpPkb8CfmxN7Mff-7ng-1u2Gqymh38mOuT8yw4Pd8EAUeKV4HXf_zaCL2CTvpnxSwqVzzY9qs2-Xvr9r1oXXlXC3dWFZpmqbm5ghno1_ZH1V26WeB9jRUDnbxhSlh9XAm5rFmA1Zds1kFZY_RS6Qds7H7KFqweOOXjYrS3tFOxIsWzYkcE_caedWwKs3t3nhTDQSbEn8C-29729ArjGQ6wQTGM0G2Ak64FP-oRH4Hte-h84b8LXqhIXJWrWWR_d1zKuPdAmJqnyHCQbkVk7Tm-ucFf2_Tp-ZH87LJCgZr1GCEHWwrkh9ptV7eo211dSRk814n9GxqoL4HEbljbDBsUljl_KmhwcZDCGQaMB4GkaGe7CSD6s7YgKBGuipGkhvv4nU3xqRFMVjn0Rlsg3KSdjwrtqPrtTmPmgbfelngNNtjadUYPpZ5WusYMOVOIqy7ikMskCOrTFlfkSqulxEtrt8E0qyNJF-TGY95DPY61OHRehbGIy9-Bj1qpxiewkyregHHeVy-QDpfWMHZhgVNzAJbpx9WLoXXV_wzs8cFeuz4nGbRfzY0LOgOwSQiEz3xgv0qaY2HRBvFnA6fjfEqkMrWdw4K1wK4j-uMuvhuGgXekICytyP-ymisSeisuKpopDuy85vxrxWoNUEgO2Lk_nEWEUy8Cfz6KgnnTGZmtCwTCZNKARNSuPMWWhPorwfzwOcPVVnZHgIaO6ztRgtLW3t9PBqqTKmadmH0ZhOlxos9LSr2kFQroQzB5RIw5rBKB0A3a6jsqjTMEaOPj0VFTu4NcWIPE_TgjAe12APcaSxKElqt4GclvU051Mp1Q0_7eP0TYnaRtIbzMdiSpKVj7ITAaLtHCX8oVLSb2ke1gxJgcvHAx9DuEACdFHUKs-lfomReWvm1b_msB875Df6IEkr6Vq7GxQXE_lX5Fdplw3AfPTKe5Q1fYVTsBxg7GE0GiXw1O00kHfQJKVcf5stQJ0fSt4CsPq3TwnfbCPgWLbhRWUYOD4lHJ1DZMYIkQOWTsNLNuR5AtkFp7-PFixuaQWkidutZfP1ZpG8YMNGnNpRUmnnbc1TsB5_laLjEZf4a2hfeccmr8yWHl1LHQIiEKn0N1gwrZJWfBnKQB5GhWEztWUeEAH6tPQp8RCzeYJ4wIZJUpGVSUa6fgosQHE-l_FYKpGoFx4VKJx0DqW9C7dcCVp_ZUtg28HvDjgeCotnWNAbS3_Ss3LmdQinNIFFf5DQi2wBceMpHxcudT5o5UWkc78CrcYR8m9sa9eZCbZlOJgR0S_3SK9ZLjtMJ6uiUEUr36VZ3BtUniPo1_qbOJruB0iETrmY1LKC4mIqVk2mxF0GcAptIGLb38gsnXVeNZKqALJl3YV3q1V5MhLArjHYo8Cyqm4dVL56CjapkqjXddKeMOCs9jIVqYnGjbIaZ4Dfo6NgMZ_Sidit3UMrX05_GTtQZ_1EE54_UpLJpn_0nR156QeK6ggR0XXKxEPOKrNZXEFgVTihfACISK6GfNe7JqBZxpI9dghfDUt1CKN-X9Z3Qyy-WNVXVA9z_ve62NYEObCmUhdNiR8Wo3sKVcY9gg07izsMYuBn62i2ex9A-y3A29oZ-Sa3gpq_0nzW3oCqB4ymfnspcKPej0V52AJjU0GSJLVN-Yp4wfIXM0QGvhR9pXcoJVDPUjgsYN0mFaijpnynnSs3o4d4aBQiPMykyKT2Fwcw==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_0574fde454cc1fb0016a98fe55c8e087d1bde45d34ff036465",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1375,
+      "completion_tokens": 1815,
+      "total_tokens": 3190,
+      "cost": 0.0025216,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1372,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0025216,
+        "upstream_inference_prompt_cost": 0.0003436,
+        "upstream_inference_completions_cost": 0.002178
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 434,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the increment in Go using the existing Hyperledger Fabric channel configuration and protobuf types and preserve the library's existing public API conventions.\",\n    \"Represent all changes as mutations of an in-memory configuration derived from an existing Config block or Config transaction, then use the existing configuration-delta mechanism to produce a ConfigUpdate transaction.\",\n    \"Use defensive copying of configuration structures where necessary so callers can compare original and modified configurations and so helper operations do not unexpectedly mutate shared input state.\",\n    \"Implement anchor-peer operations at the organization application-group level and identify the target organization by its MSP ID.\",\n    \"Implement certificate revocation by parsing the supplied certificate, converting it to the Fabric MSP revocation-list representation, and updating the target MSP's FabricMSPConfig revocation_list attribute.\",\n    \"Implement root-CA addition by parsing the certificate and rejecting certificates that are not CA certificates or that do not include the KeyUsageCertSign capability.\",\n    \"Expose retrieval helpers that return existing anchor peers and an orderer configuration in forms directly usable by the existing update functions.\",\n    \"Use existing Fabric signing and envelope-building utilities in documentation examples rather than introducing a new signing abstraction.\"\n  ],\n  \"assumptions\": [\n    \"The work is performed in an existing Go repository containing configuration parsing, configuration update, signing, and protobuf helper functionality.\",\n    \"The existing library already supports computing ConfigUpdate transactions; this increment extends that functionality rather than implementing Fabric configuration-update serialization from scratch.\",\n    \"The APIs will accept parsed configuration objects or serialized Config blocks/transactions according to the repository's established conventions; no new wire protocol is introduced.\",\n    \"Certificate revocation input is an X.509 certificate in PEM or DER form, and the target MSP is identified by its MSP ID.\",\n    \"A revoked certificate is appended to the MSP revocation list unless an equivalent entry already exists; duplicate handling will be consistent with existing library conventions.\",\n    \"Root CA validation covers parseability, CA basic constraints, and the KeyUsageCertSign/CertSign requirement, but does not implement full chain validation or certificate-policy validation.\",\n    \"Tests can use generated or repository-provided test certificates, keys, channel configurations, and signing identities; no external Fabric network deployment is required.\",\n    \"Documentation examples are added to GoDoc/example tests and demonstrate signing with existing test or example credentials.\",\n    \"The estimate includes implementation, unit tests, example-test updates, documentation, local build/test troubleshooting, and code review preparation, but excludes release management and elapsed waiting time.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository and Fabric configuration analysis\",\n      \"activity_description\": \"Inspect the existing package structure, public APIs, protobuf types, configuration-tree representation, update-generation flow, signing helpers, and current tests to determine integration points and compatibility constraints.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"API and configuration mutation design\",\n      \"activity_description\": \"Define function signatures, organization/MSP lookup behavior, input and error handling, copy-versus-mutate semantics, certificate representations, duplicate handling, and how each operation feeds the existing ConfigUpdate generation workflow.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Anchor-peer add and remove implementation\",\n      \"activity_description\": \"Implement U1 and U2 by locating an organization's application group, adding or removing anchor-peer entries, handling absent or malformed organization configuration, and integrating the result with generation of a signature-ready ConfigUpdate transaction.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"MSP certificate revocation implementation\",\n      \"activity_description\": \"Implement U3 by parsing the certificate, locating the organization's FabricMSPConfig, creating the appropriate revocation-list entry, updating the configuration while preserving unrelated MSP fields, and returning errors for invalid inputs or missing MSP configuration.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Root CA addition and certificate validation\",\n      \"activity_description\": \"Implement U4 by adding a validated root CA certificate to the MSP configuration, preserving existing roots and unrelated fields, rejecting malformed certificates and certificates missing CA or CertSign usage attributes, and integrating with ConfigUpdate generation.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Configuration retrieval helpers\",\n      \"activity_description\": \"Implement U7 and U8 helpers to retrieve anchor peers for a selected organization and return an orderer configuration as config.Orderer, including organization lookup, absent-field behavior, defensive copying, and compatibility with UpdateOrdererConfiguration.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Unit and integration test coverage\",\n      \"activity_description\": \"Add tests for successful and failure paths covering anchor-peer addition and removal, revocation-list updates, root CA validation and insertion, retrieval helpers, preservation of unrelated configuration, generated ConfigUpdate contents, and repeated or missing-entry operations.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"GoDoc and example implementation\",\n      \"activity_description\": \"Implement U5 and U6 documentation examples showing multiple configuration changes, state management, ConfigUpdate creation, envelope signing, new-channel-create transaction construction, and signing using idiomatic package APIs.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Build, compatibility verification, and defect correction\",\n      \"activity_description\": \"Run formatting, static checks, package tests, example tests, and repository-wide tests; resolve protobuf/API compatibility issues, serialization differences, edge-case failures, and documentation-example build failures.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Final review and delivery preparation\",\n      \"activity_description\": \"Review exported API documentation and error messages, verify acceptance criteria against tests and examples, inspect the final diff for unintended configuration mutation, and prepare the completed increment for submission.\",\n      \"most_likely_effort\": 6\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 130\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1375,
+    "completion_tokens": 1815,
+    "total_tokens": 3190,
+    "cost": 0.0025216,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1372,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0025216,
+      "upstream_inference_prompt_cost": 0.0003436,
+      "upstream_inference_completions_cost": 0.002178
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 434,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement the increment in Go using the existing Hyperledger Fabric channel configuration and protobuf types and preserve the library's existing public API conventions.",
+      "Represent all changes as mutations of an in-memory configuration derived from an existing Config block or Config transaction, then use the existing configuration-delta mechanism to produce a ConfigUpdate transaction.",
+      "Use defensive copying of configuration structures where necessary so callers can compare original and modified configurations and so helper operations do not unexpectedly mutate shared input state.",
+      "Implement anchor-peer operations at the organization application-group level and identify the target organization by its MSP ID.",
+      "Implement certificate revocation by parsing the supplied certificate, converting it to the Fabric MSP revocation-list representation, and updating the target MSP's FabricMSPConfig revocation_list attribute.",
+      "Implement root-CA addition by parsing the certificate and rejecting certificates that are not CA certificates or that do not include the KeyUsageCertSign capability.",
+      "Expose retrieval helpers that return existing anchor peers and an orderer configuration in forms directly usable by the existing update functions.",
+      "Use existing Fabric signing and envelope-building utilities in documentation examples rather than introducing a new signing abstraction."
+    ],
+    "assumptions": [
+      "The work is performed in an existing Go repository containing configuration parsing, configuration update, signing, and protobuf helper functionality.",
+      "The existing library already supports computing ConfigUpdate transactions; this increment extends that functionality rather than implementing Fabric configuration-update serialization from scratch.",
+      "The APIs will accept parsed configuration objects or serialized Config blocks/transactions according to the repository's established conventions; no new wire protocol is introduced.",
+      "Certificate revocation input is an X.509 certificate in PEM or DER form, and the target MSP is identified by its MSP ID.",
+      "A revoked certificate is appended to the MSP revocation list unless an equivalent entry already exists; duplicate handling will be consistent with existing library conventions.",
+      "Root CA validation covers parseability, CA basic constraints, and the KeyUsageCertSign/CertSign requirement, but does not implement full chain validation or certificate-policy validation.",
+      "Tests can use generated or repository-provided test certificates, keys, channel configurations, and signing identities; no external Fabric network deployment is required.",
+      "Documentation examples are added to GoDoc/example tests and demonstrate signing with existing test or example credentials.",
+      "The estimate includes implementation, unit tests, example-test updates, documentation, local build/test troubleshooting, and code review preparation, but excludes release management and elapsed waiting time."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Repository and Fabric configuration analysis",
+        "activity_description": "Inspect the existing package structure, public APIs, protobuf types, configuration-tree representation, update-generation flow, signing helpers, and current tests to determine integration points and compatibility constraints.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "API and configuration mutation design",
+        "activity_description": "Define function signatures, organization/MSP lookup behavior, input and error handling, copy-versus-mutate semantics, certificate representations, duplicate handling, and how each operation feeds the existing ConfigUpdate generation workflow.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Anchor-peer add and remove implementation",
+        "activity_description": "Implement U1 and U2 by locating an organization's application group, adding or removing anchor-peer entries, handling absent or malformed organization configuration, and integrating the result with generation of a signature-ready ConfigUpdate transaction.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "MSP certificate revocation implementation",
+        "activity_description": "Implement U3 by parsing the certificate, locating the organization's FabricMSPConfig, creating the appropriate revocation-list entry, updating the configuration while preserving unrelated MSP fields, and returning errors for invalid inputs or missing MSP configuration.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Root CA addition and certificate validation",
+        "activity_description": "Implement U4 by adding a validated root CA certificate to the MSP configuration, preserving existing roots and unrelated fields, rejecting malformed certificates and certificates missing CA or CertSign usage attributes, and integrating with ConfigUpdate generation.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Configuration retrieval helpers",
+        "activity_description": "Implement U7 and U8 helpers to retrieve anchor peers for a selected organization and return an orderer configuration as config.Orderer, including organization lookup, absent-field behavior, defensive copying, and compatibility with UpdateOrdererConfiguration.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Unit and integration test coverage",
+        "activity_description": "Add tests for successful and failure paths covering anchor-peer addition and removal, revocation-list updates, root CA validation and insertion, retrieval helpers, preservation of unrelated configuration, generated ConfigUpdate contents, and repeated or missing-entry operations.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "GoDoc and example implementation",
+        "activity_description": "Implement U5 and U6 documentation examples showing multiple configuration changes, state management, ConfigUpdate creation, envelope signing, new-channel-create transaction construction, and signing using idiomatic package APIs.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Build, compatibility verification, and defect correction",
+        "activity_description": "Run formatting, static checks, package tests, example tests, and repository-wide tests; resolve protobuf/API compatibility issues, serialization differences, edge-case failures, and documentation-example build failures.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Final review and delivery preparation",
+        "activity_description": "Review exported API documentation and error messages, verify acceptance criteria against tests and examples, inspect the final diff for unintended configuration mutation, and prepare the completed increment for submission.",
+        "most_likely_effort": 6
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 130
+    }
+  }
+}

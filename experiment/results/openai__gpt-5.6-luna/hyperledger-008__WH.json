@@ -1,0 +1,220 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "hyperledger-008",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788411579-DHsECjVQ8rEZdhvzSmF4",
+    "object": "chat.completion",
+    "created": 1788411579,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the library in Go using Hyperledger Fabric protobuf types and existing cryptographic and policy-validation primitives where possible.\",\n    \"Represent the U2-U8 APIs with copied and adapted configuration structures rather than importing Viper or YAML processing; key material is supplied explicitly through function arguments or input structures.\",\n    \"Generate protobuf messages deterministically and preserve Fabric configuration ordering and version semantics so results are semantically equivalent, and where practical byte/proto equivalent, to Fabric command-line tools.\",\n    \"For U1, extend the transaction read-set representation to include the value observed for each read key, while retaining the key and version, and update validation to compare the endorsed value with the committing peer's world-state value.\",\n    \"Preserve detached-signature semantics for U3 and U4: signing functions accept explicit identity and key material, and transaction assembly does not derive keys from configuration.\",\n    \"Build configuration updates by cloning and transforming protobuf configuration trees, using Fabric-compatible version increments, read-set/write-set construction, policy metadata, and deterministic serialization.\",\n    \"Use table-driven unit tests and integration-style tests against representative Fabric configuration fixtures and generated protobuf messages.\",\n    \"Treat cryptographic verification, malformed protobuf handling, missing configuration paths, and inconsistent versions as explicit error cases rather than silently correcting inputs.\"\n  ],\n  \"assumptions\": [\n    \"The implementation is performed in an existing Fabric-compatible Go repository or fork where the relevant protobuf definitions, configuration types, signing interfaces, and validation code are available.\",\n    \"The target Fabric release and protobuf schema are fixed before implementation; migration support across multiple incompatible Fabric releases is out of scope.\",\n    \"U1 permits a coordinated protocol and protobuf change to the read-set representation and all participating peers are upgraded together; backward compatibility with unmodified peers is not required.\",\n    \"The requested increment includes production code, unit tests, integration or fixture-based acceptance tests, API-level error handling, and concise developer documentation, but excludes deployment automation and operational rollout.\",\n    \"Existing Fabric MSP, policy, protobuf, and cryptographic implementations may be reused when their behavior matches the required semantics; only the configuration-data ingestion layer is implemented independently of Viper and YAML.\",\n    \"For U2 and U6, callers provide valid, already-parsed configuration data and cryptographic material in the agreed Go structures; parsing arbitrary configtx.yaml files and generating cryptographic material are out of scope.\",\n    \"Acceptance comparisons allow semantically equivalent protobuf structures where Fabric tools may produce nonessential ordering or serialization differences, except where deterministic proto equality is explicitly required.\",\n    \"The developer has access to representative integration-test profiles, MSP certificates, keys, channel configurations, and a local Fabric test environment; no external network access is required.\",\n    \"The effort estimate is for one developer and represents work-hours, including implementation, review of local behavior, test execution, and defect correction, not elapsed calendar time.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository and Fabric architecture analysis\",\n      \"activity_description\": \"Inspect the target Fabric version, transaction protobufs, proposal response flow, endorsement processing, validation and commit paths, configuration APIs, signing utilities, and existing test conventions. Define interfaces and identify compatibility impacts before coding.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 read-set representation and propagation changes\",\n      \"activity_description\": \"Modify the transaction read-set data model and serialization to carry the value observed during chaincode execution in addition to each key and version. Update chaincode execution, proposal response construction, peer-to-peer propagation, and related conversion code.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 validation and commit enforcement\",\n      \"activity_description\": \"Update transaction validation to compare endorsed read values with the validating peer's current world-state values and invalidate transactions when values differ, while preserving normal version and MVCC checks and correct handling of absent keys.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U1 security and regression testing\",\n      \"activity_description\": \"Add tests for tampered world state, tampered read values, changed versions, missing keys, multiple reads, valid transactions, mixed valid and invalid blocks, serialization round trips, and regression behavior for ordinary endorsement and commit flows.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Common configuration and protobuf utility layer\",\n      \"activity_description\": \"Implement copied/adapted configuration structures, conversion helpers, deterministic protobuf handling, config-tree traversal, version management, policy helpers, and common validation/error utilities used by U2 and U5-U8.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 channel creation transaction generation\",\n      \"activity_description\": \"Implement the channel specification API and generation of a proto-encoded genesis block, including channel group, orderer, application, consortium, capabilities, policies, organizations, and required headers. Match representative configtxgen output.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 organization ConfigGroup generation\",\n      \"activity_description\": \"Implement generation of an organization ConfigGroup from explicit organization name, MSP identifiers, certificates, endpoints, policies, and related cryptographic material without reading MSP directories or configuration files.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 ConfigUpdate computation\",\n      \"activity_description\": \"Implement calculation of a ConfigUpdate from base and modified configuration transactions, including read and write sets, deletion detection, version checks, group traversal, and output semantics equivalent to configtxlator compute_update.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U5 max_message_count update generation\",\n      \"activity_description\": \"Implement creation of an unsigned channel configuration update that changes the orderer batch max_message_count value, including correct channel identifiers, group versions, update envelope construction, and validation of supported input paths.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U8 consortium organization addition\",\n      \"activity_description\": \"Implement creation of a system-channel configuration update that adds an existing organization definition to a named consortium, using the generated organization ConfigGroup and correct consortium and channel-group version updates without creating a new channel.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U3 detached ChannelUpdate signing\",\n      \"activity_description\": \"Implement an API that accepts a ChannelUpdate transaction, explicit signing identity and key material, and signing parameters, then produces a Fabric-compatible detached signature without consulting configuration for key discovery.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U4 signed configuration update assembly\",\n      \"activity_description\": \"Implement assembly of a complete signed channel configuration update from a ConfigUpdate and a collection of detached signatures, preserving signature order and creator information and producing an envelope accepted by Fabric validation and equivalent to sequential signtx operations.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Acceptance fixtures and cross-tool integration tests\",\n      \"activity_description\": \"Create representative channel profiles, organizations, MSP material, base and modified configurations, and signed-update scenarios. Compare generated results with configtxgen, cryptogen, configtxlator, protolator, and signtx outputs using semantic and proto equality checks.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"API documentation and examples\",\n      \"activity_description\": \"Document public types, function contracts, explicit key-material requirements, error behavior, supported configuration paths, detached-signature usage, and examples for generating and assembling transactions.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"Final integration, defect correction, and quality checks\",\n      \"activity_description\": \"Run the complete test suite, investigate cross-component failures, correct serialization or compatibility defects, perform static analysis and formatting, and verify that all acceptance scenarios pass together.\",\n      \"most_likely_effort\": 32\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 572\n  }\n}",
+          "refusal": null,
+          "reasoning": "**Estimating project tasks**\n\nI need to focus on crafting JSON and estimating the Work Breakdown Structure (WBS). There's potential for significant modifications related to core Fabric validation for U1 and an associated library for U2-8. I'll need to account for analysis, implementation, testing, and documentation in the effort hours. Deciding on scope and ambiguity for versions of Fabric also plays into planning. It looks like I can detail around 14 activities, ensuring total arithmetic is correct for each task.**Calculating total effort**\n\nI need to calculate the total effort, which seems to sum up to 600. After going through the numbers, it adds up correctly after breaking down each activity. I should ensure that activity descriptions are clear, especially regarding technical decisions around Fabric, Go, and protobuf compatibility. U1 may require custom extensions and validation, assuming I have access to the source code. I must avoid making claims that seem impossible, while keeping the scope to development effort by a single developer. Lastly, I'll confirm that total sums fit without hidden needs.**Designing with key considerations**\n\nI need to mention key, version, and value while ensuring that all peers can compare their local setups effectively. It’s important to document the design decisions as well. Dependencies and versions could be included for clarity. If necessary, I’ll escape JSON strings without any issues. Plus, I want to ensure that the schema has `additionalProperties` set to false at the root level. It seems the schema doesn’t prohibit anything at the root, but I’ll only include what’s listed. That should keep things tidy!",
+          "reasoning_details": [
+            {
+              "type": "reasoning.summary",
+              "summary": "**Estimating project tasks**\n\nI need to focus on crafting JSON and estimating the Work Breakdown Structure (WBS). There's potential for significant modifications related to core Fabric validation for U1 and an associated library for U2-8. I'll need to account for analysis, implementation, testing, and documentation in the effort hours. Deciding on scope and ambiguity for versions of Fabric also plays into planning. It looks like I can detail around 14 activities, ensuring total arithmetic is correct for each task.**Calculating total effort**\n\nI need to calculate the total effort, which seems to sum up to 600. After going through the numbers, it adds up correctly after breaking down each activity. I should ensure that activity descriptions are clear, especially regarding technical decisions around Fabric, Go, and protobuf compatibility. U1 may require custom extensions and validation, assuming I have access to the source code. I must avoid making claims that seem impossible, while keeping the scope to development effort by a single developer. Lastly, I'll confirm that total sums fit without hidden needs.**Designing with key considerations**\n\nI need to mention key, version, and value while ensuring that all peers can compare their local setups effectively. It’s important to document the design decisions as well. Dependencies and versions could be included for clarity. If necessary, I’ll escape JSON strings without any issues. Plus, I want to ensure that the schema has `additionalProperties` set to false at the root level. It seems the schema doesn’t prohibit anything at the root, but I’ll only include what’s listed. That should keep things tidy!",
+              "format": "openai-responses-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmP7FUHut9yKaSkMvRa7AWwtyN2QFhG9WNP4X-GcMovn1LRnuBe9M8MzW9KwDxjWjt3z5qRmdZ3aAemf6mvTiwX-ct29RmOcroy13s1d50acaVbE7Y6oCSuPO3cvd_IL9eWNl0Mcc4Em1_mYIW-314-4tDuovuKT5xt2fpkT7PloiIIroAZEm0a-4Zx2ODDXc4FsFZ3EyPZher5szyk2lHnNyYrT2gXlwZcEzY7txXa8q0O-C7WkckGx3FUqA7WngdIBdsNj_YGO8yQfbS6cLCCW0W1rlZRiT2l_lt1bYDJFdML2N_2sqRHbvV1eEOeAuh2_XSuQ2V0Nv6EbAEh_w9F6K7oACF6u0w2chJhpsKGsXFmBm0IpZvomcTrqSYM971CZJ65PnSX7Aw3YYoy8tCu3o6N-crKkOolvAKaYkeXe8pyl1-_PdK2lxfntIDJomUXOcAvu6qyVGO2GJa5vtGheINMPFlV2A-2oQVosCO0GUu8N1vx0lojh0eS_b04MFyPqGdJ6tu4wh1BFNFlAiFcPXeLB4n_YSiJT5-D5j3PLFLUv-NNBH9iP1xo-4jSd5b5Cae5lbulohFNIAIt6JVot_zasVTDOB4j86dulsZkUZcF68vQtEZ6FYDNZdkUSopLLwg-8Xb5RvY12V_SVHqRAYh-qhJ-U_bWcyo6dext4U9BVuEhxtKEUgudk7i-eLgqVb2wlqW-GxufAZe6fWgqV5dM8678jZ0i5CTXFBnEv9k7TfLtbP7HeNTQr1SWP_rKdZGAiJqoBTO36qjYJxbpgZ12MPdquRC2tsLO6TgKY3mC6iqtFU_0OeFgMM-XbimvYZLYkSa2_DHh0UuKCAewxXcfKuo10yr3THmpbRjo4YdJAcsj_C-5kvFphwHHpOMTEq-xFDb8OzPrbwDOj-qasldXL9awK51PrqS5OkfvfExIRp1ndDcYScoKny3W4Q1-qZQVyLqIN3orVGokbL00JURf_rI3lym8CslT5KTV6UnUmOcXN31neDrAYgHybTgCDCcZ8bvVeG8CZ59U8-pXQ9rCPOjwpJiE0V0RK_K4WkJbV0qozOpDGDDYcWwaNv-dgCR6nZV3vWdRlanUDMO2XRoSwaissCLVfHwCbxGk_RZbVv6pEVY5OtEWn_2q8z89x3WD9q9NevvP4x49IXySrQJq6merq-dYbE4_xUJNC1nvK9TGYAsrs-9dWY3V8w0aEHOlbkFPwtQ85e_TV8vERLJ2ejWONH3gxuz-4BHLmzMjgiau42rRUXK5Z7_kEG6MZbk1oRwDuQ-mDp-IRuMeKhrMgUowMNwBE-HVoNzfcJC330pfIxgOA_x4NgBKiZw_UFqyshu0_h05Y60QO4pveOxuw41NWkrgC2VLRjLEHPEknhkOvgC3nFr6UA9QUizZdDNF66_bI-kRKMQpXVdw9Yyhkh_r5G22EB_2CHCQcV1cSyYAc2qeLy95yBMTlLScFeICKbjlecK7_ytaVYq3WniDWHWnCMj6E7bDNK6WQdXoTYZwTLbjbVBhnCEWpCduwsYJROnDOePiG9YPBVHbqdMH03KcOopZIWqh0DjfCvqWGPuK8-kvDBNUnM8aqznvewTQIdbMsCtcuU1G7IzgG4JOvwCm2LkYryuExAGVTMyYkfz1lBsgZP9iZeDZS2P-HpJU03CBwc70KnNnJImoy6u_7hb7adqNccjoBXgbrlkUUxKdyFS82nL_S8aRG7JQMOXci9IEN3wh5Ri3AZ3YJp71009g05VBUyP16uXQUE30EutK-5fKk8UIE4rA9mkyOrAF6VPsWuY1L2pxBr1qhxM5Y3uL2NdebDm4Uqqki8DjjLCilbdp7Jrdsmj6_HF-qFLifuatuKZ1GWz8hhL5OWHmDL2KejZR_7faSkRCqjZT0zDSmOw0O6GlVwxEaNnL9jKra-oiNUAqqZ-Ggm5NtWvEyhdLuwVaVtJ7STQiHMhBAHHGlKk58cWXDacIpn96ovv52B9erpW8_7IgpoEDWBg5Pf60lY_r5_DPDNwbzqNYCfif9hyq6wxs4RK6fNlLUTGlC9KygvS3mTNxz08efnLl863-hp8nmmIwYyrG30cgF4kFHvcaR7YnH35kYhpHRJyUL0_0awc9FKIHh7ye4Uyn4uG4QDN5vqCSt1uGjTany7YeXBmUf9awmskeJWuhXytGKQhVhlmzFwkpdKyMOJg4raSwLctiH5DZngv5XXn3PEGmjN870VdzXZH4yHsw3OJdfoul9XoSBfaVr2GF-WPwOP0yt0LSc7OzKX5EjZFOTRh1ZSa-LjuffakUwUxh-6h2LqbtSj3JUpwfCXlxbZ5TLgyhA2McsuRDwJyBEtl2slXFVbXJ-CxiYy3hGoEygfZOX_RJQi1WhF1zHc9f20nLaCH1vW7b6tZRXviCVHXHLhujopRbTWO8zenAl15V3_OqcgdKrP0ydwWdFtov0AaAfVW_0U90HMkRp1cRSTvnNiYbDthkXWAxf2Tu54UJezPzgYay9ZgidECChFOC1UqktVYC0GGZnk3MCPSEdeVkDArq765c704aKM9LGs_cw4woPjkuW1EyGgmRcJEbj7Sp1q8ygmGknw9-JBa22BQlWFs4G7agFBooFiDa7kAfKGiTCci9Oz-0yK3Gx8YMYlfCiM8a2dNCgfKsHky9kKw3TFudbd3NZlHdQHFEhdpdJfmk749A-DlDOShTiSyfxlq9pZMDf80SgTkK54dCw_EjzEyb5dSWudikHhxF3_JYiXnDX2JW6s7qnWCJUKRCfQRKluiKC-dq-rTxsr8Y0Bjr_kRFTfg1dcDpnNmMjBbFlxSTvDS0E_4XsBnB01Ce-C2AvASrr6aOGDE3BH7kOBAlSwMV-WRZ_ScjccNjMX94tB0oVE8D7Kpt12GLZku4sx_Um_yTQQJgtKXIbKMo2zkcLb2WgLzSlBOrQWGsbMcoGoRg7lQzsmgdomV06Bh1tpvHRP2i1rTEpsLRh-CFoNJKuYKnqEK4wOXAbfAkBPbZbJlMW_BCrmMSKyVkhssjEkzK6Tj_N8lp7Aw-qNpCIi-36kyPaejd127eNCmZxipUrzY0UG73hWuoYkrjRHWrYrAy1q0vkvVOjyEbWFUW2QNHzksrFBqzaKufKRWw6ywmK3BQHOpFRu6TbFyTKvIUrPqUy46epAf9xHr69Lvr1euuvwU3ZVk8cfCyR0UfmZY31NavsBJmGVdG9Tb5JgL3Ofx7i3bYQGMKhK4KsecVEm1ebqDjcro4o9sec946AJWQ8kEHaABfH1tIoTDhDo5H2PfRtPSXzFR9sOExzGAz9QjWJnaxILFTt_Zbx5n67qbVe8p7vtGkq6eikxip-MiJ2ksufb9gZtpi20bvnCp4_8B0fC8gnCO_mDoKZ2f0Y27hgSdih-Bg7yU1j6a8LoYCGtOKER8XuGMxXzAVPECdD9alS8Prf1o-oM6jV3NTQP_xB6v1U0_Rniz-BVBNZL9bJMuFe-VL3S2aFlqhdMgBaK2dK1R-mfP9OodqifIMzPVMqafjFLDzPv4ZgCToXj_50TJwBS45cir5NBL-fghHsL5V0KZzJQudqH0D2IMUbArUfMrGTcqKED5B9cKrQxYpV4hNWmW_4wB4vnFduwVkfUTnNwBWIMh3gIuD6wk5cQkjckA2ZHqDDpSsHpavzReW5mt6uDButjHZ3m3zU9UUV09ZNUeEJewk6ex1iy02jK8B1LPq7Nk1j5PkZHPdUqXfaKBg0EGHXmxzO2K-vNkBNLTLjSBFmeK0vIEAfsO1E6Xmr0rHumqU0hp10Le0zUKjbdoA35j8ICjzecO1YvdFnK2X7kPXCwORnZY2jaDz2XK7FS3Mc1iKtK7Nlh-WbemraK3X9E5nyVPh9ZSPwgR1xmBwzbahqsSmZObduoG04Et1g3fSkUnsqZIn-39tKQXWiklcYD4ugFiGBLmErwOMQbsH9lpdjr39UB3mmCX-D4Z-a97mx1yQk7_b4d2UnqpAa3CxHuTxc51oS24uavtSnVDA5tuuC0yljQpQAAqZ3IchNmPkw9uxrXw5hh0LaJR-GyNgkWm60S2GsbfXkcZBfn_c8LAUMC9PK3h5Pvw7n2W22-AauLX0G4fbcB-RUiHfP34yXZEZN8iGl8BL8rR59Jl33JHdlna5_7FaEtDliV1s5uOIC9nytZen1Y2RO94gU8t7fSRXLHK_kGAHaWvyhPnbVflnfb6Yd1kStR4K447ywsSqnP5x2nCy1-9cO1s3k05QTsKSPDWtXfkDsVbOroiL5bk3g3O1AKJaBCBaJmHBZoKEmnxeZDOyR_bS6kdKd_eYuzWj64CL-32BzJnZCx1lokrjXD3BFBX0BSuNvUwK2R2aAUa_8vT4dCo3CsgjV4H4bwdmIe2DnLRdNmhhFICD6xTnbsLjDzTfhsIoauB0pjnXNRfpgAtJlNy22eO7PGfT4puICa_yTKZQNcE09Wc5SsEJDOdrVkhGUOmkEze712VQ7JTprStJoeGx_LnVtfbPx8p1tJMNJo6MKIP5V_5u4=.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_080fdc005d04d73b016a98febc7b3887d182cd77d5dd92eefb",
+              "index": 1
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1701,
+      "completion_tokens": 2400,
+      "total_tokens": 4101,
+      "cost": 0.0033051,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1698,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0033051,
+        "upstream_inference_prompt_cost": 0.0004251,
+        "upstream_inference_completions_cost": 0.00288
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 516,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the library in Go using Hyperledger Fabric protobuf types and existing cryptographic and policy-validation primitives where possible.\",\n    \"Represent the U2-U8 APIs with copied and adapted configuration structures rather than importing Viper or YAML processing; key material is supplied explicitly through function arguments or input structures.\",\n    \"Generate protobuf messages deterministically and preserve Fabric configuration ordering and version semantics so results are semantically equivalent, and where practical byte/proto equivalent, to Fabric command-line tools.\",\n    \"For U1, extend the transaction read-set representation to include the value observed for each read key, while retaining the key and version, and update validation to compare the endorsed value with the committing peer's world-state value.\",\n    \"Preserve detached-signature semantics for U3 and U4: signing functions accept explicit identity and key material, and transaction assembly does not derive keys from configuration.\",\n    \"Build configuration updates by cloning and transforming protobuf configuration trees, using Fabric-compatible version increments, read-set/write-set construction, policy metadata, and deterministic serialization.\",\n    \"Use table-driven unit tests and integration-style tests against representative Fabric configuration fixtures and generated protobuf messages.\",\n    \"Treat cryptographic verification, malformed protobuf handling, missing configuration paths, and inconsistent versions as explicit error cases rather than silently correcting inputs.\"\n  ],\n  \"assumptions\": [\n    \"The implementation is performed in an existing Fabric-compatible Go repository or fork where the relevant protobuf definitions, configuration types, signing interfaces, and validation code are available.\",\n    \"The target Fabric release and protobuf schema are fixed before implementation; migration support across multiple incompatible Fabric releases is out of scope.\",\n    \"U1 permits a coordinated protocol and protobuf change to the read-set representation and all participating peers are upgraded together; backward compatibility with unmodified peers is not required.\",\n    \"The requested increment includes production code, unit tests, integration or fixture-based acceptance tests, API-level error handling, and concise developer documentation, but excludes deployment automation and operational rollout.\",\n    \"Existing Fabric MSP, policy, protobuf, and cryptographic implementations may be reused when their behavior matches the required semantics; only the configuration-data ingestion layer is implemented independently of Viper and YAML.\",\n    \"For U2 and U6, callers provide valid, already-parsed configuration data and cryptographic material in the agreed Go structures; parsing arbitrary configtx.yaml files and generating cryptographic material are out of scope.\",\n    \"Acceptance comparisons allow semantically equivalent protobuf structures where Fabric tools may produce nonessential ordering or serialization differences, except where deterministic proto equality is explicitly required.\",\n    \"The developer has access to representative integration-test profiles, MSP certificates, keys, channel configurations, and a local Fabric test environment; no external network access is required.\",\n    \"The effort estimate is for one developer and represents work-hours, including implementation, review of local behavior, test execution, and defect correction, not elapsed calendar time.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository and Fabric architecture analysis\",\n      \"activity_description\": \"Inspect the target Fabric version, transaction protobufs, proposal response flow, endorsement processing, validation and commit paths, configuration APIs, signing utilities, and existing test conventions. Define interfaces and identify compatibility impacts before coding.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 read-set representation and propagation changes\",\n      \"activity_description\": \"Modify the transaction read-set data model and serialization to carry the value observed during chaincode execution in addition to each key and version. Update chaincode execution, proposal response construction, peer-to-peer propagation, and related conversion code.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 validation and commit enforcement\",\n      \"activity_description\": \"Update transaction validation to compare endorsed read values with the validating peer's current world-state values and invalidate transactions when values differ, while preserving normal version and MVCC checks and correct handling of absent keys.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U1 security and regression testing\",\n      \"activity_description\": \"Add tests for tampered world state, tampered read values, changed versions, missing keys, multiple reads, valid transactions, mixed valid and invalid blocks, serialization round trips, and regression behavior for ordinary endorsement and commit flows.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Common configuration and protobuf utility layer\",\n      \"activity_description\": \"Implement copied/adapted configuration structures, conversion helpers, deterministic protobuf handling, config-tree traversal, version management, policy helpers, and common validation/error utilities used by U2 and U5-U8.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 channel creation transaction generation\",\n      \"activity_description\": \"Implement the channel specification API and generation of a proto-encoded genesis block, including channel group, orderer, application, consortium, capabilities, policies, organizations, and required headers. Match representative configtxgen output.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 organization ConfigGroup generation\",\n      \"activity_description\": \"Implement generation of an organization ConfigGroup from explicit organization name, MSP identifiers, certificates, endpoints, policies, and related cryptographic material without reading MSP directories or configuration files.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 ConfigUpdate computation\",\n      \"activity_description\": \"Implement calculation of a ConfigUpdate from base and modified configuration transactions, including read and write sets, deletion detection, version checks, group traversal, and output semantics equivalent to configtxlator compute_update.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U5 max_message_count update generation\",\n      \"activity_description\": \"Implement creation of an unsigned channel configuration update that changes the orderer batch max_message_count value, including correct channel identifiers, group versions, update envelope construction, and validation of supported input paths.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U8 consortium organization addition\",\n      \"activity_description\": \"Implement creation of a system-channel configuration update that adds an existing organization definition to a named consortium, using the generated organization ConfigGroup and correct consortium and channel-group version updates without creating a new channel.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U3 detached ChannelUpdate signing\",\n      \"activity_description\": \"Implement an API that accepts a ChannelUpdate transaction, explicit signing identity and key material, and signing parameters, then produces a Fabric-compatible detached signature without consulting configuration for key discovery.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U4 signed configuration update assembly\",\n      \"activity_description\": \"Implement assembly of a complete signed channel configuration update from a ConfigUpdate and a collection of detached signatures, preserving signature order and creator information and producing an envelope accepted by Fabric validation and equivalent to sequential signtx operations.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Acceptance fixtures and cross-tool integration tests\",\n      \"activity_description\": \"Create representative channel profiles, organizations, MSP material, base and modified configurations, and signed-update scenarios. Compare generated results with configtxgen, cryptogen, configtxlator, protolator, and signtx outputs using semantic and proto equality checks.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"API documentation and examples\",\n      \"activity_description\": \"Document public types, function contracts, explicit key-material requirements, error behavior, supported configuration paths, detached-signature usage, and examples for generating and assembling transactions.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"Final integration, defect correction, and quality checks\",\n      \"activity_description\": \"Run the complete test suite, investigate cross-component failures, correct serialization or compatibility defects, perform static analysis and formatting, and verify that all acceptance scenarios pass together.\",\n      \"most_likely_effort\": 32\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 572\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1701,
+    "completion_tokens": 2400,
+    "total_tokens": 4101,
+    "cost": 0.0033051,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1698,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0033051,
+      "upstream_inference_prompt_cost": 0.0004251,
+      "upstream_inference_completions_cost": 0.00288
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 516,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement the library in Go using Hyperledger Fabric protobuf types and existing cryptographic and policy-validation primitives where possible.",
+      "Represent the U2-U8 APIs with copied and adapted configuration structures rather than importing Viper or YAML processing; key material is supplied explicitly through function arguments or input structures.",
+      "Generate protobuf messages deterministically and preserve Fabric configuration ordering and version semantics so results are semantically equivalent, and where practical byte/proto equivalent, to Fabric command-line tools.",
+      "For U1, extend the transaction read-set representation to include the value observed for each read key, while retaining the key and version, and update validation to compare the endorsed value with the committing peer's world-state value.",
+      "Preserve detached-signature semantics for U3 and U4: signing functions accept explicit identity and key material, and transaction assembly does not derive keys from configuration.",
+      "Build configuration updates by cloning and transforming protobuf configuration trees, using Fabric-compatible version increments, read-set/write-set construction, policy metadata, and deterministic serialization.",
+      "Use table-driven unit tests and integration-style tests against representative Fabric configuration fixtures and generated protobuf messages.",
+      "Treat cryptographic verification, malformed protobuf handling, missing configuration paths, and inconsistent versions as explicit error cases rather than silently correcting inputs."
+    ],
+    "assumptions": [
+      "The implementation is performed in an existing Fabric-compatible Go repository or fork where the relevant protobuf definitions, configuration types, signing interfaces, and validation code are available.",
+      "The target Fabric release and protobuf schema are fixed before implementation; migration support across multiple incompatible Fabric releases is out of scope.",
+      "U1 permits a coordinated protocol and protobuf change to the read-set representation and all participating peers are upgraded together; backward compatibility with unmodified peers is not required.",
+      "The requested increment includes production code, unit tests, integration or fixture-based acceptance tests, API-level error handling, and concise developer documentation, but excludes deployment automation and operational rollout.",
+      "Existing Fabric MSP, policy, protobuf, and cryptographic implementations may be reused when their behavior matches the required semantics; only the configuration-data ingestion layer is implemented independently of Viper and YAML.",
+      "For U2 and U6, callers provide valid, already-parsed configuration data and cryptographic material in the agreed Go structures; parsing arbitrary configtx.yaml files and generating cryptographic material are out of scope.",
+      "Acceptance comparisons allow semantically equivalent protobuf structures where Fabric tools may produce nonessential ordering or serialization differences, except where deterministic proto equality is explicitly required.",
+      "The developer has access to representative integration-test profiles, MSP certificates, keys, channel configurations, and a local Fabric test environment; no external network access is required.",
+      "The effort estimate is for one developer and represents work-hours, including implementation, review of local behavior, test execution, and defect correction, not elapsed calendar time."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Repository and Fabric architecture analysis",
+        "activity_description": "Inspect the target Fabric version, transaction protobufs, proposal response flow, endorsement processing, validation and commit paths, configuration APIs, signing utilities, and existing test conventions. Define interfaces and identify compatibility impacts before coding.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 read-set representation and propagation changes",
+        "activity_description": "Modify the transaction read-set data model and serialization to carry the value observed during chaincode execution in addition to each key and version. Update chaincode execution, proposal response construction, peer-to-peer propagation, and related conversion code.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U1 validation and commit enforcement",
+        "activity_description": "Update transaction validation to compare endorsed read values with the validating peer's current world-state values and invalidate transactions when values differ, while preserving normal version and MVCC checks and correct handling of absent keys.",
+        "most_likely_effort": 48
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U1 security and regression testing",
+        "activity_description": "Add tests for tampered world state, tampered read values, changed versions, missing keys, multiple reads, valid transactions, mixed valid and invalid blocks, serialization round trips, and regression behavior for ordinary endorsement and commit flows.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Common configuration and protobuf utility layer",
+        "activity_description": "Implement copied/adapted configuration structures, conversion helpers, deterministic protobuf handling, config-tree traversal, version management, policy helpers, and common validation/error utilities used by U2 and U5-U8.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U2 channel creation transaction generation",
+        "activity_description": "Implement the channel specification API and generation of a proto-encoded genesis block, including channel group, orderer, application, consortium, capabilities, policies, organizations, and required headers. Match representative configtxgen output.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 organization ConfigGroup generation",
+        "activity_description": "Implement generation of an organization ConfigGroup from explicit organization name, MSP identifiers, certificates, endpoints, policies, and related cryptographic material without reading MSP directories or configuration files.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 ConfigUpdate computation",
+        "activity_description": "Implement calculation of a ConfigUpdate from base and modified configuration transactions, including read and write sets, deletion detection, version checks, group traversal, and output semantics equivalent to configtxlator compute_update.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U5 max_message_count update generation",
+        "activity_description": "Implement creation of an unsigned channel configuration update that changes the orderer batch max_message_count value, including correct channel identifiers, group versions, update envelope construction, and validation of supported input paths.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "U8 consortium organization addition",
+        "activity_description": "Implement creation of a system-channel configuration update that adds an existing organization definition to a named consortium, using the generated organization ConfigGroup and correct consortium and channel-group version updates without creating a new channel.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "U3 detached ChannelUpdate signing",
+        "activity_description": "Implement an API that accepts a ChannelUpdate transaction, explicit signing identity and key material, and signing parameters, then produces a Fabric-compatible detached signature without consulting configuration for key discovery.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "U4 signed configuration update assembly",
+        "activity_description": "Implement assembly of a complete signed channel configuration update from a ConfigUpdate and a collection of detached signatures, preserving signature order and creator information and producing an envelope accepted by Fabric validation and equivalent to sequential signtx operations.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "Acceptance fixtures and cross-tool integration tests",
+        "activity_description": "Create representative channel profiles, organizations, MSP material, base and modified configurations, and signed-update scenarios. Compare generated results with configtxgen, cryptogen, configtxlator, protolator, and signtx outputs using semantic and proto equality checks.",
+        "most_likely_effort": 56
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "API documentation and examples",
+        "activity_description": "Document public types, function contracts, explicit key-material requirements, error behavior, supported configuration paths, detached-signature usage, and examples for generating and assembling transactions.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A15",
+        "activity_name": "Final integration, defect correction, and quality checks",
+        "activity_description": "Run the complete test suite, investigate cross-component failures, correct serialization or compatibility defects, perform static analysis and formatting, and verify that all acceptance scenarios pass together.",
+        "most_likely_effort": 32
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 572
+    }
+  }
+}

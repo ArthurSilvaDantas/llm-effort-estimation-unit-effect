@@ -1,0 +1,225 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-020",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788414474-vossbxUijS6lCHp6CSvm",
+    "object": "chat.completion",
+    "created": 1788414474,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Reuse the existing Spring XD module/plugin architecture for the new Reactor-based processor (U2) and follow the established pattern of Spark and RxJava processor plugins.\",\n    \"Implement the YARN info command (U1) by extending the existing xd-yarn shell script to query ZooKeeper for the admin container's address, rather than adding a new runtime component.\",\n    \"For message history (U3), implement a header-enriching tap/interceptor that is enabled via a stream/module option, leaving existing streams backward-compatible (opt-in).\",\n    \"The Protocol Buffers codec (U4) will be implemented as a pluggable codec that follows the existing CodecFactory SPI, supporting a user-supplied .proto schema descriptor or pre-generated Java classes.\",\n    \"Ambari plugin (U6) will be delivered as an Ambari service definition (metainfo.xml + scripts) plus a custom stack definition, reusing Spring XD's existing REST admin API for management and metrics.\",\n    \"For U7/U8, treat the existing JdbcHfsOptionsMetadata bean as the source of truth; surface clear validation error messages and align the wiki with the existing @AssertTrue logic (no behavior change beyond messaging clarity).\",\n    \"All features will be implemented by a single experienced Spring XD developer using Java 8 (consistent with the Spring XD era), with JUnit and integration tests covering each user story.\",\n    \"Use existing Spring XD build (Maven) and CI conventions; no new build infrastructure is introduced.\"\n  ],\n  \"assumptions\": [\n    \"Effort is expressed in person-workdays (1 workday = 8 productive hours) for a single experienced Spring XD developer.\",\n    \"The Spring XD codebase, build, and CI pipeline are already in place and understood by the developer (no ramp-up time is included beyond what is naturally embedded in each activity).\",\n    \"External dependencies (Apache ZooKeeper client, Reactor Core, Google Protobuf Java library, Ambari Python service framework) are already available or can be added with trivial pom changes.\",\n    \"Ambari plugin scripts will be delivered in Python following the standard Ambari Service Definition conventions; no custom Ambari server patches are required.\",\n    \"Protobuf codec supports the dynamic-schema use case via reflection on pre-compiled messages, since shipping a protoc compiler to end users is out of scope.\",\n    \"Documentation/wiki updates (U7) are done inline with the implementation activities; a separate 'final docs' activity captures the cross-story review and example updates.\",\n    \"Performance benchmarking in U5 is done with simple JMH-style harnesses embedded in integration tests, not a full benchmarking deliverable.\",\n    \"No production hardening, security review, or release engineering effort is included beyond basic tests and docs.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - xd-yarn info command\",\n      \"activity_description\": \"Extend the xd-yarn shell script with an 'info' subcommand that connects to the configured ZooKeeper ensemble, looks up the XD admin container's published address/port, and prints it. Includes parsing the existing xd-yarn config, ZK path conventions, and basic shell tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U2 - Reactor-based stream processor plugin\",\n      \"activity_description\": \"Design and implement a new reactor-based stream processor plugin module that mirrors the Spark/RxJava processor plugins: bare-minimum module metadata (processor class) plus extension points for options, and a sample processor used to validate the design.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U3 - Message history header tracking\",\n      \"activity_description\": \"Introduce a 'history' (or 'messageHistoryHeader') module option that, when enabled, injects stream name, module name, module type and timestamp into the message header as it traverses taps/processors. Includes the header propagation logic, configuration plumbing, and tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4 - Google Protocol Buffers codec\",\n      \"activity_description\": \"Implement a ProtobufCodec implementing the Spring XD Codec interface, plug it into the existing CodecFactory, and provide module option support for specifying the message type or descriptor. Includes serialization/deserialization logic, option metadata, and unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - Complex object test coverage and perf notes\",\n      \"activity_description\": \"Add integration tests covering serialization of protocol buffers and other 'complex' object graphs (nested objects, tree of objects). Capture and document observed performance characteristics (latency/throughput) in a short notes file accompanying the tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - Ambari plugin for Spring XD\",\n      \"activity_description\": \"Deliver a full Ambari service definition for Spring XD: metainfo.xml, configuration XML, Python install/start/stop/status scripts for admin and container roles, service actions (start/stop/restart), and integration with Ambari metrics for admin URL and container counts. Includes end-to-end testing on an Ambari-managed cluster.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7/U8 - JdbcHdfs job partition docs and option behavior\",\n      \"activity_description\": \"Clarify and lightly harden JdbcHfsOptionsMetadata behavior so the wiki description matches the @AssertTrue validation: sql and tableName are mutually exclusive; partitionColumn requires tableName+columns; sql supports a where-clause job. Update wiki pages, add validation message tests, and refine error text where useful.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Integration testing, examples, and cross-story documentation\",\n      \"activity_description\": \"Run cross-feature integration tests (info command + YARN deploy, reactor processor in a sample stream, protobuf codec in a tap, history headers, Ambari service smoke test). Update user-facing examples and the reference docs to cover the new options/codec/plugin/info command.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 32\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the software specification and break it down into development activities.\n\nThe specification is about Spring XD (Spring eXtreme Data), which is a distributed runtime for data-oriented applications. Let me look at each user story:\n\nU1: Add an `info` command to the xd-yarn script to get admin port info (currently need to query Zookeeper)\nU2: Create a reactor-based stream processor plugin similar to Spark/RxJava processors\nU3: Add message history tracking option (add stream name, module name etc. to message header)\nU4: Add Google's Protocol Buffer codec option for serialization\nU5: Add test coverage for \"complex objects\" like protocol buffers\nU6: Ambari plugin for provisioning, managing, and monitoring Spring XD cluster\nU7: Update wiki/docs for partitioned job with tableName/columns, document mutual exclusivity\nU8: Allow either sql or tableName options for partitioned job with where clause\n\nLet me create a WBS-based estimation.\n\nTechnical and design decisions:\n1. Use existing Spring XD module structure and patterns\n2. Follow Spring XD plugin architecture for new processors\n3. Use Zookeeper integration for YARN deployment info\n4. Implement codec interface for Protocol Buffers\n5. Use Ambari's blueprint/stack definition approach\n\nAssumptions:\n- A single developer implements all features\n- Work is measured in person-days (8 hours)\n- Spring XD codebase is already set up and can be modified\n- Reactor library is available as dependency\n- Protocol Buffers library is available\n- Ambari integration follows Hadoop ecosystem standards\n- Documentation is part of the deliverable\n- Unit and integration tests are part of each activity\n\nLet me break this into activities:\n\nA1: U1 - YARN deployment info command\n- Design info command interface\n- Implement Zookeeper query for admin port\n- Modify xd-yarn script\n- Testing\n\nA2: U2 - Reactor-based stream processor plugin\n- Design reactor plugin architecture\n- Create module metadata\n- Implement processor interface\n- Test with sample processor\n\nA3: U3 - Message history tracking\n- Design history header mechanism\n- Implement interceptor\n- Add option to stream definition\n- Testing\n\nA4: U4 - Protocol Buffer codec\n- Design codec integration\n- Implement protobuf codec\n- Register with codec factory\n- Testing\n\nA5: U5 - Test coverage for complex objects\n- Design test framework\n- Implement tests for protobuf\n- Implement tests for nested objects\n- Document performance characteristics\n\nA6: U6 - Ambari plugin\n- Design service definition\n- Implement Ambari stack/service\n- Implement management scripts\n- Implement monitoring integration\n- Testing\n\nA7: U7/U8 - JdbcHdfs job documentation and improvements\n- Document the partition logic\n- Document mutual exclusivity of sql/tableName\n- Improve error messages\n- Test improvements\n\nA8: Integration testing and documentation\n- End-to-end testing\n- Update user documentation\n- Update wiki\n\nLet me estimate each activity. For an experienced developer working on Spring XD:\n\nA1: U1 YARN info command - 3 days (script modification + Zookeeper integration)\nA2: U2 Reactor processor plugin - 5 days (new plugin architecture)\nA3: U3 Message history - 3 days (interceptor design and implementation)\nA4: U4 Protobuf codec - 4 days (codec implementation, integration)\nA5: U5 Complex object tests - 3 days (test design and implementation)\nA6: U6 Ambari plugin - 8 days (full plugin implementation with management, monitoring)\nA7: U7/U8 JdbcHdfs documentation - 2 days (documentation and minor code improvements)\nA8: Integration testing and final documentation - 3 days\n\nTotal: 3+5+3+4+3+8+2+3 = 31 days\n\nLet me reconsider some of these:\n\nA1: Adding info command to xd-yarn script - relatively simple, but needs to handle Zookeeper query\n- 2-3 days → 3 days\n\nA2: Reactor-based stream processor - this requires significant design work since it's a new plugin type\n- 5-6 days → 5 days\n\nA3: Message history - needs to think about how to add headers without breaking existing functionality\n- 3 days\n\nA4: Protocol Buffer codec - implement codec interface, add proto schema support\n- 4 days\n\nA5: Test coverage for complex objects - design test patterns, run benchmarks\n- 3-4 days → 3 days\n\nA6: Ambari plugin - this is significant, requires service definition, management scripts, monitoring\n- 8-10 days → 8 days\n\nA7: U7/U8 - JdbcHdfs documentation and minor fixes\n- 2 days\n\nA8: Integration, testing, documentation\n- 3 days\n\nTotal: 31 days\n\nLet me finalize.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the software specification and break it down into development activities.\n\nThe specification is about Spring XD (Spring eXtreme Data), which is a distributed runtime for data-oriented applications. Let me look at each user story:\n\nU1: Add an `info` command to the xd-yarn script to get admin port info (currently need to query Zookeeper)\nU2: Create a reactor-based stream processor plugin similar to Spark/RxJava processors\nU3: Add message history tracking option (add stream name, module name etc. to message header)\nU4: Add Google's Protocol Buffer codec option for serialization\nU5: Add test coverage for \"complex objects\" like protocol buffers\nU6: Ambari plugin for provisioning, managing, and monitoring Spring XD cluster\nU7: Update wiki/docs for partitioned job with tableName/columns, document mutual exclusivity\nU8: Allow either sql or tableName options for partitioned job with where clause\n\nLet me create a WBS-based estimation.\n\nTechnical and design decisions:\n1. Use existing Spring XD module structure and patterns\n2. Follow Spring XD plugin architecture for new processors\n3. Use Zookeeper integration for YARN deployment info\n4. Implement codec interface for Protocol Buffers\n5. Use Ambari's blueprint/stack definition approach\n\nAssumptions:\n- A single developer implements all features\n- Work is measured in person-days (8 hours)\n- Spring XD codebase is already set up and can be modified\n- Reactor library is available as dependency\n- Protocol Buffers library is available\n- Ambari integration follows Hadoop ecosystem standards\n- Documentation is part of the deliverable\n- Unit and integration tests are part of each activity\n\nLet me break this into activities:\n\nA1: U1 - YARN deployment info command\n- Design info command interface\n- Implement Zookeeper query for admin port\n- Modify xd-yarn script\n- Testing\n\nA2: U2 - Reactor-based stream processor plugin\n- Design reactor plugin architecture\n- Create module metadata\n- Implement processor interface\n- Test with sample processor\n\nA3: U3 - Message history tracking\n- Design history header mechanism\n- Implement interceptor\n- Add option to stream definition\n- Testing\n\nA4: U4 - Protocol Buffer codec\n- Design codec integration\n- Implement protobuf codec\n- Register with codec factory\n- Testing\n\nA5: U5 - Test coverage for complex objects\n- Design test framework\n- Implement tests for protobuf\n- Implement tests for nested objects\n- Document performance characteristics\n\nA6: U6 - Ambari plugin\n- Design service definition\n- Implement Ambari stack/service\n- Implement management scripts\n- Implement monitoring integration\n- Testing\n\nA7: U7/U8 - JdbcHdfs job documentation and improvements\n- Document the partition logic\n- Document mutual exclusivity of sql/tableName\n- Improve error messages\n- Test improvements\n\nA8: Integration testing and documentation\n- End-to-end testing\n- Update user documentation\n- Update wiki\n\nLet me estimate each activity. For an experienced developer working on Spring XD:\n\nA1: U1 YARN info command - 3 days (script modification + Zookeeper integration)\nA2: U2 Reactor processor plugin - 5 days (new plugin architecture)\nA3: U3 Message history - 3 days (interceptor design and implementation)\nA4: U4 Protobuf codec - 4 days (codec implementation, integration)\nA5: U5 Complex object tests - 3 days (test design and implementation)\nA6: U6 Ambari plugin - 8 days (full plugin implementation with management, monitoring)\nA7: U7/U8 JdbcHdfs documentation - 2 days (documentation and minor code improvements)\nA8: Integration testing and final documentation - 3 days\n\nTotal: 3+5+3+4+3+8+2+3 = 31 days\n\nLet me reconsider some of these:\n\nA1: Adding info command to xd-yarn script - relatively simple, but needs to handle Zookeeper query\n- 2-3 days → 3 days\n\nA2: Reactor-based stream processor - this requires significant design work since it's a new plugin type\n- 5-6 days → 5 days\n\nA3: Message history - needs to think about how to add headers without breaking existing functionality\n- 3 days\n\nA4: Protocol Buffer codec - implement codec interface, add proto schema support\n- 4 days\n\nA5: Test coverage for complex objects - design test patterns, run benchmarks\n- 3-4 days → 3 days\n\nA6: Ambari plugin - this is significant, requires service definition, management scripts, monitoring\n- 8-10 days → 8 days\n\nA7: U7/U8 - JdbcHdfs documentation and minor fixes\n- 2 days\n\nA8: Integration, testing, documentation\n- 3 days\n\nTotal: 31 days\n\nLet me finalize.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1563,
+      "completion_tokens": 2455,
+      "total_tokens": 4018,
+      "cost": 0.00337746,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00337746,
+        "upstream_inference_prompt_cost": 0.00043146,
+        "upstream_inference_completions_cost": 0.002946
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1028,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Reuse the existing Spring XD module/plugin architecture for the new Reactor-based processor (U2) and follow the established pattern of Spark and RxJava processor plugins.\",\n    \"Implement the YARN info command (U1) by extending the existing xd-yarn shell script to query ZooKeeper for the admin container's address, rather than adding a new runtime component.\",\n    \"For message history (U3), implement a header-enriching tap/interceptor that is enabled via a stream/module option, leaving existing streams backward-compatible (opt-in).\",\n    \"The Protocol Buffers codec (U4) will be implemented as a pluggable codec that follows the existing CodecFactory SPI, supporting a user-supplied .proto schema descriptor or pre-generated Java classes.\",\n    \"Ambari plugin (U6) will be delivered as an Ambari service definition (metainfo.xml + scripts) plus a custom stack definition, reusing Spring XD's existing REST admin API for management and metrics.\",\n    \"For U7/U8, treat the existing JdbcHfsOptionsMetadata bean as the source of truth; surface clear validation error messages and align the wiki with the existing @AssertTrue logic (no behavior change beyond messaging clarity).\",\n    \"All features will be implemented by a single experienced Spring XD developer using Java 8 (consistent with the Spring XD era), with JUnit and integration tests covering each user story.\",\n    \"Use existing Spring XD build (Maven) and CI conventions; no new build infrastructure is introduced.\"\n  ],\n  \"assumptions\": [\n    \"Effort is expressed in person-workdays (1 workday = 8 productive hours) for a single experienced Spring XD developer.\",\n    \"The Spring XD codebase, build, and CI pipeline are already in place and understood by the developer (no ramp-up time is included beyond what is naturally embedded in each activity).\",\n    \"External dependencies (Apache ZooKeeper client, Reactor Core, Google Protobuf Java library, Ambari Python service framework) are already available or can be added with trivial pom changes.\",\n    \"Ambari plugin scripts will be delivered in Python following the standard Ambari Service Definition conventions; no custom Ambari server patches are required.\",\n    \"Protobuf codec supports the dynamic-schema use case via reflection on pre-compiled messages, since shipping a protoc compiler to end users is out of scope.\",\n    \"Documentation/wiki updates (U7) are done inline with the implementation activities; a separate 'final docs' activity captures the cross-story review and example updates.\",\n    \"Performance benchmarking in U5 is done with simple JMH-style harnesses embedded in integration tests, not a full benchmarking deliverable.\",\n    \"No production hardening, security review, or release engineering effort is included beyond basic tests and docs.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - xd-yarn info command\",\n      \"activity_description\": \"Extend the xd-yarn shell script with an 'info' subcommand that connects to the configured ZooKeeper ensemble, looks up the XD admin container's published address/port, and prints it. Includes parsing the existing xd-yarn config, ZK path conventions, and basic shell tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U2 - Reactor-based stream processor plugin\",\n      \"activity_description\": \"Design and implement a new reactor-based stream processor plugin module that mirrors the Spark/RxJava processor plugins: bare-minimum module metadata (processor class) plus extension points for options, and a sample processor used to validate the design.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U3 - Message history header tracking\",\n      \"activity_description\": \"Introduce a 'history' (or 'messageHistoryHeader') module option that, when enabled, injects stream name, module name, module type and timestamp into the message header as it traverses taps/processors. Includes the header propagation logic, configuration plumbing, and tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4 - Google Protocol Buffers codec\",\n      \"activity_description\": \"Implement a ProtobufCodec implementing the Spring XD Codec interface, plug it into the existing CodecFactory, and provide module option support for specifying the message type or descriptor. Includes serialization/deserialization logic, option metadata, and unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - Complex object test coverage and perf notes\",\n      \"activity_description\": \"Add integration tests covering serialization of protocol buffers and other 'complex' object graphs (nested objects, tree of objects). Capture and document observed performance characteristics (latency/throughput) in a short notes file accompanying the tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - Ambari plugin for Spring XD\",\n      \"activity_description\": \"Deliver a full Ambari service definition for Spring XD: metainfo.xml, configuration XML, Python install/start/stop/status scripts for admin and container roles, service actions (start/stop/restart), and integration with Ambari metrics for admin URL and container counts. Includes end-to-end testing on an Ambari-managed cluster.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7/U8 - JdbcHdfs job partition docs and option behavior\",\n      \"activity_description\": \"Clarify and lightly harden JdbcHfsOptionsMetadata behavior so the wiki description matches the @AssertTrue validation: sql and tableName are mutually exclusive; partitionColumn requires tableName+columns; sql supports a where-clause job. Update wiki pages, add validation message tests, and refine error text where useful.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Integration testing, examples, and cross-story documentation\",\n      \"activity_description\": \"Run cross-feature integration tests (info command + YARN deploy, reactor processor in a sample stream, protobuf codec in a tap, history headers, Ambari service smoke test). Update user-facing examples and the reference docs to cover the new options/codec/plugin/info command.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 32\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1563,
+    "completion_tokens": 2455,
+    "total_tokens": 4018,
+    "cost": 0.00337746,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00337746,
+      "upstream_inference_prompt_cost": 0.00043146,
+      "upstream_inference_completions_cost": 0.002946
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1028,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788414500-lz1iW5MmoHKo9AhJu0OB",
+    "object": "chat.completion",
+    "created": 1788414500,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3117,
+      "completion_tokens": 19,
+      "total_tokens": 3136,
+      "cost": 0.00092046,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00092046,
+        "upstream_inference_prompt_cost": 0.00089766,
+        "upstream_inference_completions_cost": 2.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Reuse the existing Spring XD module/plugin architecture for the new Reactor-based processor (U2) and follow the established pattern of Spark and RxJava processor plugins.",
+      "Implement the YARN info command (U1) by extending the existing xd-yarn shell script to query ZooKeeper for the admin container's address, rather than adding a new runtime component.",
+      "For message history (U3), implement a header-enriching tap/interceptor that is enabled via a stream/module option, leaving existing streams backward-compatible (opt-in).",
+      "The Protocol Buffers codec (U4) will be implemented as a pluggable codec that follows the existing CodecFactory SPI, supporting a user-supplied .proto schema descriptor or pre-generated Java classes.",
+      "Ambari plugin (U6) will be delivered as an Ambari service definition (metainfo.xml + scripts) plus a custom stack definition, reusing Spring XD's existing REST admin API for management and metrics.",
+      "For U7/U8, treat the existing JdbcHfsOptionsMetadata bean as the source of truth; surface clear validation error messages and align the wiki with the existing @AssertTrue logic (no behavior change beyond messaging clarity).",
+      "All features will be implemented by a single experienced Spring XD developer using Java 8 (consistent with the Spring XD era), with JUnit and integration tests covering each user story.",
+      "Use existing Spring XD build (Maven) and CI conventions; no new build infrastructure is introduced."
+    ],
+    "assumptions": [
+      "Effort is expressed in person-workdays (1 workday = 8 productive hours) for a single experienced Spring XD developer.",
+      "The Spring XD codebase, build, and CI pipeline are already in place and understood by the developer (no ramp-up time is included beyond what is naturally embedded in each activity).",
+      "External dependencies (Apache ZooKeeper client, Reactor Core, Google Protobuf Java library, Ambari Python service framework) are already available or can be added with trivial pom changes.",
+      "Ambari plugin scripts will be delivered in Python following the standard Ambari Service Definition conventions; no custom Ambari server patches are required.",
+      "Protobuf codec supports the dynamic-schema use case via reflection on pre-compiled messages, since shipping a protoc compiler to end users is out of scope.",
+      "Documentation/wiki updates (U7) are done inline with the implementation activities; a separate 'final docs' activity captures the cross-story review and example updates.",
+      "Performance benchmarking in U5 is done with simple JMH-style harnesses embedded in integration tests, not a full benchmarking deliverable.",
+      "No production hardening, security review, or release engineering effort is included beyond basic tests and docs."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "U1 - xd-yarn info command",
+        "activity_description": "Extend the xd-yarn shell script with an 'info' subcommand that connects to the configured ZooKeeper ensemble, looks up the XD admin container's published address/port, and prints it. Includes parsing the existing xd-yarn config, ZK path conventions, and basic shell tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U2 - Reactor-based stream processor plugin",
+        "activity_description": "Design and implement a new reactor-based stream processor plugin module that mirrors the Spark/RxJava processor plugins: bare-minimum module metadata (processor class) plus extension points for options, and a sample processor used to validate the design.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U3 - Message history header tracking",
+        "activity_description": "Introduce a 'history' (or 'messageHistoryHeader') module option that, when enabled, injects stream name, module name, module type and timestamp into the message header as it traverses taps/processors. Includes the header propagation logic, configuration plumbing, and tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U4 - Google Protocol Buffers codec",
+        "activity_description": "Implement a ProtobufCodec implementing the Spring XD Codec interface, plug it into the existing CodecFactory, and provide module option support for specifying the message type or descriptor. Includes serialization/deserialization logic, option metadata, and unit tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U5 - Complex object test coverage and perf notes",
+        "activity_description": "Add integration tests covering serialization of protocol buffers and other 'complex' object graphs (nested objects, tree of objects). Capture and document observed performance characteristics (latency/throughput) in a short notes file accompanying the tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U6 - Ambari plugin for Spring XD",
+        "activity_description": "Deliver a full Ambari service definition for Spring XD: metainfo.xml, configuration XML, Python install/start/stop/status scripts for admin and container roles, service actions (start/stop/restart), and integration with Ambari metrics for admin URL and container counts. Includes end-to-end testing on an Ambari-managed cluster.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7/U8 - JdbcHdfs job partition docs and option behavior",
+        "activity_description": "Clarify and lightly harden JdbcHfsOptionsMetadata behavior so the wiki description matches the @AssertTrue validation: sql and tableName are mutually exclusive; partitionColumn requires tableName+columns; sql supports a where-clause job. Update wiki pages, add validation message tests, and refine error text where useful.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Integration testing, examples, and cross-story documentation",
+        "activity_description": "Run cross-feature integration tests (info command + YARN deploy, reactor processor in a sample stream, protobuf codec in a tap, history headers, Ambari service smoke test). Update user-facing examples and the reference docs to cover the new options/codec/plugin/info command.",
+        "most_likely_effort": 3
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 32
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

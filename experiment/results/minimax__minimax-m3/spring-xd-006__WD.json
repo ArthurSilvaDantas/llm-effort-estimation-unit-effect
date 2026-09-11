@@ -1,0 +1,244 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-006",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788421327-CQBtm9LRvHgQYYhqv966",
+    "object": "chat.completion",
+    "created": 1788421327,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Docker Compose-style environment variable substitution and --link semantics for the XD container runtime so that bindings to Rabbit, Redis, ZooKeeper, Hadoop, and Mongo can be expressed declaratively.\",\n    \"Use a lightweight, file/YAML-driven service registry (extending servers.yml) rather than introducing a new runtime dependency such as Eureka/Consul for service discovery, keeping the increment compatible with existing embedded-server deployments.\",\n    \"Add a Spring XD admin endpoint and CLI flag that publishes containers into the service registry at startup, so discovery lookups resolve to live containers.\",\n    \"Provide an opt-in CI job (driven by a Jenkinsfile / Maven profile) that produces a base admin image plus per-module derivative images, allowing internal teams to layer their own configurations on top.\",\n    \"Use AsciiDoc for the Mesos/Marathon deployment guide so it can be rendered by the existing Spring documentation tooling.\",\n    \"For RDBMS-to-HDFS partitioning, expose a Strategy interface (Column / Modulo / Custom SpEL) and wire it through the JDBC source module's HDFS sink batch pipeline.\",\n    \"Implement the HDFS source using a polling + listing abstraction (closely mirroring the existing file source) and reuse the existing OOTB source contract to minimize downstream changes.\",\n    \"Add a top-level `spring.xd.job.commitInterval` property to servers.yml and propagate it through the JobLauncher and partition-aware batch jobs, preserving the existing default if not set.\",\n    \"Use Java 17 (the minimum for Spring Framework 6.x) and assume the work is performed on the Spring XD 1.x / Spring Cloud Data Flow line where applicable.\"\n  ],\n  \"assumptions\": [\n    \"Estimates assume a single senior Java/Spring developer working full-time (8-hour workday) with solid familiarity with Spring XD internals, Docker, and Hadoop tooling.\",\n    \"Test infrastructure (Rabbit, Redis, ZooKeeper, Hadoop, Mongo, HDFS, RDBMS, Mesos/Marathon) is already available in the CI environment; no time is allocated to provisioning it from scratch.\",\n    \"Each activity's estimate includes the time to write unit tests; a separate cross-cutting integration testing activity is included for end-to-end validation across stories.\",\n    \"Dependency-upgrade evaluation (U5) is scoped to identifying breaking changes, applying upgrades in a feature branch, and running the existing test suite—not to fixing unrelated regressions uncovered by the upgrade.\",\n    \"Docker image CI build (U3) is scoped to the admin image and one representative module image to prove the pipeline; productionizing the pipeline for every module is out of scope.\",\n    \"Documentation activities produce reference docs in the existing project structure; no translation or external publishing work is included.\",\n    \"No performance tuning, large-scale load testing, or production rollout/operations work is included beyond what is required to validate each feature.\",\n    \"The HDFS source module is implemented for the most common cases (HDFS over file:// / hdfs:// URIs with simple text/sequence file ingestion); a full Hadoop FileFormat plug-in system is out of scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A0\",\n      \"activity_name\": \"Requirements analysis and overall design\",\n      \"activity_description\": \"Review the eight user stories, clarify ambiguities, define module boundaries, agree on the configuration schema extensions (servers.yml), and produce a short technical design note that drives the implementation activities below.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Docker XD container service linking\",\n      \"activity_description\": \"Extend the XD container launcher to support Docker-style --link semantics and environment-variable interpolation so that containers can bind to external Rabbit, Redis, ZooKeeper, Hadoop, and Mongo services. Update the admin UI/CLI to expose the new attributes and ship unit + integration tests against at least two of the target services.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U2 - Service discovery configuration for XD containers\",\n      \"activity_description\": \"Add a service registry backed by the existing servers.yml configuration. Implement admin/CLI commands to register a container at startup and a client-side discovery abstraction that jobs and modules can use to resolve other services by logical name.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U3 - Docker image build via CI\",\n      \"activity_description\": \"Author a Dockerfile and a CI pipeline (Jenkinsfile / Maven build profile) that produces a base XD admin image, demonstrates a module-derivative image, runs the standard test suite inside the image, and publishes images to a local registry as part of the build.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4 - Mesos + Marathon deployment guide\",\n      \"activity_description\": \"Write an AsciiDoc reference guide describing how to deploy an XD cluster on Mesos using Marathon, covering container layout, network ports, persistent volumes for ZooKeeper/HDFS state, and recommended instance counts and constraints.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - Spring Boot dependency upgrade evaluation\",\n      \"activity_description\": \"Bump Spring Boot (and related Spring Framework) dependencies to the target version in a feature branch, run the existing unit and integration test suites, and produce a short report listing behavioral changes, deprecated APIs, and recommended follow-up actions.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - Data partitioning strategy for RDBMS -> HDFS ingest\",\n      \"activity_description\": \"Introduce a PartitionStrategy interface (Column, Modulo, and Custom SpEL implementations) on the JDBC source, wire it through to the HDFS batch sink, expose a servers.yml / job-parameter configuration surface, and add tests that verify parallel ingest produces non-overlapping partitions.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 - HDFS source module\",\n      \"activity_description\": \"Implement a new OOTB HDFS source module that lists files under a configurable path (HDFS or file:// URI), emits file contents as messages, and supports basic options (filePattern, time/byte rollovers, completion marker handling). Include unit tests with the MiniHDFSCluster and a small integration test against a real HDFS instance.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - Configurable commit interval via servers.yml\",\n      \"activity_description\": \"Add a `spring.xd.job.commitInterval` property to servers.yml, plumb it through the JobLauncher and every OOTB job that supports partitioning, ensure the existing default is preserved when the property is absent, and add tests for both the default and override paths.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-cutting integration testing\",\n      \"activity_description\": \"Run end-to-end integration scenarios that combine the new features (e.g., an HDFS-source job with custom partitioning and an overridden commit interval running in linked containers) and capture results for release notes.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation, code review follow-ups, and release prep\",\n      \"activity_description\": \"Update user-facing reference docs (configuration, new source module, service linking/discovery) to reflect the increment, address code review comments on each change set, and prepare release notes summarizing the new and changed features.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 24.0\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the specification carefully and break it down into a Work Breakdown Structure (WBS) to estimate the development effort.\n\nThe specification describes features for Spring XD (a predecessor to Spring Cloud Data Flow), which is a framework for data ingestion, real-time analytics, and batch processing. Let me break down each user story:\n\n**U1: Docker XD Container Configuration with External Services**\n- Ability to link Docker XD containers to external services (Rabbit, Redis, Zookeeper, Hadoop, Mongo)\n- Linking/binding attributes support\n- Environment variables configuration\n- This is about docker-compose-like linking capabilities\n\n**U2: Service Discovery for Docker XD Containers**\n- Configure Docker XD containers using service discovery\n- Process/service discovery in a cluster\n\n**U3: Docker Image Creation via CI Build**\n- Build docker images via CI\n- Include components/configurations, test, deploy\n\n**U4: Documentation for Mesos/Marathon Deployment**\n- Document recommendations for deploying XD cluster using Mesos with Marathon Framework\n\n**U5: Spring Boot Dependency Upgrades Evaluation**\n- Evaluate Spring Boot dependency upgrades\n- Check for side effects/impacts\n\n**U6: Data Partitioning Strategy for RDBMS to HDFS Ingest**\n- Allow users to supply data partitioning strategy\n- Parallelize ingest of data from RDBMS to HDFS\n\n**U7: HDFS Source Module**\n- Add HDFS source module option\n- Ingest data directly from HDFS\n\n**U8: Configurable Commit Interval**\n- Override default \"commit-interval\"\n- Make it part of servers.yml file\n- Apply to all OOTB jobs with partition support\n\nNow let me think about the technical decisions and assumptions:\n\n**Technical & Design Decisions:**\n1. Use Docker Compose-style linking syntax for service linking (U1)\n2. Implement service discovery using a lightweight registry or DNS-based approach (U2)\n3. CI build pipeline using Jenkins/Maven for Docker image creation (U3)\n4. Document format: AsciiDoc or Markdown (U4)\n5. Spring Boot version upgrade - perform compatibility testing (U5)\n6. Partitioning strategy: column-based or modular arithmetic partitioning (U6)\n7. HDFS source using Spring XD's existing source abstractions, leveraging Hadoop client (U7)\n8. servers.yml property: \"spring.xd.job.commitInterval\" with default of existing value (U8)\n\n**Assumptions:**\n1. Developer is experienced with Spring Framework, Spring XD, Docker\n2. Working in a CI environment with Docker\n3. Code reviews and testing are part of the effort\n4. Unit tests + integration tests included\n5. Existing infrastructure for testing HDFS, RDBMS, etc.\n6. 8-hour workdays\n7. Senior developer with ~3-5 years of experience\n\nLet me break this into activities:\n\n**A1: Requirements Analysis and Design (cross-cutting)**\n- Review all user stories, finalize approach\n- ~1.5 days\n\n**A2: U1 - Docker Container Linking Support**\n- Implement linking/binding attributes\n- Environment variable support\n- Test against Rabbit, Redis, Zookeeper, Hadoop, Mongo\n- ~3 days\n\n**A3: U2 - Service Discovery Configuration**\n- Research service discovery options\n- Implement discovery configuration\n- Test with cluster setup\n- ~3 days\n\n**A4: U3 - Docker Image CI Build**\n- Set up Dockerfile for CI\n- Configure build pipeline\n- Test deployment to various environments\n- ~2 days\n\n**A5: U4 - Mesos/Marathon Deployment Documentation**\n- Write documentation\n- Include configuration examples\n- Best practices\n- ~2 days\n\n**A6: U5 - Spring Boot Dependency Upgrade Evaluation**\n- Upgrade dependencies\n- Run regression tests\n- Document findings\n- ~2 days\n\n**A7: U6 - Data Partitioning Strategy for RDBMS to HDFS**\n- Design partitioning interface\n- Implement partitioning strategy options\n- Integration with RDBMS source\n- Test parallel ingest\n- ~3 days\n\n**A8: U7 - HDFS Source Module**\n- Implement HDFS source module\n- File system watching\n- Polling, etc.\n- Testing\n- ~3 days\n\n**A9: U8 - Configurable Commit Interval**\n- Add property to servers.yml\n- Apply to all OOTB jobs\n- Test\n- ~1 day\n\n**A10: Cross-cutting Testing and Integration**\n- Integration testing across all features\n- ~2 days\n\n**A11: Documentation and Finalization**\n- User documentation\n- Code documentation\n- ~1.5 days\n\nLet me sum: 1.5 + 3 + 3 + 2 + 2 + 2 + 3 + 3 + 1 + 2 + 1.5 = 24 days\n\nLet me reconsider these estimates more carefully. The user stories represent a significant set of features. Let me look at each more carefully:\n\nU1: Linking containers to external services - this is a Docker Compose feature integration, requires understanding of how Spring XD modules containerize. Need to modify container startup. ~3 days\n\nU2: Service Discovery - need to integrate with a service discovery mechanism. Could be simple DNS-based or use Eureka/Consul. ~3 days\n\nU3: CI build for Docker images - this is mostly about setting up the pipeline. ~2 days\n\nU4: Documentation only - ~1.5-2 days\n\nU5: Dependency upgrade evaluation - this is research + testing. ~1.5-2 days\n\nU6: Data partitioning - this is a significant feature. Need to design partitioning strategy interface. ~3-4 days\n\nU7: HDFS source - new module implementation. ~3-4 days\n\nU8: Commit interval configuration - relatively simple. ~1 day\n\nPlus cross-cutting: design, testing, integration, documentation.\n\nTotal: roughly 22-25 days. I'll go with about 23-24 days.\n\nLet me finalize my activities and estimates:\n\n1. Requirements Analysis & Design: 1.5 days\n2. U1 - Docker Container Service Linking: 3 days\n3. U2 - Service Discovery Configuration: 3 days\n4. U3 - Docker Image CI Build Setup: 2 days\n5. U4 - Mesos/Marathon Deployment Documentation: 1.5 days\n6. U5 - Spring Boot Dependency Upgrade Evaluation: 1.5 days\n7. U6 - Data Partitioning Strategy: 3.5 days\n8. U7 - HDFS Source Module: 3.5 days\n9. U8 - Configurable Commit Interval: 1 day\n10. Cross-cutting Integration Testing: 2 days\n11. Documentation & Finalization: 1.5 days\n\nTotal: 24 days\n\nLet me make sure my JSON is valid. I need to also include the \"reported_total\" with the sum.\n\nFinal total: 1.5 + 3 + 3 + 2 + 1.5 + 1.5 + 3.5 + 3.5 + 1 + 2 + 1.5 = 24 days",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the specification carefully and break it down into a Work Breakdown Structure (WBS) to estimate the development effort.\n\nThe specification describes features for Spring XD (a predecessor to Spring Cloud Data Flow), which is a framework for data ingestion, real-time analytics, and batch processing. Let me break down each user story:\n\n**U1: Docker XD Container Configuration with External Services**\n- Ability to link Docker XD containers to external services (Rabbit, Redis, Zookeeper, Hadoop, Mongo)\n- Linking/binding attributes support\n- Environment variables configuration\n- This is about docker-compose-like linking capabilities\n\n**U2: Service Discovery for Docker XD Containers**\n- Configure Docker XD containers using service discovery\n- Process/service discovery in a cluster\n\n**U3: Docker Image Creation via CI Build**\n- Build docker images via CI\n- Include components/configurations, test, deploy\n\n**U4: Documentation for Mesos/Marathon Deployment**\n- Document recommendations for deploying XD cluster using Mesos with Marathon Framework\n\n**U5: Spring Boot Dependency Upgrades Evaluation**\n- Evaluate Spring Boot dependency upgrades\n- Check for side effects/impacts\n\n**U6: Data Partitioning Strategy for RDBMS to HDFS Ingest**\n- Allow users to supply data partitioning strategy\n- Parallelize ingest of data from RDBMS to HDFS\n\n**U7: HDFS Source Module**\n- Add HDFS source module option\n- Ingest data directly from HDFS\n\n**U8: Configurable Commit Interval**\n- Override default \"commit-interval\"\n- Make it part of servers.yml file\n- Apply to all OOTB jobs with partition support\n\nNow let me think about the technical decisions and assumptions:\n\n**Technical & Design Decisions:**\n1. Use Docker Compose-style linking syntax for service linking (U1)\n2. Implement service discovery using a lightweight registry or DNS-based approach (U2)\n3. CI build pipeline using Jenkins/Maven for Docker image creation (U3)\n4. Document format: AsciiDoc or Markdown (U4)\n5. Spring Boot version upgrade - perform compatibility testing (U5)\n6. Partitioning strategy: column-based or modular arithmetic partitioning (U6)\n7. HDFS source using Spring XD's existing source abstractions, leveraging Hadoop client (U7)\n8. servers.yml property: \"spring.xd.job.commitInterval\" with default of existing value (U8)\n\n**Assumptions:**\n1. Developer is experienced with Spring Framework, Spring XD, Docker\n2. Working in a CI environment with Docker\n3. Code reviews and testing are part of the effort\n4. Unit tests + integration tests included\n5. Existing infrastructure for testing HDFS, RDBMS, etc.\n6. 8-hour workdays\n7. Senior developer with ~3-5 years of experience\n\nLet me break this into activities:\n\n**A1: Requirements Analysis and Design (cross-cutting)**\n- Review all user stories, finalize approach\n- ~1.5 days\n\n**A2: U1 - Docker Container Linking Support**\n- Implement linking/binding attributes\n- Environment variable support\n- Test against Rabbit, Redis, Zookeeper, Hadoop, Mongo\n- ~3 days\n\n**A3: U2 - Service Discovery Configuration**\n- Research service discovery options\n- Implement discovery configuration\n- Test with cluster setup\n- ~3 days\n\n**A4: U3 - Docker Image CI Build**\n- Set up Dockerfile for CI\n- Configure build pipeline\n- Test deployment to various environments\n- ~2 days\n\n**A5: U4 - Mesos/Marathon Deployment Documentation**\n- Write documentation\n- Include configuration examples\n- Best practices\n- ~2 days\n\n**A6: U5 - Spring Boot Dependency Upgrade Evaluation**\n- Upgrade dependencies\n- Run regression tests\n- Document findings\n- ~2 days\n\n**A7: U6 - Data Partitioning Strategy for RDBMS to HDFS**\n- Design partitioning interface\n- Implement partitioning strategy options\n- Integration with RDBMS source\n- Test parallel ingest\n- ~3 days\n\n**A8: U7 - HDFS Source Module**\n- Implement HDFS source module\n- File system watching\n- Polling, etc.\n- Testing\n- ~3 days\n\n**A9: U8 - Configurable Commit Interval**\n- Add property to servers.yml\n- Apply to all OOTB jobs\n- Test\n- ~1 day\n\n**A10: Cross-cutting Testing and Integration**\n- Integration testing across all features\n- ~2 days\n\n**A11: Documentation and Finalization**\n- User documentation\n- Code documentation\n- ~1.5 days\n\nLet me sum: 1.5 + 3 + 3 + 2 + 2 + 2 + 3 + 3 + 1 + 2 + 1.5 = 24 days\n\nLet me reconsider these estimates more carefully. The user stories represent a significant set of features. Let me look at each more carefully:\n\nU1: Linking containers to external services - this is a Docker Compose feature integration, requires understanding of how Spring XD modules containerize. Need to modify container startup. ~3 days\n\nU2: Service Discovery - need to integrate with a service discovery mechanism. Could be simple DNS-based or use Eureka/Consul. ~3 days\n\nU3: CI build for Docker images - this is mostly about setting up the pipeline. ~2 days\n\nU4: Documentation only - ~1.5-2 days\n\nU5: Dependency upgrade evaluation - this is research + testing. ~1.5-2 days\n\nU6: Data partitioning - this is a significant feature. Need to design partitioning strategy interface. ~3-4 days\n\nU7: HDFS source - new module implementation. ~3-4 days\n\nU8: Commit interval configuration - relatively simple. ~1 day\n\nPlus cross-cutting: design, testing, integration, documentation.\n\nTotal: roughly 22-25 days. I'll go with about 23-24 days.\n\nLet me finalize my activities and estimates:\n\n1. Requirements Analysis & Design: 1.5 days\n2. U1 - Docker Container Service Linking: 3 days\n3. U2 - Service Discovery Configuration: 3 days\n4. U3 - Docker Image CI Build Setup: 2 days\n5. U4 - Mesos/Marathon Deployment Documentation: 1.5 days\n6. U5 - Spring Boot Dependency Upgrade Evaluation: 1.5 days\n7. U6 - Data Partitioning Strategy: 3.5 days\n8. U7 - HDFS Source Module: 3.5 days\n9. U8 - Configurable Commit Interval: 1 day\n10. Cross-cutting Integration Testing: 2 days\n11. Documentation & Finalization: 1.5 days\n\nTotal: 24 days\n\nLet me make sure my JSON is valid. I need to also include the \"reported_total\" with the sum.\n\nFinal total: 1.5 + 3 + 3 + 2 + 1.5 + 1.5 + 3.5 + 3.5 + 1 + 2 + 1.5 = 24 days",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1373,
+      "completion_tokens": 3254,
+      "total_tokens": 4627,
+      "cost": 0.00427926,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00427926,
+        "upstream_inference_prompt_cost": 0.00037446,
+        "upstream_inference_completions_cost": 0.0039048
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1483,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Docker Compose-style environment variable substitution and --link semantics for the XD container runtime so that bindings to Rabbit, Redis, ZooKeeper, Hadoop, and Mongo can be expressed declaratively.\",\n    \"Use a lightweight, file/YAML-driven service registry (extending servers.yml) rather than introducing a new runtime dependency such as Eureka/Consul for service discovery, keeping the increment compatible with existing embedded-server deployments.\",\n    \"Add a Spring XD admin endpoint and CLI flag that publishes containers into the service registry at startup, so discovery lookups resolve to live containers.\",\n    \"Provide an opt-in CI job (driven by a Jenkinsfile / Maven profile) that produces a base admin image plus per-module derivative images, allowing internal teams to layer their own configurations on top.\",\n    \"Use AsciiDoc for the Mesos/Marathon deployment guide so it can be rendered by the existing Spring documentation tooling.\",\n    \"For RDBMS-to-HDFS partitioning, expose a Strategy interface (Column / Modulo / Custom SpEL) and wire it through the JDBC source module's HDFS sink batch pipeline.\",\n    \"Implement the HDFS source using a polling + listing abstraction (closely mirroring the existing file source) and reuse the existing OOTB source contract to minimize downstream changes.\",\n    \"Add a top-level `spring.xd.job.commitInterval` property to servers.yml and propagate it through the JobLauncher and partition-aware batch jobs, preserving the existing default if not set.\",\n    \"Use Java 17 (the minimum for Spring Framework 6.x) and assume the work is performed on the Spring XD 1.x / Spring Cloud Data Flow line where applicable.\"\n  ],\n  \"assumptions\": [\n    \"Estimates assume a single senior Java/Spring developer working full-time (8-hour workday) with solid familiarity with Spring XD internals, Docker, and Hadoop tooling.\",\n    \"Test infrastructure (Rabbit, Redis, ZooKeeper, Hadoop, Mongo, HDFS, RDBMS, Mesos/Marathon) is already available in the CI environment; no time is allocated to provisioning it from scratch.\",\n    \"Each activity's estimate includes the time to write unit tests; a separate cross-cutting integration testing activity is included for end-to-end validation across stories.\",\n    \"Dependency-upgrade evaluation (U5) is scoped to identifying breaking changes, applying upgrades in a feature branch, and running the existing test suite—not to fixing unrelated regressions uncovered by the upgrade.\",\n    \"Docker image CI build (U3) is scoped to the admin image and one representative module image to prove the pipeline; productionizing the pipeline for every module is out of scope.\",\n    \"Documentation activities produce reference docs in the existing project structure; no translation or external publishing work is included.\",\n    \"No performance tuning, large-scale load testing, or production rollout/operations work is included beyond what is required to validate each feature.\",\n    \"The HDFS source module is implemented for the most common cases (HDFS over file:// / hdfs:// URIs with simple text/sequence file ingestion); a full Hadoop FileFormat plug-in system is out of scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A0\",\n      \"activity_name\": \"Requirements analysis and overall design\",\n      \"activity_description\": \"Review the eight user stories, clarify ambiguities, define module boundaries, agree on the configuration schema extensions (servers.yml), and produce a short technical design note that drives the implementation activities below.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Docker XD container service linking\",\n      \"activity_description\": \"Extend the XD container launcher to support Docker-style --link semantics and environment-variable interpolation so that containers can bind to external Rabbit, Redis, ZooKeeper, Hadoop, and Mongo services. Update the admin UI/CLI to expose the new attributes and ship unit + integration tests against at least two of the target services.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U2 - Service discovery configuration for XD containers\",\n      \"activity_description\": \"Add a service registry backed by the existing servers.yml configuration. Implement admin/CLI commands to register a container at startup and a client-side discovery abstraction that jobs and modules can use to resolve other services by logical name.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U3 - Docker image build via CI\",\n      \"activity_description\": \"Author a Dockerfile and a CI pipeline (Jenkinsfile / Maven build profile) that produces a base XD admin image, demonstrates a module-derivative image, runs the standard test suite inside the image, and publishes images to a local registry as part of the build.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4 - Mesos + Marathon deployment guide\",\n      \"activity_description\": \"Write an AsciiDoc reference guide describing how to deploy an XD cluster on Mesos using Marathon, covering container layout, network ports, persistent volumes for ZooKeeper/HDFS state, and recommended instance counts and constraints.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - Spring Boot dependency upgrade evaluation\",\n      \"activity_description\": \"Bump Spring Boot (and related Spring Framework) dependencies to the target version in a feature branch, run the existing unit and integration test suites, and produce a short report listing behavioral changes, deprecated APIs, and recommended follow-up actions.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - Data partitioning strategy for RDBMS -> HDFS ingest\",\n      \"activity_description\": \"Introduce a PartitionStrategy interface (Column, Modulo, and Custom SpEL implementations) on the JDBC source, wire it through to the HDFS batch sink, expose a servers.yml / job-parameter configuration surface, and add tests that verify parallel ingest produces non-overlapping partitions.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 - HDFS source module\",\n      \"activity_description\": \"Implement a new OOTB HDFS source module that lists files under a configurable path (HDFS or file:// URI), emits file contents as messages, and supports basic options (filePattern, time/byte rollovers, completion marker handling). Include unit tests with the MiniHDFSCluster and a small integration test against a real HDFS instance.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - Configurable commit interval via servers.yml\",\n      \"activity_description\": \"Add a `spring.xd.job.commitInterval` property to servers.yml, plumb it through the JobLauncher and every OOTB job that supports partitioning, ensure the existing default is preserved when the property is absent, and add tests for both the default and override paths.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-cutting integration testing\",\n      \"activity_description\": \"Run end-to-end integration scenarios that combine the new features (e.g., an HDFS-source job with custom partitioning and an overridden commit interval running in linked containers) and capture results for release notes.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation, code review follow-ups, and release prep\",\n      \"activity_description\": \"Update user-facing reference docs (configuration, new source module, service linking/discovery) to reflect the increment, address code review comments on each change set, and prepare release notes summarizing the new and changed features.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 24.0\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1373,
+    "completion_tokens": 3254,
+    "total_tokens": 4627,
+    "cost": 0.00427926,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00427926,
+      "upstream_inference_prompt_cost": 0.00037446,
+      "upstream_inference_completions_cost": 0.0039048
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1483,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788421356-yXadBDjjnqd8VzDtu8qF",
+    "object": "chat.completion",
+    "created": 1788421356,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3271,
+      "completion_tokens": 19,
+      "total_tokens": 3290,
+      "cost": 0.00092586,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 326,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00092586,
+        "upstream_inference_prompt_cost": 0.00090306,
+        "upstream_inference_completions_cost": 2.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Adopt Docker Compose-style environment variable substitution and --link semantics for the XD container runtime so that bindings to Rabbit, Redis, ZooKeeper, Hadoop, and Mongo can be expressed declaratively.",
+      "Use a lightweight, file/YAML-driven service registry (extending servers.yml) rather than introducing a new runtime dependency such as Eureka/Consul for service discovery, keeping the increment compatible with existing embedded-server deployments.",
+      "Add a Spring XD admin endpoint and CLI flag that publishes containers into the service registry at startup, so discovery lookups resolve to live containers.",
+      "Provide an opt-in CI job (driven by a Jenkinsfile / Maven profile) that produces a base admin image plus per-module derivative images, allowing internal teams to layer their own configurations on top.",
+      "Use AsciiDoc for the Mesos/Marathon deployment guide so it can be rendered by the existing Spring documentation tooling.",
+      "For RDBMS-to-HDFS partitioning, expose a Strategy interface (Column / Modulo / Custom SpEL) and wire it through the JDBC source module's HDFS sink batch pipeline.",
+      "Implement the HDFS source using a polling + listing abstraction (closely mirroring the existing file source) and reuse the existing OOTB source contract to minimize downstream changes.",
+      "Add a top-level `spring.xd.job.commitInterval` property to servers.yml and propagate it through the JobLauncher and partition-aware batch jobs, preserving the existing default if not set.",
+      "Use Java 17 (the minimum for Spring Framework 6.x) and assume the work is performed on the Spring XD 1.x / Spring Cloud Data Flow line where applicable."
+    ],
+    "assumptions": [
+      "Estimates assume a single senior Java/Spring developer working full-time (8-hour workday) with solid familiarity with Spring XD internals, Docker, and Hadoop tooling.",
+      "Test infrastructure (Rabbit, Redis, ZooKeeper, Hadoop, Mongo, HDFS, RDBMS, Mesos/Marathon) is already available in the CI environment; no time is allocated to provisioning it from scratch.",
+      "Each activity's estimate includes the time to write unit tests; a separate cross-cutting integration testing activity is included for end-to-end validation across stories.",
+      "Dependency-upgrade evaluation (U5) is scoped to identifying breaking changes, applying upgrades in a feature branch, and running the existing test suite—not to fixing unrelated regressions uncovered by the upgrade.",
+      "Docker image CI build (U3) is scoped to the admin image and one representative module image to prove the pipeline; productionizing the pipeline for every module is out of scope.",
+      "Documentation activities produce reference docs in the existing project structure; no translation or external publishing work is included.",
+      "No performance tuning, large-scale load testing, or production rollout/operations work is included beyond what is required to validate each feature.",
+      "The HDFS source module is implemented for the most common cases (HDFS over file:// / hdfs:// URIs with simple text/sequence file ingestion); a full Hadoop FileFormat plug-in system is out of scope."
+    ],
+    "activities": [
+      {
+        "activity_id": "A0",
+        "activity_name": "Requirements analysis and overall design",
+        "activity_description": "Review the eight user stories, clarify ambiguities, define module boundaries, agree on the configuration schema extensions (servers.yml), and produce a short technical design note that drives the implementation activities below.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A1",
+        "activity_name": "U1 - Docker XD container service linking",
+        "activity_description": "Extend the XD container launcher to support Docker-style --link semantics and environment-variable interpolation so that containers can bind to external Rabbit, Redis, ZooKeeper, Hadoop, and Mongo services. Update the admin UI/CLI to expose the new attributes and ship unit + integration tests against at least two of the target services.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U2 - Service discovery configuration for XD containers",
+        "activity_description": "Add a service registry backed by the existing servers.yml configuration. Implement admin/CLI commands to register a container at startup and a client-side discovery abstraction that jobs and modules can use to resolve other services by logical name.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U3 - Docker image build via CI",
+        "activity_description": "Author a Dockerfile and a CI pipeline (Jenkinsfile / Maven build profile) that produces a base XD admin image, demonstrates a module-derivative image, runs the standard test suite inside the image, and publishes images to a local registry as part of the build.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U4 - Mesos + Marathon deployment guide",
+        "activity_description": "Write an AsciiDoc reference guide describing how to deploy an XD cluster on Mesos using Marathon, covering container layout, network ports, persistent volumes for ZooKeeper/HDFS state, and recommended instance counts and constraints.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U5 - Spring Boot dependency upgrade evaluation",
+        "activity_description": "Bump Spring Boot (and related Spring Framework) dependencies to the target version in a feature branch, run the existing unit and integration test suites, and produce a short report listing behavioral changes, deprecated APIs, and recommended follow-up actions.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U6 - Data partitioning strategy for RDBMS -> HDFS ingest",
+        "activity_description": "Introduce a PartitionStrategy interface (Column, Modulo, and Custom SpEL implementations) on the JDBC source, wire it through to the HDFS batch sink, expose a servers.yml / job-parameter configuration surface, and add tests that verify parallel ingest produces non-overlapping partitions.",
+        "most_likely_effort": 3.5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7 - HDFS source module",
+        "activity_description": "Implement a new OOTB HDFS source module that lists files under a configurable path (HDFS or file:// URI), emits file contents as messages, and supports basic options (filePattern, time/byte rollovers, completion marker handling). Include unit tests with the MiniHDFSCluster and a small integration test against a real HDFS instance.",
+        "most_likely_effort": 3.5
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8 - Configurable commit interval via servers.yml",
+        "activity_description": "Add a `spring.xd.job.commitInterval` property to servers.yml, plumb it through the JobLauncher and every OOTB job that supports partitioning, ensure the existing default is preserved when the property is absent, and add tests for both the default and override paths.",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Cross-cutting integration testing",
+        "activity_description": "Run end-to-end integration scenarios that combine the new features (e.g., an HDFS-source job with custom partitioning and an overridden commit interval running in linked containers) and capture results for release notes.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Documentation, code review follow-ups, and release prep",
+        "activity_description": "Update user-facing reference docs (configuration, new source module, service linking/discovery) to reflect the increment, address code review comments on each change set, and prepare release notes summarizing the new and changed features.",
+        "most_likely_effort": 1.5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 24.0
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

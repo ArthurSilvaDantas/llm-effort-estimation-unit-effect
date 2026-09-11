@@ -1,0 +1,252 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "spring-xd-015",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788413520-ppALptbCEaW1gS8TLuPV",
+    "object": "chat.completion",
+    "created": 1788413520,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement Kafka support using the standard Apache Kafka client APIs and integrate it with the existing messaging abstraction rather than introducing a separate application-specific API.\",\n    \"Represent concurrency and compression as global default configuration values with per-deployment overrides taking precedence.\",\n    \"Use Kafka producer acknowledgements and request-reply correlation identifiers to implement message ACK and asynchronous request/reply behavior.\",\n    \"Implement batching using configurable batch size and flush or timeout behavior, while preserving ordering within a configured Kafka partition where applicable.\",\n    \"Implement Sqoop job stopping through the existing Sqoop job-control mechanism, with idempotent handling when a job has already completed or stopped.\",\n    \"Capture Sqoop process output from both standard output and standard error, forward it to the existing application logging mechanism, and preserve sufficient context to identify the job.\",\n    \"Implement incremental Sqoop loads using a configurable checkpoint or last-value column and persist the successful import position only after successful job completion.\",\n    \"Use automated integration and acceptance tests with an isolated Kafka environment, preferably containerized, so the tests can run consistently in CI.\",\n    \"Maintain backward-compatible defaults for existing deployments unless a user explicitly enables the new Kafka or Sqoop options.\"\n  ],\n  \"assumptions\": [\n    \"The increment is added to an existing Java 17 or newer codebase with established build, configuration, logging, messaging, and CI conventions.\",\n    \"Existing Kafka and Sqoop integration points are available; this estimate does not include creating an entire messaging or data-ingestion platform from scratch.\",\n    \"The implementation is a backend/library increment with no user-interface changes.\",\n    \"One developer performs analysis, implementation, testing, documentation, and CI configuration; estimates are work effort in workdays, not elapsed calendar time.\",\n    \"The Kafka acceptance tests may start disposable Kafka dependencies in CI and do not require provisioning or operating a permanent production Kafka cluster.\",\n    \"Sqoop remains an externally executed command or job service; the increment does not modify Sqoop itself.\",\n    \"The required ACK semantics mean confirmation from the Kafka producer or configured application-level consumer flow, not an exactly-once business transaction across arbitrary external systems.\",\n    \"Incremental loading requires a source column or equivalent Sqoop-supported incremental key and does not include resolving source-database schema inconsistencies.\",\n    \"Normal code review and local regression testing are included in the implementation activities, while extensive performance benchmarking and production rollout support are excluded.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Inspect the existing messaging and Sqoop integration, define configuration models, lifecycle behavior, error handling, compatibility rules, ACK and request-reply semantics, batching behavior, and incremental-load checkpoint handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Kafka acceptance-test foundation\",\n      \"activity_description\": \"Set up an isolated Kafka test dependency, test configuration, CI execution support, reusable test fixtures, and baseline acceptance coverage for producing and consuming messages.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Kafka defaults, overrides, concurrency, and compression\",\n      \"activity_description\": \"Add global default configuration and per-deployment overrides for Kafka concurrency and compression, wire the options into producer and consumer creation, validate configuration, and add unit and integration tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Kafka ACK support\",\n      \"activity_description\": \"Implement configurable message acknowledgement behavior, propagate success and failure results, handle producer acknowledgement failures and timeouts, preserve compatibility with non-ACK usage, and add tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Asynchronous requestor and replier bindings\",\n      \"activity_description\": \"Implement bindRequestor and bindReplier APIs and runtime behavior, including correlation identifiers, reply-topic or reply-routing configuration, asynchronous reply handling, timeout and failure behavior, lifecycle management, and acceptance tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Kafka batching support\",\n      \"activity_description\": \"Add configurable batch size and flush or timeout behavior, integrate batching with consumer and producer processing paths, define partial-batch and failure semantics, and test batch delivery and shutdown behavior.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Sqoop job stop capability\",\n      \"activity_description\": \"Add an API or control path to stop an existing Sqoop job, implement safe and idempotent state transitions, release associated resources, handle completed or unknown jobs, and add automated tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Sqoop log capture and streaming\",\n      \"activity_description\": \"Identify the available Sqoop process or job output streams, capture standard output and standard error, stream records through the application logging mechanism with job context, and test logging under normal and failure conditions.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Sqoop incremental data loading\",\n      \"activity_description\": \"Add configuration for incremental mode and the source checkpoint column, track and persist the last successful value, pass the appropriate Sqoop options, handle first and subsequent loads, and test success, failure, and restart scenarios.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and regression hardening\",\n      \"activity_description\": \"Resolve interactions among concurrency, batching, compression, ACKs, request-reply, and lifecycle controls; verify shutdown, retries, error propagation, backward compatibility, and resource cleanup across the increment.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation, CI completion, and final verification\",\n      \"activity_description\": \"Document configuration and usage examples, update CI checks and test reporting, perform full regression execution, fix final defects, and prepare the increment for delivery.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 52\n  }\n}",
+          "refusal": null,
+          "reasoning": "**Estimating project tasks**\n\nI need to create a JSON structure for estimating a project that involves Kafka and Sqoop. The tasks include analysis, design, and implementation, while ensuring I don’t double-count any activities. I'll break down the tasks and their estimated workdays, summing them up to a total of 52 days. I’m also considering some assumptions about Java 17, existing integrations, and the lack of a UI. It’s crucial that the JSON is valid, though.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.summary",
+              "summary": "**Estimating project tasks**\n\nI need to create a JSON structure for estimating a project that involves Kafka and Sqoop. The tasks include analysis, design, and implementation, while ensuring I don’t double-count any activities. I'll break down the tasks and their estimated workdays, summing them up to a total of 52 days. I’m also considering some assumptions about Java 17, existing integrations, and the lack of a UI. It’s crucial that the JSON is valid, though.",
+              "format": "openai-responses-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmQZV6AgAsnA8l0CiGrTxTIT0R7aa0XI2lATDAWF6wVReF6kyEqXvLCol_anbmNVg5EMR4_HKHoR5doGmFcU_eCKkS3hGUvnGAwnYtFBU0oTFk0Jswe8tza7-QBEd7y-25_v3hg9n9vcNE-Gd_QU2hqgp8M4s9SAJTGvwheGZnWVBNmPdyHjokdz1_fYNTzXOsl2o8KiGtFBSEPRWS9X4EdJ-aNfqlnD708HGOW0JM-75j1StakPzDYfWHjvwzzz_RtCf46CzdjUauqAzqlt2xy6lhTodglIEOZtRxqA0rnoLlsT6fae5vPaRWeKlAoX1bIAidm6bqIbfqJT6Tt_2Z53s4xycetFOPYH4Ye5e2_ncDXXXiNTjI0eY9ZJymiGaOS_vmRisLdWhVbLLuSb57cGA33oPA0gH4YixkfEUJoYsnDqi_6z-VRL2ms35lHZ2WVLOYO9AFbPnb90H9ZCgaa4wfwVbDarDLz0KIb-oqwetZRtEqEnRyhcDqmB1jWaq8dSQ0QzrjzFmrdXVltPkZk3j3pph6hfF_ilKfbKT69soieuPQ6RwL1pr8uWgBK7kwIC3lk2_uqY8Bq_zxtncWaaWyhORpID001-m_B_vnPkpz1v0QLx6CQztlHRj6AeXumMSGENBBB4ICKRjPl98CpacMG-pXdfjDdfVWWoNn1VfaQ2IxMrVCY28-5wGZhWj1X5g_ijZXxq9OniGdjSV5CUYxK_DE_rdvRo3sE-XSsBy0zOvgo8t5SyNxafw758ogKP4iXWq8LGCOJja7v8wny7aWLghYlso-MFPuLxcogZw--F0hpqKvdLig3Ix3MH9ihmoS3dCfU9ly3TTB6j7ApS2TFO182kTcY3s8Zc-Z0PlKWRQyjtE324HdBI3NGY5UmIvn_V759q5Moibj5-pmsXH_dTcvxu6qgXKjRkr7sBORmo6QUKDoOMTk4rXcbcGZPH1-oJ0avTQ6-KB6aPVpUWgoEpDiygBBW5ZHi8XJPHaO8siC29WHjkYi7hYmeHYzqbD4upI2D13JCOkldvlzZQ3OJDr2gl41nfs1_FbDwoc3BApdUoVv1BmUn0O2f9mjKDCMtQSY0qYAdX6YqGSUJ22z5Sg3085gGPDJVCToczTtZ7Y72pFkPMDTLnw5-9ubX2HnNXBu2IlBwRu8VfD8xvdjr424B4-gpa5fpoIMaSPbo8b929HfbQfMUx7RDxPDzzJGrs2qAnqB1SCOMEUwJqlJfuoC2opMvPp1Vi4oGJuh_YOFpaaHP3erZQnm9lN5TsUtaVnYX9t03iMLdq7Zww2gWbMFP0fMzGlSTYUwak2b270MVZMU9IkQN31H-ebuOZw-8GS9AXVH6D3XaRm8QlNrnWMUz-_D7KFL8_m6Jxe75cda-cErGWKsZAC3Y_9WWM1_42NZu0tDAlDrbGzPhPND_YKk3qrhWqVZD_7NDDMh8wAoRladka-FRnKC52R1LWkC9zyRXKnmIt5YMLk0i1ChbeFWpCf9ZmmFobbtDWGYHxCivhKcM3pLSQDP9ta5QyG7lXcreAxn9AZt1EruzxJOe6p27GaAsycycNTCkaqJ12PofMMFSgyGHF1jt_3YvE1fdF_tQXdGGGcSP8Bu7hjbQGPTRNC6f0blh692_Hrfg89mez8w_hUVlNGftSJHvyllIA_Lq_7PqLmWzhqd4PZwVpBI6iAF3pGYsQxShWHhkfdOqXMfPhC_c-gaXNl87YY0u8SunSo5aON3MOYdl9820w0XSgJbPV324hfrGlXOI5hquKyOsILRziC8dlt-ZtySja7laJERfylzKwiSt8xgIpWQE9yftksRy4Dq6R1KfHetuSjadXJXJVvTgQjPGdxJGWt8vPiquO-ThcSfykIFgYjBncqyJjYTyQ8s9N--EfKIUBWsc36Xb0xkndMAjwET8WFFqTIlErTBCLFsxMcoqI-JYYkccm3Knfz7ROh9B8ZvMBRPyFH3p-1NQtruyTHyBI5pLg-CzpOE-AUMTwGju5X29d1IvX2n1CbaoQoWWYQRmSdVgWS_sOKlBWx7TGpF0CRG-_J56ddaxvqpggFkCBoGQsb97KT7MAgmUym8DkXmNQZg-Ku4uO6hLUFtH8HnDkCntH6FO5UtrZM4gbkHhKt3tpHZJJPLMdbjmesiRoTNzUc2vpmcIO93aV4ISydc2M7maNKROg5JykF74FlXW5Daipl3O-VUBh754KejabhSaNirRLZAbNZlIFYjeBDc5eHzjL9STVRGzb9ytRp3Kc_luaPNai5rk2kKX_UnssfS946BZ8nD_QLpb1jQbEv6dO_REQGldzRFHZStq_KvlpsZQkzBXCGxDxFdPG6GsYHy0h2v0krrh--f6mTizuooGoDSPPj979aNs1ilprDCIKRkLovfj7z3inOPBxiLZgll1UawaIJUd4nsJ_pbrG997fMiUiBTFGZo7OGx22CaPvVw3e-CIcoGZzvPznjKDmxIWXdQeoJaPrN6xv3u-6KgSrDqziQyr1Q9f3M5aFysSWoKbHT1WurR4T6XPUKjo5X28f42ErbOEmPD5WL3s9om0P15HmnHK33NBuQf2YAzycZcvEADAZGpMX4QbVslaJZuFEfQWbRrQiuQBLsFyGrSLZ-4_c_7xTnRAIXx2khkg8cfBj8-8eDTHDLYIzcPFr9i0OTmy_IhZHtkaW0DhjYfxGjBf5PCDI7whJ1vK16YQ==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_0a6808434925fea1016a9906518c1487d18f45d45ab9f2667c",
+              "index": 1
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1204,
+      "completion_tokens": 1635,
+      "total_tokens": 2839,
+      "cost": 0.00226285,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1201,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00226285,
+        "upstream_inference_prompt_cost": 0.00030085,
+        "upstream_inference_completions_cost": 0.001962
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 232,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement Kafka support using the standard Apache Kafka client APIs and integrate it with the existing messaging abstraction rather than introducing a separate application-specific API.\",\n    \"Represent concurrency and compression as global default configuration values with per-deployment overrides taking precedence.\",\n    \"Use Kafka producer acknowledgements and request-reply correlation identifiers to implement message ACK and asynchronous request/reply behavior.\",\n    \"Implement batching using configurable batch size and flush or timeout behavior, while preserving ordering within a configured Kafka partition where applicable.\",\n    \"Implement Sqoop job stopping through the existing Sqoop job-control mechanism, with idempotent handling when a job has already completed or stopped.\",\n    \"Capture Sqoop process output from both standard output and standard error, forward it to the existing application logging mechanism, and preserve sufficient context to identify the job.\",\n    \"Implement incremental Sqoop loads using a configurable checkpoint or last-value column and persist the successful import position only after successful job completion.\",\n    \"Use automated integration and acceptance tests with an isolated Kafka environment, preferably containerized, so the tests can run consistently in CI.\",\n    \"Maintain backward-compatible defaults for existing deployments unless a user explicitly enables the new Kafka or Sqoop options.\"\n  ],\n  \"assumptions\": [\n    \"The increment is added to an existing Java 17 or newer codebase with established build, configuration, logging, messaging, and CI conventions.\",\n    \"Existing Kafka and Sqoop integration points are available; this estimate does not include creating an entire messaging or data-ingestion platform from scratch.\",\n    \"The implementation is a backend/library increment with no user-interface changes.\",\n    \"One developer performs analysis, implementation, testing, documentation, and CI configuration; estimates are work effort in workdays, not elapsed calendar time.\",\n    \"The Kafka acceptance tests may start disposable Kafka dependencies in CI and do not require provisioning or operating a permanent production Kafka cluster.\",\n    \"Sqoop remains an externally executed command or job service; the increment does not modify Sqoop itself.\",\n    \"The required ACK semantics mean confirmation from the Kafka producer or configured application-level consumer flow, not an exactly-once business transaction across arbitrary external systems.\",\n    \"Incremental loading requires a source column or equivalent Sqoop-supported incremental key and does not include resolving source-database schema inconsistencies.\",\n    \"Normal code review and local regression testing are included in the implementation activities, while extensive performance benchmarking and production rollout support are excluded.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Inspect the existing messaging and Sqoop integration, define configuration models, lifecycle behavior, error handling, compatibility rules, ACK and request-reply semantics, batching behavior, and incremental-load checkpoint handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Kafka acceptance-test foundation\",\n      \"activity_description\": \"Set up an isolated Kafka test dependency, test configuration, CI execution support, reusable test fixtures, and baseline acceptance coverage for producing and consuming messages.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Kafka defaults, overrides, concurrency, and compression\",\n      \"activity_description\": \"Add global default configuration and per-deployment overrides for Kafka concurrency and compression, wire the options into producer and consumer creation, validate configuration, and add unit and integration tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Kafka ACK support\",\n      \"activity_description\": \"Implement configurable message acknowledgement behavior, propagate success and failure results, handle producer acknowledgement failures and timeouts, preserve compatibility with non-ACK usage, and add tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Asynchronous requestor and replier bindings\",\n      \"activity_description\": \"Implement bindRequestor and bindReplier APIs and runtime behavior, including correlation identifiers, reply-topic or reply-routing configuration, asynchronous reply handling, timeout and failure behavior, lifecycle management, and acceptance tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Kafka batching support\",\n      \"activity_description\": \"Add configurable batch size and flush or timeout behavior, integrate batching with consumer and producer processing paths, define partial-batch and failure semantics, and test batch delivery and shutdown behavior.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Sqoop job stop capability\",\n      \"activity_description\": \"Add an API or control path to stop an existing Sqoop job, implement safe and idempotent state transitions, release associated resources, handle completed or unknown jobs, and add automated tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Sqoop log capture and streaming\",\n      \"activity_description\": \"Identify the available Sqoop process or job output streams, capture standard output and standard error, stream records through the application logging mechanism with job context, and test logging under normal and failure conditions.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Sqoop incremental data loading\",\n      \"activity_description\": \"Add configuration for incremental mode and the source checkpoint column, track and persist the last successful value, pass the appropriate Sqoop options, handle first and subsequent loads, and test success, failure, and restart scenarios.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and regression hardening\",\n      \"activity_description\": \"Resolve interactions among concurrency, batching, compression, ACKs, request-reply, and lifecycle controls; verify shutdown, retries, error propagation, backward compatibility, and resource cleanup across the increment.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation, CI completion, and final verification\",\n      \"activity_description\": \"Document configuration and usage examples, update CI checks and test reporting, perform full regression execution, fix final defects, and prepare the increment for delivery.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 52\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1204,
+    "completion_tokens": 1635,
+    "total_tokens": 2839,
+    "cost": 0.00226285,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1201,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00226285,
+      "upstream_inference_prompt_cost": 0.00030085,
+      "upstream_inference_completions_cost": 0.001962
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 232,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "conversion_response": {
+    "id": "gen-1788413541-mzDr7m3eQww5XIXeCtH7",
+    "object": "chat.completion",
+    "created": 1788413541,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\"work_hours_per_workday\":8}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2726,
+      "completion_tokens": 13,
+      "total_tokens": 2739,
+      "cost": 0.00042072,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1201,
+        "cache_write_tokens": 1522,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00042072,
+        "upstream_inference_prompt_cost": 0.00040512,
+        "upstream_inference_completions_cost": 1.56e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\"work_hours_per_workday\":8}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement Kafka support using the standard Apache Kafka client APIs and integrate it with the existing messaging abstraction rather than introducing a separate application-specific API.",
+      "Represent concurrency and compression as global default configuration values with per-deployment overrides taking precedence.",
+      "Use Kafka producer acknowledgements and request-reply correlation identifiers to implement message ACK and asynchronous request/reply behavior.",
+      "Implement batching using configurable batch size and flush or timeout behavior, while preserving ordering within a configured Kafka partition where applicable.",
+      "Implement Sqoop job stopping through the existing Sqoop job-control mechanism, with idempotent handling when a job has already completed or stopped.",
+      "Capture Sqoop process output from both standard output and standard error, forward it to the existing application logging mechanism, and preserve sufficient context to identify the job.",
+      "Implement incremental Sqoop loads using a configurable checkpoint or last-value column and persist the successful import position only after successful job completion.",
+      "Use automated integration and acceptance tests with an isolated Kafka environment, preferably containerized, so the tests can run consistently in CI.",
+      "Maintain backward-compatible defaults for existing deployments unless a user explicitly enables the new Kafka or Sqoop options."
+    ],
+    "assumptions": [
+      "The increment is added to an existing Java 17 or newer codebase with established build, configuration, logging, messaging, and CI conventions.",
+      "Existing Kafka and Sqoop integration points are available; this estimate does not include creating an entire messaging or data-ingestion platform from scratch.",
+      "The implementation is a backend/library increment with no user-interface changes.",
+      "One developer performs analysis, implementation, testing, documentation, and CI configuration; estimates are work effort in workdays, not elapsed calendar time.",
+      "The Kafka acceptance tests may start disposable Kafka dependencies in CI and do not require provisioning or operating a permanent production Kafka cluster.",
+      "Sqoop remains an externally executed command or job service; the increment does not modify Sqoop itself.",
+      "The required ACK semantics mean confirmation from the Kafka producer or configured application-level consumer flow, not an exactly-once business transaction across arbitrary external systems.",
+      "Incremental loading requires a source column or equivalent Sqoop-supported incremental key and does not include resolving source-database schema inconsistencies.",
+      "Normal code review and local regression testing are included in the implementation activities, while extensive performance benchmarking and production rollout support are excluded."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and technical design",
+        "activity_description": "Inspect the existing messaging and Sqoop integration, define configuration models, lifecycle behavior, error handling, compatibility rules, ACK and request-reply semantics, batching behavior, and incremental-load checkpoint handling.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Kafka acceptance-test foundation",
+        "activity_description": "Set up an isolated Kafka test dependency, test configuration, CI execution support, reusable test fixtures, and baseline acceptance coverage for producing and consuming messages.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Kafka defaults, overrides, concurrency, and compression",
+        "activity_description": "Add global default configuration and per-deployment overrides for Kafka concurrency and compression, wire the options into producer and consumer creation, validate configuration, and add unit and integration tests.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Kafka ACK support",
+        "activity_description": "Implement configurable message acknowledgement behavior, propagate success and failure results, handle producer acknowledgement failures and timeouts, preserve compatibility with non-ACK usage, and add tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Asynchronous requestor and replier bindings",
+        "activity_description": "Implement bindRequestor and bindReplier APIs and runtime behavior, including correlation identifiers, reply-topic or reply-routing configuration, asynchronous reply handling, timeout and failure behavior, lifecycle management, and acceptance tests.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Kafka batching support",
+        "activity_description": "Add configurable batch size and flush or timeout behavior, integrate batching with consumer and producer processing paths, define partial-batch and failure semantics, and test batch delivery and shutdown behavior.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Sqoop job stop capability",
+        "activity_description": "Add an API or control path to stop an existing Sqoop job, implement safe and idempotent state transitions, release associated resources, handle completed or unknown jobs, and add automated tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Sqoop log capture and streaming",
+        "activity_description": "Identify the available Sqoop process or job output streams, capture standard output and standard error, stream records through the application logging mechanism with job context, and test logging under normal and failure conditions.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Sqoop incremental data loading",
+        "activity_description": "Add configuration for incremental mode and the source checkpoint column, track and persist the last successful value, pass the appropriate Sqoop options, handle first and subsequent loads, and test success, failure, and restart scenarios.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature integration and regression hardening",
+        "activity_description": "Resolve interactions among concurrency, batching, compression, ACKs, request-reply, and lifecycle controls; verify shutdown, retries, error propagation, backward compatibility, and resource cleanup across the increment.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation, CI completion, and final verification",
+        "activity_description": "Document configuration and usage examples, update CI checks and test reporting, perform full regression execution, fix final defects, and prepare the increment for delivery.",
+        "most_likely_effort": 5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 52
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

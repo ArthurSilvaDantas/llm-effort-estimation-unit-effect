@@ -1,0 +1,254 @@
+{
+  "model_id": "xiaomi/mimo-v2.5",
+  "spec_id": "spring-xd-001",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1787841189-b63Vs88M8x13Kftj6H5j",
+    "object": "chat.completion",
+    "created": 1787841189,
+    "model": "xiaomi/mimo-v2.5",
+    "provider": "Xiaomi",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"All development will target Spring XD's existing modular architecture, leveraging its plugin system for new modules.\",\n    \"For U1, the implementation will follow the suggested approach of handling cleanup in the container during consumer undeployment, using RabbitAdmin.getQueueProperties() to check consumer counts.\",\n    \"For U2, the error channel integration will follow Spring Integration patterns, using a dedicated error channel per stream/module that can be tapped via a standardized interface.\",\n    \"For U3, the initial implementation will use Spring Security's method-level and URL-based security for REST endpoints, with a configuration mechanism using Spring Boot properties.\",\n    \"For U4, the work is purely documentation, capturing all available placeholders from Spring XD's context in the official user guide.\",\n    \"For U5, a new 'http-mvc' module will be created as a separate artifact, embedding Tomcat and configuring Spring MVC/Security in a self-contained manner, distinct from the existing http source.\",\n    \"For U6, the client-side will implement a polling mechanism with backoff, while server-side will leverage Spring's ApplicationEvent mechanism to propagate state changes between admin, containers, and eventually clients.\",\n    \"For U7, the new SFTP source module will be based on Spring Integration's SFTP adapters, with a testing strategy using an embedded SFTP server.\",\n    \"For U8, the new ElasticSearch sink will use Spring Data's ElasticsearchTemplate or the Elasticsearch Java client, configured via a properties file for connection details.\",\n    \"A dedicated, time-boxed 'spike' activity is included for the research and design phase of U3.\"\n  ],\n  \"assumptions\": [\n    \"The developer has existing knowledge of and access to the Spring XD codebase and its build system.\",\n    \"A working development environment with Java 17+, Maven/Gradle, and necessary Spring XD dependencies is already configured.\",\n    \"Access to test instances of RabbitMQ, SFTP servers, and ElasticSearch is available for integration testing, or can be stood up quickly (e.g., using Docker).\",\n    \"The scope for U3 is limited to the backend REST API and DSL shell as described; the Admin UI integration is deferred to a separate, future story.\",\n    \"The 'clean' functionality in U1 is a best-effort, optional operation. It does not guarantee removal if producers are active or other consumers are present.\",\n    \"For U6, the server-side event propagation is an initial foundation; full real-time event streaming to UI clients is a follow-up enhancement.\",\n    \"All module development (U5, U7, U8) includes writing unit tests and integration tests, but performance testing is not in scope.\",\n    \"Documentation updates (U4) will follow existing Spring XD documentation standards and be added to the relevant wiki/asciidoc files.\",\n    \"The effort estimates assume no major interruptions and that code reviews are performed by a peer, with minimal rework expected.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Implement Queue/Topic Cleanup on Stream Destroy (U1)\",\n      \"activity_description\": \"Implement the optional '--clean' flag for the 'stream destroy' command. Integrate with RabbitAdmin to check consumer counts and conditionally delete queues, bindings, and the associated fanout exchange when the last consumer is removed during undeployment. Write unit and integration tests.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Implement Module Error Channel Notification (U2)\",\n      \"activity_description\": \"Create a new, configurable error channel for each deployed module. Implement a mechanism to tap into this channel and route error messages (e.g., to a log, JMX, or a user-provided destination). Provide DSL or configuration options to enable and configure the error sink.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Security Spike and Design for REST Endpoints (U3)\",\n      \"activity_description\": \"Research Spring Security integration with Spring Boot. Design the security configuration approach for XD's REST endpoints and DSL shell. Create a design document outlining configuration properties, authentication methods, and authorization model. Time-boxed activity.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement Security Layer for REST Endpoints (U3)\",\n      \"activity_description\": \"Based on the design from A3, implement Spring Security filters and configurations to protect the specified REST endpoints. Add configuration properties for enabling/disabling security, setting credentials, and defining roles. Ensure the DSL shell can operate in both secured and unsecured modes.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Document Available Stream/Job Placeholder Keys (U4)\",\n      \"activity_description\": \"Research the Spring XD codebase to identify all available placeholders (e.g., ${xd.stream.name}, ${xd.job.name}, ${xd.container.*}). Write and add documentation to the official guide explaining their usage and context.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Develop OOTB MVC-aware HTTP Module (U5)\",\n      \"activity_name\": \"Develop OOTB MVC-aware HTTP Module (U5)\",\n      \"activity_description\": \"Create a new 'http-mvc' source module with an embedded Tomcat. Configure Spring MVC with content negotiation and full header mapping. Provide options for mounting custom controllers or using the module as a secure REST endpoint. Write comprehensive tests and documentation.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement Client-Side Status Polling (U6 - Client)\",\n      \"activity_description\": \"Implement a client-side polling strategy in the Admin client to detect status changes of streams and jobs during operations like deployment. Include exponential backoff and configurable polling intervals.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Implement Server-Side Event Propagation (U6 - Server)\",\n      \"activity_description\": \"Implement an internal event system within the Admin server to propagate state changes (e.g., stream deployed, job started) between containers and the admin. Create an endpoint or mechanism to make these events available for future consumption by clients/UI.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Develop SFTP Source Module (U7)\",\n      \"activity_description\": \"Create a new 'sftp' source module based on Spring Integration SFTP adapters. Support configuration for remote file retrieval (polling, file patterns, local staging directory). Set up an embedded SFTP server for integration testing.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Develop ElasticSearch Sink Module (U8)\",\n      \"activity_description\": \"Create a new 'elasticsearch' sink module. Integrate with Spring Data Elasticsearch or the official client library. Support configurable index, document type, and mapping. Write unit and integration tests using an embedded or test ElasticSearch instance.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Final Integration, Testing & Documentation Pass\",\n      \"activity_description\": \"Perform a final round of integration testing across all new features to ensure they work together within the Spring XD ecosystem. Update main project documentation to reference all new modules and features.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 65\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Hmm, this is a detailed software estimation task based on provided user stories. The user wants a WBS-based estimation with specific technical decisions and assumptions documented. The specification contains eight user stories with varying complexity, from documentation tasks to full-fledged module implementations.\n\nOkay, I need to break down the work into logical activities covering all user stories. The technical decisions should reflect a Spring XD context, considering its modular architecture and existing patterns. Assumptions should clarify ambiguities in the spec, like infrastructure availability and scope boundaries.\n\nFor the activities, I'll group related work by user story while considering dependencies. U5 and U8 appear most complex, requiring new module development. U1 needs careful integration with existing Spring AMQP components. U6 requires both client and server-side changes. U3 is research-heavy but limited in scope. U2 and U4 are more straightforward. U7 needs dedicated testing infrastructure.\n\nThe effort estimates should reflect real-world development tasks - research spikes, module creation, testing, and documentation. The total seems reasonable for a team familiar with Spring XD, though the65-day estimate is substantial. I'll ensure the JSON structure strictly matches the required schema.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Hmm, this is a detailed software estimation task based on provided user stories. The user wants a WBS-based estimation with specific technical decisions and assumptions documented. The specification contains eight user stories with varying complexity, from documentation tasks to full-fledged module implementations.\n\nOkay, I need to break down the work into logical activities covering all user stories. The technical decisions should reflect a Spring XD context, considering its modular architecture and existing patterns. Assumptions should clarify ambiguities in the spec, like infrastructure availability and scope boundaries.\n\nFor the activities, I'll group related work by user story while considering dependencies. U5 and U8 appear most complex, requiring new module development. U1 needs careful integration with existing Spring AMQP components. U6 requires both client and server-side changes. U3 is research-heavy but limited in scope. U2 and U4 are more straightforward. U7 needs dedicated testing infrastructure.\n\nThe effort estimates should reflect real-world development tasks - research spikes, module creation, testing, and documentation. The total seems reasonable for a team familiar with Spring XD, though the65-day estimate is substantial. I'll ensure the JSON structure strictly matches the required schema.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1994,
+      "completion_tokens": 1921,
+      "total_tokens": 3915,
+      "cost": 0.0007467936,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0007467936,
+        "upstream_inference_prompt_cost": 0.0002089136,
+        "upstream_inference_completions_cost": 0.00053788
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"All development will target Spring XD's existing modular architecture, leveraging its plugin system for new modules.\",\n    \"For U1, the implementation will follow the suggested approach of handling cleanup in the container during consumer undeployment, using RabbitAdmin.getQueueProperties() to check consumer counts.\",\n    \"For U2, the error channel integration will follow Spring Integration patterns, using a dedicated error channel per stream/module that can be tapped via a standardized interface.\",\n    \"For U3, the initial implementation will use Spring Security's method-level and URL-based security for REST endpoints, with a configuration mechanism using Spring Boot properties.\",\n    \"For U4, the work is purely documentation, capturing all available placeholders from Spring XD's context in the official user guide.\",\n    \"For U5, a new 'http-mvc' module will be created as a separate artifact, embedding Tomcat and configuring Spring MVC/Security in a self-contained manner, distinct from the existing http source.\",\n    \"For U6, the client-side will implement a polling mechanism with backoff, while server-side will leverage Spring's ApplicationEvent mechanism to propagate state changes between admin, containers, and eventually clients.\",\n    \"For U7, the new SFTP source module will be based on Spring Integration's SFTP adapters, with a testing strategy using an embedded SFTP server.\",\n    \"For U8, the new ElasticSearch sink will use Spring Data's ElasticsearchTemplate or the Elasticsearch Java client, configured via a properties file for connection details.\",\n    \"A dedicated, time-boxed 'spike' activity is included for the research and design phase of U3.\"\n  ],\n  \"assumptions\": [\n    \"The developer has existing knowledge of and access to the Spring XD codebase and its build system.\",\n    \"A working development environment with Java 17+, Maven/Gradle, and necessary Spring XD dependencies is already configured.\",\n    \"Access to test instances of RabbitMQ, SFTP servers, and ElasticSearch is available for integration testing, or can be stood up quickly (e.g., using Docker).\",\n    \"The scope for U3 is limited to the backend REST API and DSL shell as described; the Admin UI integration is deferred to a separate, future story.\",\n    \"The 'clean' functionality in U1 is a best-effort, optional operation. It does not guarantee removal if producers are active or other consumers are present.\",\n    \"For U6, the server-side event propagation is an initial foundation; full real-time event streaming to UI clients is a follow-up enhancement.\",\n    \"All module development (U5, U7, U8) includes writing unit tests and integration tests, but performance testing is not in scope.\",\n    \"Documentation updates (U4) will follow existing Spring XD documentation standards and be added to the relevant wiki/asciidoc files.\",\n    \"The effort estimates assume no major interruptions and that code reviews are performed by a peer, with minimal rework expected.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Implement Queue/Topic Cleanup on Stream Destroy (U1)\",\n      \"activity_description\": \"Implement the optional '--clean' flag for the 'stream destroy' command. Integrate with RabbitAdmin to check consumer counts and conditionally delete queues, bindings, and the associated fanout exchange when the last consumer is removed during undeployment. Write unit and integration tests.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Implement Module Error Channel Notification (U2)\",\n      \"activity_description\": \"Create a new, configurable error channel for each deployed module. Implement a mechanism to tap into this channel and route error messages (e.g., to a log, JMX, or a user-provided destination). Provide DSL or configuration options to enable and configure the error sink.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Security Spike and Design for REST Endpoints (U3)\",\n      \"activity_description\": \"Research Spring Security integration with Spring Boot. Design the security configuration approach for XD's REST endpoints and DSL shell. Create a design document outlining configuration properties, authentication methods, and authorization model. Time-boxed activity.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement Security Layer for REST Endpoints (U3)\",\n      \"activity_description\": \"Based on the design from A3, implement Spring Security filters and configurations to protect the specified REST endpoints. Add configuration properties for enabling/disabling security, setting credentials, and defining roles. Ensure the DSL shell can operate in both secured and unsecured modes.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Document Available Stream/Job Placeholder Keys (U4)\",\n      \"activity_description\": \"Research the Spring XD codebase to identify all available placeholders (e.g., ${xd.stream.name}, ${xd.job.name}, ${xd.container.*}). Write and add documentation to the official guide explaining their usage and context.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Develop OOTB MVC-aware HTTP Module (U5)\",\n      \"activity_name\": \"Develop OOTB MVC-aware HTTP Module (U5)\",\n      \"activity_description\": \"Create a new 'http-mvc' source module with an embedded Tomcat. Configure Spring MVC with content negotiation and full header mapping. Provide options for mounting custom controllers or using the module as a secure REST endpoint. Write comprehensive tests and documentation.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement Client-Side Status Polling (U6 - Client)\",\n      \"activity_description\": \"Implement a client-side polling strategy in the Admin client to detect status changes of streams and jobs during operations like deployment. Include exponential backoff and configurable polling intervals.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Implement Server-Side Event Propagation (U6 - Server)\",\n      \"activity_description\": \"Implement an internal event system within the Admin server to propagate state changes (e.g., stream deployed, job started) between containers and the admin. Create an endpoint or mechanism to make these events available for future consumption by clients/UI.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Develop SFTP Source Module (U7)\",\n      \"activity_description\": \"Create a new 'sftp' source module based on Spring Integration SFTP adapters. Support configuration for remote file retrieval (polling, file patterns, local staging directory). Set up an embedded SFTP server for integration testing.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Develop ElasticSearch Sink Module (U8)\",\n      \"activity_description\": \"Create a new 'elasticsearch' sink module. Integrate with Spring Data Elasticsearch or the official client library. Support configurable index, document type, and mapping. Write unit and integration tests using an embedded or test ElasticSearch instance.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Final Integration, Testing & Documentation Pass\",\n      \"activity_description\": \"Perform a final round of integration testing across all new features to ensure they work together within the Spring XD ecosystem. Update main project documentation to reference all new modules and features.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 65\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1994,
+    "completion_tokens": 1921,
+    "total_tokens": 3915,
+    "cost": 0.0007467936,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0007467936,
+      "upstream_inference_prompt_cost": 0.0002089136,
+      "upstream_inference_completions_cost": 0.00053788
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "xiaomi/mimo-v2.5",
+  "conversion_response": {
+    "id": "gen-1787841229-Sd356uTCC07RDEUeqlNK",
+    "object": "chat.completion",
+    "created": 1787841229,
+    "model": "xiaomi/mimo-v2.5",
+    "provider": "Xiaomi",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "First, the user asks: \"For the purpose of converting the effort estimate you just provided, how many work-hours do you consider equivalent to one estimated workday?\" They want me to specify the standard number of work-hours per workday used in my previous estimate.\n\nI need to recall that in the previous response, I provided effort estimates in workdays, but I didn't explicitly state how many hours per workday I was using. The user is asking for this conversion factor.\n\nIn typical software estimation, a workday often assumes 8 hours. But since the user is asking for what I consider, I should state the standard I used. In my previous estimates, I probably assumed 8 hours per workday, as that's common in many contexts.\n\nThe user says: \"Do not revise, recalculate, or restate the previous effort estimate.\" So I should only answer this specific question without changing the earlier estimates.\n\nI need to return only valid JSON matching the given schema. The schema has a property \"work_hours_per_workday\" which is a number.\n\nSo, my response should be a JSON object with \"work_hours_per_workday\" set to the number I consider.\n\nI think the standard is 8 hours per workday. I should use that.\n\nTo be precise, I'll state 8 hours.\n\nNow, format it as JSON.\n\n{\n  \"work_hours_per_workday\": 8\n}\n\nEnsure that it's a number, and the schema requires it to be exclusiveMinimum 0, so 8 is fine.\n\nThe user said \"Return only valid JSON\", so I should output just this JSON without any additional text.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "First, the user asks: \"For the purpose of converting the effort estimate you just provided, how many work-hours do you consider equivalent to one estimated workday?\" They want me to specify the standard number of work-hours per workday used in my previous estimate.\n\nI need to recall that in the previous response, I provided effort estimates in workdays, but I didn't explicitly state how many hours per workday I was using. The user is asking for this conversion factor.\n\nIn typical software estimation, a workday often assumes 8 hours. But since the user is asking for what I consider, I should state the standard I used. In my previous estimates, I probably assumed 8 hours per workday, as that's common in many contexts.\n\nThe user says: \"Do not revise, recalculate, or restate the previous effort estimate.\" So I should only answer this specific question without changing the earlier estimates.\n\nI need to return only valid JSON matching the given schema. The schema has a property \"work_hours_per_workday\" which is a number.\n\nSo, my response should be a JSON object with \"work_hours_per_workday\" set to the number I consider.\n\nI think the standard is 8 hours per workday. I should use that.\n\nTo be precise, I'll state 8 hours.\n\nNow, format it as JSON.\n\n{\n  \"work_hours_per_workday\": 8\n}\n\nEnsure that it's a number, and the schema requires it to be exclusiveMinimum 0, so 8 is fine.\n\nThe user said \"Return only valid JSON\", so I should output just this JSON without any additional text.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3800,
+      "completion_tokens": 349,
+      "total_tokens": 4149,
+      "cost": 0.0003575152,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1984,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0003575152,
+        "upstream_inference_prompt_cost": 0.0002597952,
+        "upstream_inference_completions_cost": 9.772e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "All development will target Spring XD's existing modular architecture, leveraging its plugin system for new modules.",
+      "For U1, the implementation will follow the suggested approach of handling cleanup in the container during consumer undeployment, using RabbitAdmin.getQueueProperties() to check consumer counts.",
+      "For U2, the error channel integration will follow Spring Integration patterns, using a dedicated error channel per stream/module that can be tapped via a standardized interface.",
+      "For U3, the initial implementation will use Spring Security's method-level and URL-based security for REST endpoints, with a configuration mechanism using Spring Boot properties.",
+      "For U4, the work is purely documentation, capturing all available placeholders from Spring XD's context in the official user guide.",
+      "For U5, a new 'http-mvc' module will be created as a separate artifact, embedding Tomcat and configuring Spring MVC/Security in a self-contained manner, distinct from the existing http source.",
+      "For U6, the client-side will implement a polling mechanism with backoff, while server-side will leverage Spring's ApplicationEvent mechanism to propagate state changes between admin, containers, and eventually clients.",
+      "For U7, the new SFTP source module will be based on Spring Integration's SFTP adapters, with a testing strategy using an embedded SFTP server.",
+      "For U8, the new ElasticSearch sink will use Spring Data's ElasticsearchTemplate or the Elasticsearch Java client, configured via a properties file for connection details.",
+      "A dedicated, time-boxed 'spike' activity is included for the research and design phase of U3."
+    ],
+    "assumptions": [
+      "The developer has existing knowledge of and access to the Spring XD codebase and its build system.",
+      "A working development environment with Java 17+, Maven/Gradle, and necessary Spring XD dependencies is already configured.",
+      "Access to test instances of RabbitMQ, SFTP servers, and ElasticSearch is available for integration testing, or can be stood up quickly (e.g., using Docker).",
+      "The scope for U3 is limited to the backend REST API and DSL shell as described; the Admin UI integration is deferred to a separate, future story.",
+      "The 'clean' functionality in U1 is a best-effort, optional operation. It does not guarantee removal if producers are active or other consumers are present.",
+      "For U6, the server-side event propagation is an initial foundation; full real-time event streaming to UI clients is a follow-up enhancement.",
+      "All module development (U5, U7, U8) includes writing unit tests and integration tests, but performance testing is not in scope.",
+      "Documentation updates (U4) will follow existing Spring XD documentation standards and be added to the relevant wiki/asciidoc files.",
+      "The effort estimates assume no major interruptions and that code reviews are performed by a peer, with minimal rework expected."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Implement Queue/Topic Cleanup on Stream Destroy (U1)",
+        "activity_description": "Implement the optional '--clean' flag for the 'stream destroy' command. Integrate with RabbitAdmin to check consumer counts and conditionally delete queues, bindings, and the associated fanout exchange when the last consumer is removed during undeployment. Write unit and integration tests.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Implement Module Error Channel Notification (U2)",
+        "activity_description": "Create a new, configurable error channel for each deployed module. Implement a mechanism to tap into this channel and route error messages (e.g., to a log, JMX, or a user-provided destination). Provide DSL or configuration options to enable and configure the error sink.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Security Spike and Design for REST Endpoints (U3)",
+        "activity_description": "Research Spring Security integration with Spring Boot. Design the security configuration approach for XD's REST endpoints and DSL shell. Create a design document outlining configuration properties, authentication methods, and authorization model. Time-boxed activity.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Implement Security Layer for REST Endpoints (U3)",
+        "activity_description": "Based on the design from A3, implement Spring Security filters and configurations to protect the specified REST endpoints. Add configuration properties for enabling/disabling security, setting credentials, and defining roles. Ensure the DSL shell can operate in both secured and unsecured modes.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Document Available Stream/Job Placeholder Keys (U4)",
+        "activity_description": "Research the Spring XD codebase to identify all available placeholders (e.g., ${xd.stream.name}, ${xd.job.name}, ${xd.container.*}). Write and add documentation to the official guide explaining their usage and context.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Develop OOTB MVC-aware HTTP Module (U5)",
+        "activity_description": "Create a new 'http-mvc' source module with an embedded Tomcat. Configure Spring MVC with content negotiation and full header mapping. Provide options for mounting custom controllers or using the module as a secure REST endpoint. Write comprehensive tests and documentation.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Implement Client-Side Status Polling (U6 - Client)",
+        "activity_description": "Implement a client-side polling strategy in the Admin client to detect status changes of streams and jobs during operations like deployment. Include exponential backoff and configurable polling intervals.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Implement Server-Side Event Propagation (U6 - Server)",
+        "activity_description": "Implement an internal event system within the Admin server to propagate state changes (e.g., stream deployed, job started) between containers and the admin. Create an endpoint or mechanism to make these events available for future consumption by clients/UI.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Develop SFTP Source Module (U7)",
+        "activity_description": "Create a new 'sftp' source module based on Spring Integration SFTP adapters. Support configuration for remote file retrieval (polling, file patterns, local staging directory). Set up an embedded SFTP server for integration testing.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Develop ElasticSearch Sink Module (U8)",
+        "activity_description": "Create a new 'elasticsearch' sink module. Integrate with Spring Data Elasticsearch or the official client library. Support configurable index, document type, and mapping. Write unit and integration tests using an embedded or test ElasticSearch instance.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Final Integration, Testing & Documentation Pass",
+        "activity_description": "Perform a final round of integration testing across all new features to ensure they work together within the Spring XD ecosystem. Update main project documentation to reference all new modules and features.",
+        "most_likely_effort": 5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 65
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

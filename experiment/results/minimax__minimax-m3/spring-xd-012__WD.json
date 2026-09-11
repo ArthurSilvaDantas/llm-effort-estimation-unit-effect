@@ -1,0 +1,321 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-012",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788417880-EAJ7MckNUEEbbSAW4s9N",
+    "object": "chat.completion",
+    "created": 1788417880,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt the existing Maven/Gradle build of the project (Spring Cloud Data Flow app starters) and add new acceptance test modules wired to the surefire/failsafe phase used by the CI pipeline.\",\n    \"Use JUnit 5 (Jupiter) plus Spring Boot Test and Spring Cloud Stream test support, consistent with the existing unit test stack.\",\n    \"Implement acceptance tests as Spring Boot integration tests that bootstrap the full application context, send real messages through the binder (test binder where appropriate), and assert on observable side effects (outgoing payload, emitted metrics, sink contents, captured HTTP/SMTP/SFTP/syslog traffic).\",\n    \"For modules that need external servers (Mail/SMTP, SFTP, syslog), prefer embedded test doubles (e.g., GreenMail for SMTP, Apache MINA SSHD for SFTP) to keep the tests self-contained and fast enough for every CI build.\",\n    \"Where embedded test doubles are impractical, fall back to lightweight stubs/mocks with a clearly documented seam; the tests remain acceptance-style by exercising the public Stream Application configuration and behavior end-to-end.\",\n    \"Reuse the same shared acceptance-test parent project/module pattern used by neighbouring app starters to avoid duplicating build configuration; create a common acceptance-test base class providing binder setup, port management, and polling utilities.\",\n    \"Mark the new tests with a dedicated JUnit tag (e.g., 'acceptance') so the CI pipeline can selectively include them in the standard CI build while still allowing local dev builds to skip them via Maven profiles.\",\n    \"Ensure the new tests are deterministic and parallel-safe (deterministic port allocation, unique topic/queue/exchange names, no shared static state) so they can be added to the parallel CI matrix without flakiness.\",\n    \"Wire the new acceptance test execution into the CI YAML so they are run on every pull request and on merges to the main branch, with artifact archival of test reports.\"\n  ],\n  \"assumptions\": [\n    \"The codebase uses Java 17+ and Spring Boot 3.x as implied by the Spring Framework 6 requirement, so JUnit 5 and the modern Spring testing stack are available.\",\n    \"An existing CI pipeline (e.g., Jenkins/GitHub Actions) with a build agent that has Maven, JDK 17, and Docker (if Testcontainers are used) is already available and only needs configuration updates.\",\n    \"Each of the eight modules is an independent Spring Cloud Stream app starter with its own Maven/Gradle module; acceptance tests are added per module rather than to a single shared project.\",\n    \"The developer is familiar with the Spring Cloud Stream app starter conventions and has access to the existing source tree of all eight modules.\",\n    \"Network access is available from the CI build agent to download Maven dependencies and to pull Docker images if Testcontainers are used.\",\n    \"No new production functionality is required; the work is purely adding automated test coverage that validates existing behavior.\",\n    \"The 'reactor-ip', 'reactor-syslog', 'mail', 'sftp', 'aggregator', 'analytic-pmml', 'bridge', and 'http-client' modules are interpreted as the corresponding Spring Cloud Data Flow / Spring Cloud Stream app starters.\",\n    \"Effort estimates assume a single developer performing all work sequentially; coordination, code review, and rework are included in the per-activity effort.\",\n    \"A standard 8-hour workday is used as the unit of effort.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"CI pipeline configuration for acceptance test execution\",\n      \"activity_description\": \"Update the CI build jobs (e.g., Jenkinsfile / GitHub Actions workflow) to include the new acceptance test phase, propagate the 'acceptance' tag/profile, allocate additional time/heap for the longer-running tests, archive JUnit XML reports, and ensure parallel-safe execution.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Shared acceptance test base module and utilities\",\n      \"activity_description\": \"Create or extend a shared acceptance-test support module containing a base test class, binder/port management helpers, polling/await utilities, and a consistent naming convention for topics/exchanges/queues; publish it so each of the eight modules can depend on it.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Acceptance tests for Mail source module (U1)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that wire the Mail source app starter into a stream, drive it against an embedded SMTP server (GreenMail), and assert that received email messages are emitted as messages with the expected payload, headers, and content-type on the output channel.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Acceptance tests for reactor-ip source module (U2)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that start the reactor-ip source against a local UDP/TCP listener, send synthetic syslog/IPFIX-like packets, and assert that the messages are emitted on the output channel with the expected structure.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Acceptance tests for reactor-syslog source module (U3)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that start the reactor-syslog source against an embedded syslog server, send RFC3164/RFC5424 messages, and assert the parsed structured payload (timestamp, hostname, message, severity) is emitted correctly.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Acceptance tests for SFTP source module (U4)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that boot an embedded SFTP server (Apache MINA SSHD), seed it with files, configure the SFTP source app starter to poll, and assert that file contents and metadata are emitted as messages on the output channel.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Acceptance tests for aggregator processor module (U5)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that drive the aggregator processor with sequences of correlated messages, verify windowing/release behavior (count, time, release strategies) and assert that aggregated payloads are produced with the expected correlation key and value.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Acceptance tests for analytic-pmml processor module (U6)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that load representative PMML models, feed input messages to the analytic-pmml processor, and assert that the predicted/scored results are emitted on the output channel with the expected schema and values.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Acceptance tests for bridge processor module (U7)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that configure the bridge processor (e.g., message channel binding, scoping) and assert that messages arriving on the input channel are forwarded unchanged (or transformed per configuration) to the output channel.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Acceptance tests for http-client processor module (U8)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that stand up a local mock HTTP server (e.g., WireMock), configure the http-client processor with various request mappings, send input messages, and assert that the HTTP responses are returned on the expected output channel with the correct status and body.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration validation and stabilization in CI\",\n      \"activity_description\": \"Run the full set of acceptance tests on the CI pipeline, diagnose and fix flaky tests, port conflicts, timing issues, and ensure all eight modules' tests pass reliably in the parallel CI matrix; iterate until green.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation of acceptance test coverage\",\n      \"activity_description\": \"Update the project README and any relevant docs to describe the new acceptance test suite, how to run it locally (Maven profile/command), and what each module's acceptance tests validate.\"\n    }\n  ],\n  \"activities_with_effort\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"CI pipeline configuration for acceptance test execution\",\n      \"activity_description\": \"Update the CI build jobs to include the new acceptance test phase, propagate the acceptance tag/profile, allocate additional time/heap for the longer-running tests, archive JUnit XML reports, and ensure parallel-safe execution.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Shared acceptance test base module and utilities\",\n      \"activity_description\": \"Create or extend a shared acceptance-test support module containing a base test class, binder/port management helpers, polling/await utilities, and a consistent naming convention for topics/exchanges/queues.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Acceptance tests for Mail source module (U1)\",\n      \"activity_description\": \"Add end-to-end acceptance tests wiring the Mail source app starter against an embedded SMTP server (GreenMail) and asserting emitted message payload, headers, and content-type.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Acceptance tests for reactor-ip source module (U2)\",\n      \"activity_description\": \"Add end-to-end acceptance tests starting reactor-ip against a local UDP/TCP listener and asserting emitted message structure.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Acceptance tests for reactor-syslog source module (U3)\",\n      \"activity_description\": \"Add end-to-end acceptance tests starting reactor-syslog against an embedded syslog server and asserting parsed RFC3164/RFC5424 fields.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Acceptance tests for SFTP source module (U4)\",\n      \"activity_description\": \"Add end-to-end acceptance tests booting an embedded SFTP server (Apache MINA SSHD), seeding files, and asserting emitted file contents/metadata.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Acceptance tests for aggregator processor module (U5)\",\n      \"activity_description\": \"Add end-to-end acceptance tests driving the aggregator with correlated message sequences and asserting windowing/release behavior.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Acceptance tests for analytic-pmml processor module (U6)\",\n      \"activity_description\": \"Add end-to-end acceptance tests loading PMML models, feeding input messages, and asserting emitted predictions/scores.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Acceptance tests for bridge processor module (U7)\",\n      \"activity_description\": \"Add end-to-end acceptance tests for the bridge processor verifying forwarding/transform behavior between input and output channels.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Acceptance tests for http-client processor module (U8)\",\n      \"activity_description\": \"Add end-to-end acceptance tests using WireMock to verify the http-client processor's request mappings and emitted response messages.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration validation and stabilization in CI\",\n      \"activity_description\": \"Run the full acceptance test suite on CI, diagnose and fix flaky tests/port conflicts/timing issues, and ensure reliable green builds.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation of acceptance test coverage\",\n      \"activity_description\": \"Update README and relevant docs describing the new acceptance test suite, how to run it locally, and what each module's tests validate.\",\n      \"most_likely_effort\": 1.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 29.0\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully.\n\nThe specification talks about the Spring Framework, but the user stories are about acceptance test coverage for various modules:\n- U1: Mail source module\n- U2: reactor-ip source module\n- U3: reactor-syslog source module\n- U4: SFTP source module\n- U5: aggregator processor module\n- U6: analytic-pmml processor module\n- U7: bridge processor module\n- U8: http-client processor module\n\nThese modules (Mail, reactor-ip, reactor-syslog, SFTP, aggregator, analytic-pmml, bridge, http-client) sound like they're actually from Spring Cloud Data Flow or Spring Integration, not the core Spring Framework. The description mentions \"source module\" and \"processor module\" which are terms from Spring Cloud Data Flow.\n\nRegardless, the task is to estimate the effort to add acceptance test coverage for these 8 modules as part of every CI build.\n\nLet me think about what's needed for each module:\n1. Understanding the module's functionality\n2. Setting up test infrastructure (if not already there)\n3. Writing acceptance tests\n4. Integrating with CI build system\n5. Test data/fixtures\n6. Documentation\n\nLet me break this down into a WBS:\n\nCommon/Shared Activities:\n- A1: Set up test infrastructure and framework (common test utilities, CI integration)\n- A2: Review and understand existing module structures\n\nPer-Module Activities (8 modules):\n- For each module: analyze functionality, write acceptance tests, integration with CI, validation\n\nLet me think more carefully about the effort. These look like Spring Integration / Spring Cloud Stream modules. Setting up acceptance tests typically involves:\n- Writing test cases that validate functionality\n- Setting up test contexts\n- Creating test data\n- Configuring test infrastructure\n- Integrating with CI pipeline\n\nLet me estimate per module:\n- Understanding module: 0.5 days\n- Writing acceptance tests: 1-2 days\n- Integration with CI: 0.5 days\n- Debugging and fixing: 0.5-1 day\n\nFor simpler modules (like bridge, aggregator): 2 days total\nFor more complex modules (like http-client, SFTP, mail): 3 days total\n\nPlus shared activities:\n- CI pipeline setup/modification: 1-2 days\n- Test framework setup: 1-2 days\n- Documentation: 1 day\n\nLet me make a structured estimate:\n\nShared activities:\n1. CI Build Infrastructure Setup: 2 days\n2. Test Framework Configuration: 2 days\n3. Documentation: 1 day\n\nPer module (8 modules):\n- Mail (U1): 3 days\n- reactor-ip (U2): 3 days\n- reactor-syslog (U3): 3 days\n- SFTP (U4): 4 days (more complex due to file operations)\n- aggregator (U5): 2 days (simpler)\n- analytic-pmml (U6): 3 days (PMML is specialized)\n- bridge (U7): 2 days (simpler)\n- http-client (U8): 3 days\n\nTotal per module: 21 days\nShared: 5 days\nTotal: 26 days\n\nHmm, let me reconsider. The specification doesn't mention Spring Cloud Data Flow specifically, but the modules clearly belong to that ecosystem. Let me think about this from a more practical standpoint.\n\nActually, these modules look like they're from Spring Cloud Data Flow's test acceptance suite. Adding acceptance test coverage for each module typically involves:\n\n1. Creating test classes that exercise the module's functionality\n2. Setting up test data and configuration\n3. Running tests in CI\n4. Debugging test issues\n\nLet me also think about technical decisions:\n- Test framework: JUnit 5, Spring Test\n- CI integration: Likely Maven/Gradle with existing CI pipeline\n- Test scope: Acceptance tests typically run in integration mode, may need Docker containers for some modules (especially SFTP, syslog)\n- Mock vs. real: For SFTP and Mail, may need embedded servers\n\nLet me revise my estimate:\n\nShared activities:\n1. CI Infrastructure Setup: 1.5 days\n2. Test Framework Setup: 1.5 days\n\nPer module:\n- Mail: 2.5 days\n- reactor-ip: 2 days\n- reactor-syslog: 3 days (needs syslog server)\n- SFTP: 3.5 days (needs SFTP server)\n- aggregator: 2 days\n- analytic-pmml: 2.5 days\n- bridge: 1.5 days\n- http-client: 2.5 days\n\nTotal: 20 days\nShared: 3 days\nGrand total: 23 days\n\nLet me settle on specific numbers. I'll think about this as a developer who has done this kind of work before.\n\nFor each module, the typical activities are:\n1. Review existing code structure: 0.5 days\n2. Write acceptance test cases: 1-2 days\n3. Set up test fixtures and data: 0.5-1 day\n4. Integrate with CI: 0.5 days\n5. Debug and stabilize: 0.5-1 day\n\nSo per module averages around 3-5 days. Let me use 3 days as base.\n\nFinal WBS:\n\nA1: CI Build Pipeline Setup & Configuration - 2 days\nA2: Acceptance Test Framework Setup - 1.5 days\nA3: Acceptance Tests for Mail module (U1) - 3 days\nA4: Acceptance Tests for reactor-ip module (U2) - 2.5 days\nA5: Acceptance Tests for reactor-syslog module (U3) - 3 days\nA6: Acceptance Tests for SFTP module (U4) - 3.5 days\nA7: Acceptance Tests for aggregator module (U5) - 2.5 days\nA8: Acceptance Tests for analytic-pmml module (U6) - 3 days\nA9: Acceptance Tests for bridge module (U7) - 2 days\nA10: Acceptance Tests for http-client module (U8) - 3 days\nA11: Integration Testing & CI Validation - 2 days\nA12: Documentation - 1 day\n\nTotal: 29 days\n\nLet me round and finalize. I think this is a reasonable estimate.\n\nActually, let me reconsider. The specification says \"I can validate the functionality as part of every CI build\" - so the tests need to be run as part of every CI build. This means:\n- Tests need to be fast (or appropriately tagged)\n- Tests need to be reliable (no flaky tests)\n- Tests need to be self-contained (no external dependencies unless mocked)\n\nThis adds complexity. Let me keep my estimate.\n\nLet me also note that the modules mentioned (Mail, SFTP, reactor-ip, reactor-syslog, aggregator, analytic-pmml, bridge, http-client) are Spring Cloud Data Flow / Spring Cloud Stream app starters. These are real modules in the Spring Cloud Data Flow ecosystem.\n\nFor technical decisions:\n- Use Spring Boot test framework\n- Use JUnit 5\n- Use embedded servers (e.g., embedded SMTP, embedded SFTP) where possible\n- Use Testcontainers if embedded versions are not available\n- Add tests to existing Maven/Gradle build\n- Configure CI to run these tests in the appropriate phase\n\nAssumptions:\n- Existing CI build infrastructure is in place\n- Java 17+ is available\n- Maven or Gradle build system\n- Developer has access to the codebase\n- Tests will use the same patterns as existing acceptance tests (if any)\n- Network access for downloading dependencies\n- Docker available for Testcontainers if needed\n\nLet me finalize the JSON output.\n\nFinal estimates:\nA1: CI Build Pipeline Setup & Configuration - 2 days\nA2: Acceptance Test Framework Setup - 1.5 days\nA3: Acceptance Tests for Mail module (U1) - 3 days\nA4: Acceptance Tests for reactor-ip module (U2) - 2.5 days\nA5: Acceptance Tests for reactor-syslog module (U3) - 3 days\nA6: Acceptance Tests for SFTP module (U4) - 3.5 days\nA7: Acceptance Tests for aggregator module (U5) - 2.5 days\nA8: Acceptance Tests for analytic-pmml module (U6) - 3 days\nA9: Acceptance Tests for bridge module (U7) - 2 days\nA10: Acceptance Tests for http-client module (U8) - 3 days\nA11: Integration Testing & CI Validation - 2 days\nA12: Documentation - 1 day\n\nTotal: 29 days\n\nWait, the task says \"Express all estimates in workdays\" and the most_likely_effort is a number. So I should express the days as numbers (e.g., 2 instead of \"2 days\").\n\nLet me finalize.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully.\n\nThe specification talks about the Spring Framework, but the user stories are about acceptance test coverage for various modules:\n- U1: Mail source module\n- U2: reactor-ip source module\n- U3: reactor-syslog source module\n- U4: SFTP source module\n- U5: aggregator processor module\n- U6: analytic-pmml processor module\n- U7: bridge processor module\n- U8: http-client processor module\n\nThese modules (Mail, reactor-ip, reactor-syslog, SFTP, aggregator, analytic-pmml, bridge, http-client) sound like they're actually from Spring Cloud Data Flow or Spring Integration, not the core Spring Framework. The description mentions \"source module\" and \"processor module\" which are terms from Spring Cloud Data Flow.\n\nRegardless, the task is to estimate the effort to add acceptance test coverage for these 8 modules as part of every CI build.\n\nLet me think about what's needed for each module:\n1. Understanding the module's functionality\n2. Setting up test infrastructure (if not already there)\n3. Writing acceptance tests\n4. Integrating with CI build system\n5. Test data/fixtures\n6. Documentation\n\nLet me break this down into a WBS:\n\nCommon/Shared Activities:\n- A1: Set up test infrastructure and framework (common test utilities, CI integration)\n- A2: Review and understand existing module structures\n\nPer-Module Activities (8 modules):\n- For each module: analyze functionality, write acceptance tests, integration with CI, validation\n\nLet me think more carefully about the effort. These look like Spring Integration / Spring Cloud Stream modules. Setting up acceptance tests typically involves:\n- Writing test cases that validate functionality\n- Setting up test contexts\n- Creating test data\n- Configuring test infrastructure\n- Integrating with CI pipeline\n\nLet me estimate per module:\n- Understanding module: 0.5 days\n- Writing acceptance tests: 1-2 days\n- Integration with CI: 0.5 days\n- Debugging and fixing: 0.5-1 day\n\nFor simpler modules (like bridge, aggregator): 2 days total\nFor more complex modules (like http-client, SFTP, mail): 3 days total\n\nPlus shared activities:\n- CI pipeline setup/modification: 1-2 days\n- Test framework setup: 1-2 days\n- Documentation: 1 day\n\nLet me make a structured estimate:\n\nShared activities:\n1. CI Build Infrastructure Setup: 2 days\n2. Test Framework Configuration: 2 days\n3. Documentation: 1 day\n\nPer module (8 modules):\n- Mail (U1): 3 days\n- reactor-ip (U2): 3 days\n- reactor-syslog (U3): 3 days\n- SFTP (U4): 4 days (more complex due to file operations)\n- aggregator (U5): 2 days (simpler)\n- analytic-pmml (U6): 3 days (PMML is specialized)\n- bridge (U7): 2 days (simpler)\n- http-client (U8): 3 days\n\nTotal per module: 21 days\nShared: 5 days\nTotal: 26 days\n\nHmm, let me reconsider. The specification doesn't mention Spring Cloud Data Flow specifically, but the modules clearly belong to that ecosystem. Let me think about this from a more practical standpoint.\n\nActually, these modules look like they're from Spring Cloud Data Flow's test acceptance suite. Adding acceptance test coverage for each module typically involves:\n\n1. Creating test classes that exercise the module's functionality\n2. Setting up test data and configuration\n3. Running tests in CI\n4. Debugging test issues\n\nLet me also think about technical decisions:\n- Test framework: JUnit 5, Spring Test\n- CI integration: Likely Maven/Gradle with existing CI pipeline\n- Test scope: Acceptance tests typically run in integration mode, may need Docker containers for some modules (especially SFTP, syslog)\n- Mock vs. real: For SFTP and Mail, may need embedded servers\n\nLet me revise my estimate:\n\nShared activities:\n1. CI Infrastructure Setup: 1.5 days\n2. Test Framework Setup: 1.5 days\n\nPer module:\n- Mail: 2.5 days\n- reactor-ip: 2 days\n- reactor-syslog: 3 days (needs syslog server)\n- SFTP: 3.5 days (needs SFTP server)\n- aggregator: 2 days\n- analytic-pmml: 2.5 days\n- bridge: 1.5 days\n- http-client: 2.5 days\n\nTotal: 20 days\nShared: 3 days\nGrand total: 23 days\n\nLet me settle on specific numbers. I'll think about this as a developer who has done this kind of work before.\n\nFor each module, the typical activities are:\n1. Review existing code structure: 0.5 days\n2. Write acceptance test cases: 1-2 days\n3. Set up test fixtures and data: 0.5-1 day\n4. Integrate with CI: 0.5 days\n5. Debug and stabilize: 0.5-1 day\n\nSo per module averages around 3-5 days. Let me use 3 days as base.\n\nFinal WBS:\n\nA1: CI Build Pipeline Setup & Configuration - 2 days\nA2: Acceptance Test Framework Setup - 1.5 days\nA3: Acceptance Tests for Mail module (U1) - 3 days\nA4: Acceptance Tests for reactor-ip module (U2) - 2.5 days\nA5: Acceptance Tests for reactor-syslog module (U3) - 3 days\nA6: Acceptance Tests for SFTP module (U4) - 3.5 days\nA7: Acceptance Tests for aggregator module (U5) - 2.5 days\nA8: Acceptance Tests for analytic-pmml module (U6) - 3 days\nA9: Acceptance Tests for bridge module (U7) - 2 days\nA10: Acceptance Tests for http-client module (U8) - 3 days\nA11: Integration Testing & CI Validation - 2 days\nA12: Documentation - 1 day\n\nTotal: 29 days\n\nLet me round and finalize. I think this is a reasonable estimate.\n\nActually, let me reconsider. The specification says \"I can validate the functionality as part of every CI build\" - so the tests need to be run as part of every CI build. This means:\n- Tests need to be fast (or appropriately tagged)\n- Tests need to be reliable (no flaky tests)\n- Tests need to be self-contained (no external dependencies unless mocked)\n\nThis adds complexity. Let me keep my estimate.\n\nLet me also note that the modules mentioned (Mail, SFTP, reactor-ip, reactor-syslog, aggregator, analytic-pmml, bridge, http-client) are Spring Cloud Data Flow / Spring Cloud Stream app starters. These are real modules in the Spring Cloud Data Flow ecosystem.\n\nFor technical decisions:\n- Use Spring Boot test framework\n- Use JUnit 5\n- Use embedded servers (e.g., embedded SMTP, embedded SFTP) where possible\n- Use Testcontainers if embedded versions are not available\n- Add tests to existing Maven/Gradle build\n- Configure CI to run these tests in the appropriate phase\n\nAssumptions:\n- Existing CI build infrastructure is in place\n- Java 17+ is available\n- Maven or Gradle build system\n- Developer has access to the codebase\n- Tests will use the same patterns as existing acceptance tests (if any)\n- Network access for downloading dependencies\n- Docker available for Testcontainers if needed\n\nLet me finalize the JSON output.\n\nFinal estimates:\nA1: CI Build Pipeline Setup & Configuration - 2 days\nA2: Acceptance Test Framework Setup - 1.5 days\nA3: Acceptance Tests for Mail module (U1) - 3 days\nA4: Acceptance Tests for reactor-ip module (U2) - 2.5 days\nA5: Acceptance Tests for reactor-syslog module (U3) - 3 days\nA6: Acceptance Tests for SFTP module (U4) - 3.5 days\nA7: Acceptance Tests for aggregator module (U5) - 2.5 days\nA8: Acceptance Tests for analytic-pmml module (U6) - 3 days\nA9: Acceptance Tests for bridge module (U7) - 2 days\nA10: Acceptance Tests for http-client module (U8) - 3 days\nA11: Integration Testing & CI Validation - 2 days\nA12: Documentation - 1 day\n\nTotal: 29 days\n\nWait, the task says \"Express all estimates in workdays\" and the most_likely_effort is a number. So I should express the days as numbers (e.g., 2 instead of \"2 days\").\n\nLet me finalize.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1333,
+      "completion_tokens": 4587,
+      "total_tokens": 5920,
+      "cost": 0.00586686,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00586686,
+        "upstream_inference_prompt_cost": 0.00036246,
+        "upstream_inference_completions_cost": 0.0055044
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1881,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt the existing Maven/Gradle build of the project (Spring Cloud Data Flow app starters) and add new acceptance test modules wired to the surefire/failsafe phase used by the CI pipeline.\",\n    \"Use JUnit 5 (Jupiter) plus Spring Boot Test and Spring Cloud Stream test support, consistent with the existing unit test stack.\",\n    \"Implement acceptance tests as Spring Boot integration tests that bootstrap the full application context, send real messages through the binder (test binder where appropriate), and assert on observable side effects (outgoing payload, emitted metrics, sink contents, captured HTTP/SMTP/SFTP/syslog traffic).\",\n    \"For modules that need external servers (Mail/SMTP, SFTP, syslog), prefer embedded test doubles (e.g., GreenMail for SMTP, Apache MINA SSHD for SFTP) to keep the tests self-contained and fast enough for every CI build.\",\n    \"Where embedded test doubles are impractical, fall back to lightweight stubs/mocks with a clearly documented seam; the tests remain acceptance-style by exercising the public Stream Application configuration and behavior end-to-end.\",\n    \"Reuse the same shared acceptance-test parent project/module pattern used by neighbouring app starters to avoid duplicating build configuration; create a common acceptance-test base class providing binder setup, port management, and polling utilities.\",\n    \"Mark the new tests with a dedicated JUnit tag (e.g., 'acceptance') so the CI pipeline can selectively include them in the standard CI build while still allowing local dev builds to skip them via Maven profiles.\",\n    \"Ensure the new tests are deterministic and parallel-safe (deterministic port allocation, unique topic/queue/exchange names, no shared static state) so they can be added to the parallel CI matrix without flakiness.\",\n    \"Wire the new acceptance test execution into the CI YAML so they are run on every pull request and on merges to the main branch, with artifact archival of test reports.\"\n  ],\n  \"assumptions\": [\n    \"The codebase uses Java 17+ and Spring Boot 3.x as implied by the Spring Framework 6 requirement, so JUnit 5 and the modern Spring testing stack are available.\",\n    \"An existing CI pipeline (e.g., Jenkins/GitHub Actions) with a build agent that has Maven, JDK 17, and Docker (if Testcontainers are used) is already available and only needs configuration updates.\",\n    \"Each of the eight modules is an independent Spring Cloud Stream app starter with its own Maven/Gradle module; acceptance tests are added per module rather than to a single shared project.\",\n    \"The developer is familiar with the Spring Cloud Stream app starter conventions and has access to the existing source tree of all eight modules.\",\n    \"Network access is available from the CI build agent to download Maven dependencies and to pull Docker images if Testcontainers are used.\",\n    \"No new production functionality is required; the work is purely adding automated test coverage that validates existing behavior.\",\n    \"The 'reactor-ip', 'reactor-syslog', 'mail', 'sftp', 'aggregator', 'analytic-pmml', 'bridge', and 'http-client' modules are interpreted as the corresponding Spring Cloud Data Flow / Spring Cloud Stream app starters.\",\n    \"Effort estimates assume a single developer performing all work sequentially; coordination, code review, and rework are included in the per-activity effort.\",\n    \"A standard 8-hour workday is used as the unit of effort.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"CI pipeline configuration for acceptance test execution\",\n      \"activity_description\": \"Update the CI build jobs (e.g., Jenkinsfile / GitHub Actions workflow) to include the new acceptance test phase, propagate the 'acceptance' tag/profile, allocate additional time/heap for the longer-running tests, archive JUnit XML reports, and ensure parallel-safe execution.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Shared acceptance test base module and utilities\",\n      \"activity_description\": \"Create or extend a shared acceptance-test support module containing a base test class, binder/port management helpers, polling/await utilities, and a consistent naming convention for topics/exchanges/queues; publish it so each of the eight modules can depend on it.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Acceptance tests for Mail source module (U1)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that wire the Mail source app starter into a stream, drive it against an embedded SMTP server (GreenMail), and assert that received email messages are emitted as messages with the expected payload, headers, and content-type on the output channel.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Acceptance tests for reactor-ip source module (U2)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that start the reactor-ip source against a local UDP/TCP listener, send synthetic syslog/IPFIX-like packets, and assert that the messages are emitted on the output channel with the expected structure.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Acceptance tests for reactor-syslog source module (U3)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that start the reactor-syslog source against an embedded syslog server, send RFC3164/RFC5424 messages, and assert the parsed structured payload (timestamp, hostname, message, severity) is emitted correctly.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Acceptance tests for SFTP source module (U4)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that boot an embedded SFTP server (Apache MINA SSHD), seed it with files, configure the SFTP source app starter to poll, and assert that file contents and metadata are emitted as messages on the output channel.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Acceptance tests for aggregator processor module (U5)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that drive the aggregator processor with sequences of correlated messages, verify windowing/release behavior (count, time, release strategies) and assert that aggregated payloads are produced with the expected correlation key and value.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Acceptance tests for analytic-pmml processor module (U6)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that load representative PMML models, feed input messages to the analytic-pmml processor, and assert that the predicted/scored results are emitted on the output channel with the expected schema and values.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Acceptance tests for bridge processor module (U7)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that configure the bridge processor (e.g., message channel binding, scoping) and assert that messages arriving on the input channel are forwarded unchanged (or transformed per configuration) to the output channel.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Acceptance tests for http-client processor module (U8)\",\n      \"activity_description\": \"Add end-to-end acceptance tests that stand up a local mock HTTP server (e.g., WireMock), configure the http-client processor with various request mappings, send input messages, and assert that the HTTP responses are returned on the expected output channel with the correct status and body.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration validation and stabilization in CI\",\n      \"activity_description\": \"Run the full set of acceptance tests on the CI pipeline, diagnose and fix flaky tests, port conflicts, timing issues, and ensure all eight modules' tests pass reliably in the parallel CI matrix; iterate until green.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation of acceptance test coverage\",\n      \"activity_description\": \"Update the project README and any relevant docs to describe the new acceptance test suite, how to run it locally (Maven profile/command), and what each module's acceptance tests validate.\"\n    }\n  ],\n  \"activities_with_effort\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"CI pipeline configuration for acceptance test execution\",\n      \"activity_description\": \"Update the CI build jobs to include the new acceptance test phase, propagate the acceptance tag/profile, allocate additional time/heap for the longer-running tests, archive JUnit XML reports, and ensure parallel-safe execution.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Shared acceptance test base module and utilities\",\n      \"activity_description\": \"Create or extend a shared acceptance-test support module containing a base test class, binder/port management helpers, polling/await utilities, and a consistent naming convention for topics/exchanges/queues.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Acceptance tests for Mail source module (U1)\",\n      \"activity_description\": \"Add end-to-end acceptance tests wiring the Mail source app starter against an embedded SMTP server (GreenMail) and asserting emitted message payload, headers, and content-type.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Acceptance tests for reactor-ip source module (U2)\",\n      \"activity_description\": \"Add end-to-end acceptance tests starting reactor-ip against a local UDP/TCP listener and asserting emitted message structure.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Acceptance tests for reactor-syslog source module (U3)\",\n      \"activity_description\": \"Add end-to-end acceptance tests starting reactor-syslog against an embedded syslog server and asserting parsed RFC3164/RFC5424 fields.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Acceptance tests for SFTP source module (U4)\",\n      \"activity_description\": \"Add end-to-end acceptance tests booting an embedded SFTP server (Apache MINA SSHD), seeding files, and asserting emitted file contents/metadata.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Acceptance tests for aggregator processor module (U5)\",\n      \"activity_description\": \"Add end-to-end acceptance tests driving the aggregator with correlated message sequences and asserting windowing/release behavior.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Acceptance tests for analytic-pmml processor module (U6)\",\n      \"activity_description\": \"Add end-to-end acceptance tests loading PMML models, feeding input messages, and asserting emitted predictions/scores.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Acceptance tests for bridge processor module (U7)\",\n      \"activity_description\": \"Add end-to-end acceptance tests for the bridge processor verifying forwarding/transform behavior between input and output channels.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Acceptance tests for http-client processor module (U8)\",\n      \"activity_description\": \"Add end-to-end acceptance tests using WireMock to verify the http-client processor's request mappings and emitted response messages.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration validation and stabilization in CI\",\n      \"activity_description\": \"Run the full acceptance test suite on CI, diagnose and fix flaky tests/port conflicts/timing issues, and ensure reliable green builds.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation of acceptance test coverage\",\n      \"activity_description\": \"Update README and relevant docs describing the new acceptance test suite, how to run it locally, and what each module's tests validate.\",\n      \"most_likely_effort\": 1.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 29.0\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1333,
+    "completion_tokens": 4587,
+    "total_tokens": 5920,
+    "cost": 0.00586686,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00586686,
+      "upstream_inference_prompt_cost": 0.00036246,
+      "upstream_inference_completions_cost": 0.0055044
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1881,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788417918-cPqdu4ALu13NVTnywIwC",
+    "object": "chat.completion",
+    "created": 1788417918,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking a simple question: how many work-hours are equivalent to one estimated workday in the previous estimate. They explicitly said not to revise, recalculate, or restate the previous effort estimate.\n\nI should return a simple JSON with a reasonable number of work hours per workday. The standard assumption is typically 8 hours per workday, which is what I stated in my assumptions.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple question: how many work-hours are equivalent to one estimated workday in the previous estimate. They explicitly said not to revise, recalculate, or restate the previous effort estimate.\n\nI should return a simple JSON with a reasonable number of work hours per workday. The standard assumption is typically 8 hours per workday, which is what I stated in my assumptions.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 4166,
+      "completion_tokens": 97,
+      "total_tokens": 4263,
+      "cost": 0.00104988,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1318,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00104988,
+        "upstream_inference_prompt_cost": 0.00093348,
+        "upstream_inference_completions_cost": 0.0001164
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 79,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Adopt the existing Maven/Gradle build of the project (Spring Cloud Data Flow app starters) and add new acceptance test modules wired to the surefire/failsafe phase used by the CI pipeline.",
+      "Use JUnit 5 (Jupiter) plus Spring Boot Test and Spring Cloud Stream test support, consistent with the existing unit test stack.",
+      "Implement acceptance tests as Spring Boot integration tests that bootstrap the full application context, send real messages through the binder (test binder where appropriate), and assert on observable side effects (outgoing payload, emitted metrics, sink contents, captured HTTP/SMTP/SFTP/syslog traffic).",
+      "For modules that need external servers (Mail/SMTP, SFTP, syslog), prefer embedded test doubles (e.g., GreenMail for SMTP, Apache MINA SSHD for SFTP) to keep the tests self-contained and fast enough for every CI build.",
+      "Where embedded test doubles are impractical, fall back to lightweight stubs/mocks with a clearly documented seam; the tests remain acceptance-style by exercising the public Stream Application configuration and behavior end-to-end.",
+      "Reuse the same shared acceptance-test parent project/module pattern used by neighbouring app starters to avoid duplicating build configuration; create a common acceptance-test base class providing binder setup, port management, and polling utilities.",
+      "Mark the new tests with a dedicated JUnit tag (e.g., 'acceptance') so the CI pipeline can selectively include them in the standard CI build while still allowing local dev builds to skip them via Maven profiles.",
+      "Ensure the new tests are deterministic and parallel-safe (deterministic port allocation, unique topic/queue/exchange names, no shared static state) so they can be added to the parallel CI matrix without flakiness.",
+      "Wire the new acceptance test execution into the CI YAML so they are run on every pull request and on merges to the main branch, with artifact archival of test reports."
+    ],
+    "assumptions": [
+      "The codebase uses Java 17+ and Spring Boot 3.x as implied by the Spring Framework 6 requirement, so JUnit 5 and the modern Spring testing stack are available.",
+      "An existing CI pipeline (e.g., Jenkins/GitHub Actions) with a build agent that has Maven, JDK 17, and Docker (if Testcontainers are used) is already available and only needs configuration updates.",
+      "Each of the eight modules is an independent Spring Cloud Stream app starter with its own Maven/Gradle module; acceptance tests are added per module rather than to a single shared project.",
+      "The developer is familiar with the Spring Cloud Stream app starter conventions and has access to the existing source tree of all eight modules.",
+      "Network access is available from the CI build agent to download Maven dependencies and to pull Docker images if Testcontainers are used.",
+      "No new production functionality is required; the work is purely adding automated test coverage that validates existing behavior.",
+      "The 'reactor-ip', 'reactor-syslog', 'mail', 'sftp', 'aggregator', 'analytic-pmml', 'bridge', and 'http-client' modules are interpreted as the corresponding Spring Cloud Data Flow / Spring Cloud Stream app starters.",
+      "Effort estimates assume a single developer performing all work sequentially; coordination, code review, and rework are included in the per-activity effort.",
+      "A standard 8-hour workday is used as the unit of effort."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "CI pipeline configuration for acceptance test execution",
+        "activity_description": "Update the CI build jobs (e.g., Jenkinsfile / GitHub Actions workflow) to include the new acceptance test phase, propagate the 'acceptance' tag/profile, allocate additional time/heap for the longer-running tests, archive JUnit XML reports, and ensure parallel-safe execution."
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Shared acceptance test base module and utilities",
+        "activity_description": "Create or extend a shared acceptance-test support module containing a base test class, binder/port management helpers, polling/await utilities, and a consistent naming convention for topics/exchanges/queues; publish it so each of the eight modules can depend on it."
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Acceptance tests for Mail source module (U1)",
+        "activity_description": "Add end-to-end acceptance tests that wire the Mail source app starter into a stream, drive it against an embedded SMTP server (GreenMail), and assert that received email messages are emitted as messages with the expected payload, headers, and content-type on the output channel."
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Acceptance tests for reactor-ip source module (U2)",
+        "activity_description": "Add end-to-end acceptance tests that start the reactor-ip source against a local UDP/TCP listener, send synthetic syslog/IPFIX-like packets, and assert that the messages are emitted on the output channel with the expected structure."
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Acceptance tests for reactor-syslog source module (U3)",
+        "activity_description": "Add end-to-end acceptance tests that start the reactor-syslog source against an embedded syslog server, send RFC3164/RFC5424 messages, and assert the parsed structured payload (timestamp, hostname, message, severity) is emitted correctly."
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Acceptance tests for SFTP source module (U4)",
+        "activity_description": "Add end-to-end acceptance tests that boot an embedded SFTP server (Apache MINA SSHD), seed it with files, configure the SFTP source app starter to poll, and assert that file contents and metadata are emitted as messages on the output channel."
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Acceptance tests for aggregator processor module (U5)",
+        "activity_description": "Add end-to-end acceptance tests that drive the aggregator processor with sequences of correlated messages, verify windowing/release behavior (count, time, release strategies) and assert that aggregated payloads are produced with the expected correlation key and value."
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Acceptance tests for analytic-pmml processor module (U6)",
+        "activity_description": "Add end-to-end acceptance tests that load representative PMML models, feed input messages to the analytic-pmml processor, and assert that the predicted/scored results are emitted on the output channel with the expected schema and values."
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Acceptance tests for bridge processor module (U7)",
+        "activity_description": "Add end-to-end acceptance tests that configure the bridge processor (e.g., message channel binding, scoping) and assert that messages arriving on the input channel are forwarded unchanged (or transformed per configuration) to the output channel."
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Acceptance tests for http-client processor module (U8)",
+        "activity_description": "Add end-to-end acceptance tests that stand up a local mock HTTP server (e.g., WireMock), configure the http-client processor with various request mappings, send input messages, and assert that the HTTP responses are returned on the expected output channel with the correct status and body."
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Cross-module integration validation and stabilization in CI",
+        "activity_description": "Run the full set of acceptance tests on the CI pipeline, diagnose and fix flaky tests, port conflicts, timing issues, and ensure all eight modules' tests pass reliably in the parallel CI matrix; iterate until green."
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation of acceptance test coverage",
+        "activity_description": "Update the project README and any relevant docs to describe the new acceptance test suite, how to run it locally (Maven profile/command), and what each module's acceptance tests validate."
+      }
+    ],
+    "activities_with_effort": [
+      {
+        "activity_id": "A1",
+        "activity_name": "CI pipeline configuration for acceptance test execution",
+        "activity_description": "Update the CI build jobs to include the new acceptance test phase, propagate the acceptance tag/profile, allocate additional time/heap for the longer-running tests, archive JUnit XML reports, and ensure parallel-safe execution.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Shared acceptance test base module and utilities",
+        "activity_description": "Create or extend a shared acceptance-test support module containing a base test class, binder/port management helpers, polling/await utilities, and a consistent naming convention for topics/exchanges/queues.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Acceptance tests for Mail source module (U1)",
+        "activity_description": "Add end-to-end acceptance tests wiring the Mail source app starter against an embedded SMTP server (GreenMail) and asserting emitted message payload, headers, and content-type.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Acceptance tests for reactor-ip source module (U2)",
+        "activity_description": "Add end-to-end acceptance tests starting reactor-ip against a local UDP/TCP listener and asserting emitted message structure.",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Acceptance tests for reactor-syslog source module (U3)",
+        "activity_description": "Add end-to-end acceptance tests starting reactor-syslog against an embedded syslog server and asserting parsed RFC3164/RFC5424 fields.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Acceptance tests for SFTP source module (U4)",
+        "activity_description": "Add end-to-end acceptance tests booting an embedded SFTP server (Apache MINA SSHD), seeding files, and asserting emitted file contents/metadata.",
+        "most_likely_effort": 3.5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Acceptance tests for aggregator processor module (U5)",
+        "activity_description": "Add end-to-end acceptance tests driving the aggregator with correlated message sequences and asserting windowing/release behavior.",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Acceptance tests for analytic-pmml processor module (U6)",
+        "activity_description": "Add end-to-end acceptance tests loading PMML models, feeding input messages, and asserting emitted predictions/scores.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Acceptance tests for bridge processor module (U7)",
+        "activity_description": "Add end-to-end acceptance tests for the bridge processor verifying forwarding/transform behavior between input and output channels.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Acceptance tests for http-client processor module (U8)",
+        "activity_description": "Add end-to-end acceptance tests using WireMock to verify the http-client processor's request mappings and emitted response messages.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Cross-module integration validation and stabilization in CI",
+        "activity_description": "Run the full acceptance test suite on CI, diagnose and fix flaky tests/port conflicts/timing issues, and ensure reliable green builds.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation of acceptance test coverage",
+        "activity_description": "Update README and relevant docs describing the new acceptance test suite, how to run it locally, and what each module's tests validate.",
+        "most_likely_effort": 1.0
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 29.0
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

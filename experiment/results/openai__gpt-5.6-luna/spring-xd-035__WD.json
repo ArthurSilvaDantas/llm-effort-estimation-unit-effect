@@ -1,0 +1,250 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "spring-xd-035",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788410789-YGp9fXbwu2RVcW6yjF1k",
+    "object": "chat.completion",
+    "created": 1788410789,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Extend the existing Spring-based stream-processing and module infrastructure rather than introducing a separate runtime or programming model.\",\n    \"Use Kafka as the changelog and offset transport, with a repository abstraction that supports local data affinity and off-heap state where the existing platform permits it.\",\n    \"Tie offset flushing to successful downstream message acknowledgements, using idempotent and retry-safe processing semantics where possible.\",\n    \"Tie state flushing to the same acknowledgement boundary as offset flushing so persisted state and committed offsets represent a consistent processing point.\",\n    \"Implement the CoAP source as an independently configurable source module using an established Java CoAP library and map incoming CoAP payloads into the platform's standard message model.\",\n    \"Represent deployment configuration through documented properties files, retaining compatibility with the existing property naming and binding conventions.\",\n    \"Use the Hadoop and Sqoop security mechanisms already supported by the target environment, including configurable Kerberos credentials or delegation-token-based authentication rather than embedding credentials.\",\n    \"Implement the Java receptor client as a typed REST client for the Diego receptor APIs, with configurable endpoint, TLS, authentication, timeouts, and error handling.\",\n    \"Implement ModuleRunner as a Spring Boot-based executable suitable for container-managed deployment, while preserving the existing module lifecycle and deployment-property behavior.\",\n    \"Use automated unit, integration, and focused end-to-end tests, with external systems such as Kafka, HDFS, CoAP, and Diego represented by embedded, containerized, or test-double environments as appropriate.\"\n  ],\n  \"assumptions\": [\n    \"A functioning Spring-based source repository, build system, CI pipeline, module framework, and message-processing abstractions already exist.\",\n    \"The increment is an enhancement to an existing Spring XD-like platform; it does not include rewriting the platform or upgrading all dependencies to a new major Spring version.\",\n    \"Detailed acceptance criteria, API contracts, compatibility matrices, and performance targets are not provided, so the estimates include reasonable implementation and validation work for conventional behavior.\",\n    \"The Kafka changelog repository can reuse existing Kafka client infrastructure and does not require designing a new distributed storage protocol.\",\n    \"Off-heap storage is provided by an existing supported library or platform abstraction; developing a new off-heap memory manager is out of scope.\",\n    \"Offset and state flushing require at-least-once processing semantics and do not require a globally distributed exactly-once transaction spanning arbitrary module-producer implementations.\",\n    \"The CoAP source requires common CoAP methods and payload handling but does not include extensive protocol extensions, device management, or advanced observe-resource orchestration.\",\n    \"Secured HDFS and Sqoop integration assumes the target deployment already provides a configured Hadoop security infrastructure and that the work is limited to client configuration, credential handling, and validation.\",\n    \"The Diego receptor REST API version and required operations are known from the existing target environment; the estimate excludes discovering or implementing unsupported Diego server APIs.\",\n    \"The ModuleRunner reuses existing module packaging and lifecycle conventions, and the remaining deployment properties work is limited to configuration binding, defaults, validation, and documentation.\",\n    \"Documentation is written in the project's existing documentation format and publication process; no documentation website redesign is required.\",\n    \"Effort includes coding, developer-level testing, integration troubleshooting, and necessary code review preparation, but excludes elapsed waiting time and work by additional developers.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Increment analysis and technical design\",\n      \"activity_description\": \"Inspect the existing modules, build structure, persistence and acknowledgement abstractions, deployment configuration, security conventions, and extension points; define interfaces, compatibility constraints, and implementation sequencing for all eight user stories.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Kafka changelog-backed Spring Data repository\",\n      \"activity_description\": \"Implement the repository integration backed by Kafka changelog records, including serialization, recovery and replay behavior, local data-affinity handling, off-heap integration through the existing abstraction, configuration, and unit/integration tests.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Intelligent offset flushing\",\n      \"activity_description\": \"Implement acknowledgement-aware offset tracking and flushing, including batching or coalescing, failure and retry behavior, restart handling, configuration, and tests covering successful and unsuccessful downstream acknowledgements.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Intelligent state flushing\",\n      \"activity_description\": \"Implement acknowledgement-aware state persistence and flushing, coordinate persisted state with processing progress, handle failures and recovery, expose configuration, and add tests for state/acknowledgement ordering and restart scenarios.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"CoAP source module\",\n      \"activity_description\": \"Add the configurable CoAP source module, integrate a Java CoAP client or server adapter as appropriate for the platform, convert CoAP messages to platform messages, support lifecycle and error handling, and provide unit and integration tests.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Deployment properties documentation\",\n      \"activity_description\": \"Review supported deployment properties, complete or correct the properties-file configuration guidance, document defaults, required values, examples, and deployment-manifest usage, and validate the examples against the implementation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Secured HDFS support for Sqoop jobs\",\n      \"activity_description\": \"Add the required secured-HDFS and authentication configuration to Sqoop job execution, propagate credentials or security context safely, handle configuration errors, and validate execution against secured-HDFS test scenarios.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Java Diego receptor client\",\n      \"activity_description\": \"Implement the Java client for the required Diego receptor REST operations, including request/response models, authentication and TLS configuration, timeouts, error mapping, retries where appropriate, and mocked API tests.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Spring Boot ModuleRunner and remaining deployment properties\",\n      \"activity_description\": \"Implement the Boot-based ModuleRunner for container-managed environments, wire module lifecycle startup and shutdown, complete remaining deployment property binding and validation, support container-oriented configuration, and add startup and integration tests.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and regression testing\",\n      \"activity_description\": \"Run the complete build and test suite, add cross-feature integration coverage for persistence, acknowledgements, deployment configuration, and module execution, diagnose compatibility issues, and perform regression fixes.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Release hardening and delivery\",\n      \"activity_description\": \"Finalize configuration metadata, dependency and licensing checks, changelog or release notes, sample configurations, packaging verification, and preparation of the completed increment for delivery.\",\n      \"most_likely_effort\": 4\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 96\n  }\n}",
+          "refusal": null,
+          "reasoning": null,
+          "reasoning_details": [
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmPurh-dDST3SvKc4o1y0a1ZJBkS53hq9RDKeA_1MGgU8X3nEQCmkqGQW0q_omurr4eEuN2ySYHtAOLdeGwkbx-tWOea3aOZiU-_fJC-KRUrgyYkDoZOOdO2H2FBIf0dZjLI_WTZ4VZvcrWijEEXDVucS4v2xuU4Q2Zi1rHbC5FIzyvg_cHRezSm8rIAQUaGVSWdHDf-c6czq4QMVF0c6rof9xM4N4tQt0k4kXgMzp7etl8M4kNvvvzNCX_hF4eWtdq23FRubCF2WuPEl7WZcQxnhDG_7pgHOZPXC9Qhen-0YbnAlHsMilPLcRwFd9oclmBy0YiAFJ-HYy0U60_NHWS5SBJHyEYWPDoMhJn3gMcZVwxdwejUI16581GtWUj3am7d_NS7zXhiulvANnLvyAsukar3vlGz43NDSPeaifUv-SrGLCQHaDCkoUGFAN3As1JsT3SU6pqDsNt-4h3Yxh2pKrZyfs0mjBPPLSZg1wBEznwQOFe_urG4UAv-Ix9P2AaQzP_xCJW0HHDYAmOoCq8DW1xxrWzhIOtHrHLfatHm4UjBzS6lTvdqX2CSXWfnPbRfy8yaioroKivyHlRmaY2BbdjuyXsGa6OMZHQZYK7jbqrK85u32K11qFI2ky7EviqJ1YDF3qXPAm2XcLQ6yLkBSe9YUiYTNeGMOoKIvskTrgGrfGJHaq1HQ1zA6XDWNfSmHvvckG-potqxYxGRzST2uXwWhqaeC7aK4V1bYckFjFkboH3xj8jkVpePQxpnujSFS-9RaGwA72ieb1v9iXw53SFCDEgxUJQUNqSllLP1dC45q4l6phQYCu6PYtmkYQm6VeYG4CZTO6nE5J87rTdqsOivfcb6R2WkF95jbZvQE41on9AiEdsPMAQFyBp8f2E48TkfeR5ellr76CwjpjIAu_0FEr0MbF3XF1DG_mLEh4wj-k5zM6BkV9sGcdhT_gJxxTIqnkTAbewyJ7l7s7Xgs-xhvqhDytYf3OZcNmb__c0_EfAltFlya0BFnDewHNx8bJRnvUxucq-USugq_WKhsAzqzyg89tywZBdiMGXF4lTZtPuSVToXe8eWML1U1Cjg3KYJihOiuonrm368eyw3qjcx3pf3102d7hcjYPiLWGYD1OLq6N-KMcr4GNfe7ZcvRZ-wE5j6x8tAuC3UhTdAHMSgC0Z3YW-pPD3BQafzJvVIRbtHcwDsz3yE1FyGcoJOhk1nZ6xpN-1x82rPOP-BRK6slALUXKxlf2MsD8pETACB7rqmYu8XIDZy0Y_Fl3LuqAXs3OHibULqn8lvLBVBcV40NepDZSftU3agL8ayEpEE4jukUiDfs1RoIf6GpVR_6aJi-qL1SI22asJbX6vN8hEDCF8bsBgl3DEeKCQ0Y0_pVPX6hoJ-7I10Fx1A4D_7qviXn8Pp4oxWXLUWeypAD9h4TdmHCkQBLYUueoJ06ubgrtr8gi7Q6b45UqrCoy651p0_gV225goXOnbQYAkPfo4TCegArwoqqIODC10ZgNCWjbZs5jKz1FJ0wf1Wepg6Jh_BmsBJKsls64dXE3dJHaoM3pCxMuIPOjeL-EzKk-ruNALXIG2v0b06RnOO_GS3GgTKh7y1q-lQce8DC4fIf72I_r1B7FgGSmOE4QWddiVx2pMN7GCOgNb5U-sHIOGEAJ6D953eqK3nN8Ed9FSASbJsDvHSeTKNGvmmPMS0BD6F43dYP32YVoDkjjkIy4x6VfkwC3FG8seJgKXTOxRkRzdlGBxN6SX1yVHUtaF8Ky6Ce8Y_YEmCRwaSVJ6pmRxquMwV40Xhxss7f-G0f1PmRDvnZQCabWd6fvvh_Qyni3NqHKmjlEO1zwRC4NWDYHaPjv0OjibcOD3M-7B2tOWmq9m96o0b5c1kF19WhMPE_6SFV0-c_Mrj_z22FgzkZCJjUeCFyc_LXPzFOzRgtPyc6JA1gr4-GlSyYyezS18x082F5F6uMOIyuXWLVQg-RfVl6XlQGnrUQFZXUYLHwTvEkVwdHVKwhMOWMVd-SaUWaymMSw5lTswDrfk_Z8BVldFOcnYoikDpxaNqVF6rDhRgF0s4AL4Zvk23UxBDVbY4j4qiJbMRA_KQX0zr4do7Gq3FHeloFPeL-cQqh1WHCZ87QOOHSuyJt4DEpJq3VrMs9PMZMTEBc1Wx2cVL2P1cqYdRRB6HsPSyzYD8kflZ5mCqz_Z0N_SyPlGFzezzNcESPo0hIevwm-gNJrtaMaEwplKqeDBwU9zmouvmnzsvOzEbjgE_n7szUQrTKrcT3101gB-3kb3Ua_KgxGnlGHCDHItoW5brtxcZCi3crlTKXPdETdXwvDLf4VO0j7QO2HZuQ93V-4vYSMapM07jzexFWrxq63xm-KvrCIGqej3JPkiMRjig1rW3y2DiG_gLwhZ0fQZyOsSmvYawsGdLqXz_VWqMxhu8aCwAv9DI9yAqJZXyvfnfRA8tK0-kteST2v9Y3WBM6i0iG1AyksfqNICxOPUPAFl3GTbn9SlHb_QVYA4N9k5jLGHx48vGbc4vLyna3yrLlJAalDlO8ANIXoaXDZwSX9aU-p9H9MX1GHh0jA7w-GNjRbMuaNIDPRkoenuk4JADhDN0Wv8N7sX4GTbgnG3KCU8FQLTOzuaqWVQQ80WBMR9XDhMS5NfKb1UhKzehKg5YwkuX4LNFDRsgYQAQOFQcrtq3dt461IxqzXSNQ3jR8o7KUGbWeUiguGghMqBa44i6RfaYqJkTCHLUQ3Ncd0yq6Jy4TiaEDIVhqZs3qhBVN0DxBYxd-aBrdu9ykRhPWYk_rjphYW1LU1dcovnwlSVHkd5NNeiXPxir8JGkdK7jr8cC3Od8hoIbKpqXDxSrWP_m2bMfWJLSBE6jkZLomAZIMgs6FbgXbGtbdZmX7DNGA0ndPAreusClbfjrdz1NOtH8rvCAfpSHg5MXDVvrkAe-ucMy2S7C8l6jP32KRSvcmEtHOCUC-gVmupUf3CdRYob4slWmw9FiT-zXvSrpq3YttJHjMSPeC3AwGyI1TtUEdU_9LK5x8W87zIOcv4KA6xVEAJz3tjL52mO2ZO7BSInHbyCGDuISSMukaVh1tgHI6rlcr1G88BQJBde_mpjIoxZbQGnotSQK7KKF3SwzLVXRR6TS2mrlM7-0-ymKACuSWnMCEUspz_tplRTmtHKyQZfb7GuOZMo2-dMS4u4MKDuof_QURfCVfEjgFqakomTc6tXG5-QIXwLMwZrstApupG-CoWwJa4SVAWgeFAbo75L9CHxReUBnnqGzi5FCbjCHgXQ==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_009570f9330cdff6016a98fba6aed887d1b928602b6eb5b533",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1171,
+      "completion_tokens": 1929,
+      "total_tokens": 3100,
+      "cost": 0.0026074,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1168,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0026074,
+        "upstream_inference_prompt_cost": 0.0002926,
+        "upstream_inference_completions_cost": 0.0023148
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 327,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Extend the existing Spring-based stream-processing and module infrastructure rather than introducing a separate runtime or programming model.\",\n    \"Use Kafka as the changelog and offset transport, with a repository abstraction that supports local data affinity and off-heap state where the existing platform permits it.\",\n    \"Tie offset flushing to successful downstream message acknowledgements, using idempotent and retry-safe processing semantics where possible.\",\n    \"Tie state flushing to the same acknowledgement boundary as offset flushing so persisted state and committed offsets represent a consistent processing point.\",\n    \"Implement the CoAP source as an independently configurable source module using an established Java CoAP library and map incoming CoAP payloads into the platform's standard message model.\",\n    \"Represent deployment configuration through documented properties files, retaining compatibility with the existing property naming and binding conventions.\",\n    \"Use the Hadoop and Sqoop security mechanisms already supported by the target environment, including configurable Kerberos credentials or delegation-token-based authentication rather than embedding credentials.\",\n    \"Implement the Java receptor client as a typed REST client for the Diego receptor APIs, with configurable endpoint, TLS, authentication, timeouts, and error handling.\",\n    \"Implement ModuleRunner as a Spring Boot-based executable suitable for container-managed deployment, while preserving the existing module lifecycle and deployment-property behavior.\",\n    \"Use automated unit, integration, and focused end-to-end tests, with external systems such as Kafka, HDFS, CoAP, and Diego represented by embedded, containerized, or test-double environments as appropriate.\"\n  ],\n  \"assumptions\": [\n    \"A functioning Spring-based source repository, build system, CI pipeline, module framework, and message-processing abstractions already exist.\",\n    \"The increment is an enhancement to an existing Spring XD-like platform; it does not include rewriting the platform or upgrading all dependencies to a new major Spring version.\",\n    \"Detailed acceptance criteria, API contracts, compatibility matrices, and performance targets are not provided, so the estimates include reasonable implementation and validation work for conventional behavior.\",\n    \"The Kafka changelog repository can reuse existing Kafka client infrastructure and does not require designing a new distributed storage protocol.\",\n    \"Off-heap storage is provided by an existing supported library or platform abstraction; developing a new off-heap memory manager is out of scope.\",\n    \"Offset and state flushing require at-least-once processing semantics and do not require a globally distributed exactly-once transaction spanning arbitrary module-producer implementations.\",\n    \"The CoAP source requires common CoAP methods and payload handling but does not include extensive protocol extensions, device management, or advanced observe-resource orchestration.\",\n    \"Secured HDFS and Sqoop integration assumes the target deployment already provides a configured Hadoop security infrastructure and that the work is limited to client configuration, credential handling, and validation.\",\n    \"The Diego receptor REST API version and required operations are known from the existing target environment; the estimate excludes discovering or implementing unsupported Diego server APIs.\",\n    \"The ModuleRunner reuses existing module packaging and lifecycle conventions, and the remaining deployment properties work is limited to configuration binding, defaults, validation, and documentation.\",\n    \"Documentation is written in the project's existing documentation format and publication process; no documentation website redesign is required.\",\n    \"Effort includes coding, developer-level testing, integration troubleshooting, and necessary code review preparation, but excludes elapsed waiting time and work by additional developers.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Increment analysis and technical design\",\n      \"activity_description\": \"Inspect the existing modules, build structure, persistence and acknowledgement abstractions, deployment configuration, security conventions, and extension points; define interfaces, compatibility constraints, and implementation sequencing for all eight user stories.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Kafka changelog-backed Spring Data repository\",\n      \"activity_description\": \"Implement the repository integration backed by Kafka changelog records, including serialization, recovery and replay behavior, local data-affinity handling, off-heap integration through the existing abstraction, configuration, and unit/integration tests.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Intelligent offset flushing\",\n      \"activity_description\": \"Implement acknowledgement-aware offset tracking and flushing, including batching or coalescing, failure and retry behavior, restart handling, configuration, and tests covering successful and unsuccessful downstream acknowledgements.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Intelligent state flushing\",\n      \"activity_description\": \"Implement acknowledgement-aware state persistence and flushing, coordinate persisted state with processing progress, handle failures and recovery, expose configuration, and add tests for state/acknowledgement ordering and restart scenarios.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"CoAP source module\",\n      \"activity_description\": \"Add the configurable CoAP source module, integrate a Java CoAP client or server adapter as appropriate for the platform, convert CoAP messages to platform messages, support lifecycle and error handling, and provide unit and integration tests.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Deployment properties documentation\",\n      \"activity_description\": \"Review supported deployment properties, complete or correct the properties-file configuration guidance, document defaults, required values, examples, and deployment-manifest usage, and validate the examples against the implementation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Secured HDFS support for Sqoop jobs\",\n      \"activity_description\": \"Add the required secured-HDFS and authentication configuration to Sqoop job execution, propagate credentials or security context safely, handle configuration errors, and validate execution against secured-HDFS test scenarios.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Java Diego receptor client\",\n      \"activity_description\": \"Implement the Java client for the required Diego receptor REST operations, including request/response models, authentication and TLS configuration, timeouts, error mapping, retries where appropriate, and mocked API tests.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Spring Boot ModuleRunner and remaining deployment properties\",\n      \"activity_description\": \"Implement the Boot-based ModuleRunner for container-managed environments, wire module lifecycle startup and shutdown, complete remaining deployment property binding and validation, support container-oriented configuration, and add startup and integration tests.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and regression testing\",\n      \"activity_description\": \"Run the complete build and test suite, add cross-feature integration coverage for persistence, acknowledgements, deployment configuration, and module execution, diagnose compatibility issues, and perform regression fixes.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Release hardening and delivery\",\n      \"activity_description\": \"Finalize configuration metadata, dependency and licensing checks, changelog or release notes, sample configurations, packaging verification, and preparation of the completed increment for delivery.\",\n      \"most_likely_effort\": 4\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 96\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1171,
+    "completion_tokens": 1929,
+    "total_tokens": 3100,
+    "cost": 0.0026074,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1168,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0026074,
+      "upstream_inference_prompt_cost": 0.0002926,
+      "upstream_inference_completions_cost": 0.0023148
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 327,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "conversion_response": {
+    "id": "gen-1788410814-dTQIBsRPnvDrOaiDR1oF",
+    "object": "chat.completion",
+    "created": 1788410814,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\"work_hours_per_workday\":8}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2892,
+      "completion_tokens": 13,
+      "total_tokens": 2905,
+      "cost": 0.00046981,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1168,
+        "cache_write_tokens": 1721,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00046981,
+        "upstream_inference_prompt_cost": 0.00045421,
+        "upstream_inference_completions_cost": 1.56e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\"work_hours_per_workday\":8}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Extend the existing Spring-based stream-processing and module infrastructure rather than introducing a separate runtime or programming model.",
+      "Use Kafka as the changelog and offset transport, with a repository abstraction that supports local data affinity and off-heap state where the existing platform permits it.",
+      "Tie offset flushing to successful downstream message acknowledgements, using idempotent and retry-safe processing semantics where possible.",
+      "Tie state flushing to the same acknowledgement boundary as offset flushing so persisted state and committed offsets represent a consistent processing point.",
+      "Implement the CoAP source as an independently configurable source module using an established Java CoAP library and map incoming CoAP payloads into the platform's standard message model.",
+      "Represent deployment configuration through documented properties files, retaining compatibility with the existing property naming and binding conventions.",
+      "Use the Hadoop and Sqoop security mechanisms already supported by the target environment, including configurable Kerberos credentials or delegation-token-based authentication rather than embedding credentials.",
+      "Implement the Java receptor client as a typed REST client for the Diego receptor APIs, with configurable endpoint, TLS, authentication, timeouts, and error handling.",
+      "Implement ModuleRunner as a Spring Boot-based executable suitable for container-managed deployment, while preserving the existing module lifecycle and deployment-property behavior.",
+      "Use automated unit, integration, and focused end-to-end tests, with external systems such as Kafka, HDFS, CoAP, and Diego represented by embedded, containerized, or test-double environments as appropriate."
+    ],
+    "assumptions": [
+      "A functioning Spring-based source repository, build system, CI pipeline, module framework, and message-processing abstractions already exist.",
+      "The increment is an enhancement to an existing Spring XD-like platform; it does not include rewriting the platform or upgrading all dependencies to a new major Spring version.",
+      "Detailed acceptance criteria, API contracts, compatibility matrices, and performance targets are not provided, so the estimates include reasonable implementation and validation work for conventional behavior.",
+      "The Kafka changelog repository can reuse existing Kafka client infrastructure and does not require designing a new distributed storage protocol.",
+      "Off-heap storage is provided by an existing supported library or platform abstraction; developing a new off-heap memory manager is out of scope.",
+      "Offset and state flushing require at-least-once processing semantics and do not require a globally distributed exactly-once transaction spanning arbitrary module-producer implementations.",
+      "The CoAP source requires common CoAP methods and payload handling but does not include extensive protocol extensions, device management, or advanced observe-resource orchestration.",
+      "Secured HDFS and Sqoop integration assumes the target deployment already provides a configured Hadoop security infrastructure and that the work is limited to client configuration, credential handling, and validation.",
+      "The Diego receptor REST API version and required operations are known from the existing target environment; the estimate excludes discovering or implementing unsupported Diego server APIs.",
+      "The ModuleRunner reuses existing module packaging and lifecycle conventions, and the remaining deployment properties work is limited to configuration binding, defaults, validation, and documentation.",
+      "Documentation is written in the project's existing documentation format and publication process; no documentation website redesign is required.",
+      "Effort includes coding, developer-level testing, integration troubleshooting, and necessary code review preparation, but excludes elapsed waiting time and work by additional developers."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Increment analysis and technical design",
+        "activity_description": "Inspect the existing modules, build structure, persistence and acknowledgement abstractions, deployment configuration, security conventions, and extension points; define interfaces, compatibility constraints, and implementation sequencing for all eight user stories.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Kafka changelog-backed Spring Data repository",
+        "activity_description": "Implement the repository integration backed by Kafka changelog records, including serialization, recovery and replay behavior, local data-affinity handling, off-heap integration through the existing abstraction, configuration, and unit/integration tests.",
+        "most_likely_effort": 15
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Intelligent offset flushing",
+        "activity_description": "Implement acknowledgement-aware offset tracking and flushing, including batching or coalescing, failure and retry behavior, restart handling, configuration, and tests covering successful and unsuccessful downstream acknowledgements.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Intelligent state flushing",
+        "activity_description": "Implement acknowledgement-aware state persistence and flushing, coordinate persisted state with processing progress, handle failures and recovery, expose configuration, and add tests for state/acknowledgement ordering and restart scenarios.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "CoAP source module",
+        "activity_description": "Add the configurable CoAP source module, integrate a Java CoAP client or server adapter as appropriate for the platform, convert CoAP messages to platform messages, support lifecycle and error handling, and provide unit and integration tests.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Deployment properties documentation",
+        "activity_description": "Review supported deployment properties, complete or correct the properties-file configuration guidance, document defaults, required values, examples, and deployment-manifest usage, and validate the examples against the implementation.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Secured HDFS support for Sqoop jobs",
+        "activity_description": "Add the required secured-HDFS and authentication configuration to Sqoop job execution, propagate credentials or security context safely, handle configuration errors, and validate execution against secured-HDFS test scenarios.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Java Diego receptor client",
+        "activity_description": "Implement the Java client for the required Diego receptor REST operations, including request/response models, authentication and TLS configuration, timeouts, error mapping, retries where appropriate, and mocked API tests.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Spring Boot ModuleRunner and remaining deployment properties",
+        "activity_description": "Implement the Boot-based ModuleRunner for container-managed environments, wire module lifecycle startup and shutdown, complete remaining deployment property binding and validation, support container-oriented configuration, and add startup and integration tests.",
+        "most_likely_effort": 15
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature integration and regression testing",
+        "activity_description": "Run the complete build and test suite, add cross-feature integration coverage for persistence, acknowledgements, deployment configuration, and module execution, diagnose compatibility issues, and perform regression fixes.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Release hardening and delivery",
+        "activity_description": "Finalize configuration metadata, dependency and licensing checks, changelog or release notes, sample configurations, packaging verification, and preparation of the completed increment for delivery.",
+        "most_likely_effort": 4
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 96
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

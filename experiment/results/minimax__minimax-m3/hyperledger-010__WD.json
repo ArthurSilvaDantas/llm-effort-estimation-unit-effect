@@ -1,0 +1,254 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-010",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788420302-auqIxxqVo15zy95mLBfM",
+    "object": "chat.completion",
+    "created": 1788420302,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement all new functions in Go, located in a new or existing configtx/ package consistent with the existing Fabric channel configuration API (e.g., github.com/hyperledger/fabric/pkg/config).\",\n    \"Follow the existing pattern of returning a config envelope / config transaction from mutation functions so that outputs can be chained into further update functions.\",\n    \"Reuse the existing config group, policy, and organization types (config.Organization, configtx.Policy, etc.) rather than introducing parallel types.\",\n    \"Retrieve functions (U1, U7) parse the config transaction by walking the well-known config group paths and unmarshalling into the existing config types.\",\n    \"Policy update functions (U2, U3, U4) accept a list of policies to add and/or remove, and modify the relevant config group's policies map accordingly.\",\n    \"Add org functions (U5, U6) construct a new orderer/application org with sensible default policies and modifiable fields, then embed it into the channel config transaction.\",\n    \"MSP config retrieval (U7) reuses existing MSP config unmarshalling logic and returns a typed config value (FabricMSPConfig or similar).\",\n    \"Certificate revocation (U8) uses the MSP's certificate chain to verify that the supplied certificate was signed by the MSP, then appends its serial/AKI/SKI tuple to the revocation_list of FabricMSPConfig.\",\n    \"Each acceptance criterion explicitly requires updating the example tests; one example test file per user story is the chosen approach to demonstrate usage.\",\n    \"Unit tests for the new functions are written alongside the example tests, including negative test cases (e.g., U8 rejects certs not issued by the MSP).\"\n  ],\n  \"assumptions\": [\n    \"The developer is experienced in Go and has prior familiarity with the Hyperledger Fabric codebase (configtx, common, pkg/config packages).\",\n    \"The development environment (Go toolchain, Fabric source tree, test fixtures, certs) is already available and configured.\",\n    \"No major refactoring of the existing channel configuration API is required; the new functions extend rather than replace existing ones.\",\n    \"One developer performs all work (no parallel sub-teams), so there is no effort for cross-team coordination beyond a self-review.\",\n    \"Existing example test scaffolding (e.g., the configtxlator example tests) can be extended rather than rewritten from scratch.\",\n    \"Certificate chain verification for U8 is performed using the MSP's already-configured root/intermediate CAs, with no need to introduce new crypto helpers.\",\n    \"Documentation updates beyond the example tests (e.g., GoDoc comments) are bundled into the implementation activities, not a separate large documentation pass.\",\n    \"No new dependencies or third-party libraries are introduced; everything is implemented using existing Fabric and Go standard library facilities.\",\n    \"Effort estimates exclude elapsed calendar time for code reviews, PR iterations, and CI — these are folded into a dedicated self-review/refactor activity at the end.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"API design, codebase study, and test scaffolding\",\n      \"activity_description\": \"Study existing Fabric channel config APIs, decide on function signatures and package layout, identify the example test file(s) to extend, and prepare a skeleton for the new functions.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement organization config retrieval (application/orderer/consortium)\",\n      \"activity_description\": \"Implement a function that returns a config.Organization for a given application, orderer, or consortium org from a config transaction. Update the example test to demonstrate retrieving and reusing an org config.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Implement application org/group policy update\",\n      \"activity_description\": \"Implement a function to add/remove policies on an application org and the application groups. Update the example test to demonstrate modifying policies and continuing further config updates.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Implement orderer org/group policy update\",\n      \"activity_description\": \"Implement a function to add/remove policies on an orderer org and the orderer groups. Update the example test to demonstrate usage.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Implement consortium org/group/consortiums policy update\",\n      \"activity_description\": \"Implement a function to add/remove policies on a consortium org, the consortiums group, and the consortium group. Update the example test to demonstrate usage.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Implement add orderer org to channel config\",\n      \"activity_description\": \"Implement a fit-for-purpose function that adds an orderer org definition to a channel configuration and returns a channel transaction that can be further mutated. Update the example test.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Implement add application org to channel config\",\n      \"activity_description\": \"Implement a fit-for-purpose function that adds an application org definition to a channel configuration and returns a channel transaction that can be further mutated. Update the example test.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Implement MSP config retrieval for an org\",\n      \"activity_description\": \"Implement a function to retrieve the existing MSP configuration (e.g., FabricMSPConfig) for a specified org without manually parsing the config transaction. Update the example test.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Implement certificate revocation helper\",\n      \"activity_description\": \"Implement a function that, given a config block/transaction and a target org MSP, verifies that a certificate was issued by that MSP and, if so, returns a config update that appends the certificate to the MSP's revocation_list. Reject certs not issued by the MSP with an error. Update the example test to demonstrate both success and error cases.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing and example test validation\",\n      \"activity_description\": \"Run the full set of unit and example tests, verify end-to-end chaining of the new functions (retrieve -> update -> add -> revoke), fix any bugs surfaced, and ensure each user story's acceptance criteria are demonstrably met by the example tests.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Code review, refactoring, and GoDoc polish\",\n      \"activity_description\": \"Self-review the new code for consistency with existing Fabric patterns, refactor shared helpers if needed, finalize GoDoc comments, and tidy the example tests so they serve as documentation.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 19.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. It's about Hyperledger Fabric, specifically the channel configuration API. I need to estimate the development effort for 8 user stories.\n\nLet me break down the work:\n\n**U1**: Add a function to retrieve existing application, orderer, or consortium org configuration that returns a config.Organization. Update example tests.\n\n**U2**: Add a function to update an application org's and an application group's configuration by adding or removing policies. Update example tests.\n\n**U3**: Add a function to update an orderer org's and orderer group's configuration by adding or removing policies. Update example tests.\n\n**U4**: Add a function to update a consortium org's, consortiums group's, and consortium group's configuration by adding or removing policies. Update example tests.\n\n**U5**: Add a fit-for-purpose function to add an orderer org definition to a channel configuration. Update example tests.\n\n**U6**: Add a fit-for-purpose function to add an application org definition to a channel configuration. Update example tests.\n\n**U7**: Add a function to retrieve existing msp configuration for an organization. Update example tests.\n\n**U8**: Add a function to revoke a certificate by verifying it was issued by the org's MSP, then adding it to the revocation list of FabricMSPConfig.\n\nLet me think about the technical decisions and assumptions, then build a WBS.\n\n**Technical and Design Decisions:**\n1. Implement all functions in Go, following the existing Fabric channel config API patterns in the `github.com/hyperledger/fabric/common/configtx` and `github.com/hyperledger/fabric/pkg/config` packages.\n2. Follow existing code style and patterns (e.g., similar to `AddOrg`, `AddOrdererOrg` if they exist, or create new patterns).\n3. Each function returns a config envelope/transaction that can be further processed.\n4. Policy updates should follow the existing pattern in Fabric for adding/removing policies in config groups.\n5. MSP config retrieval reuses existing MSP config parser logic.\n6. Certificate verification for revocation uses the MSP's certificate chain to verify the cert was issued by the MSP.\n\n**Assumptions:**\n1. Developer is experienced with Go and the Hyperledger Fabric codebase.\n2. The development environment is already set up (Go, Fabric source, test tools).\n3. Unit tests and example tests are required as per acceptance criteria.\n4. The function signatures will be designed to be composable (return envelopes that can be passed to update functions).\n5. No major refactoring of existing API is required.\n6. The work is in a single work stream (one developer).\n\nNow let me build a WBS:\n\n**Activity 1: Design and Code Review for Overall API**\n- Design function signatures, review existing patterns in Fabric codebase, ensure consistency.\n- Effort: 1.5 days\n\n**Activity 2: U1 - Implement Organization Config Retrieval Function**\n- Implement function to retrieve application/orderer/consortium org config\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 3: U2 - Implement Application Org/Group Policy Update Function**\n- Implement function to add/remove policies on application org and application group\n- Update example tests\n- Effort: 2 days\n\n**Activity 4: U3 - Implement Orderer Org/Group Policy Update Function**\n- Similar to U2 but for orderer\n- Update example tests\n- Effort: 2 days\n\n**Activity 5: U4 - Implement Consortium Org/Group Policy Update Function**\n- Similar to U2/U3 but for consortium\n- Update example tests\n- Effort: 2 days\n\n**Activity 6: U5 - Implement AddOrdererOrg Function**\n- Implement function to add an orderer org to channel config\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 7: U6 - Implement AddApplicationOrg Function**\n- Implement function to add an application org to channel config\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 8: U7 - Implement MSP Config Retrieval Function**\n- Implement function to retrieve MSP config for a specific org\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 9: U8 - Implement Certificate Revocation Function**\n- Implement function to verify cert is issued by MSP, then add to revocation list\n- Update example tests\n- Effort: 2.5 days (more complex due to cert verification)\n\n**Activity 10: Integration Testing and Documentation**\n- Run all tests, ensure they pass, write integration scenarios, update documentation\n- Effort: 2 days\n\n**Activity 11: Code Review and Refactoring**\n- Self-review, cleanup, refactoring, ensure all acceptance criteria met\n- Effort: 1.5 days\n\nLet me sum up:\n1.5 + 1.5 + 2 + 2 + 2 + 1.5 + 1.5 + 1.5 + 2.5 + 2 + 1.5 = 19.5 days\n\nLet me reconsider. Some activities could be combined (e.g., U2, U3, U4 are very similar, so could share some design time). But since we're breaking down by user story, I'll keep them separate for clarity.\n\nActually, let me re-think the granularity. A WBS should be at a reasonable level. Let me combine some:\n\n**Refined WBS:**\n\n1. **API Design and Setup (A1)**: Overall API design, study existing patterns, set up test environment\n   - 1.5 days\n\n2. **U1 Implementation (A2)**: Organization config retrieval\n   - 1.5 days\n\n3. **U2 Implementation (A3)**: Application org/group policy updates\n   - 2 days\n\n4. **U3 Implementation (A4)**: Orderer org/group policy updates\n   - 2 days\n\n5. **U4 Implementation (A5)**: Consortium org/group policy updates\n   - 2 days\n\n6. **U5 Implementation (A6)**: Add orderer org function\n   - 1.5 days\n\n7. **U6 Implementation (A7)**: Add application org function\n   - 1.5 days\n\n8. **U7 Implementation (A8)**: MSP config retrieval\n   - 1.5 days\n\n9. **U8 Implementation (A9)**: Certificate revocation function\n   - 2.5 days\n\n10. **Integration Testing and Bug Fixes (A10)**: End-to-end testing, example tests validation\n    - 2 days\n\n11. **Code Review, Refactoring, Documentation (A11)**: Final cleanup, ensure all acceptance criteria met\n    - 1.5 days\n\nTotal: 1.5 + 1.5 + 2 + 2 + 2 + 1.5 + 1.5 + 1.5 + 2.5 + 2 + 1.5 = 19.5 days\n\nThis seems reasonable. Let me round it slightly to 19.5 or adjust.\n\nActually, I'll keep it as 19.5 days total.\n\nLet me think more carefully. Looking at the actual Hyperledger Fabric PR that implemented these features (this looks like the PR for `pkg/config` package in Fabric), the actual work was quite involved. The estimate of ~19.5 days (about 4 weeks) seems reasonable for an experienced developer to deliver this increment.\n\nLet me finalize the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. It's about Hyperledger Fabric, specifically the channel configuration API. I need to estimate the development effort for 8 user stories.\n\nLet me break down the work:\n\n**U1**: Add a function to retrieve existing application, orderer, or consortium org configuration that returns a config.Organization. Update example tests.\n\n**U2**: Add a function to update an application org's and an application group's configuration by adding or removing policies. Update example tests.\n\n**U3**: Add a function to update an orderer org's and orderer group's configuration by adding or removing policies. Update example tests.\n\n**U4**: Add a function to update a consortium org's, consortiums group's, and consortium group's configuration by adding or removing policies. Update example tests.\n\n**U5**: Add a fit-for-purpose function to add an orderer org definition to a channel configuration. Update example tests.\n\n**U6**: Add a fit-for-purpose function to add an application org definition to a channel configuration. Update example tests.\n\n**U7**: Add a function to retrieve existing msp configuration for an organization. Update example tests.\n\n**U8**: Add a function to revoke a certificate by verifying it was issued by the org's MSP, then adding it to the revocation list of FabricMSPConfig.\n\nLet me think about the technical decisions and assumptions, then build a WBS.\n\n**Technical and Design Decisions:**\n1. Implement all functions in Go, following the existing Fabric channel config API patterns in the `github.com/hyperledger/fabric/common/configtx` and `github.com/hyperledger/fabric/pkg/config` packages.\n2. Follow existing code style and patterns (e.g., similar to `AddOrg`, `AddOrdererOrg` if they exist, or create new patterns).\n3. Each function returns a config envelope/transaction that can be further processed.\n4. Policy updates should follow the existing pattern in Fabric for adding/removing policies in config groups.\n5. MSP config retrieval reuses existing MSP config parser logic.\n6. Certificate verification for revocation uses the MSP's certificate chain to verify the cert was issued by the MSP.\n\n**Assumptions:**\n1. Developer is experienced with Go and the Hyperledger Fabric codebase.\n2. The development environment is already set up (Go, Fabric source, test tools).\n3. Unit tests and example tests are required as per acceptance criteria.\n4. The function signatures will be designed to be composable (return envelopes that can be passed to update functions).\n5. No major refactoring of existing API is required.\n6. The work is in a single work stream (one developer).\n\nNow let me build a WBS:\n\n**Activity 1: Design and Code Review for Overall API**\n- Design function signatures, review existing patterns in Fabric codebase, ensure consistency.\n- Effort: 1.5 days\n\n**Activity 2: U1 - Implement Organization Config Retrieval Function**\n- Implement function to retrieve application/orderer/consortium org config\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 3: U2 - Implement Application Org/Group Policy Update Function**\n- Implement function to add/remove policies on application org and application group\n- Update example tests\n- Effort: 2 days\n\n**Activity 4: U3 - Implement Orderer Org/Group Policy Update Function**\n- Similar to U2 but for orderer\n- Update example tests\n- Effort: 2 days\n\n**Activity 5: U4 - Implement Consortium Org/Group Policy Update Function**\n- Similar to U2/U3 but for consortium\n- Update example tests\n- Effort: 2 days\n\n**Activity 6: U5 - Implement AddOrdererOrg Function**\n- Implement function to add an orderer org to channel config\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 7: U6 - Implement AddApplicationOrg Function**\n- Implement function to add an application org to channel config\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 8: U7 - Implement MSP Config Retrieval Function**\n- Implement function to retrieve MSP config for a specific org\n- Update example tests\n- Effort: 1.5 days\n\n**Activity 9: U8 - Implement Certificate Revocation Function**\n- Implement function to verify cert is issued by MSP, then add to revocation list\n- Update example tests\n- Effort: 2.5 days (more complex due to cert verification)\n\n**Activity 10: Integration Testing and Documentation**\n- Run all tests, ensure they pass, write integration scenarios, update documentation\n- Effort: 2 days\n\n**Activity 11: Code Review and Refactoring**\n- Self-review, cleanup, refactoring, ensure all acceptance criteria met\n- Effort: 1.5 days\n\nLet me sum up:\n1.5 + 1.5 + 2 + 2 + 2 + 1.5 + 1.5 + 1.5 + 2.5 + 2 + 1.5 = 19.5 days\n\nLet me reconsider. Some activities could be combined (e.g., U2, U3, U4 are very similar, so could share some design time). But since we're breaking down by user story, I'll keep them separate for clarity.\n\nActually, let me re-think the granularity. A WBS should be at a reasonable level. Let me combine some:\n\n**Refined WBS:**\n\n1. **API Design and Setup (A1)**: Overall API design, study existing patterns, set up test environment\n   - 1.5 days\n\n2. **U1 Implementation (A2)**: Organization config retrieval\n   - 1.5 days\n\n3. **U2 Implementation (A3)**: Application org/group policy updates\n   - 2 days\n\n4. **U3 Implementation (A4)**: Orderer org/group policy updates\n   - 2 days\n\n5. **U4 Implementation (A5)**: Consortium org/group policy updates\n   - 2 days\n\n6. **U5 Implementation (A6)**: Add orderer org function\n   - 1.5 days\n\n7. **U6 Implementation (A7)**: Add application org function\n   - 1.5 days\n\n8. **U7 Implementation (A8)**: MSP config retrieval\n   - 1.5 days\n\n9. **U8 Implementation (A9)**: Certificate revocation function\n   - 2.5 days\n\n10. **Integration Testing and Bug Fixes (A10)**: End-to-end testing, example tests validation\n    - 2 days\n\n11. **Code Review, Refactoring, Documentation (A11)**: Final cleanup, ensure all acceptance criteria met\n    - 1.5 days\n\nTotal: 1.5 + 1.5 + 2 + 2 + 2 + 1.5 + 1.5 + 1.5 + 2.5 + 2 + 1.5 = 19.5 days\n\nThis seems reasonable. Let me round it slightly to 19.5 or adjust.\n\nActually, I'll keep it as 19.5 days total.\n\nLet me think more carefully. Looking at the actual Hyperledger Fabric PR that implemented these features (this looks like the PR for `pkg/config` package in Fabric), the actual work was quite involved. The estimate of ~19.5 days (about 4 weeks) seems reasonable for an experienced developer to deliver this increment.\n\nLet me finalize the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1541,
+      "completion_tokens": 3197,
+      "total_tokens": 4738,
+      "cost": 0.00426126,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00426126,
+        "upstream_inference_prompt_cost": 0.00042486,
+        "upstream_inference_completions_cost": 0.0038364
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1563,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement all new functions in Go, located in a new or existing configtx/ package consistent with the existing Fabric channel configuration API (e.g., github.com/hyperledger/fabric/pkg/config).\",\n    \"Follow the existing pattern of returning a config envelope / config transaction from mutation functions so that outputs can be chained into further update functions.\",\n    \"Reuse the existing config group, policy, and organization types (config.Organization, configtx.Policy, etc.) rather than introducing parallel types.\",\n    \"Retrieve functions (U1, U7) parse the config transaction by walking the well-known config group paths and unmarshalling into the existing config types.\",\n    \"Policy update functions (U2, U3, U4) accept a list of policies to add and/or remove, and modify the relevant config group's policies map accordingly.\",\n    \"Add org functions (U5, U6) construct a new orderer/application org with sensible default policies and modifiable fields, then embed it into the channel config transaction.\",\n    \"MSP config retrieval (U7) reuses existing MSP config unmarshalling logic and returns a typed config value (FabricMSPConfig or similar).\",\n    \"Certificate revocation (U8) uses the MSP's certificate chain to verify that the supplied certificate was signed by the MSP, then appends its serial/AKI/SKI tuple to the revocation_list of FabricMSPConfig.\",\n    \"Each acceptance criterion explicitly requires updating the example tests; one example test file per user story is the chosen approach to demonstrate usage.\",\n    \"Unit tests for the new functions are written alongside the example tests, including negative test cases (e.g., U8 rejects certs not issued by the MSP).\"\n  ],\n  \"assumptions\": [\n    \"The developer is experienced in Go and has prior familiarity with the Hyperledger Fabric codebase (configtx, common, pkg/config packages).\",\n    \"The development environment (Go toolchain, Fabric source tree, test fixtures, certs) is already available and configured.\",\n    \"No major refactoring of the existing channel configuration API is required; the new functions extend rather than replace existing ones.\",\n    \"One developer performs all work (no parallel sub-teams), so there is no effort for cross-team coordination beyond a self-review.\",\n    \"Existing example test scaffolding (e.g., the configtxlator example tests) can be extended rather than rewritten from scratch.\",\n    \"Certificate chain verification for U8 is performed using the MSP's already-configured root/intermediate CAs, with no need to introduce new crypto helpers.\",\n    \"Documentation updates beyond the example tests (e.g., GoDoc comments) are bundled into the implementation activities, not a separate large documentation pass.\",\n    \"No new dependencies or third-party libraries are introduced; everything is implemented using existing Fabric and Go standard library facilities.\",\n    \"Effort estimates exclude elapsed calendar time for code reviews, PR iterations, and CI — these are folded into a dedicated self-review/refactor activity at the end.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"API design, codebase study, and test scaffolding\",\n      \"activity_description\": \"Study existing Fabric channel config APIs, decide on function signatures and package layout, identify the example test file(s) to extend, and prepare a skeleton for the new functions.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement organization config retrieval (application/orderer/consortium)\",\n      \"activity_description\": \"Implement a function that returns a config.Organization for a given application, orderer, or consortium org from a config transaction. Update the example test to demonstrate retrieving and reusing an org config.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Implement application org/group policy update\",\n      \"activity_description\": \"Implement a function to add/remove policies on an application org and the application groups. Update the example test to demonstrate modifying policies and continuing further config updates.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Implement orderer org/group policy update\",\n      \"activity_description\": \"Implement a function to add/remove policies on an orderer org and the orderer groups. Update the example test to demonstrate usage.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Implement consortium org/group/consortiums policy update\",\n      \"activity_description\": \"Implement a function to add/remove policies on a consortium org, the consortiums group, and the consortium group. Update the example test to demonstrate usage.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Implement add orderer org to channel config\",\n      \"activity_description\": \"Implement a fit-for-purpose function that adds an orderer org definition to a channel configuration and returns a channel transaction that can be further mutated. Update the example test.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Implement add application org to channel config\",\n      \"activity_description\": \"Implement a fit-for-purpose function that adds an application org definition to a channel configuration and returns a channel transaction that can be further mutated. Update the example test.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Implement MSP config retrieval for an org\",\n      \"activity_description\": \"Implement a function to retrieve the existing MSP configuration (e.g., FabricMSPConfig) for a specified org without manually parsing the config transaction. Update the example test.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Implement certificate revocation helper\",\n      \"activity_description\": \"Implement a function that, given a config block/transaction and a target org MSP, verifies that a certificate was issued by that MSP and, if so, returns a config update that appends the certificate to the MSP's revocation_list. Reject certs not issued by the MSP with an error. Update the example test to demonstrate both success and error cases.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing and example test validation\",\n      \"activity_description\": \"Run the full set of unit and example tests, verify end-to-end chaining of the new functions (retrieve -> update -> add -> revoke), fix any bugs surfaced, and ensure each user story's acceptance criteria are demonstrably met by the example tests.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Code review, refactoring, and GoDoc polish\",\n      \"activity_description\": \"Self-review the new code for consistency with existing Fabric patterns, refactor shared helpers if needed, finalize GoDoc comments, and tidy the example tests so they serve as documentation.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 19.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1541,
+    "completion_tokens": 3197,
+    "total_tokens": 4738,
+    "cost": 0.00426126,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00426126,
+      "upstream_inference_prompt_cost": 0.00042486,
+      "upstream_inference_completions_cost": 0.0038364
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1563,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788420327-DMEWK0SkPqrpmAb4u7L2",
+    "object": "chat.completion",
+    "created": 1788420327,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking for the conversion factor between workdays and work-hours. A standard workday is typically 8 hours.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking for the conversion factor between workdays and work-hours. A standard workday is typically 8 hours.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3302,
+      "completion_tokens": 44,
+      "total_tokens": 3346,
+      "cost": 0.00067716,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1526,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00067716,
+        "upstream_inference_prompt_cost": 0.00062436,
+        "upstream_inference_completions_cost": 5.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 26,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement all new functions in Go, located in a new or existing configtx/ package consistent with the existing Fabric channel configuration API (e.g., github.com/hyperledger/fabric/pkg/config).",
+      "Follow the existing pattern of returning a config envelope / config transaction from mutation functions so that outputs can be chained into further update functions.",
+      "Reuse the existing config group, policy, and organization types (config.Organization, configtx.Policy, etc.) rather than introducing parallel types.",
+      "Retrieve functions (U1, U7) parse the config transaction by walking the well-known config group paths and unmarshalling into the existing config types.",
+      "Policy update functions (U2, U3, U4) accept a list of policies to add and/or remove, and modify the relevant config group's policies map accordingly.",
+      "Add org functions (U5, U6) construct a new orderer/application org with sensible default policies and modifiable fields, then embed it into the channel config transaction.",
+      "MSP config retrieval (U7) reuses existing MSP config unmarshalling logic and returns a typed config value (FabricMSPConfig or similar).",
+      "Certificate revocation (U8) uses the MSP's certificate chain to verify that the supplied certificate was signed by the MSP, then appends its serial/AKI/SKI tuple to the revocation_list of FabricMSPConfig.",
+      "Each acceptance criterion explicitly requires updating the example tests; one example test file per user story is the chosen approach to demonstrate usage.",
+      "Unit tests for the new functions are written alongside the example tests, including negative test cases (e.g., U8 rejects certs not issued by the MSP)."
+    ],
+    "assumptions": [
+      "The developer is experienced in Go and has prior familiarity with the Hyperledger Fabric codebase (configtx, common, pkg/config packages).",
+      "The development environment (Go toolchain, Fabric source tree, test fixtures, certs) is already available and configured.",
+      "No major refactoring of the existing channel configuration API is required; the new functions extend rather than replace existing ones.",
+      "One developer performs all work (no parallel sub-teams), so there is no effort for cross-team coordination beyond a self-review.",
+      "Existing example test scaffolding (e.g., the configtxlator example tests) can be extended rather than rewritten from scratch.",
+      "Certificate chain verification for U8 is performed using the MSP's already-configured root/intermediate CAs, with no need to introduce new crypto helpers.",
+      "Documentation updates beyond the example tests (e.g., GoDoc comments) are bundled into the implementation activities, not a separate large documentation pass.",
+      "No new dependencies or third-party libraries are introduced; everything is implemented using existing Fabric and Go standard library facilities.",
+      "Effort estimates exclude elapsed calendar time for code reviews, PR iterations, and CI — these are folded into a dedicated self-review/refactor activity at the end."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "API design, codebase study, and test scaffolding",
+        "activity_description": "Study existing Fabric channel config APIs, decide on function signatures and package layout, identify the example test file(s) to extend, and prepare a skeleton for the new functions.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Implement organization config retrieval (application/orderer/consortium)",
+        "activity_description": "Implement a function that returns a config.Organization for a given application, orderer, or consortium org from a config transaction. Update the example test to demonstrate retrieving and reusing an org config.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Implement application org/group policy update",
+        "activity_description": "Implement a function to add/remove policies on an application org and the application groups. Update the example test to demonstrate modifying policies and continuing further config updates.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - Implement orderer org/group policy update",
+        "activity_description": "Implement a function to add/remove policies on an orderer org and the orderer groups. Update the example test to demonstrate usage.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Implement consortium org/group/consortiums policy update",
+        "activity_description": "Implement a function to add/remove policies on a consortium org, the consortiums group, and the consortium group. Update the example test to demonstrate usage.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - Implement add orderer org to channel config",
+        "activity_description": "Implement a fit-for-purpose function that adds an orderer org definition to a channel configuration and returns a channel transaction that can be further mutated. Update the example test.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - Implement add application org to channel config",
+        "activity_description": "Implement a fit-for-purpose function that adds an application org definition to a channel configuration and returns a channel transaction that can be further mutated. Update the example test.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 - Implement MSP config retrieval for an org",
+        "activity_description": "Implement a function to retrieve the existing MSP configuration (e.g., FabricMSPConfig) for a specified org without manually parsing the config transaction. Update the example test.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8 - Implement certificate revocation helper",
+        "activity_description": "Implement a function that, given a config block/transaction and a target org MSP, verifies that a certificate was issued by that MSP and, if so, returns a config update that appends the certificate to the MSP's revocation_list. Reject certs not issued by the MSP with an error. Update the example test to demonstrate both success and error cases.",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Integration testing and example test validation",
+        "activity_description": "Run the full set of unit and example tests, verify end-to-end chaining of the new functions (retrieve -> update -> add -> revoke), fix any bugs surfaced, and ensure each user story's acceptance criteria are demonstrably met by the example tests.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Code review, refactoring, and GoDoc polish",
+        "activity_description": "Self-review the new code for consistency with existing Fabric patterns, refactor shared helpers if needed, finalize GoDoc comments, and tidy the example tests so they serve as documentation.",
+        "most_likely_effort": 1.5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 19.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

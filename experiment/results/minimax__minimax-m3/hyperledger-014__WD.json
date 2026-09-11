@@ -1,0 +1,260 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-014",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788420897-XJT5VdwJ2XAU4jzaSws0",
+    "object": "chat.completion",
+    "created": 1788420897,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implementation language: Go, to match the existing fabric-config library.\",\n    \"API design follows the existing fluent/builder style used in fabric-config (e.g., AddCapability, AddOrdererEndpoint patterns).\",\n    \"For U2, an additional function variant (or a new config update entry point) is introduced rather than changing the signature of existing functions, to preserve backward compatibility.\",\n    \"For U7/U8, existing Get/Set methods are preserved and new convenience setters are added alongside them (per the user story's explicit instruction).\",\n    \"U6 CLI tool is implemented as a new Go binary in the fabric-config repository, using cobra for command parsing and standard library encoding/json for input parsing.\",\n    \"Cert validation for U8 uses standard x509 parsing; invalid certs return an error rather than panicking.\",\n    \"All new exported API functions are documented via GoDoc and exercised by an example in the examples/ directory.\",\n    \"KafkaBrokers removal (U4) and Legacy Orderer Addresses removal (U3) are implemented as atomic values-removal operations on the relevant config groups, following the same pattern as the existing RemoveOrdererEndpoints function.\",\n    \"Consenters add/remove (U5) treats the combination of (host, port, client_tls_cert, server_tls_cert) as the unique key for removal, per the user story requirement.\"\n  ],\n  \"assumptions\": [\n    \"The developer is already familiar with the Hyperledger Fabric configtx model (groups, values, policies).\",\n    \"Unit tests are written for every new function and integrated into the existing test suite.\",\n    \"No new third-party dependencies are needed beyond what is already used in fabric-config and fabric (e.g., cobra for the CLI).\",\n    \"The fabric-config repository already has a sensible package layout (configtx, msp, etc.) that the new code fits into without restructuring.\",\n    \"Connection profile parsing for U6 reuses fabric-common's connection profile handling.\",\n    \"One developer performs all the work end-to-end (analysis, coding, testing, examples) and works an 8-hour day.\",\n    \"The CLI tool is delivered as a single command (configtx update) with sub-features, not multiple top-level commands.\",\n    \"Dry-run mode prints the serialized ConfigUpdateEnvelope (or a human-readable diff) to stdout; no signing or submission occurs in that mode.\",\n    \"No external network testing against a live Fabric network is required beyond what the existing examples already do.\",\n    \"Code review and merge activities are not included in the effort estimate (development effort only).\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis & design\",\n      \"activity_description\": \"Review all 8 user stories, study the relevant areas of fabric-config, and sketch the API surface (function signatures, file/package placement, interaction with existing getters/setters) for each story.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Add new consortium to consortiums group\",\n      \"activity_description\": \"Implement a new function (e.g., Consortiums().AddConsortium) that creates a new consortium group, handle the case of zero orgs, and update an example to demonstrate adding a consortium with orgs.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Optional signing identities for config updates\",\n      \"activity_description\": \"Introduce a function variant that returns a cb.ConfigUpdateEnvelope (or ConfigUpdate) without applying signing identities, so consumers can sign via peer channel commands. Adjust the signing flow so identities are optional, with a clear API contract.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Remove legacy top-level OrdererAddresses\",\n      \"activity_description\": \"Implement RemoveLegacyOrdererAddresses at the top-level channel group, update genesis block creation paths to no longer emit the top-level OrdererAddresses value, and ensure orderer orgs are required to provide orderer endpoints at create time.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Remove KafkaBrokers section\",\n      \"activity_description\": \"Add a function to remove the KafkaBrokers value from the orderer group, similar in pattern to RemoveLegacyOrdererAddresses, and update the Kafka-to-EtcdRaft migration example accordingly.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Add/Remove consenters for etcdraft\",\n      \"activity_description\": \"Implement AddConsenter and RemoveConsenter functions on the orderer group. Removal must match on all four fields (host, port, client_tls_cert, server_tls_cert). Add/update unit tests and an example.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Bulk operations CLI tool\",\n      \"activity_description\": \"Build a new CLI binary with a `configtx update` command that consumes a batchUpdate JSON file (channel list + stacked operations), a connection profile JSON, and a signing identities JSON. Implement support for: updateApplicationMSP/updateOrdererMSP, add/remove/replace consenters, update TLS certs in consenter set, add/remove/replace anchor peers. Add --dryrun flag, error out for unsupported operations, fetch config blocks via the peer/discovery, and submit the config update transaction to the orderer.\",\n      \"most_likely_effort\": 7.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Orderer config individual field setters\",\n      \"activity_description\": \"Add SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, SetConsensusType, SetConsensusState, and EtcdRaft metadata individual setters on the orderer group, preserving existing values for other fields. Update example to demonstrate both the legacy and new methods.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - MSP config individual field setters\",\n      \"activity_description\": \"Add Add/Remove functions for RootCert, IntermediateCert, AdminCert, CRL, TLSRootCert, TLSIntermediateCert; SetCryptoConfig; Add/RemoveOUIdentifier; SetClient/Peer/Admin/OrdererOUIdentifier; EnableNodeOUs/DisableNodeOUs on OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup. Include x509 validation where appropriate and update the relevant CreateMSPCRL behavior. Update example to show both methods.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Unit testing\",\n      \"activity_description\": \"Write/extend unit tests covering all new API functions (positive and negative cases), including: empty-consortium handling (U1), signature-less config update (U2), removal of legacy addresses/KafkaBrokers (U3/U4), consenter add/remove uniqueness (U5), and all new orderer/MSP setters (U7/U8).\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Examples update\",\n      \"activity_description\": \"Update and add examples for the new features: add consortium with orgs, sign-via-peer workflow, Kafka-to-EtcdRaft migration, consenter add/remove, orderer/MSP field-level setters demonstrating both legacy and new methods.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Integration testing & QA\",\n      \"activity_description\": \"Run the full existing test suite, manually exercise the new CLI tool (U6) against a sample network config where feasible, fix regressions, and perform a final code-cleanup and self-review pass.\",\n      \"most_likely_effort\": 2.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 30.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. It's about implementing features for the Hyperledger Fabric config library (fabric-config). There are 8 user stories (U1-U8) that need to be implemented.\n\nLet me break down the work:\n\n**U1: Add new consortium to consortiums group**\n- Function to add a new consortium group\n- Update examples to demonstrate adding consortium + orgs\n\n**U2: Optional signing identities for config updates**\n- Modify config update function to not require signing identities\n- Return cb.ConfigUpdateEnvelope without signing\n\n**U3: Remove legacy orderer addresses**\n- Add `RemoveLegacyOrdererAddresses` function\n- Update genesis block creation to not include top-level orderer addresses\n- Add orderer endpoints to orderer orgs\n\n**U4: Remove KafkaBrokers section**\n- Add function to remove KafkaBrokers\n- Update examples for Kafka to EtcdRaft migration\n\n**U5: Add/Remove consenters for etcdraft**\n- Add functions to add/remove consenters\n- Match all 4 fields (host, port, both certs) for removal\n\n**U6: CLI tool for bulk operations**\n- Build a CLI tool for bulk channel operations\n- Support multiple operations: cert expiry, V1 to V2 migration\n- Dry-run mode\n- Stack multiple operations\n- Connection profile support\n- JSON input for batch updates\n\n**U7: Individual orderer config field updates**\n- Add SetMaxMessageCount, SetAbsoluteMaxBytes, etc.\n- Support for EtcdRaft metadata modifications\n- Update examples\n\n**U8: Individual MSP config field updates**\n- Add/Remove functions for various cert types\n- OU identifier support\n- TLS cert management\n- EnableNodeOUs/DisableNodeOUs\n\nLet me think about the WBS activities:\n\n1. **Analysis & Design** - Understanding requirements, designing the API\n2. **U1 Implementation** - Add consortium function + examples\n3. **U2 Implementation** - Optional signing identities\n4. **U3 Implementation** - Remove legacy orderer addresses\n5. **U4 Implementation** - Remove KafkaBrokers\n6. **U5 Implementation** - Add/Remove consenters\n7. **U6 Implementation** - CLI tool (most complex)\n8. **U7 Implementation** - Orderer config field setters\n9. **U8 Implementation** - MSP config field setters\n10. **Testing** - Unit tests for all new functions\n11. **Documentation & Examples** - Update examples for all stories\n12. **Integration & QA** - End-to-end testing\n\nLet me estimate each:\n\n1. Analysis & Design: 2-3 days\n2. U1 (Add consortium): 1-2 days (relatively simple, similar to existing patterns)\n3. U2 (Optional signing): 2-3 days (changes the signature, might break things)\n4. U3 (Remove legacy orderer): 2-3 days\n5. U4 (Remove KafkaBrokers): 1-2 days\n6. U5 (Add/Remove consenters): 2-3 days\n7. U6 (CLI tool): 5-8 days (most complex, new tool, JSON parsing, dry-run, etc.)\n8. U7 (Orderer config setters): 3-4 days (many setters, EtcdRaft metadata)\n9. U8 (MSP config setters): 3-4 days (many setters, validation)\n10. Testing: 3-4 days\n11. Documentation & Examples: 2-3 days\n12. Integration & QA: 2 days\n\nLet me refine and provide single most likely estimates:\n\n1. Analysis & Design: 2\n2. U1: 1.5\n3. U2: 2\n4. U3: 2.5\n5. U4: 1\n6. U5: 2\n7. U6: 7\n8. U7: 3\n9. U8: 3\n10. Testing: 4\n11. Documentation & Examples: 2\n12. Integration & QA: 2\n\nTotal: 32\n\nLet me reconsider. I should be more thorough and practical. Let me think about each user story more carefully.\n\nFor the Hyperledger Fabric project, the fabric-config library is Go-based. The complexity is moderate but the requirements are well-defined.\n\nLet me revise:\n\n**Technical & Design Decisions:**\n- Use Go as the implementation language (matches existing fabric-config library)\n- Follow existing patterns in the codebase\n- Add unit tests for all new functions\n- Use cobra for CLI tool in U6\n- Maintain backward compatibility for SetConfiguration/GetConfiguration\n- JSON parsing for CLI input files\n\n**Assumptions:**\n- Existing fabric-config library patterns are followed\n- Unit tests will be written for each new function\n- Examples will be updated/added for each user story\n- The developer is familiar with Hyperledger Fabric architecture\n- No major architectural changes to the library\n\nLet me finalize the WBS:\n\n1. **Requirements Analysis & Design** (1.5 days)\n2. **U1: Add Consortium Function** (1.5 days)\n3. **U2: Optional Signing Identities** (2 days)\n4. **U3: Remove Legacy Orderer Addresses** (2.5 days)\n5. **U4: Remove KafkaBrokers** (1 day)\n6. **U5: Add/Remove Consenters** (2 days)\n7. **U6: Bulk Operations CLI Tool** (7 days)\n8. **U7: Orderer Config Setters** (3 days)\n9. **U8: MSP Config Setters** (3.5 days)\n10. **Unit Testing** (3 days)\n11. **Examples Update** (2 days)\n12. **Integration Testing & QA** (2 days)\n\nTotal: 31 days\n\nActually, let me think again. Looking at U8, it has many sub-functions (AddRootCert, RemoveRootCert, AddIntermediateCert, RemoveIntermediateCert, AddAdminCert, RemoveAdminCert, AddCRL, RemoveCRL, AddOUIdentifier, RemoveOUIdentifier, SetCryptoConfig, AddTLSRootCert, RemoveTLSRootCert, AddTLSIntermediateCert, RemoveTLSIntermediateCert, SetClientOUIdentifier, SetPeerOUIdentifier, SetAdminOUIdentifier, SetOrdererOUIdentifier, EnableNodeOUs, DisableNodeOUs). That's a lot of functions.\n\nFor U7: SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, AddCapability (already supported), SetConsensusType, SetConsensusState, plus EtcdRaft metadata support.\n\nU6 is the most complex with the CLI tool, JSON parsing, dry-run, etc.\n\nLet me adjust:\n\n1. Requirements Analysis & Design: 1.5\n2. U1: 1.5\n3. U2: 2\n4. U3: 2\n5. U4: 1\n6. U5: 2\n7. U6: 6\n8. U7: 3\n9. U8: 3\n10. Unit Testing: 3\n11. Examples Update: 1.5\n12. Integration Testing & QA: 2\n\nTotal: 28.5\n\nI'll go with reasonable estimates. Let me finalize the JSON output.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. It's about implementing features for the Hyperledger Fabric config library (fabric-config). There are 8 user stories (U1-U8) that need to be implemented.\n\nLet me break down the work:\n\n**U1: Add new consortium to consortiums group**\n- Function to add a new consortium group\n- Update examples to demonstrate adding consortium + orgs\n\n**U2: Optional signing identities for config updates**\n- Modify config update function to not require signing identities\n- Return cb.ConfigUpdateEnvelope without signing\n\n**U3: Remove legacy orderer addresses**\n- Add `RemoveLegacyOrdererAddresses` function\n- Update genesis block creation to not include top-level orderer addresses\n- Add orderer endpoints to orderer orgs\n\n**U4: Remove KafkaBrokers section**\n- Add function to remove KafkaBrokers\n- Update examples for Kafka to EtcdRaft migration\n\n**U5: Add/Remove consenters for etcdraft**\n- Add functions to add/remove consenters\n- Match all 4 fields (host, port, both certs) for removal\n\n**U6: CLI tool for bulk operations**\n- Build a CLI tool for bulk channel operations\n- Support multiple operations: cert expiry, V1 to V2 migration\n- Dry-run mode\n- Stack multiple operations\n- Connection profile support\n- JSON input for batch updates\n\n**U7: Individual orderer config field updates**\n- Add SetMaxMessageCount, SetAbsoluteMaxBytes, etc.\n- Support for EtcdRaft metadata modifications\n- Update examples\n\n**U8: Individual MSP config field updates**\n- Add/Remove functions for various cert types\n- OU identifier support\n- TLS cert management\n- EnableNodeOUs/DisableNodeOUs\n\nLet me think about the WBS activities:\n\n1. **Analysis & Design** - Understanding requirements, designing the API\n2. **U1 Implementation** - Add consortium function + examples\n3. **U2 Implementation** - Optional signing identities\n4. **U3 Implementation** - Remove legacy orderer addresses\n5. **U4 Implementation** - Remove KafkaBrokers\n6. **U5 Implementation** - Add/Remove consenters\n7. **U6 Implementation** - CLI tool (most complex)\n8. **U7 Implementation** - Orderer config field setters\n9. **U8 Implementation** - MSP config field setters\n10. **Testing** - Unit tests for all new functions\n11. **Documentation & Examples** - Update examples for all stories\n12. **Integration & QA** - End-to-end testing\n\nLet me estimate each:\n\n1. Analysis & Design: 2-3 days\n2. U1 (Add consortium): 1-2 days (relatively simple, similar to existing patterns)\n3. U2 (Optional signing): 2-3 days (changes the signature, might break things)\n4. U3 (Remove legacy orderer): 2-3 days\n5. U4 (Remove KafkaBrokers): 1-2 days\n6. U5 (Add/Remove consenters): 2-3 days\n7. U6 (CLI tool): 5-8 days (most complex, new tool, JSON parsing, dry-run, etc.)\n8. U7 (Orderer config setters): 3-4 days (many setters, EtcdRaft metadata)\n9. U8 (MSP config setters): 3-4 days (many setters, validation)\n10. Testing: 3-4 days\n11. Documentation & Examples: 2-3 days\n12. Integration & QA: 2 days\n\nLet me refine and provide single most likely estimates:\n\n1. Analysis & Design: 2\n2. U1: 1.5\n3. U2: 2\n4. U3: 2.5\n5. U4: 1\n6. U5: 2\n7. U6: 7\n8. U7: 3\n9. U8: 3\n10. Testing: 4\n11. Documentation & Examples: 2\n12. Integration & QA: 2\n\nTotal: 32\n\nLet me reconsider. I should be more thorough and practical. Let me think about each user story more carefully.\n\nFor the Hyperledger Fabric project, the fabric-config library is Go-based. The complexity is moderate but the requirements are well-defined.\n\nLet me revise:\n\n**Technical & Design Decisions:**\n- Use Go as the implementation language (matches existing fabric-config library)\n- Follow existing patterns in the codebase\n- Add unit tests for all new functions\n- Use cobra for CLI tool in U6\n- Maintain backward compatibility for SetConfiguration/GetConfiguration\n- JSON parsing for CLI input files\n\n**Assumptions:**\n- Existing fabric-config library patterns are followed\n- Unit tests will be written for each new function\n- Examples will be updated/added for each user story\n- The developer is familiar with Hyperledger Fabric architecture\n- No major architectural changes to the library\n\nLet me finalize the WBS:\n\n1. **Requirements Analysis & Design** (1.5 days)\n2. **U1: Add Consortium Function** (1.5 days)\n3. **U2: Optional Signing Identities** (2 days)\n4. **U3: Remove Legacy Orderer Addresses** (2.5 days)\n5. **U4: Remove KafkaBrokers** (1 day)\n6. **U5: Add/Remove Consenters** (2 days)\n7. **U6: Bulk Operations CLI Tool** (7 days)\n8. **U7: Orderer Config Setters** (3 days)\n9. **U8: MSP Config Setters** (3.5 days)\n10. **Unit Testing** (3 days)\n11. **Examples Update** (2 days)\n12. **Integration Testing & QA** (2 days)\n\nTotal: 31 days\n\nActually, let me think again. Looking at U8, it has many sub-functions (AddRootCert, RemoveRootCert, AddIntermediateCert, RemoveIntermediateCert, AddAdminCert, RemoveAdminCert, AddCRL, RemoveCRL, AddOUIdentifier, RemoveOUIdentifier, SetCryptoConfig, AddTLSRootCert, RemoveTLSRootCert, AddTLSIntermediateCert, RemoveTLSIntermediateCert, SetClientOUIdentifier, SetPeerOUIdentifier, SetAdminOUIdentifier, SetOrdererOUIdentifier, EnableNodeOUs, DisableNodeOUs). That's a lot of functions.\n\nFor U7: SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, AddCapability (already supported), SetConsensusType, SetConsensusState, plus EtcdRaft metadata support.\n\nU6 is the most complex with the CLI tool, JSON parsing, dry-run, etc.\n\nLet me adjust:\n\n1. Requirements Analysis & Design: 1.5\n2. U1: 1.5\n3. U2: 2\n4. U3: 2\n5. U4: 1\n6. U5: 2\n7. U6: 6\n8. U7: 3\n9. U8: 3\n10. Unit Testing: 3\n11. Examples Update: 1.5\n12. Integration Testing & QA: 2\n\nTotal: 28.5\n\nI'll go with reasonable estimates. Let me finalize the JSON output.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3320,
+      "completion_tokens": 3410,
+      "total_tokens": 6730,
+      "cost": 0.00505056,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00505056,
+        "upstream_inference_prompt_cost": 0.00095856,
+        "upstream_inference_completions_cost": 0.004092
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1559,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implementation language: Go, to match the existing fabric-config library.\",\n    \"API design follows the existing fluent/builder style used in fabric-config (e.g., AddCapability, AddOrdererEndpoint patterns).\",\n    \"For U2, an additional function variant (or a new config update entry point) is introduced rather than changing the signature of existing functions, to preserve backward compatibility.\",\n    \"For U7/U8, existing Get/Set methods are preserved and new convenience setters are added alongside them (per the user story's explicit instruction).\",\n    \"U6 CLI tool is implemented as a new Go binary in the fabric-config repository, using cobra for command parsing and standard library encoding/json for input parsing.\",\n    \"Cert validation for U8 uses standard x509 parsing; invalid certs return an error rather than panicking.\",\n    \"All new exported API functions are documented via GoDoc and exercised by an example in the examples/ directory.\",\n    \"KafkaBrokers removal (U4) and Legacy Orderer Addresses removal (U3) are implemented as atomic values-removal operations on the relevant config groups, following the same pattern as the existing RemoveOrdererEndpoints function.\",\n    \"Consenters add/remove (U5) treats the combination of (host, port, client_tls_cert, server_tls_cert) as the unique key for removal, per the user story requirement.\"\n  ],\n  \"assumptions\": [\n    \"The developer is already familiar with the Hyperledger Fabric configtx model (groups, values, policies).\",\n    \"Unit tests are written for every new function and integrated into the existing test suite.\",\n    \"No new third-party dependencies are needed beyond what is already used in fabric-config and fabric (e.g., cobra for the CLI).\",\n    \"The fabric-config repository already has a sensible package layout (configtx, msp, etc.) that the new code fits into without restructuring.\",\n    \"Connection profile parsing for U6 reuses fabric-common's connection profile handling.\",\n    \"One developer performs all the work end-to-end (analysis, coding, testing, examples) and works an 8-hour day.\",\n    \"The CLI tool is delivered as a single command (configtx update) with sub-features, not multiple top-level commands.\",\n    \"Dry-run mode prints the serialized ConfigUpdateEnvelope (or a human-readable diff) to stdout; no signing or submission occurs in that mode.\",\n    \"No external network testing against a live Fabric network is required beyond what the existing examples already do.\",\n    \"Code review and merge activities are not included in the effort estimate (development effort only).\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis & design\",\n      \"activity_description\": \"Review all 8 user stories, study the relevant areas of fabric-config, and sketch the API surface (function signatures, file/package placement, interaction with existing getters/setters) for each story.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Add new consortium to consortiums group\",\n      \"activity_description\": \"Implement a new function (e.g., Consortiums().AddConsortium) that creates a new consortium group, handle the case of zero orgs, and update an example to demonstrate adding a consortium with orgs.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Optional signing identities for config updates\",\n      \"activity_description\": \"Introduce a function variant that returns a cb.ConfigUpdateEnvelope (or ConfigUpdate) without applying signing identities, so consumers can sign via peer channel commands. Adjust the signing flow so identities are optional, with a clear API contract.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Remove legacy top-level OrdererAddresses\",\n      \"activity_description\": \"Implement RemoveLegacyOrdererAddresses at the top-level channel group, update genesis block creation paths to no longer emit the top-level OrdererAddresses value, and ensure orderer orgs are required to provide orderer endpoints at create time.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Remove KafkaBrokers section\",\n      \"activity_description\": \"Add a function to remove the KafkaBrokers value from the orderer group, similar in pattern to RemoveLegacyOrdererAddresses, and update the Kafka-to-EtcdRaft migration example accordingly.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Add/Remove consenters for etcdraft\",\n      \"activity_description\": \"Implement AddConsenter and RemoveConsenter functions on the orderer group. Removal must match on all four fields (host, port, client_tls_cert, server_tls_cert). Add/update unit tests and an example.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Bulk operations CLI tool\",\n      \"activity_description\": \"Build a new CLI binary with a `configtx update` command that consumes a batchUpdate JSON file (channel list + stacked operations), a connection profile JSON, and a signing identities JSON. Implement support for: updateApplicationMSP/updateOrdererMSP, add/remove/replace consenters, update TLS certs in consenter set, add/remove/replace anchor peers. Add --dryrun flag, error out for unsupported operations, fetch config blocks via the peer/discovery, and submit the config update transaction to the orderer.\",\n      \"most_likely_effort\": 7.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Orderer config individual field setters\",\n      \"activity_description\": \"Add SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, SetConsensusType, SetConsensusState, and EtcdRaft metadata individual setters on the orderer group, preserving existing values for other fields. Update example to demonstrate both the legacy and new methods.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - MSP config individual field setters\",\n      \"activity_description\": \"Add Add/Remove functions for RootCert, IntermediateCert, AdminCert, CRL, TLSRootCert, TLSIntermediateCert; SetCryptoConfig; Add/RemoveOUIdentifier; SetClient/Peer/Admin/OrdererOUIdentifier; EnableNodeOUs/DisableNodeOUs on OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup. Include x509 validation where appropriate and update the relevant CreateMSPCRL behavior. Update example to show both methods.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Unit testing\",\n      \"activity_description\": \"Write/extend unit tests covering all new API functions (positive and negative cases), including: empty-consortium handling (U1), signature-less config update (U2), removal of legacy addresses/KafkaBrokers (U3/U4), consenter add/remove uniqueness (U5), and all new orderer/MSP setters (U7/U8).\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Examples update\",\n      \"activity_description\": \"Update and add examples for the new features: add consortium with orgs, sign-via-peer workflow, Kafka-to-EtcdRaft migration, consenter add/remove, orderer/MSP field-level setters demonstrating both legacy and new methods.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Integration testing & QA\",\n      \"activity_description\": \"Run the full existing test suite, manually exercise the new CLI tool (U6) against a sample network config where feasible, fix regressions, and perform a final code-cleanup and self-review pass.\",\n      \"most_likely_effort\": 2.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 30.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 3320,
+    "completion_tokens": 3410,
+    "total_tokens": 6730,
+    "cost": 0.00505056,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00505056,
+      "upstream_inference_prompt_cost": 0.00095856,
+      "upstream_inference_completions_cost": 0.004092
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1559,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788420923-HFyAGlxKtCLp4Q5Gu0DD",
+    "object": "chat.completion",
+    "created": 1788420923,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one estimated workday. This is a simple conversion question. I should not revise the previous estimate, just answer this question.\n\nA standard workday is typically 8 hours. I'll go with that.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one estimated workday. This is a simple conversion question. I should not revise the previous estimate, just answer this question.\n\nA standard workday is typically 8 hours. I'll go with that.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 5298,
+      "completion_tokens": 70,
+      "total_tokens": 5368,
+      "cost": 0.0008802,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 3305,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0008802,
+        "upstream_inference_prompt_cost": 0.0007962,
+        "upstream_inference_completions_cost": 8.4e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 52,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implementation language: Go, to match the existing fabric-config library.",
+      "API design follows the existing fluent/builder style used in fabric-config (e.g., AddCapability, AddOrdererEndpoint patterns).",
+      "For U2, an additional function variant (or a new config update entry point) is introduced rather than changing the signature of existing functions, to preserve backward compatibility.",
+      "For U7/U8, existing Get/Set methods are preserved and new convenience setters are added alongside them (per the user story's explicit instruction).",
+      "U6 CLI tool is implemented as a new Go binary in the fabric-config repository, using cobra for command parsing and standard library encoding/json for input parsing.",
+      "Cert validation for U8 uses standard x509 parsing; invalid certs return an error rather than panicking.",
+      "All new exported API functions are documented via GoDoc and exercised by an example in the examples/ directory.",
+      "KafkaBrokers removal (U4) and Legacy Orderer Addresses removal (U3) are implemented as atomic values-removal operations on the relevant config groups, following the same pattern as the existing RemoveOrdererEndpoints function.",
+      "Consenters add/remove (U5) treats the combination of (host, port, client_tls_cert, server_tls_cert) as the unique key for removal, per the user story requirement."
+    ],
+    "assumptions": [
+      "The developer is already familiar with the Hyperledger Fabric configtx model (groups, values, policies).",
+      "Unit tests are written for every new function and integrated into the existing test suite.",
+      "No new third-party dependencies are needed beyond what is already used in fabric-config and fabric (e.g., cobra for the CLI).",
+      "The fabric-config repository already has a sensible package layout (configtx, msp, etc.) that the new code fits into without restructuring.",
+      "Connection profile parsing for U6 reuses fabric-common's connection profile handling.",
+      "One developer performs all the work end-to-end (analysis, coding, testing, examples) and works an 8-hour day.",
+      "The CLI tool is delivered as a single command (configtx update) with sub-features, not multiple top-level commands.",
+      "Dry-run mode prints the serialized ConfigUpdateEnvelope (or a human-readable diff) to stdout; no signing or submission occurs in that mode.",
+      "No external network testing against a live Fabric network is required beyond what the existing examples already do.",
+      "Code review and merge activities are not included in the effort estimate (development effort only)."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis & design",
+        "activity_description": "Review all 8 user stories, study the relevant areas of fabric-config, and sketch the API surface (function signatures, file/package placement, interaction with existing getters/setters) for each story.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Add new consortium to consortiums group",
+        "activity_description": "Implement a new function (e.g., Consortiums().AddConsortium) that creates a new consortium group, handle the case of zero orgs, and update an example to demonstrate adding a consortium with orgs.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Optional signing identities for config updates",
+        "activity_description": "Introduce a function variant that returns a cb.ConfigUpdateEnvelope (or ConfigUpdate) without applying signing identities, so consumers can sign via peer channel commands. Adjust the signing flow so identities are optional, with a clear API contract.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - Remove legacy top-level OrdererAddresses",
+        "activity_description": "Implement RemoveLegacyOrdererAddresses at the top-level channel group, update genesis block creation paths to no longer emit the top-level OrdererAddresses value, and ensure orderer orgs are required to provide orderer endpoints at create time.",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Remove KafkaBrokers section",
+        "activity_description": "Add a function to remove the KafkaBrokers value from the orderer group, similar in pattern to RemoveLegacyOrdererAddresses, and update the Kafka-to-EtcdRaft migration example accordingly.",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - Add/Remove consenters for etcdraft",
+        "activity_description": "Implement AddConsenter and RemoveConsenter functions on the orderer group. Removal must match on all four fields (host, port, client_tls_cert, server_tls_cert). Add/update unit tests and an example.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - Bulk operations CLI tool",
+        "activity_description": "Build a new CLI binary with a `configtx update` command that consumes a batchUpdate JSON file (channel list + stacked operations), a connection profile JSON, and a signing identities JSON. Implement support for: updateApplicationMSP/updateOrdererMSP, add/remove/replace consenters, update TLS certs in consenter set, add/remove/replace anchor peers. Add --dryrun flag, error out for unsupported operations, fetch config blocks via the peer/discovery, and submit the config update transaction to the orderer.",
+        "most_likely_effort": 7.0
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 - Orderer config individual field setters",
+        "activity_description": "Add SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, SetConsensusType, SetConsensusState, and EtcdRaft metadata individual setters on the orderer group, preserving existing values for other fields. Update example to demonstrate both the legacy and new methods.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8 - MSP config individual field setters",
+        "activity_description": "Add Add/Remove functions for RootCert, IntermediateCert, AdminCert, CRL, TLSRootCert, TLSIntermediateCert; SetCryptoConfig; Add/RemoveOUIdentifier; SetClient/Peer/Admin/OrdererOUIdentifier; EnableNodeOUs/DisableNodeOUs on OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup. Include x509 validation where appropriate and update the relevant CreateMSPCRL behavior. Update example to show both methods.",
+        "most_likely_effort": 3.5
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Unit testing",
+        "activity_description": "Write/extend unit tests covering all new API functions (positive and negative cases), including: empty-consortium handling (U1), signature-less config update (U2), removal of legacy addresses/KafkaBrokers (U3/U4), consenter add/remove uniqueness (U5), and all new orderer/MSP setters (U7/U8).",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Examples update",
+        "activity_description": "Update and add examples for the new features: add consortium with orgs, sign-via-peer workflow, Kafka-to-EtcdRaft migration, consenter add/remove, orderer/MSP field-level setters demonstrating both legacy and new methods.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Integration testing & QA",
+        "activity_description": "Run the full existing test suite, manually exercise the new CLI tool (U6) against a sample network config where feasible, fix regressions, and perform a final code-cleanup and self-review pass.",
+        "most_likely_effort": 2.0
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 30.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

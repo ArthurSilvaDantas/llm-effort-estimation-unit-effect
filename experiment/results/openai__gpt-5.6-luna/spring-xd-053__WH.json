@@ -1,0 +1,200 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "spring-xd-053",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788409481-v7rjoghhnVNxSmSDURY1",
+    "object": "chat.completion",
+    "created": 1788409481,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Use the existing Spring-based deployment and administration components rather than introducing a separate deployment service.\",\n    \"Use YARN ResourceManager REST APIs for application submission, application status, and lifecycle operations; encapsulate HTTP interaction behind a dedicated client.\",\n    \"Use the deployment manifest as the authoritative source for application metadata, module groups, artifacts, application type, and application name.\",\n    \"Upload application archives and required assets to HDFS before submitting the corresponding YARN applications.\",\n    \"Represent module groups and multiple YARN application instances explicitly in the deployment model, with instance-specific properties overriding global defaults.\",\n    \"Support runtime configuration such as YARN application name, queue, priority, memory, CPU, and other resource properties through deployment properties.\",\n    \"Implement asynchronous deployment using a queued task or executor-based orchestration model, with operation status and failure propagation available to the shell or administration layer.\",\n    \"Use Spring Boot loader conventions, particularly JarLauncher-compatible archive layout and classpath handling, instead of maintaining duplicate launcher behavior.\",\n    \"Resolve external module dependencies through the project’s existing dependency/artifact resolution mechanism where possible, and add resolved libraries to the Boot loader classpath in a deterministic order.\",\n    \"Preserve backward compatibility for existing module launchers and manifests unless a direct contract migration is required by the JarLauncher refactoring.\",\n    \"Use unit tests with mocked YARN REST and HDFS boundaries, supplemented by integration tests using a lightweight or containerized test environment where practical.\"\n  ],\n  \"assumptions\": [\n    \"The increment is added to an existing Java 17+ Spring/Spring Boot codebase with established build, deployment, manifest, shell, and module-launching infrastructure.\",\n    \"Existing authentication and connectivity configuration for HDFS and YARN is available and does not require implementing Kerberos, TLS, or cluster provisioning.\",\n    \"YARN REST APIs and HDFS client libraries are already available or can be added through standard build configuration without resolving major compatibility issues.\",\n    \"The manifest format can be extended without a separate migration project, and no broad redesign of unrelated manifest consumers is required.\",\n    \"The work is performed by one developer; estimates represent hands-on work-hours rather than elapsed calendar time.\",\n    \"Testing covers the supported deployment paths and representative failure cases, but not exhaustive compatibility testing across all Hadoop distributions or YARN versions.\",\n    \"External dependency resolution is limited to dependencies declared or discoverable from supported module metadata; arbitrary native libraries and custom classloader isolation are out of scope.\",\n    \"The shell only needs to return an operation identifier or accepted status for asynchronous deployment; a complete persistent distributed job scheduler is not required.\",\n    \"Documentation consists of developer and operator documentation, configuration examples, and reference material for module authors, not a full product documentation rewrite.\",\n    \"Code review, local build troubleshooting, and normal refactoring are included in the activity estimates; major unrelated technical debt is excluded.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements, codebase, and API analysis\",\n      \"activity_description\": \"Inspect the existing deployer, manifest model, ModuleLauncher, Boot packaging, shell commands, HDFS integration, and YARN interaction points. Map the eight user stories to affected components and identify compatibility constraints.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Deployment architecture and detailed design\",\n      \"activity_description\": \"Define the manifest extensions, module-group and instance model, property precedence rules, asynchronous operation lifecycle, YARN REST client boundaries, HDFS asset workflow, dependency resolution flow, and backward-compatibility strategy.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Automatic asset deployment to HDFS\",\n      \"activity_description\": \"Implement manifest-driven discovery and packaging of application assets, HDFS directory and file creation, overwrite or idempotency behavior, permissions handling through existing configuration, and integration with the overall deployment workflow.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"YARN ResourceManager REST deployment by module groups\",\n      \"activity_description\": \"Implement or extend the YARN REST client, construct application submission requests for module groups, pass application type and name metadata, submit applications, parse responses, and handle HTTP, validation, and submission failures.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Multiple application instances and deployment properties\",\n      \"activity_description\": \"Add support for instance-specific module properties such as application name, queue, priority, memory, and CPU. Implement property matching and precedence for global, module, group, and instance scopes and validate duplicate or conflicting settings.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Asynchronous deployment orchestration\",\n      \"activity_description\": \"Refactor deployment execution into asynchronous tasks, return promptly to the shell, track accepted and completed operations, coordinate grouped submissions, handle task failures and cancellation boundaries, and preserve useful status and logging.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Dependency resolution and Boot loader feasibility implementation\",\n      \"activity_description\": \"Experiment with resolving module-dependent JARs, determine the supported archive and classpath layout, implement the selected resolution and staging approach, and verify class loading for modules with external dependencies.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"ModuleLauncher and JarLauncher contract refactoring\",\n      \"activity_description\": \"Refactor ModuleLauncher to align with Spring Boot JarLauncher behavior, remove duplicated launcher functionality where safe, adapt callers and packaging metadata, and preserve startup behavior for existing modules.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Uniform external-library support\",\n      \"activity_description\": \"Expose configuration and manifest support for external libraries, integrate dependency resolution with module deployment and Boot packaging, stage libraries consistently for YARN execution, and report unresolved or incompatible dependencies clearly.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Automated tests and deployment integration tests\",\n      \"activity_description\": \"Add unit tests for manifest parsing, property precedence, instance generation, dependency resolution, launcher behavior, HDFS operations, REST request construction, asynchronous state transitions, and representative success and failure cases. Add integration coverage for the end-to-end deployment path using test doubles or a controlled environment.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and usage examples\",\n      \"activity_description\": \"Document manifest changes, multiple-instance properties, queue and resource configuration, asynchronous behavior, external-library declarations, Boot loader conventions, troubleshooting, and example deployment commands.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"End-to-end integration, regression correction, and release preparation\",\n      \"activity_description\": \"Run full builds and regression tests, exercise representative YARN/HDFS deployment scenarios, resolve integration defects, update configuration or packaging metadata, and prepare the increment for review and release.\",\n      \"most_likely_effort\": 24\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 416\n  }\n}",
+          "refusal": null,
+          "reasoning": null,
+          "reasoning_details": [
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmPaNGUPBxCspQrzkgtJxXV_muruMQymdgYCJIqNzOYv_scPFcfNiJGt315wEQ7uTl6XsF2YyV0PYbcF5yfCp-3V5Ng381738JyB0dBdPdQ_sQDCT5duaotxkBHfezsg-0ehiL4JbGYWl5iAM5lGpivCWBUWzSf1bzkGCEO8wL2lC_jbdlptbZTOZscN226iJT60Lc-uxtulY-o454FownhLxcPzAfrTkEeBi080Y91-0drRKtmKkau9bbDe-R0cll6NHoN0zaYVQ2nZ3Y4WttU-z_vLc5V9hJGmuLFbxzJIBKZiYSWKvBoRjjq5A9yQSQa1BdCt5-S4ORfE5OlxqE2pUvRtYHn1dH7gPEUfx6oX1uJ5hxIcDHXiPKFcrG5KZd94Pqyl0FlzkASV1m3jqTQEq0LmypD8nKZWTqLSE8dOr7j4PD46GAMnAdFflly8VmrU0ib7k6yomktGdvT3dipD_01AOztB_H17bW-bYH0bWlRshqGawMyI8tVwJjxxfBJ1qA3feEmNe_JTXIjmqvB27gr1xJ7-Wbuc4sHgjEga52pqvASKx3EQwJSkTrcjtPWXHg4Cv7lUnlW8Sq1P3-tFiOg9_cb9Y-4YW1jpH5_qjM02Qog1iLl4Zg0NzPmC1zAJ8WDwYXUbZttkgVBwu_wAnJUuZkOi12R9zittmqkphELwQiCWDVc4yXbwjrdS2dPDIpkEM9bH7MXXTkdaT6VuQUdMEJykNa_IN4rfeps2lS8fVMOi9YDAtCn4p9RzImm2sw4WDnhXn96n7TNPKj-dpWnqm-xp3tnqgGu5GHAjJXgosMSXkGl7d0LJ1QhO36K517l4JCoslsxSqn_Rg9Il_Ow7luLUJbGd-bTVRKOXpZEE_T5avcPFTvrdpudaANEHfNcdAXe83v3AHJWPhfJhA1Z2gn4lc6IPxvmyMR9C7iu7cYAXrHc6OY-bGWyzZ5ZiQR0qNzE4sDozzYMvsPb7Aow9WX7g-lNItPwHWleGp815WY55Hq8ZQ5diUHWD-9_m_BFkYgy3K-8m4gMo58ScXudTkKszTLH4EkZDF_1BBC1lb5vdNVtZmmEezViQpU7RqJOZi4oZLr58Fw134Rya1KQkOzStW7x6M-jJGYyxYwk1aN9T_lc-ypBinXNeL1KRAL1_thNEOmN8OZxrEzLUZcveAPiy3U7-q6SDI4iiPLvWjTgqemP5Gt8QOKUbT-AggBv0KtDbNx1PtaEzG_KV-WVOnW0pUYkUwbenxdEcU9PfUOBsFP419NAWouEcoym9ZjN0s4nQi7Y1zUYzEVed-T5DaFGfgfoYlMBw6w0zCvUqE8S5BdOCNt8_foe6jdCBo1odWhGuJ3YyOXEvcMT6XdAAwpLEQeqfBqv7zAg5zmcsR_520kYI5X7tLH7qC_Uj-lNXQdSlKaeWP4scmEAaYq2JZaLp8ZJRjOA6sBRTCpUMYkxywKh_Q4HKJvDGpeZcOKt_Utq3cIVehGTtG450bD2TEmne5xyjQqmQFZpzJgC3jYlqhaW67sfLp51q-0FS-bgqHU2prFa7NI40h0Wc7OIoiJcQPcWqEj0OzZyZR7K0qUNB42ThA3_H9l1QaLJfVa0khK7UoAc3SxK-CLyKb7FS0XDmMvI6dy4wUha7tG-xgXiA8rQtpqknWFn8uGQmxTQORxTLe8FEnVj1Q3YyiuJfNWrwCOs6x5vocdOuEc9ALd0YMq49uZnqdRvOoCqm4ouRbiX4QF4zJdvTgM6wTsc8bIttKX7ccOwfKgGGqh310F9-2_IG5PfTs6Xvdeu5ohID4a_sF1KrVbnrvQzMA751Ga0nJUAZiCbbYgulohdCMvaG5OHPu2npg_PlRewW5JV9zxDWkxwljaP_fTgHEMj31OfjNtlHdeJyEue3YY023CD3hKcYOJDKsToYJpPzFvC-Ez3NIOdYQahEriL5xzAcKsMFQ0NFqirYG9kwOfK-zx5w2JvbjYAVs8ZKSlg-izQJUe5hCgQ6Sz_A2WTlEz-Ommq_PI51gNEflT3qx1RNPC6T5-U9jTCG1Henw82HxshA-LX_q_JZeycVb3gDcQCzRwMuPiPQCT9FJ4Kv_q8KgfGMd-wfeo2ZVwT3qqW8Hm7Sxb5bJQkiGUhVko8cyFaO6zr958n-nchdFq65exnh9XpUPH6sxKWazASwLI-Kt4bRvRlD6ScRt5pijI0x9K207-ciAC0Nj3r3XYHRhpXBSNEYhWNpmUAQ-veXfyu6VqEuMh-GiWmybVpZWJ_glXscENUxk5GNDIogd79c3w3nNM9VOSIBTsLeRwGi8IfPxG04vUIH2iq5XHOked8SRUkzWKQQgcj-5T9AqL6YsowKf4h0sD5OL1yXr6m9fd3Y1M6F4s2_ruhJDlI0oVJRfj5-yyNI-fEMYGmlWEIWKDVTJfvuYqT_Bu-Ugrphy1_l6ApyvTu_JM3_6nLIOJ6hfJ_XpWtiaoAVShSQPh-M4cM5mY_D3OReF7AjH0dCdybEGL6rXyXPx018iTnISau6oOrTn9hqAjk1HD1bFTKY-5rBRnBNbSAzYm0DBWp7Pw-MLx9F_TeoPPnF3-_TkuZkTGrFHhbRMAw3GeFcsEeiQz5unXnzFabxGa8N6El7qflQQPa6sUWAv7VuQexx-Kg313oL01fcj39yy28GnOMtr7uZjtRF8ESvs_USkRCvOmIsZlryCvq3FDe4o3HJMlx-4vSK7U8oUCyhAau3LqvtWpDoWUAEhtUfPlroIvbecqHOrUelwdfFS7GZtJEvoorM8z0H_FmRWRB3qp9ZjNy89sMwWeGC74NosZUMB5PKrnsRqHciuBOQ9GdFGB4E82-NWVPCsy-k4ecUxUzjRcgpubDX0c3JLZySjfMIbLrjsAP5GzVeNFt0e_ggad5gUFuvtjA==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_0d3fd9edcc4ccabf016a98f68a11cc87d19a706365196de4a0",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1362,
+      "completion_tokens": 1904,
+      "total_tokens": 3266,
+      "cost": 0.00262515,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1359,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00262515,
+        "upstream_inference_prompt_cost": 0.00034035,
+        "upstream_inference_completions_cost": 0.0022848
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 273,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Use the existing Spring-based deployment and administration components rather than introducing a separate deployment service.\",\n    \"Use YARN ResourceManager REST APIs for application submission, application status, and lifecycle operations; encapsulate HTTP interaction behind a dedicated client.\",\n    \"Use the deployment manifest as the authoritative source for application metadata, module groups, artifacts, application type, and application name.\",\n    \"Upload application archives and required assets to HDFS before submitting the corresponding YARN applications.\",\n    \"Represent module groups and multiple YARN application instances explicitly in the deployment model, with instance-specific properties overriding global defaults.\",\n    \"Support runtime configuration such as YARN application name, queue, priority, memory, CPU, and other resource properties through deployment properties.\",\n    \"Implement asynchronous deployment using a queued task or executor-based orchestration model, with operation status and failure propagation available to the shell or administration layer.\",\n    \"Use Spring Boot loader conventions, particularly JarLauncher-compatible archive layout and classpath handling, instead of maintaining duplicate launcher behavior.\",\n    \"Resolve external module dependencies through the project’s existing dependency/artifact resolution mechanism where possible, and add resolved libraries to the Boot loader classpath in a deterministic order.\",\n    \"Preserve backward compatibility for existing module launchers and manifests unless a direct contract migration is required by the JarLauncher refactoring.\",\n    \"Use unit tests with mocked YARN REST and HDFS boundaries, supplemented by integration tests using a lightweight or containerized test environment where practical.\"\n  ],\n  \"assumptions\": [\n    \"The increment is added to an existing Java 17+ Spring/Spring Boot codebase with established build, deployment, manifest, shell, and module-launching infrastructure.\",\n    \"Existing authentication and connectivity configuration for HDFS and YARN is available and does not require implementing Kerberos, TLS, or cluster provisioning.\",\n    \"YARN REST APIs and HDFS client libraries are already available or can be added through standard build configuration without resolving major compatibility issues.\",\n    \"The manifest format can be extended without a separate migration project, and no broad redesign of unrelated manifest consumers is required.\",\n    \"The work is performed by one developer; estimates represent hands-on work-hours rather than elapsed calendar time.\",\n    \"Testing covers the supported deployment paths and representative failure cases, but not exhaustive compatibility testing across all Hadoop distributions or YARN versions.\",\n    \"External dependency resolution is limited to dependencies declared or discoverable from supported module metadata; arbitrary native libraries and custom classloader isolation are out of scope.\",\n    \"The shell only needs to return an operation identifier or accepted status for asynchronous deployment; a complete persistent distributed job scheduler is not required.\",\n    \"Documentation consists of developer and operator documentation, configuration examples, and reference material for module authors, not a full product documentation rewrite.\",\n    \"Code review, local build troubleshooting, and normal refactoring are included in the activity estimates; major unrelated technical debt is excluded.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements, codebase, and API analysis\",\n      \"activity_description\": \"Inspect the existing deployer, manifest model, ModuleLauncher, Boot packaging, shell commands, HDFS integration, and YARN interaction points. Map the eight user stories to affected components and identify compatibility constraints.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Deployment architecture and detailed design\",\n      \"activity_description\": \"Define the manifest extensions, module-group and instance model, property precedence rules, asynchronous operation lifecycle, YARN REST client boundaries, HDFS asset workflow, dependency resolution flow, and backward-compatibility strategy.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Automatic asset deployment to HDFS\",\n      \"activity_description\": \"Implement manifest-driven discovery and packaging of application assets, HDFS directory and file creation, overwrite or idempotency behavior, permissions handling through existing configuration, and integration with the overall deployment workflow.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"YARN ResourceManager REST deployment by module groups\",\n      \"activity_description\": \"Implement or extend the YARN REST client, construct application submission requests for module groups, pass application type and name metadata, submit applications, parse responses, and handle HTTP, validation, and submission failures.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Multiple application instances and deployment properties\",\n      \"activity_description\": \"Add support for instance-specific module properties such as application name, queue, priority, memory, and CPU. Implement property matching and precedence for global, module, group, and instance scopes and validate duplicate or conflicting settings.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Asynchronous deployment orchestration\",\n      \"activity_description\": \"Refactor deployment execution into asynchronous tasks, return promptly to the shell, track accepted and completed operations, coordinate grouped submissions, handle task failures and cancellation boundaries, and preserve useful status and logging.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Dependency resolution and Boot loader feasibility implementation\",\n      \"activity_description\": \"Experiment with resolving module-dependent JARs, determine the supported archive and classpath layout, implement the selected resolution and staging approach, and verify class loading for modules with external dependencies.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"ModuleLauncher and JarLauncher contract refactoring\",\n      \"activity_description\": \"Refactor ModuleLauncher to align with Spring Boot JarLauncher behavior, remove duplicated launcher functionality where safe, adapt callers and packaging metadata, and preserve startup behavior for existing modules.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Uniform external-library support\",\n      \"activity_description\": \"Expose configuration and manifest support for external libraries, integrate dependency resolution with module deployment and Boot packaging, stage libraries consistently for YARN execution, and report unresolved or incompatible dependencies clearly.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Automated tests and deployment integration tests\",\n      \"activity_description\": \"Add unit tests for manifest parsing, property precedence, instance generation, dependency resolution, launcher behavior, HDFS operations, REST request construction, asynchronous state transitions, and representative success and failure cases. Add integration coverage for the end-to-end deployment path using test doubles or a controlled environment.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and usage examples\",\n      \"activity_description\": \"Document manifest changes, multiple-instance properties, queue and resource configuration, asynchronous behavior, external-library declarations, Boot loader conventions, troubleshooting, and example deployment commands.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"End-to-end integration, regression correction, and release preparation\",\n      \"activity_description\": \"Run full builds and regression tests, exercise representative YARN/HDFS deployment scenarios, resolve integration defects, update configuration or packaging metadata, and prepare the increment for review and release.\",\n      \"most_likely_effort\": 24\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 416\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1362,
+    "completion_tokens": 1904,
+    "total_tokens": 3266,
+    "cost": 0.00262515,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1359,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00262515,
+      "upstream_inference_prompt_cost": 0.00034035,
+      "upstream_inference_completions_cost": 0.0022848
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 273,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Use the existing Spring-based deployment and administration components rather than introducing a separate deployment service.",
+      "Use YARN ResourceManager REST APIs for application submission, application status, and lifecycle operations; encapsulate HTTP interaction behind a dedicated client.",
+      "Use the deployment manifest as the authoritative source for application metadata, module groups, artifacts, application type, and application name.",
+      "Upload application archives and required assets to HDFS before submitting the corresponding YARN applications.",
+      "Represent module groups and multiple YARN application instances explicitly in the deployment model, with instance-specific properties overriding global defaults.",
+      "Support runtime configuration such as YARN application name, queue, priority, memory, CPU, and other resource properties through deployment properties.",
+      "Implement asynchronous deployment using a queued task or executor-based orchestration model, with operation status and failure propagation available to the shell or administration layer.",
+      "Use Spring Boot loader conventions, particularly JarLauncher-compatible archive layout and classpath handling, instead of maintaining duplicate launcher behavior.",
+      "Resolve external module dependencies through the project’s existing dependency/artifact resolution mechanism where possible, and add resolved libraries to the Boot loader classpath in a deterministic order.",
+      "Preserve backward compatibility for existing module launchers and manifests unless a direct contract migration is required by the JarLauncher refactoring.",
+      "Use unit tests with mocked YARN REST and HDFS boundaries, supplemented by integration tests using a lightweight or containerized test environment where practical."
+    ],
+    "assumptions": [
+      "The increment is added to an existing Java 17+ Spring/Spring Boot codebase with established build, deployment, manifest, shell, and module-launching infrastructure.",
+      "Existing authentication and connectivity configuration for HDFS and YARN is available and does not require implementing Kerberos, TLS, or cluster provisioning.",
+      "YARN REST APIs and HDFS client libraries are already available or can be added through standard build configuration without resolving major compatibility issues.",
+      "The manifest format can be extended without a separate migration project, and no broad redesign of unrelated manifest consumers is required.",
+      "The work is performed by one developer; estimates represent hands-on work-hours rather than elapsed calendar time.",
+      "Testing covers the supported deployment paths and representative failure cases, but not exhaustive compatibility testing across all Hadoop distributions or YARN versions.",
+      "External dependency resolution is limited to dependencies declared or discoverable from supported module metadata; arbitrary native libraries and custom classloader isolation are out of scope.",
+      "The shell only needs to return an operation identifier or accepted status for asynchronous deployment; a complete persistent distributed job scheduler is not required.",
+      "Documentation consists of developer and operator documentation, configuration examples, and reference material for module authors, not a full product documentation rewrite.",
+      "Code review, local build troubleshooting, and normal refactoring are included in the activity estimates; major unrelated technical debt is excluded."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements, codebase, and API analysis",
+        "activity_description": "Inspect the existing deployer, manifest model, ModuleLauncher, Boot packaging, shell commands, HDFS integration, and YARN interaction points. Map the eight user stories to affected components and identify compatibility constraints.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Deployment architecture and detailed design",
+        "activity_description": "Define the manifest extensions, module-group and instance model, property precedence rules, asynchronous operation lifecycle, YARN REST client boundaries, HDFS asset workflow, dependency resolution flow, and backward-compatibility strategy.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Automatic asset deployment to HDFS",
+        "activity_description": "Implement manifest-driven discovery and packaging of application assets, HDFS directory and file creation, overwrite or idempotency behavior, permissions handling through existing configuration, and integration with the overall deployment workflow.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "YARN ResourceManager REST deployment by module groups",
+        "activity_description": "Implement or extend the YARN REST client, construct application submission requests for module groups, pass application type and name metadata, submit applications, parse responses, and handle HTTP, validation, and submission failures.",
+        "most_likely_effort": 56
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Multiple application instances and deployment properties",
+        "activity_description": "Add support for instance-specific module properties such as application name, queue, priority, memory, and CPU. Implement property matching and precedence for global, module, group, and instance scopes and validate duplicate or conflicting settings.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Asynchronous deployment orchestration",
+        "activity_description": "Refactor deployment execution into asynchronous tasks, return promptly to the shell, track accepted and completed operations, coordinate grouped submissions, handle task failures and cancellation boundaries, and preserve useful status and logging.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Dependency resolution and Boot loader feasibility implementation",
+        "activity_description": "Experiment with resolving module-dependent JARs, determine the supported archive and classpath layout, implement the selected resolution and staging approach, and verify class loading for modules with external dependencies.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "ModuleLauncher and JarLauncher contract refactoring",
+        "activity_description": "Refactor ModuleLauncher to align with Spring Boot JarLauncher behavior, remove duplicated launcher functionality where safe, adapt callers and packaging metadata, and preserve startup behavior for existing modules.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Uniform external-library support",
+        "activity_description": "Expose configuration and manifest support for external libraries, integrate dependency resolution with module deployment and Boot packaging, stage libraries consistently for YARN execution, and report unresolved or incompatible dependencies clearly.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Automated tests and deployment integration tests",
+        "activity_description": "Add unit tests for manifest parsing, property precedence, instance generation, dependency resolution, launcher behavior, HDFS operations, REST request construction, asynchronous state transitions, and representative success and failure cases. Add integration coverage for the end-to-end deployment path using test doubles or a controlled environment.",
+        "most_likely_effort": 56
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation and usage examples",
+        "activity_description": "Document manifest changes, multiple-instance properties, queue and resource configuration, asynchronous behavior, external-library declarations, Boot loader conventions, troubleshooting, and example deployment commands.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "End-to-end integration, regression correction, and release preparation",
+        "activity_description": "Run full builds and regression tests, exercise representative YARN/HDFS deployment scenarios, resolve integration defects, update configuration or packaging metadata, and prepare the increment for review and release.",
+        "most_likely_effort": 24
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 416
+    }
+  }
+}

@@ -1,0 +1,243 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-003",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788414284-faOJAzJrr00TzB9wv8lh",
+    "object": "chat.completion",
+    "created": 1788414284,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The NodeJS SDK (fabric-sdk-node) is used as the reference for the Java and Python SDK API surface and feature parity.\",\n    \"Java SDK will be implemented as a thin gRPC client on top of the existing Fabric protos (orderer, peer, event, discovery), following the same lifecycle/identity/chaincode abstractions as fabric-sdk-node.\",\n    \"Python SDK will be implemented using the official `grpcio` library, mirroring the same abstractions; the existing python `fabric-sdk-py` is taken as the starting point to be brought to feature parity.\",\n    \"For U3, pre-built user chaincode is delivered as OCI/Docker images built by the chaincode owner; the peer is extended to skip the local build step when an image reference is supplied in the chaincode deployment spec.\",\n    \"For U3, multi-arch images (linux/amd64, linux/s390x, linux/ppc64le, linux/arm64) are built via Docker buildx and published to a registry; the deployment spec carries the image identifier.\",\n    \"For U4, the enhanced VSCC log/event payload is added inside the existing VSCC ValidateTx path in core/committer/txvalidator; no policy-evaluation algorithm changes are made.\",\n    \"For U5, Go-based tools (configtxgen, fabric-chaintool, fabric-ca-client, cryptogen, etc.) are cross-compiled via the existing Makefile; release artifacts are packaged and hosted alongside Fabric releases.\",\n    \"For U6, the certificate-pinning feature is implemented as an Auth Handler (per the FAB-4207 reference) that validates endorser certs against an organization-controlled fingerprint list fetched at endorsement time.\",\n    \"For U6, the fingerprint list is hosted at an organization-controlled HTTP endpoint configured in the channel config; an alternative key-signed in-channel fingerprint list is not pursued in this increment to keep complexity down.\",\n    \"For U7, testing.html is updated to link to existing READMEs in fabric/test/ rather than authoring new tests; one sample BYFN-style network is referenced.\",\n    \"For U8, a `config_defaults/` directory is created at the repo root containing core.yaml, orderer.yaml, configtx.yaml, and related files with all options populated using the current code defaults; sampleconfig/ is deprecated.\"\n  ],\n  \"assumptions\": [\n    \"One work-day equals 8 hours of focused development by a single senior Go/JS/Java/Python developer familiar with Hyperledger Fabric internals.\",\n    \"The two SDKs (Java, Python) are built largely in parallel by the same developer (sequenced, not staffed) so the estimate reflects wall-clock effort of one person.\",\n    \"No new consensus, ordering, or state-DB features are required; existing Fabric binary protocol is reused.\",\n    \"CI/CD and release infrastructure for binary distribution (U5) already exists; the work is limited to wiring up cross-compilation and publishing.\",\n    \"Docker Hub or a similar OCI registry is available and acceptable for distributing pre-built chaincode images (U3).\",\n    \"The certificate-pinning implementation (U6) follows the Auth Handler approach; no changes to the gossip or orderer layers are required.\",\n    \"Documentation work for U7 and U8 is limited to consolidating existing content and adding links/headers; no large new tutorials are written.\",\n    \"An additional 10% effort is included as an 'integration testing & code review' line to cover cross-cutting verification and pull-request iterations.\",\n    \"All estimates are most-likely (modal) values, not PERT optimistic/pessimistic averages.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Java SDK for Fabric (fabric-sdk-java feature parity)\",\n      \"activity_description\": \"Design the Java package layout (client, channel, gateway, identity, event), implement gRPC clients using fabric-protos, support chaincode invocation/endorsement/query, event listening, identity/CA enrollment, and write JUnit tests and a README.\",\n      \"most_likely_effort\": 25\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Python SDK for Fabric (fabric-sdk-py feature parity)\",\n      \"activity_description\": \"Implement the Python equivalent of the Java SDK using grpcio, including client/channel/identity abstractions, chaincode lifecycle, event hub, and end-to-end tests, plus a usage README.\",\n      \"most_likely_effort\": 25\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Pre-built user chaincode deployment support\",\n      \"activity_description\": \"Extend the peer chaincode deployment path to accept a pre-built container image (CCID image identifier), add buildx-based multi-arch image build scripts, update the Node/Go/Java/Python SDKs to pass the image reference, and document the workflow.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Enhanced VSCC failure logging and event payload\",\n      \"activity_description\": \"Modify core/committer/txvalidator VSCCValidateTx to log the active policy, satisfied signers (peer+org), and missing signers/orgs at INFO level; add a structured event payload exposed through the existing failure event channel to SDK consumers; add unit tests.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Platform-specific binary distribution for Fabric tools\",\n      \"activity_description\": \"Add cross-compilation targets (linux/amd64, linux/s390x, linux/ppc64le, linux/arm64, darwin/amd64, windows/amd64) for configtxgen, cryptogen, fabric-chaintool, fabric-ca-client, peer, orderer; add a release script that packages and signs tarballs/zip; document download instructions in the README and docs site.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"CA certificate fingerprint pinning (Auth Handler)\",\n      \"activity_description\": \"Implement an endorser-side Auth Handler that, when configured, fetches the channel-configured fingerprint list endpoint, compares the endorser certificate SHA-256 fingerprint, and rejects mismatches; add channel config schema updates, unit and integration tests using a mock CA, and operator documentation.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Testing quick start documentation\",\n      \"activity_description\": \"Update the ReadTheDocs testing.html page with an overview of fabric/test/ subdirectories, links to their READMEs, and a quick-start recipe for spinning up a local network; no new test tools are created.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Consolidated configuration defaults (config_defaults)\",\n      \"activity_description\": \"Audit the Go source for every configurable option in peer, orderer, gossip, ledger, endorser, configtx, and CA; produce a config_defaults/ directory containing fully populated core.yaml, orderer.yaml, configtx.yaml, and fabric-ca-server-config.yaml; update sampleconfig/ deprecation notes and link from BYFN instructions and docs.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Integration testing, CI, and code review\",\n      \"activity_description\": \"Run end-to-end network tests covering SDK (Java + Python), pre-built chaincode, pinned CA certs, enhanced VSCC logging, and binary download; iterate on review comments across all stories.\",\n      \"most_likely_effort\": 10\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 112\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. It contains 8 user stories (U1-U8) for a Hyperledger Fabric project. I need to:\n\n1. Break down development into activities\n2. State technical/design decisions and assumptions\n3. Estimate effort for each activity\n4. Calculate total\n\nLet me think through each user story:\n\nU1: Java SDK for NodeJS to interact with blockchain\nU2: Python SDK for NodeJS to interact with blockchain\nU3: Deploy user chaincode in pre-built form (Docker images for various platforms)\nU4: Better logging in VSCC for transaction validation failures\nU5: Platform-specific binary downloads for tools (configtxgen, fabric-chaintool, fabric-ca, etc.)\nU6: Certificate fingerprint validation/pinning for Fabric CA\nU7: Quick start documentation/network for testing\nU8: Consolidated default configuration files in one location\n\nLet me create a WBS:\n\nA1: Java SDK Development\n- Design API matching NodeJS SDK\n- Implement core client (identity, channel, chaincode, event)\n- Testing and documentation\n\nA2: Python SDK Development\n- Similar to Java SDK\n- Python-specific implementation\n\nA3: Pre-built User Chaincode Deployment Support\n- Design pre-built container approach\n- Build infrastructure for multiple platforms\n- Documentation\n\nA4: Enhanced VSCC Logging\n- Add detailed policy/signer info to validation logs\n- Event notification API\n- Testing\n\nA5: Platform-specific Binary Distribution\n- Build scripts for cross-platform binaries\n- Download infrastructure/release process\n- Documentation\n\nA6: Certificate Fingerprint Pinning\n- Design pinning mechanism\n- Implementation (handler-based approach)\n- Channel config changes\n- Testing\n\nA7: Testing Quick Start Documentation\n- Consolidate fabric/test/ readmes\n- Write testing.html documentation\n- Examples\n\nA8: Consolidated Configuration Defaults\n- Audit all configuration options\n- Create config_defaults directory\n- Update documentation\n\nPlus cross-cutting activities:\n- Project setup, planning, integration testing\n\nLet me estimate efforts in workdays. Assume 1 workday = 8 hours.\n\nFor a senior developer experienced with Hyperledger Fabric:\n\nU1 Java SDK: This is a significant undertaking. Building an SDK requires API design, identity management, channel management, chaincode invocation, event handling. Estimate: 25-30 days\n\nU2 Python SDK: Similar scope to Java SDK. Estimate: 25-30 days\n\nU3 Pre-built chaincode: This involves Docker image build infrastructure, multi-platform support (linux/amd64, linux/arm64, etc.), documentation. Estimate: 10-15 days\n\nU4 VSCC logging: Modify txvalidator code, add detailed logging, add event API. Estimate: 5-7 days\n\nU5 Binary distribution: Build/packaging scripts, CI/CD, hosting. Estimate: 8-12 days\n\nU6 Certificate pinning: Complex security feature. Design discussion, implementation, testing. Estimate: 15-20 days\n\nU7 Testing documentation: Mostly writing/editing documentation. Estimate: 3-5 days\n\nU8 Config defaults: Auditing code, extracting defaults, organizing files, docs. Estimate: 5-7 days\n\nPlus integration/testing/review: ~10 days\n\nLet me structure this properly:\n\nA1: Java SDK - 28 days\nA2: Python SDK - 28 days\nA3: Pre-built UCC support - 12 days\nA4: Enhanced VSCC logging - 6 days\nA5: Binary distribution - 10 days\nA6: Cert pinning - 18 days\nA7: Testing quick start docs - 4 days\nA8: Config defaults consolidation - 6 days\nA9: Integration, testing, code review - 10 days\nA10: Documentation updates across stories - 5 days\n\nTotal: ~127 days\n\nLet me reconsider - these are estimates, I should be reasonable. A Java SDK from scratch in 28 workdays is quite a lot but reasonable for a complex SDK. Let me think...\n\nActually, for an experienced developer, building an SDK wrapping the gRPC interface of Hyperledger Fabric requires understanding the protocol buffers, transaction flow, endorsement, etc. 25-30 days each seems reasonable for these.\n\nLet me finalize:\n\nA1: Java SDK implementation - 25\nA2: Python SDK implementation - 25\nA3: Pre-built chaincode deployment support - 10\nA4: Enhanced VSCC failure logging - 5\nA5: Platform-specific binary distribution - 8\nA6: CA certificate fingerprint pinning - 15\nA7: Testing quick start documentation - 3\nA8: Configuration defaults consolidation - 5\nA9: Integration testing and code review - 8\nA10: Project-wide documentation updates - 4\n\nTotal: 108\n\nLet me adjust and present this properly.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. It contains 8 user stories (U1-U8) for a Hyperledger Fabric project. I need to:\n\n1. Break down development into activities\n2. State technical/design decisions and assumptions\n3. Estimate effort for each activity\n4. Calculate total\n\nLet me think through each user story:\n\nU1: Java SDK for NodeJS to interact with blockchain\nU2: Python SDK for NodeJS to interact with blockchain\nU3: Deploy user chaincode in pre-built form (Docker images for various platforms)\nU4: Better logging in VSCC for transaction validation failures\nU5: Platform-specific binary downloads for tools (configtxgen, fabric-chaintool, fabric-ca, etc.)\nU6: Certificate fingerprint validation/pinning for Fabric CA\nU7: Quick start documentation/network for testing\nU8: Consolidated default configuration files in one location\n\nLet me create a WBS:\n\nA1: Java SDK Development\n- Design API matching NodeJS SDK\n- Implement core client (identity, channel, chaincode, event)\n- Testing and documentation\n\nA2: Python SDK Development\n- Similar to Java SDK\n- Python-specific implementation\n\nA3: Pre-built User Chaincode Deployment Support\n- Design pre-built container approach\n- Build infrastructure for multiple platforms\n- Documentation\n\nA4: Enhanced VSCC Logging\n- Add detailed policy/signer info to validation logs\n- Event notification API\n- Testing\n\nA5: Platform-specific Binary Distribution\n- Build scripts for cross-platform binaries\n- Download infrastructure/release process\n- Documentation\n\nA6: Certificate Fingerprint Pinning\n- Design pinning mechanism\n- Implementation (handler-based approach)\n- Channel config changes\n- Testing\n\nA7: Testing Quick Start Documentation\n- Consolidate fabric/test/ readmes\n- Write testing.html documentation\n- Examples\n\nA8: Consolidated Configuration Defaults\n- Audit all configuration options\n- Create config_defaults directory\n- Update documentation\n\nPlus cross-cutting activities:\n- Project setup, planning, integration testing\n\nLet me estimate efforts in workdays. Assume 1 workday = 8 hours.\n\nFor a senior developer experienced with Hyperledger Fabric:\n\nU1 Java SDK: This is a significant undertaking. Building an SDK requires API design, identity management, channel management, chaincode invocation, event handling. Estimate: 25-30 days\n\nU2 Python SDK: Similar scope to Java SDK. Estimate: 25-30 days\n\nU3 Pre-built chaincode: This involves Docker image build infrastructure, multi-platform support (linux/amd64, linux/arm64, etc.), documentation. Estimate: 10-15 days\n\nU4 VSCC logging: Modify txvalidator code, add detailed logging, add event API. Estimate: 5-7 days\n\nU5 Binary distribution: Build/packaging scripts, CI/CD, hosting. Estimate: 8-12 days\n\nU6 Certificate pinning: Complex security feature. Design discussion, implementation, testing. Estimate: 15-20 days\n\nU7 Testing documentation: Mostly writing/editing documentation. Estimate: 3-5 days\n\nU8 Config defaults: Auditing code, extracting defaults, organizing files, docs. Estimate: 5-7 days\n\nPlus integration/testing/review: ~10 days\n\nLet me structure this properly:\n\nA1: Java SDK - 28 days\nA2: Python SDK - 28 days\nA3: Pre-built UCC support - 12 days\nA4: Enhanced VSCC logging - 6 days\nA5: Binary distribution - 10 days\nA6: Cert pinning - 18 days\nA7: Testing quick start docs - 4 days\nA8: Config defaults consolidation - 6 days\nA9: Integration, testing, code review - 10 days\nA10: Documentation updates across stories - 5 days\n\nTotal: ~127 days\n\nLet me reconsider - these are estimates, I should be reasonable. A Java SDK from scratch in 28 workdays is quite a lot but reasonable for a complex SDK. Let me think...\n\nActually, for an experienced developer, building an SDK wrapping the gRPC interface of Hyperledger Fabric requires understanding the protocol buffers, transaction flow, endorsement, etc. 25-30 days each seems reasonable for these.\n\nLet me finalize:\n\nA1: Java SDK implementation - 25\nA2: Python SDK implementation - 25\nA3: Pre-built chaincode deployment support - 10\nA4: Enhanced VSCC failure logging - 5\nA5: Platform-specific binary distribution - 8\nA6: CA certificate fingerprint pinning - 15\nA7: Testing quick start documentation - 3\nA8: Configuration defaults consolidation - 5\nA9: Integration testing and code review - 8\nA10: Project-wide documentation updates - 4\n\nTotal: 108\n\nLet me adjust and present this properly.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2340,
+      "completion_tokens": 2694,
+      "total_tokens": 5034,
+      "cost": 0.00389736,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00389736,
+        "upstream_inference_prompt_cost": 0.00066456,
+        "upstream_inference_completions_cost": 0.0032328
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1003,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The NodeJS SDK (fabric-sdk-node) is used as the reference for the Java and Python SDK API surface and feature parity.\",\n    \"Java SDK will be implemented as a thin gRPC client on top of the existing Fabric protos (orderer, peer, event, discovery), following the same lifecycle/identity/chaincode abstractions as fabric-sdk-node.\",\n    \"Python SDK will be implemented using the official `grpcio` library, mirroring the same abstractions; the existing python `fabric-sdk-py` is taken as the starting point to be brought to feature parity.\",\n    \"For U3, pre-built user chaincode is delivered as OCI/Docker images built by the chaincode owner; the peer is extended to skip the local build step when an image reference is supplied in the chaincode deployment spec.\",\n    \"For U3, multi-arch images (linux/amd64, linux/s390x, linux/ppc64le, linux/arm64) are built via Docker buildx and published to a registry; the deployment spec carries the image identifier.\",\n    \"For U4, the enhanced VSCC log/event payload is added inside the existing VSCC ValidateTx path in core/committer/txvalidator; no policy-evaluation algorithm changes are made.\",\n    \"For U5, Go-based tools (configtxgen, fabric-chaintool, fabric-ca-client, cryptogen, etc.) are cross-compiled via the existing Makefile; release artifacts are packaged and hosted alongside Fabric releases.\",\n    \"For U6, the certificate-pinning feature is implemented as an Auth Handler (per the FAB-4207 reference) that validates endorser certs against an organization-controlled fingerprint list fetched at endorsement time.\",\n    \"For U6, the fingerprint list is hosted at an organization-controlled HTTP endpoint configured in the channel config; an alternative key-signed in-channel fingerprint list is not pursued in this increment to keep complexity down.\",\n    \"For U7, testing.html is updated to link to existing READMEs in fabric/test/ rather than authoring new tests; one sample BYFN-style network is referenced.\",\n    \"For U8, a `config_defaults/` directory is created at the repo root containing core.yaml, orderer.yaml, configtx.yaml, and related files with all options populated using the current code defaults; sampleconfig/ is deprecated.\"\n  ],\n  \"assumptions\": [\n    \"One work-day equals 8 hours of focused development by a single senior Go/JS/Java/Python developer familiar with Hyperledger Fabric internals.\",\n    \"The two SDKs (Java, Python) are built largely in parallel by the same developer (sequenced, not staffed) so the estimate reflects wall-clock effort of one person.\",\n    \"No new consensus, ordering, or state-DB features are required; existing Fabric binary protocol is reused.\",\n    \"CI/CD and release infrastructure for binary distribution (U5) already exists; the work is limited to wiring up cross-compilation and publishing.\",\n    \"Docker Hub or a similar OCI registry is available and acceptable for distributing pre-built chaincode images (U3).\",\n    \"The certificate-pinning implementation (U6) follows the Auth Handler approach; no changes to the gossip or orderer layers are required.\",\n    \"Documentation work for U7 and U8 is limited to consolidating existing content and adding links/headers; no large new tutorials are written.\",\n    \"An additional 10% effort is included as an 'integration testing & code review' line to cover cross-cutting verification and pull-request iterations.\",\n    \"All estimates are most-likely (modal) values, not PERT optimistic/pessimistic averages.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Java SDK for Fabric (fabric-sdk-java feature parity)\",\n      \"activity_description\": \"Design the Java package layout (client, channel, gateway, identity, event), implement gRPC clients using fabric-protos, support chaincode invocation/endorsement/query, event listening, identity/CA enrollment, and write JUnit tests and a README.\",\n      \"most_likely_effort\": 25\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Python SDK for Fabric (fabric-sdk-py feature parity)\",\n      \"activity_description\": \"Implement the Python equivalent of the Java SDK using grpcio, including client/channel/identity abstractions, chaincode lifecycle, event hub, and end-to-end tests, plus a usage README.\",\n      \"most_likely_effort\": 25\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Pre-built user chaincode deployment support\",\n      \"activity_description\": \"Extend the peer chaincode deployment path to accept a pre-built container image (CCID image identifier), add buildx-based multi-arch image build scripts, update the Node/Go/Java/Python SDKs to pass the image reference, and document the workflow.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Enhanced VSCC failure logging and event payload\",\n      \"activity_description\": \"Modify core/committer/txvalidator VSCCValidateTx to log the active policy, satisfied signers (peer+org), and missing signers/orgs at INFO level; add a structured event payload exposed through the existing failure event channel to SDK consumers; add unit tests.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Platform-specific binary distribution for Fabric tools\",\n      \"activity_description\": \"Add cross-compilation targets (linux/amd64, linux/s390x, linux/ppc64le, linux/arm64, darwin/amd64, windows/amd64) for configtxgen, cryptogen, fabric-chaintool, fabric-ca-client, peer, orderer; add a release script that packages and signs tarballs/zip; document download instructions in the README and docs site.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"CA certificate fingerprint pinning (Auth Handler)\",\n      \"activity_description\": \"Implement an endorser-side Auth Handler that, when configured, fetches the channel-configured fingerprint list endpoint, compares the endorser certificate SHA-256 fingerprint, and rejects mismatches; add channel config schema updates, unit and integration tests using a mock CA, and operator documentation.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Testing quick start documentation\",\n      \"activity_description\": \"Update the ReadTheDocs testing.html page with an overview of fabric/test/ subdirectories, links to their READMEs, and a quick-start recipe for spinning up a local network; no new test tools are created.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Consolidated configuration defaults (config_defaults)\",\n      \"activity_description\": \"Audit the Go source for every configurable option in peer, orderer, gossip, ledger, endorser, configtx, and CA; produce a config_defaults/ directory containing fully populated core.yaml, orderer.yaml, configtx.yaml, and fabric-ca-server-config.yaml; update sampleconfig/ deprecation notes and link from BYFN instructions and docs.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Integration testing, CI, and code review\",\n      \"activity_description\": \"Run end-to-end network tests covering SDK (Java + Python), pre-built chaincode, pinned CA certs, enhanced VSCC logging, and binary download; iterate on review comments across all stories.\",\n      \"most_likely_effort\": 10\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 112\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 2340,
+    "completion_tokens": 2694,
+    "total_tokens": 5034,
+    "cost": 0.00389736,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00389736,
+      "upstream_inference_prompt_cost": 0.00066456,
+      "upstream_inference_completions_cost": 0.0032328
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1003,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788414312-HxDrbRXc9zMSbdxhr58G",
+    "object": "chat.completion",
+    "created": 1788414312,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking a simple clarifying question about the conversion factor between workdays and work-hours that I used in my previous estimate. They want me to return only a JSON with the number of work hours per work day.\n\nI should not revise or recalculate the previous estimate, just provide the conversion factor. In my assumptions I stated \"One work-day equals 8 hours of focused development by a single senior Go/JS/Java/Python developer familiar with Hyperledger Fabric internals.\"\n\nSo the answer is 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple clarifying question about the conversion factor between workdays and work-hours that I used in my previous estimate. They want me to return only a JSON with the number of work hours per work day.\n\nI should not revise or recalculate the previous estimate, just provide the conversion factor. In my assumptions I stated \"One work-day equals 8 hours of focused development by a single senior Go/JS/Java/Python developer familiar with Hyperledger Fabric internals.\"\n\nSo the answer is 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 4158,
+      "completion_tokens": 123,
+      "total_tokens": 4281,
+      "cost": 0.000837,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 2325,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.000837,
+        "upstream_inference_prompt_cost": 0.0006894,
+        "upstream_inference_completions_cost": 0.0001476
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 105,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "The NodeJS SDK (fabric-sdk-node) is used as the reference for the Java and Python SDK API surface and feature parity.",
+      "Java SDK will be implemented as a thin gRPC client on top of the existing Fabric protos (orderer, peer, event, discovery), following the same lifecycle/identity/chaincode abstractions as fabric-sdk-node.",
+      "Python SDK will be implemented using the official `grpcio` library, mirroring the same abstractions; the existing python `fabric-sdk-py` is taken as the starting point to be brought to feature parity.",
+      "For U3, pre-built user chaincode is delivered as OCI/Docker images built by the chaincode owner; the peer is extended to skip the local build step when an image reference is supplied in the chaincode deployment spec.",
+      "For U3, multi-arch images (linux/amd64, linux/s390x, linux/ppc64le, linux/arm64) are built via Docker buildx and published to a registry; the deployment spec carries the image identifier.",
+      "For U4, the enhanced VSCC log/event payload is added inside the existing VSCC ValidateTx path in core/committer/txvalidator; no policy-evaluation algorithm changes are made.",
+      "For U5, Go-based tools (configtxgen, fabric-chaintool, fabric-ca-client, cryptogen, etc.) are cross-compiled via the existing Makefile; release artifacts are packaged and hosted alongside Fabric releases.",
+      "For U6, the certificate-pinning feature is implemented as an Auth Handler (per the FAB-4207 reference) that validates endorser certs against an organization-controlled fingerprint list fetched at endorsement time.",
+      "For U6, the fingerprint list is hosted at an organization-controlled HTTP endpoint configured in the channel config; an alternative key-signed in-channel fingerprint list is not pursued in this increment to keep complexity down.",
+      "For U7, testing.html is updated to link to existing READMEs in fabric/test/ rather than authoring new tests; one sample BYFN-style network is referenced.",
+      "For U8, a `config_defaults/` directory is created at the repo root containing core.yaml, orderer.yaml, configtx.yaml, and related files with all options populated using the current code defaults; sampleconfig/ is deprecated."
+    ],
+    "assumptions": [
+      "One work-day equals 8 hours of focused development by a single senior Go/JS/Java/Python developer familiar with Hyperledger Fabric internals.",
+      "The two SDKs (Java, Python) are built largely in parallel by the same developer (sequenced, not staffed) so the estimate reflects wall-clock effort of one person.",
+      "No new consensus, ordering, or state-DB features are required; existing Fabric binary protocol is reused.",
+      "CI/CD and release infrastructure for binary distribution (U5) already exists; the work is limited to wiring up cross-compilation and publishing.",
+      "Docker Hub or a similar OCI registry is available and acceptable for distributing pre-built chaincode images (U3).",
+      "The certificate-pinning implementation (U6) follows the Auth Handler approach; no changes to the gossip or orderer layers are required.",
+      "Documentation work for U7 and U8 is limited to consolidating existing content and adding links/headers; no large new tutorials are written.",
+      "An additional 10% effort is included as an 'integration testing & code review' line to cover cross-cutting verification and pull-request iterations.",
+      "All estimates are most-likely (modal) values, not PERT optimistic/pessimistic averages."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Java SDK for Fabric (fabric-sdk-java feature parity)",
+        "activity_description": "Design the Java package layout (client, channel, gateway, identity, event), implement gRPC clients using fabric-protos, support chaincode invocation/endorsement/query, event listening, identity/CA enrollment, and write JUnit tests and a README.",
+        "most_likely_effort": 25
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Python SDK for Fabric (fabric-sdk-py feature parity)",
+        "activity_description": "Implement the Python equivalent of the Java SDK using grpcio, including client/channel/identity abstractions, chaincode lifecycle, event hub, and end-to-end tests, plus a usage README.",
+        "most_likely_effort": 25
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Pre-built user chaincode deployment support",
+        "activity_description": "Extend the peer chaincode deployment path to accept a pre-built container image (CCID image identifier), add buildx-based multi-arch image build scripts, update the Node/Go/Java/Python SDKs to pass the image reference, and document the workflow.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Enhanced VSCC failure logging and event payload",
+        "activity_description": "Modify core/committer/txvalidator VSCCValidateTx to log the active policy, satisfied signers (peer+org), and missing signers/orgs at INFO level; add a structured event payload exposed through the existing failure event channel to SDK consumers; add unit tests.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Platform-specific binary distribution for Fabric tools",
+        "activity_description": "Add cross-compilation targets (linux/amd64, linux/s390x, linux/ppc64le, linux/arm64, darwin/amd64, windows/amd64) for configtxgen, cryptogen, fabric-chaintool, fabric-ca-client, peer, orderer; add a release script that packages and signs tarballs/zip; document download instructions in the README and docs site.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "CA certificate fingerprint pinning (Auth Handler)",
+        "activity_description": "Implement an endorser-side Auth Handler that, when configured, fetches the channel-configured fingerprint list endpoint, compares the endorser certificate SHA-256 fingerprint, and rejects mismatches; add channel config schema updates, unit and integration tests using a mock CA, and operator documentation.",
+        "most_likely_effort": 15
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Testing quick start documentation",
+        "activity_description": "Update the ReadTheDocs testing.html page with an overview of fabric/test/ subdirectories, links to their READMEs, and a quick-start recipe for spinning up a local network; no new test tools are created.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Consolidated configuration defaults (config_defaults)",
+        "activity_description": "Audit the Go source for every configurable option in peer, orderer, gossip, ledger, endorser, configtx, and CA; produce a config_defaults/ directory containing fully populated core.yaml, orderer.yaml, configtx.yaml, and fabric-ca-server-config.yaml; update sampleconfig/ deprecation notes and link from BYFN instructions and docs.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Integration testing, CI, and code review",
+        "activity_description": "Run end-to-end network tests covering SDK (Java + Python), pre-built chaincode, pinned CA certs, enhanced VSCC logging, and binary download; iterate on review comments across all stories.",
+        "most_likely_effort": 10
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 112
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

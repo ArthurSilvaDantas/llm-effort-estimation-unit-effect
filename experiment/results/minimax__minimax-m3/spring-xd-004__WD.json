@@ -1,0 +1,251 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-004",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788415907-C6AKqT4u0OQ9hq1ABQcR",
+    "object": "chat.completion",
+    "created": 1788415907,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Spring Integration extension patterns for each source/sink module to ensure consistency with the reference implementations (spring-integration-websocket, spring-integration-aws).\",\n    \"Implement each source/sink as a standalone Maven module under a multi-module project to allow independent versioning and reuse.\",\n    \"Use Spring Boot auto-configuration mechanism to wire modules into the runtime and minimize boilerplate for end users.\",\n    \"Leverage existing official AWS SDK v2 (S3, SES), DataStax Cassandra Java driver, SOLRJ client, and HAWQ PXF client libraries rather than building custom protocols.\",\n    \"For the HAWQ sink, use Avro/Parquet serialization through PXF with a configurable schema registry approach.\",\n    \"Model the Error Channel feature as a dedicated publish-subscribe channel integrated with the existing global error channel abstraction, supporting configurable exception-type filters.\",\n    \"Build exception hierarchy (GlobalException, DefaultException, ModuleSpecificException) as runtime-extensible types so that the 'Caused by' chain is preserved when staging exceptions as payloads.\",\n    \"Treat U8 (data partition strategy) as test-coverage and regression work only, since the functionality is already part of the GA release.\",\n    \"Include unit tests in the effort estimate for each module; integration tests are aggregated as a separate cross-module activity.\",\n    \"Use Java 17+ as the baseline (per Spring Framework 6.0 requirement).\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Java/Spring developer performs all the work.\",\n    \"A workday equals 8 productive hours (no meetings/admin time included in estimates).\",\n    \"Reference Spring Integration extensions (websocket, aws) are publicly available and can be used as implementation references, reducing the discovery and prototyping effort.\",\n    \"External test infrastructure (AWS sandbox, Cassandra cluster, SOLR server, HAWQ+PXF endpoint) is already provisioned; if not, an additional ~2 workdays per module would be required (not included here).\",\n    \"Module-specific unit tests are scoped within each module's effort estimate; only cross-module end-to-end integration tests are estimated separately.\",\n    \"Existing data partition strategy implementation in the GA release is stable and only needs targeted regression tests for add/delete module scenarios.\",\n    \"Documentation means module-level README and JavaDoc; a separate user guide is not in scope.\",\n    \"No migration, performance tuning, or production hardening beyond standard best practices is included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup and shared infrastructure\",\n      \"activity_description\": \"Create multi-module Maven project layout, parent POM, shared dependencies, CI-friendly module skeletons, and baseline configuration (Spring Boot starters, Java 17 toolchain, checkstyle, test scaffolding).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"WebSocket source module (U1)\",\n      \"activity_description\": \"Implement a WebSocket source adapter with message channel binding, sub-protocol support, and lifecycle management, based on spring-integration-websocket patterns. Includes unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"AWS source module (U2)\",\n      \"activity_description\": \"Implement S3 object ingestion source (poll/event-based) and SES inbound email source using the AWS SDK v2. Includes configurable credentials, region, and unit tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Cassandra sink module (U3)\",\n      \"activity_description\": \"Implement a Cassandra sink adapter using the DataStax Java driver supporting prepared statements, batching, and configurable consistency level for high-velocity writes. Includes unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"AWS sink module (U4)\",\n      \"activity_description\": \"Implement an S3 sink adapter supporting direct write, multipart upload, configurable key strategies, and content-type detection. Includes unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"HAWQ sink module (U5)\",\n      \"activity_description\": \"Implement a HAWQ sink that writes through PXF using Avro and Parquet formats. Includes external table mapping, schema handling, serialization, and unit tests. Most complex module due to format/transport combinations.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"SOLR sink module (U6)\",\n      \"activity_description\": \"Implement a SOLR sink using SOLRJ supporting document conversion, commit/soft-commit strategies, and collection routing. Includes unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Error channel configuration feature (U7)\",\n      \"activity_description\": \"Implement configurable dedicated error channels (e.g., topic.errors.stream.module), the exception hierarchy (GlobalException, DefaultException, ModuleSpecificException), preservation of 'Caused by' chains, and routing logic for failures originating in any source/processor/sink. Includes unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Data partition strategy regression testing (U8)\",\n      \"activity_description\": \"Add automated regression tests covering add/delete module scenarios to verify that the data partition strategy dynamically adapts and state is preserved.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-module integration testing\",\n      \"activity_description\": \"Design and execute end-to-end integration test scenarios combining multiple sources, the error channel feature, and various sinks (including failure-path scenarios) using embedded/test containers where applicable.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Write module-level READMEs, configuration property reference, JavaDoc, and example YAML configurations covering all new modules and the error channel feature.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Code review, refactoring, and hardening\",\n      \"activity_description\": \"Self-review for design consistency across modules, minor refactoring for shared abstractions, dependency upgrades, and final cleanup before release.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 50\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. It describes a Spring Framework-based project with several user stories (U1-U8) for adding various source/sink modules and features.\n\nLet me break down the activities needed:\n\n1. **U1: WebSocket Source Module** - Create a WebSocket source module for interactive communication\n2. **U2: AWS Source Module** - Create AWS source module (S3, SES)\n3. **U3: Cassandra Sink** - NoSQL database sink\n4. **U4: AWS Sink** - Write data to S3\n5. **U5: HAWQ Sink** - Write to HAWQ via PXF (Avro/Parquet)\n6. **U6: SOLR Sink** - Full-text indexing/search via SOLR\n7. **U7: Error Channel Configuration** - Explicit error channel definition and exception handling\n8. **U8: Data Partition Strategy Testing** - Testing effort for data partition strategy\n\nPlus supporting activities:\n- Project setup/infrastructure\n- Integration testing\n- Documentation\n- Code review/refactoring\n\nLet me think about the effort estimates. This is a complex Spring Integration project. Each module typically requires:\n- Design/architecture\n- Implementation\n- Unit testing\n- Integration testing\n- Documentation\n\nFor each source/sink module, I'd estimate:\n- WebSocket source: 5-8 days\n- AWS source: 7-10 days\n- Cassandra sink: 5-8 days\n- AWS sink: 5-7 days\n- HAWQ sink: 7-10 days (more complex with Avro/Parquet)\n- SOLR sink: 4-6 days\n- Error channel: 5-7 days\n- Testing for data partition: 2-3 days\n\nLet me be more precise and create a detailed WBS.\n\nActivities:\n\n1. A1: Project setup and infrastructure (Maven/Gradle config, module structure)\n2. A2: WebSocket Source Module implementation\n3. A3: AWS Source Module implementation (S3, SES)\n4. A4: Cassandra Sink Module implementation\n5. A5: AWS Sink Module implementation (S3)\n6. A6: HAWQ Sink Module implementation (Avro/Parquet via PXF)\n7. A7: SOLR Sink Module implementation\n8. A8: Error Channel feature implementation\n9. A9: Data partition strategy testing (U8)\n10. A10: Integration testing across all modules\n11. A11: Documentation\n12. A12: Code review and refactoring\n\nLet me estimate each:\n\nA1: Project setup - 2 days\nA2: WebSocket source - 6 days\nA3: AWS source (S3, SES) - 8 days\nA4: Cassandra sink - 6 days\nA5: AWS sink (S3) - 5 days\nA6: HAWQ sink - 9 days (complex with Avro/Parquet/PXF)\nA7: SOLR sink - 5 days\nA8: Error channel - 6 days\nA9: Data partition testing - 3 days\nA10: Integration testing - 5 days\nA11: Documentation - 3 days\nA12: Code review/refactoring - 3 days\n\nTotal: 61 days\n\nLet me reconsider. The user mentions they are a single developer doing all work. Let me be reasonable about the estimates.\n\nActually, looking more carefully:\n- The Spring Integration WebSocket and AWS extensions already exist as references, so the implementation can leverage existing patterns\n- The HAWQ sink is the most complex due to PXF and Avro/Parquet\n- The error channel is a cross-cutting concern\n\nLet me finalize:\n\nA1: Project setup and module structure - 2 workdays\nA2: WebSocket source module - 5 workdays\nA3: AWS source module (S3 + SES) - 7 workdays\nA4: Cassandra sink module - 5 workdays\nA5: AWS sink module (S3) - 4 workdays\nA6: HAWQ sink module (PXF/Avro/Parquet) - 8 workdays\nA7: SOLR sink module - 4 workdays\nA8: Error channel configuration - 5 workdays\nA9: Data partition strategy testing - 2 workdays\nA10: Cross-module integration testing - 4 workdays\nA11: Documentation - 2 workdays\nA12: Code review and refactoring - 2 workdays\n\nTotal: 50 workdays\n\nLet me think about this more carefully. I want my estimates to be reasonable for a single experienced developer.\n\nTechnical decisions:\n- Use Spring Integration framework patterns\n- Reuse existing Spring Integration extensions where possible\n- Implement as separate modules following Spring Integration conventions\n- Use Spring Boot for module auto-configuration\n- Use established Java libraries (AWS SDK, Cassandra driver, SOLR client, etc.)\n\nAssumptions:\n- Single experienced developer\n- Standard 8-hour workday\n- Access to existing Spring Integration codebase\n- AWS, Cassandra, HAWQ, SOLR test environments available\n- Reuse of patterns from reference implementations\n- Unit tests included in each module estimate\n- Java 17+ as per Spring 6.0 requirements\n\nLet me finalize the JSON response.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. It describes a Spring Framework-based project with several user stories (U1-U8) for adding various source/sink modules and features.\n\nLet me break down the activities needed:\n\n1. **U1: WebSocket Source Module** - Create a WebSocket source module for interactive communication\n2. **U2: AWS Source Module** - Create AWS source module (S3, SES)\n3. **U3: Cassandra Sink** - NoSQL database sink\n4. **U4: AWS Sink** - Write data to S3\n5. **U5: HAWQ Sink** - Write to HAWQ via PXF (Avro/Parquet)\n6. **U6: SOLR Sink** - Full-text indexing/search via SOLR\n7. **U7: Error Channel Configuration** - Explicit error channel definition and exception handling\n8. **U8: Data Partition Strategy Testing** - Testing effort for data partition strategy\n\nPlus supporting activities:\n- Project setup/infrastructure\n- Integration testing\n- Documentation\n- Code review/refactoring\n\nLet me think about the effort estimates. This is a complex Spring Integration project. Each module typically requires:\n- Design/architecture\n- Implementation\n- Unit testing\n- Integration testing\n- Documentation\n\nFor each source/sink module, I'd estimate:\n- WebSocket source: 5-8 days\n- AWS source: 7-10 days\n- Cassandra sink: 5-8 days\n- AWS sink: 5-7 days\n- HAWQ sink: 7-10 days (more complex with Avro/Parquet)\n- SOLR sink: 4-6 days\n- Error channel: 5-7 days\n- Testing for data partition: 2-3 days\n\nLet me be more precise and create a detailed WBS.\n\nActivities:\n\n1. A1: Project setup and infrastructure (Maven/Gradle config, module structure)\n2. A2: WebSocket Source Module implementation\n3. A3: AWS Source Module implementation (S3, SES)\n4. A4: Cassandra Sink Module implementation\n5. A5: AWS Sink Module implementation (S3)\n6. A6: HAWQ Sink Module implementation (Avro/Parquet via PXF)\n7. A7: SOLR Sink Module implementation\n8. A8: Error Channel feature implementation\n9. A9: Data partition strategy testing (U8)\n10. A10: Integration testing across all modules\n11. A11: Documentation\n12. A12: Code review and refactoring\n\nLet me estimate each:\n\nA1: Project setup - 2 days\nA2: WebSocket source - 6 days\nA3: AWS source (S3, SES) - 8 days\nA4: Cassandra sink - 6 days\nA5: AWS sink (S3) - 5 days\nA6: HAWQ sink - 9 days (complex with Avro/Parquet/PXF)\nA7: SOLR sink - 5 days\nA8: Error channel - 6 days\nA9: Data partition testing - 3 days\nA10: Integration testing - 5 days\nA11: Documentation - 3 days\nA12: Code review/refactoring - 3 days\n\nTotal: 61 days\n\nLet me reconsider. The user mentions they are a single developer doing all work. Let me be reasonable about the estimates.\n\nActually, looking more carefully:\n- The Spring Integration WebSocket and AWS extensions already exist as references, so the implementation can leverage existing patterns\n- The HAWQ sink is the most complex due to PXF and Avro/Parquet\n- The error channel is a cross-cutting concern\n\nLet me finalize:\n\nA1: Project setup and module structure - 2 workdays\nA2: WebSocket source module - 5 workdays\nA3: AWS source module (S3 + SES) - 7 workdays\nA4: Cassandra sink module - 5 workdays\nA5: AWS sink module (S3) - 4 workdays\nA6: HAWQ sink module (PXF/Avro/Parquet) - 8 workdays\nA7: SOLR sink module - 4 workdays\nA8: Error channel configuration - 5 workdays\nA9: Data partition strategy testing - 2 workdays\nA10: Cross-module integration testing - 4 workdays\nA11: Documentation - 2 workdays\nA12: Code review and refactoring - 2 workdays\n\nTotal: 50 workdays\n\nLet me think about this more carefully. I want my estimates to be reasonable for a single experienced developer.\n\nTechnical decisions:\n- Use Spring Integration framework patterns\n- Reuse existing Spring Integration extensions where possible\n- Implement as separate modules following Spring Integration conventions\n- Use Spring Boot for module auto-configuration\n- Use established Java libraries (AWS SDK, Cassandra driver, SOLR client, etc.)\n\nAssumptions:\n- Single experienced developer\n- Standard 8-hour workday\n- Access to existing Spring Integration codebase\n- AWS, Cassandra, HAWQ, SOLR test environments available\n- Reuse of patterns from reference implementations\n- Unit tests included in each module estimate\n- Java 17+ as per Spring 6.0 requirements\n\nLet me finalize the JSON response.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1560,
+      "completion_tokens": 2584,
+      "total_tokens": 4144,
+      "cost": 0.00353136,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00353136,
+        "upstream_inference_prompt_cost": 0.00043056,
+        "upstream_inference_completions_cost": 0.0031008
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1108,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Spring Integration extension patterns for each source/sink module to ensure consistency with the reference implementations (spring-integration-websocket, spring-integration-aws).\",\n    \"Implement each source/sink as a standalone Maven module under a multi-module project to allow independent versioning and reuse.\",\n    \"Use Spring Boot auto-configuration mechanism to wire modules into the runtime and minimize boilerplate for end users.\",\n    \"Leverage existing official AWS SDK v2 (S3, SES), DataStax Cassandra Java driver, SOLRJ client, and HAWQ PXF client libraries rather than building custom protocols.\",\n    \"For the HAWQ sink, use Avro/Parquet serialization through PXF with a configurable schema registry approach.\",\n    \"Model the Error Channel feature as a dedicated publish-subscribe channel integrated with the existing global error channel abstraction, supporting configurable exception-type filters.\",\n    \"Build exception hierarchy (GlobalException, DefaultException, ModuleSpecificException) as runtime-extensible types so that the 'Caused by' chain is preserved when staging exceptions as payloads.\",\n    \"Treat U8 (data partition strategy) as test-coverage and regression work only, since the functionality is already part of the GA release.\",\n    \"Include unit tests in the effort estimate for each module; integration tests are aggregated as a separate cross-module activity.\",\n    \"Use Java 17+ as the baseline (per Spring Framework 6.0 requirement).\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Java/Spring developer performs all the work.\",\n    \"A workday equals 8 productive hours (no meetings/admin time included in estimates).\",\n    \"Reference Spring Integration extensions (websocket, aws) are publicly available and can be used as implementation references, reducing the discovery and prototyping effort.\",\n    \"External test infrastructure (AWS sandbox, Cassandra cluster, SOLR server, HAWQ+PXF endpoint) is already provisioned; if not, an additional ~2 workdays per module would be required (not included here).\",\n    \"Module-specific unit tests are scoped within each module's effort estimate; only cross-module end-to-end integration tests are estimated separately.\",\n    \"Existing data partition strategy implementation in the GA release is stable and only needs targeted regression tests for add/delete module scenarios.\",\n    \"Documentation means module-level README and JavaDoc; a separate user guide is not in scope.\",\n    \"No migration, performance tuning, or production hardening beyond standard best practices is included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup and shared infrastructure\",\n      \"activity_description\": \"Create multi-module Maven project layout, parent POM, shared dependencies, CI-friendly module skeletons, and baseline configuration (Spring Boot starters, Java 17 toolchain, checkstyle, test scaffolding).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"WebSocket source module (U1)\",\n      \"activity_description\": \"Implement a WebSocket source adapter with message channel binding, sub-protocol support, and lifecycle management, based on spring-integration-websocket patterns. Includes unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"AWS source module (U2)\",\n      \"activity_description\": \"Implement S3 object ingestion source (poll/event-based) and SES inbound email source using the AWS SDK v2. Includes configurable credentials, region, and unit tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Cassandra sink module (U3)\",\n      \"activity_description\": \"Implement a Cassandra sink adapter using the DataStax Java driver supporting prepared statements, batching, and configurable consistency level for high-velocity writes. Includes unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"AWS sink module (U4)\",\n      \"activity_description\": \"Implement an S3 sink adapter supporting direct write, multipart upload, configurable key strategies, and content-type detection. Includes unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"HAWQ sink module (U5)\",\n      \"activity_description\": \"Implement a HAWQ sink that writes through PXF using Avro and Parquet formats. Includes external table mapping, schema handling, serialization, and unit tests. Most complex module due to format/transport combinations.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"SOLR sink module (U6)\",\n      \"activity_description\": \"Implement a SOLR sink using SOLRJ supporting document conversion, commit/soft-commit strategies, and collection routing. Includes unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Error channel configuration feature (U7)\",\n      \"activity_description\": \"Implement configurable dedicated error channels (e.g., topic.errors.stream.module), the exception hierarchy (GlobalException, DefaultException, ModuleSpecificException), preservation of 'Caused by' chains, and routing logic for failures originating in any source/processor/sink. Includes unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Data partition strategy regression testing (U8)\",\n      \"activity_description\": \"Add automated regression tests covering add/delete module scenarios to verify that the data partition strategy dynamically adapts and state is preserved.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-module integration testing\",\n      \"activity_description\": \"Design and execute end-to-end integration test scenarios combining multiple sources, the error channel feature, and various sinks (including failure-path scenarios) using embedded/test containers where applicable.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Write module-level READMEs, configuration property reference, JavaDoc, and example YAML configurations covering all new modules and the error channel feature.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Code review, refactoring, and hardening\",\n      \"activity_description\": \"Self-review for design consistency across modules, minor refactoring for shared abstractions, dependency upgrades, and final cleanup before release.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 50\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1560,
+    "completion_tokens": 2584,
+    "total_tokens": 4144,
+    "cost": 0.00353136,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00353136,
+      "upstream_inference_prompt_cost": 0.00043056,
+      "upstream_inference_completions_cost": 0.0031008
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1108,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788415931-X7DWzPrUh08rNVSdUNk3",
+    "object": "chat.completion",
+    "created": 1788415931,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3162,
+      "completion_tokens": 19,
+      "total_tokens": 3181,
+      "cost": 0.0006006,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1545,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0006006,
+        "upstream_inference_prompt_cost": 0.0005778,
+        "upstream_inference_completions_cost": 2.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Adopt Spring Integration extension patterns for each source/sink module to ensure consistency with the reference implementations (spring-integration-websocket, spring-integration-aws).",
+      "Implement each source/sink as a standalone Maven module under a multi-module project to allow independent versioning and reuse.",
+      "Use Spring Boot auto-configuration mechanism to wire modules into the runtime and minimize boilerplate for end users.",
+      "Leverage existing official AWS SDK v2 (S3, SES), DataStax Cassandra Java driver, SOLRJ client, and HAWQ PXF client libraries rather than building custom protocols.",
+      "For the HAWQ sink, use Avro/Parquet serialization through PXF with a configurable schema registry approach.",
+      "Model the Error Channel feature as a dedicated publish-subscribe channel integrated with the existing global error channel abstraction, supporting configurable exception-type filters.",
+      "Build exception hierarchy (GlobalException, DefaultException, ModuleSpecificException) as runtime-extensible types so that the 'Caused by' chain is preserved when staging exceptions as payloads.",
+      "Treat U8 (data partition strategy) as test-coverage and regression work only, since the functionality is already part of the GA release.",
+      "Include unit tests in the effort estimate for each module; integration tests are aggregated as a separate cross-module activity.",
+      "Use Java 17+ as the baseline (per Spring Framework 6.0 requirement)."
+    ],
+    "assumptions": [
+      "A single experienced Java/Spring developer performs all the work.",
+      "A workday equals 8 productive hours (no meetings/admin time included in estimates).",
+      "Reference Spring Integration extensions (websocket, aws) are publicly available and can be used as implementation references, reducing the discovery and prototyping effort.",
+      "External test infrastructure (AWS sandbox, Cassandra cluster, SOLR server, HAWQ+PXF endpoint) is already provisioned; if not, an additional ~2 workdays per module would be required (not included here).",
+      "Module-specific unit tests are scoped within each module's effort estimate; only cross-module end-to-end integration tests are estimated separately.",
+      "Existing data partition strategy implementation in the GA release is stable and only needs targeted regression tests for add/delete module scenarios.",
+      "Documentation means module-level README and JavaDoc; a separate user guide is not in scope.",
+      "No migration, performance tuning, or production hardening beyond standard best practices is included."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Project setup and shared infrastructure",
+        "activity_description": "Create multi-module Maven project layout, parent POM, shared dependencies, CI-friendly module skeletons, and baseline configuration (Spring Boot starters, Java 17 toolchain, checkstyle, test scaffolding).",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "WebSocket source module (U1)",
+        "activity_description": "Implement a WebSocket source adapter with message channel binding, sub-protocol support, and lifecycle management, based on spring-integration-websocket patterns. Includes unit tests.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "AWS source module (U2)",
+        "activity_description": "Implement S3 object ingestion source (poll/event-based) and SES inbound email source using the AWS SDK v2. Includes configurable credentials, region, and unit tests.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Cassandra sink module (U3)",
+        "activity_description": "Implement a Cassandra sink adapter using the DataStax Java driver supporting prepared statements, batching, and configurable consistency level for high-velocity writes. Includes unit tests.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "AWS sink module (U4)",
+        "activity_description": "Implement an S3 sink adapter supporting direct write, multipart upload, configurable key strategies, and content-type detection. Includes unit tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "HAWQ sink module (U5)",
+        "activity_description": "Implement a HAWQ sink that writes through PXF using Avro and Parquet formats. Includes external table mapping, schema handling, serialization, and unit tests. Most complex module due to format/transport combinations.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "SOLR sink module (U6)",
+        "activity_description": "Implement a SOLR sink using SOLRJ supporting document conversion, commit/soft-commit strategies, and collection routing. Includes unit tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Error channel configuration feature (U7)",
+        "activity_description": "Implement configurable dedicated error channels (e.g., topic.errors.stream.module), the exception hierarchy (GlobalException, DefaultException, ModuleSpecificException), preservation of 'Caused by' chains, and routing logic for failures originating in any source/processor/sink. Includes unit tests.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Data partition strategy regression testing (U8)",
+        "activity_description": "Add automated regression tests covering add/delete module scenarios to verify that the data partition strategy dynamically adapts and state is preserved.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-module integration testing",
+        "activity_description": "Design and execute end-to-end integration test scenarios combining multiple sources, the error channel feature, and various sinks (including failure-path scenarios) using embedded/test containers where applicable.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation",
+        "activity_description": "Write module-level READMEs, configuration property reference, JavaDoc, and example YAML configurations covering all new modules and the error channel feature.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Code review, refactoring, and hardening",
+        "activity_description": "Self-review for design consistency across modules, minor refactoring for shared abstractions, dependency upgrades, and final cleanup before release.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 50
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

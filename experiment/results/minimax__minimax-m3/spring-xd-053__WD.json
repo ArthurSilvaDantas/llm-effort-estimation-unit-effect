@@ -1,0 +1,245 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-053",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788414893-igqD29FeRauisBZqse9m",
+    "object": "chat.completion",
+    "created": 1788414893,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Spring Boot's JarLauncher API as the foundation for the new ModuleLauncher contract, eliminating duplicated launch logic (U6).\",\n    \"Implement a YARN ResourceManager REST client (instead of the legacy YARNClient API) for application submission, status polling, and lifecycle management (U2).\",\n    \"Persist and serve application artifacts (YARN app definition archives) from HDFS so xd-admin can orchestrate deployments centrally (U1).\",\n    \"Drive multi-instance configuration through Spring Cloud Data Flow deployment properties (e.g., module.*.yarn.app.name) parsed at the deployer level (U3).\",\n    \"Adopt a CompletableFuture/TaskExecutor-based async deployer design so the shell returns immediately and operations are queued as YARN tasks (U4).\",\n    \"Introduce a uniform external-library resolution abstraction (coordinate across Maven coordinates, file paths, and HDFS locations) feeding the Boot loader (U5, U8).\",\n    \"Preserve backward compatibility with existing module deployer APIs and module packaging conventions while extending behaviour.\",\n    \"Treat JarLauncher refactoring as a foundation dependency for U5, U7, and U8, so related work is sequenced after the refactor stabilises.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Spring/YARN developer performs all work; estimates are in 8-hour workdays.\",\n    \"An existing Spring Cloud Data YARN code base (xd-admin, ModuleLauncher, AppDeployer) is available as the starting point; green-field effort is not required.\",\n    \"Java 17+ toolchain and a working Hadoop/YARN test cluster (with HDFS) are available for development and verification.\",\n    \"Unit tests, integration tests against a local YARN mini-cluster, and documentation are all in scope.\",\n    \"No new infrastructure provisioning, CI/CD changes, or product-management overhead are included.\",\n    \"No major changes are required to upstream Spring Boot; existing JarLauncher public API is sufficient.\",\n    \"Authentication/security for the ResourceManager REST API uses standard Kerberos/SPNEGO patterns but is not the primary scope of this increment.\",\n    \"Story points/effort scales are derived from comparable Spring Cloud Data YARN work and historical data-flow module development.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Study the existing xd-admin, ModuleLauncher, and YARN app deployer code; produce an architecture/design document covering HDFS staging, RM REST client, async deployer, multi-instance properties, and JarLauncher integration.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"HDFS-based YARN app deployment (U1)\",\n      \"activity_description\": \"Implement HDFS artifact upload, manifest handling, and xd-admin orchestration so YARN applications are deployed automatically from the manifest.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"YARN ResourceManager REST API client (U2)\",\n      \"activity_description\": \"Build a REST client to negotiate with the ResourceManager for module group deployment, including app-type (CLOUDDATA) and app-name (spring-cloud-data-yarn-app) handling, status polling, and error handling.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Multi-app instance support (U3)\",\n      \"activity_description\": \"Add parsing/handling of deployment properties (module.*.yarn.app.name) to allow multiple YARN app instances with distinct queues, priorities, and runtime parameters.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Asynchronous deployer (U4)\",\n      \"activity_description\": \"Refactor the deployer to operate asynchronously using a TaskExecutor/CompletableFuture model so the shell returns quickly and deployment tasks are queued within YARN.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"ModuleLauncher refactor on Spring Boot JarLauncher (U5, U6)\",\n      \"activity_description\": \"Refactor the ModuleLauncher contract to delegate to Boot's JarLauncher API; remove duplicated launch functionality; keep behaviour-compatible with existing modules.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"External library resolution and Boot loader integration (U8)\",\n      \"activity_description\": \"Design and implement a uniform mechanism to resolve and add module-dependent external JARs to the Boot loader so OOTB modules can consume third-party libraries consistently.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Unit and integration testing\",\n      \"activity_description\": \"Write unit tests for all new components, integration tests against a YARN mini-cluster covering HDFS staging, RM REST submission, async flows, multi-instance, and Boot loader resolution; add test cases that document the JAR-to-Boot-loader flow (U7 test portion).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Reference documentation (U7)\",\n      \"activity_description\": \"Produce reference documentation and examples for resolving and adding JARs to the Boot loader, suitable as a porting reference for modules with external dependencies.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"End-to-end verification, hardening and finalization\",\n      \"activity_description\": \"Run end-to-end deployment scenarios across stories U1–U8, fix cross-component defects, tighten logging/error reporting, and verify backward compatibility before sign-off.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 33\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully.\n\nThe specification is about Spring Cloud Data Flow (SCDF) - specifically a yarn app deployment feature. Looking at the user stories:\n\n- U1: Deploy YARN App into HDFS automatically using xd-admin\n- U2: Negotiate with ResourceManager REST-APIs to deploy modules by groups\n- U3: Support multiple app instances\n- U4: Make the deployer work asynchronously\n- U5: Experiment with resolving and adding module dependent JAR's to Boot loader\n- U6: Refactor ModuleLauncher contract with Boot's JarLauncher API\n- U7: Documentation and test-cases on resolving and adding JAR's to Boot loader\n- U8: Add support to add external libraries\n\nThis is a Spring Cloud Data YARN related feature. The scope includes:\n- HDFS deployment support\n- YARN ResourceManager integration\n- Multi-instance support\n- Async deployer\n- Boot loader integration (Spring Boot's JarLauncher)\n- External library support\n\nLet me create a Work Breakdown Structure for this.\n\nKey technical decisions:\n1. Use Spring Boot's JarLauncher API for module launching (U6)\n2. Use YARN ResourceManager REST APIs for deployment (U2)\n3. HDFS for storing application artifacts (U1)\n4. Asynchronous deployer design (U4)\n5. Properties-based configuration for multiple app instances (U3)\n6. External library resolution mechanism (U5, U8)\n\nAssumptions:\n- Developer is experienced with Spring Framework and YARN\n- Java 17+ is available\n- Hadoop/YARN cluster is available for testing\n- The existing xd-admin and ModuleLauncher code can be refactored\n- Unit tests and integration tests will be included\n- Documentation will be in standard Spring docs format\n- No major changes to existing public APIs (backward compatibility)\n\nLet me create the WBS:\n\n1. **Requirements Analysis & Design**\n   - Review existing code, understand current architecture\n   - Design the YARN deployment solution\n   - Define APIs and contracts\n\n2. **HDFS Deployment Support (U1)**\n   - Implement HDFS upload logic\n   - Manifest handling\n   - xd-admin orchestration\n\n3. **YARN ResourceManager Integration (U2)**\n   - REST API client implementation\n   - Group deployment logic\n   - App type and name handling\n\n4. **Multiple App Instances Support (U3)**\n   - Deployment properties parsing\n   - Per-app configuration\n   - Queue/priority handling\n\n5. **Asynchronous Deployer (U4)**\n   - Async API design\n   - Task queuing\n   - Shell responsiveness\n\n6. **Boot Loader Integration (U5, U6)**\n   - JarLauncher API research\n   - ModuleLauncher refactoring\n   - JAR resolution mechanism\n\n7. **External Library Support (U8)**\n   - Library resolution\n   - Uniform consumption mechanism\n\n8. **Testing (U7 - includes test cases for JAR resolution)**\n   - Unit tests\n   - Integration tests\n   - End-to-end tests\n\n9. **Documentation (U7)**\n   - Reference documentation\n   - Migration guide\n\nLet me estimate effort in workdays. The user stories suggest this is a significant feature - probably 2-3 weeks of work for an experienced developer, but given the complexity, maybe 4-6 weeks.\n\nLet me think more carefully:\n- U1 + U2: Core YARN deployment feature - probably 5-7 days combined\n- U3: Multiple instances - 2-3 days\n- U4: Async deployer - 3-4 days\n- U5 + U6: Boot loader integration - 4-6 days\n- U7: Documentation and tests - 3-4 days\n- U8: External libraries - 2-3 days\n- Cross-cutting: design, integration, debugging - 3-5 days\n\nTotal roughly 25-35 workdays for an experienced developer.\n\nLet me break it down into a proper WBS with detailed activities:\n\n1. **Requirements & Design Analysis** (2 days)\n   - Understand existing Spring Cloud Data YARN codebase\n   - Design new architecture\n   \n2. **HDFS Deployment Module** (U1) (4 days)\n   - Implement HDFS artifact upload\n   - Manifest-based deployment logic\n   - xd-admin integration\n\n3. **YARN ResourceManager Client** (U2) (5 days)\n   - REST API client for ResourceManager\n   - Group deployment logic\n   - App metadata handling\n\n4. **Multi-Instance Support** (U3) (3 days)\n   - Deployment properties parsing\n   - Per-app instance configuration\n   - Queue/priority mapping\n\n5. **Async Deployer Implementation** (U4) (3 days)\n   - Async API design\n   - Task queuing mechanism\n   - Shell integration\n\n6. **JarLauncher Refactoring** (U5, U6) (4 days)\n   - Refactor ModuleLauncher to use JarLauncher\n   - Maintain backward compatibility\n   - Resolve duplicate functionality\n\n7. **External Library Support** (U8) (3 days)\n   - Library resolution mechanism\n   - Uniform consumption approach\n   - Boot loader integration\n\n8. **Testing** (4 days)\n   - Unit tests for all new components\n   - Integration tests\n   - End-to-end deployment tests\n\n9. **Documentation** (U7) (2 days)\n   - Reference docs\n   - Migration guide\n   - Examples\n\n10. **Bug Fixing & Integration** (2 days)\n    - Cross-component integration\n    - Final bug fixes\n\nTotal: 2+4+5+3+3+4+3+4+2+2 = 32 days\n\nLet me finalize the WBS. I think this is a reasonable estimate.\n\nActually, looking at this more carefully, I should consider that this is a significant Spring ecosystem feature. The estimated effort seems reasonable. Let me adjust slightly:\n\n- Some activities might be more complex than I'm estimating\n- For example, the YARN ResourceManager REST API integration might be more complex due to authentication, error handling, etc.\n\nLet me also think about this from a Spring Cloud Data YARN perspective. Looking at the historical context, this appears to be related to the Spring Cloud Data Flow YARN project which was an experimental project. The work to add YARN support, async deployment, and Boot integration was substantial.\n\nI'll stick with my estimates, but let me make them slightly more realistic:\n\nFinal WBS:\n1. Requirements & Design Analysis: 2 days\n2. HDFS Deployment Support (U1): 4 days\n3. YARN ResourceManager REST Client (U2): 6 days\n4. Multi-Instance Support (U3): 3 days\n5. Async Deployer (U4): 3 days\n6. JarLauncher Refactoring (U5, U6): 5 days\n7. External Library Support (U8): 3 days\n8. Testing (incl. U7 test cases): 4 days\n9. Documentation (U7): 2 days\n10. Integration & Finalization: 2 days\n\nTotal: 2+4+6+3+3+5+3+4+2+2 = 34 days\n\nActually let me reconsider. The developer is a single person, so I need to be realistic about scope. The spec mentions:\n- YARN App deployment\n- HDFS auto-deployment\n- ResourceManager REST API integration\n- Multi-app support\n- Async deployer\n- Boot loader refactor\n- External libraries\n- Documentation\n\nThis is roughly 4-5 weeks of work for a single experienced developer, which is around 20-25 workdays. But with thorough testing, it could be 30+ days.\n\nLet me settle on a reasonable estimate. I'll go with around 30-35 days total.\n\nLet me also consider the structure - the activities should be detailed enough to be meaningful but not too granular.\n\nLet me draft the final answer now.\n\nFor technical decisions:\n- Use Spring Boot's JarLauncher as the basis for ModuleLauncher\n- Use YARN ResourceManager REST API for application submission\n- Store deployment artifacts in HDFS\n- Implement async pattern with proper task queuing\n- Use properties-based configuration for multi-instance support\n- Backward compatibility maintained\n\nFor assumptions:\n- Single experienced developer with Spring/YARN knowledge\n- Existing xd-admin and ModuleLauncher code as starting point\n- Java 17+ environment available\n- YARN/Hadoop cluster available for testing\n- Reuses existing Spring Cloud Data Flow infrastructure\n- All new code includes unit tests\n- Documentation follows Spring docs standards\n- 8-hour workday\n\nLet me create the JSON now.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully.\n\nThe specification is about Spring Cloud Data Flow (SCDF) - specifically a yarn app deployment feature. Looking at the user stories:\n\n- U1: Deploy YARN App into HDFS automatically using xd-admin\n- U2: Negotiate with ResourceManager REST-APIs to deploy modules by groups\n- U3: Support multiple app instances\n- U4: Make the deployer work asynchronously\n- U5: Experiment with resolving and adding module dependent JAR's to Boot loader\n- U6: Refactor ModuleLauncher contract with Boot's JarLauncher API\n- U7: Documentation and test-cases on resolving and adding JAR's to Boot loader\n- U8: Add support to add external libraries\n\nThis is a Spring Cloud Data YARN related feature. The scope includes:\n- HDFS deployment support\n- YARN ResourceManager integration\n- Multi-instance support\n- Async deployer\n- Boot loader integration (Spring Boot's JarLauncher)\n- External library support\n\nLet me create a Work Breakdown Structure for this.\n\nKey technical decisions:\n1. Use Spring Boot's JarLauncher API for module launching (U6)\n2. Use YARN ResourceManager REST APIs for deployment (U2)\n3. HDFS for storing application artifacts (U1)\n4. Asynchronous deployer design (U4)\n5. Properties-based configuration for multiple app instances (U3)\n6. External library resolution mechanism (U5, U8)\n\nAssumptions:\n- Developer is experienced with Spring Framework and YARN\n- Java 17+ is available\n- Hadoop/YARN cluster is available for testing\n- The existing xd-admin and ModuleLauncher code can be refactored\n- Unit tests and integration tests will be included\n- Documentation will be in standard Spring docs format\n- No major changes to existing public APIs (backward compatibility)\n\nLet me create the WBS:\n\n1. **Requirements Analysis & Design**\n   - Review existing code, understand current architecture\n   - Design the YARN deployment solution\n   - Define APIs and contracts\n\n2. **HDFS Deployment Support (U1)**\n   - Implement HDFS upload logic\n   - Manifest handling\n   - xd-admin orchestration\n\n3. **YARN ResourceManager Integration (U2)**\n   - REST API client implementation\n   - Group deployment logic\n   - App type and name handling\n\n4. **Multiple App Instances Support (U3)**\n   - Deployment properties parsing\n   - Per-app configuration\n   - Queue/priority handling\n\n5. **Asynchronous Deployer (U4)**\n   - Async API design\n   - Task queuing\n   - Shell responsiveness\n\n6. **Boot Loader Integration (U5, U6)**\n   - JarLauncher API research\n   - ModuleLauncher refactoring\n   - JAR resolution mechanism\n\n7. **External Library Support (U8)**\n   - Library resolution\n   - Uniform consumption mechanism\n\n8. **Testing (U7 - includes test cases for JAR resolution)**\n   - Unit tests\n   - Integration tests\n   - End-to-end tests\n\n9. **Documentation (U7)**\n   - Reference documentation\n   - Migration guide\n\nLet me estimate effort in workdays. The user stories suggest this is a significant feature - probably 2-3 weeks of work for an experienced developer, but given the complexity, maybe 4-6 weeks.\n\nLet me think more carefully:\n- U1 + U2: Core YARN deployment feature - probably 5-7 days combined\n- U3: Multiple instances - 2-3 days\n- U4: Async deployer - 3-4 days\n- U5 + U6: Boot loader integration - 4-6 days\n- U7: Documentation and tests - 3-4 days\n- U8: External libraries - 2-3 days\n- Cross-cutting: design, integration, debugging - 3-5 days\n\nTotal roughly 25-35 workdays for an experienced developer.\n\nLet me break it down into a proper WBS with detailed activities:\n\n1. **Requirements & Design Analysis** (2 days)\n   - Understand existing Spring Cloud Data YARN codebase\n   - Design new architecture\n   \n2. **HDFS Deployment Module** (U1) (4 days)\n   - Implement HDFS artifact upload\n   - Manifest-based deployment logic\n   - xd-admin integration\n\n3. **YARN ResourceManager Client** (U2) (5 days)\n   - REST API client for ResourceManager\n   - Group deployment logic\n   - App metadata handling\n\n4. **Multi-Instance Support** (U3) (3 days)\n   - Deployment properties parsing\n   - Per-app instance configuration\n   - Queue/priority mapping\n\n5. **Async Deployer Implementation** (U4) (3 days)\n   - Async API design\n   - Task queuing mechanism\n   - Shell integration\n\n6. **JarLauncher Refactoring** (U5, U6) (4 days)\n   - Refactor ModuleLauncher to use JarLauncher\n   - Maintain backward compatibility\n   - Resolve duplicate functionality\n\n7. **External Library Support** (U8) (3 days)\n   - Library resolution mechanism\n   - Uniform consumption approach\n   - Boot loader integration\n\n8. **Testing** (4 days)\n   - Unit tests for all new components\n   - Integration tests\n   - End-to-end deployment tests\n\n9. **Documentation** (U7) (2 days)\n   - Reference docs\n   - Migration guide\n   - Examples\n\n10. **Bug Fixing & Integration** (2 days)\n    - Cross-component integration\n    - Final bug fixes\n\nTotal: 2+4+5+3+3+4+3+4+2+2 = 32 days\n\nLet me finalize the WBS. I think this is a reasonable estimate.\n\nActually, looking at this more carefully, I should consider that this is a significant Spring ecosystem feature. The estimated effort seems reasonable. Let me adjust slightly:\n\n- Some activities might be more complex than I'm estimating\n- For example, the YARN ResourceManager REST API integration might be more complex due to authentication, error handling, etc.\n\nLet me also think about this from a Spring Cloud Data YARN perspective. Looking at the historical context, this appears to be related to the Spring Cloud Data Flow YARN project which was an experimental project. The work to add YARN support, async deployment, and Boot integration was substantial.\n\nI'll stick with my estimates, but let me make them slightly more realistic:\n\nFinal WBS:\n1. Requirements & Design Analysis: 2 days\n2. HDFS Deployment Support (U1): 4 days\n3. YARN ResourceManager REST Client (U2): 6 days\n4. Multi-Instance Support (U3): 3 days\n5. Async Deployer (U4): 3 days\n6. JarLauncher Refactoring (U5, U6): 5 days\n7. External Library Support (U8): 3 days\n8. Testing (incl. U7 test cases): 4 days\n9. Documentation (U7): 2 days\n10. Integration & Finalization: 2 days\n\nTotal: 2+4+6+3+3+5+3+4+2+2 = 34 days\n\nActually let me reconsider. The developer is a single person, so I need to be realistic about scope. The spec mentions:\n- YARN App deployment\n- HDFS auto-deployment\n- ResourceManager REST API integration\n- Multi-app support\n- Async deployer\n- Boot loader refactor\n- External libraries\n- Documentation\n\nThis is roughly 4-5 weeks of work for a single experienced developer, which is around 20-25 workdays. But with thorough testing, it could be 30+ days.\n\nLet me settle on a reasonable estimate. I'll go with around 30-35 days total.\n\nLet me also consider the structure - the activities should be detailed enough to be meaningful but not too granular.\n\nLet me draft the final answer now.\n\nFor technical decisions:\n- Use Spring Boot's JarLauncher as the basis for ModuleLauncher\n- Use YARN ResourceManager REST API for application submission\n- Store deployment artifacts in HDFS\n- Implement async pattern with proper task queuing\n- Use properties-based configuration for multi-instance support\n- Backward compatibility maintained\n\nFor assumptions:\n- Single experienced developer with Spring/YARN knowledge\n- Existing xd-admin and ModuleLauncher code as starting point\n- Java 17+ environment available\n- YARN/Hadoop cluster available for testing\n- Reuses existing Spring Cloud Data Flow infrastructure\n- All new code includes unit tests\n- Documentation follows Spring docs standards\n- 8-hour workday\n\nLet me create the JSON now.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1528,
+      "completion_tokens": 3150,
+      "total_tokens": 4678,
+      "cost": 0.00420096,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00420096,
+        "upstream_inference_prompt_cost": 0.00042096,
+        "upstream_inference_completions_cost": 0.00378
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1823,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Spring Boot's JarLauncher API as the foundation for the new ModuleLauncher contract, eliminating duplicated launch logic (U6).\",\n    \"Implement a YARN ResourceManager REST client (instead of the legacy YARNClient API) for application submission, status polling, and lifecycle management (U2).\",\n    \"Persist and serve application artifacts (YARN app definition archives) from HDFS so xd-admin can orchestrate deployments centrally (U1).\",\n    \"Drive multi-instance configuration through Spring Cloud Data Flow deployment properties (e.g., module.*.yarn.app.name) parsed at the deployer level (U3).\",\n    \"Adopt a CompletableFuture/TaskExecutor-based async deployer design so the shell returns immediately and operations are queued as YARN tasks (U4).\",\n    \"Introduce a uniform external-library resolution abstraction (coordinate across Maven coordinates, file paths, and HDFS locations) feeding the Boot loader (U5, U8).\",\n    \"Preserve backward compatibility with existing module deployer APIs and module packaging conventions while extending behaviour.\",\n    \"Treat JarLauncher refactoring as a foundation dependency for U5, U7, and U8, so related work is sequenced after the refactor stabilises.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Spring/YARN developer performs all work; estimates are in 8-hour workdays.\",\n    \"An existing Spring Cloud Data YARN code base (xd-admin, ModuleLauncher, AppDeployer) is available as the starting point; green-field effort is not required.\",\n    \"Java 17+ toolchain and a working Hadoop/YARN test cluster (with HDFS) are available for development and verification.\",\n    \"Unit tests, integration tests against a local YARN mini-cluster, and documentation are all in scope.\",\n    \"No new infrastructure provisioning, CI/CD changes, or product-management overhead are included.\",\n    \"No major changes are required to upstream Spring Boot; existing JarLauncher public API is sufficient.\",\n    \"Authentication/security for the ResourceManager REST API uses standard Kerberos/SPNEGO patterns but is not the primary scope of this increment.\",\n    \"Story points/effort scales are derived from comparable Spring Cloud Data YARN work and historical data-flow module development.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Study the existing xd-admin, ModuleLauncher, and YARN app deployer code; produce an architecture/design document covering HDFS staging, RM REST client, async deployer, multi-instance properties, and JarLauncher integration.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"HDFS-based YARN app deployment (U1)\",\n      \"activity_description\": \"Implement HDFS artifact upload, manifest handling, and xd-admin orchestration so YARN applications are deployed automatically from the manifest.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"YARN ResourceManager REST API client (U2)\",\n      \"activity_description\": \"Build a REST client to negotiate with the ResourceManager for module group deployment, including app-type (CLOUDDATA) and app-name (spring-cloud-data-yarn-app) handling, status polling, and error handling.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Multi-app instance support (U3)\",\n      \"activity_description\": \"Add parsing/handling of deployment properties (module.*.yarn.app.name) to allow multiple YARN app instances with distinct queues, priorities, and runtime parameters.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Asynchronous deployer (U4)\",\n      \"activity_description\": \"Refactor the deployer to operate asynchronously using a TaskExecutor/CompletableFuture model so the shell returns quickly and deployment tasks are queued within YARN.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"ModuleLauncher refactor on Spring Boot JarLauncher (U5, U6)\",\n      \"activity_description\": \"Refactor the ModuleLauncher contract to delegate to Boot's JarLauncher API; remove duplicated launch functionality; keep behaviour-compatible with existing modules.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"External library resolution and Boot loader integration (U8)\",\n      \"activity_description\": \"Design and implement a uniform mechanism to resolve and add module-dependent external JARs to the Boot loader so OOTB modules can consume third-party libraries consistently.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Unit and integration testing\",\n      \"activity_description\": \"Write unit tests for all new components, integration tests against a YARN mini-cluster covering HDFS staging, RM REST submission, async flows, multi-instance, and Boot loader resolution; add test cases that document the JAR-to-Boot-loader flow (U7 test portion).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Reference documentation (U7)\",\n      \"activity_description\": \"Produce reference documentation and examples for resolving and adding JARs to the Boot loader, suitable as a porting reference for modules with external dependencies.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"End-to-end verification, hardening and finalization\",\n      \"activity_description\": \"Run end-to-end deployment scenarios across stories U1–U8, fix cross-component defects, tighten logging/error reporting, and verify backward compatibility before sign-off.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 33\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1528,
+    "completion_tokens": 3150,
+    "total_tokens": 4678,
+    "cost": 0.00420096,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00420096,
+      "upstream_inference_prompt_cost": 0.00042096,
+      "upstream_inference_completions_cost": 0.00378
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1823,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788414921-anEDWffLAl9yuaQQ0hsp",
+    "object": "chat.completion",
+    "created": 1788414921,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one estimated workday. This is a straightforward question about my estimation methodology. I'll answer 8 hours per workday, which is a standard assumption.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one estimated workday. This is a straightforward question about my estimation methodology. I'll answer 8 hours per workday, which is a standard assumption.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2982,
+      "completion_tokens": 60,
+      "total_tokens": 3042,
+      "cost": 0.00092916,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00092916,
+        "upstream_inference_prompt_cost": 0.00085716,
+        "upstream_inference_completions_cost": 7.2e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 42,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Use Spring Boot's JarLauncher API as the foundation for the new ModuleLauncher contract, eliminating duplicated launch logic (U6).",
+      "Implement a YARN ResourceManager REST client (instead of the legacy YARNClient API) for application submission, status polling, and lifecycle management (U2).",
+      "Persist and serve application artifacts (YARN app definition archives) from HDFS so xd-admin can orchestrate deployments centrally (U1).",
+      "Drive multi-instance configuration through Spring Cloud Data Flow deployment properties (e.g., module.*.yarn.app.name) parsed at the deployer level (U3).",
+      "Adopt a CompletableFuture/TaskExecutor-based async deployer design so the shell returns immediately and operations are queued as YARN tasks (U4).",
+      "Introduce a uniform external-library resolution abstraction (coordinate across Maven coordinates, file paths, and HDFS locations) feeding the Boot loader (U5, U8).",
+      "Preserve backward compatibility with existing module deployer APIs and module packaging conventions while extending behaviour.",
+      "Treat JarLauncher refactoring as a foundation dependency for U5, U7, and U8, so related work is sequenced after the refactor stabilises."
+    ],
+    "assumptions": [
+      "A single experienced Spring/YARN developer performs all work; estimates are in 8-hour workdays.",
+      "An existing Spring Cloud Data YARN code base (xd-admin, ModuleLauncher, AppDeployer) is available as the starting point; green-field effort is not required.",
+      "Java 17+ toolchain and a working Hadoop/YARN test cluster (with HDFS) are available for development and verification.",
+      "Unit tests, integration tests against a local YARN mini-cluster, and documentation are all in scope.",
+      "No new infrastructure provisioning, CI/CD changes, or product-management overhead are included.",
+      "No major changes are required to upstream Spring Boot; existing JarLauncher public API is sufficient.",
+      "Authentication/security for the ResourceManager REST API uses standard Kerberos/SPNEGO patterns but is not the primary scope of this increment.",
+      "Story points/effort scales are derived from comparable Spring Cloud Data YARN work and historical data-flow module development."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and technical design",
+        "activity_description": "Study the existing xd-admin, ModuleLauncher, and YARN app deployer code; produce an architecture/design document covering HDFS staging, RM REST client, async deployer, multi-instance properties, and JarLauncher integration.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "HDFS-based YARN app deployment (U1)",
+        "activity_description": "Implement HDFS artifact upload, manifest handling, and xd-admin orchestration so YARN applications are deployed automatically from the manifest.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "YARN ResourceManager REST API client (U2)",
+        "activity_description": "Build a REST client to negotiate with the ResourceManager for module group deployment, including app-type (CLOUDDATA) and app-name (spring-cloud-data-yarn-app) handling, status polling, and error handling.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Multi-app instance support (U3)",
+        "activity_description": "Add parsing/handling of deployment properties (module.*.yarn.app.name) to allow multiple YARN app instances with distinct queues, priorities, and runtime parameters.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Asynchronous deployer (U4)",
+        "activity_description": "Refactor the deployer to operate asynchronously using a TaskExecutor/CompletableFuture model so the shell returns quickly and deployment tasks are queued within YARN.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "ModuleLauncher refactor on Spring Boot JarLauncher (U5, U6)",
+        "activity_description": "Refactor the ModuleLauncher contract to delegate to Boot's JarLauncher API; remove duplicated launch functionality; keep behaviour-compatible with existing modules.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "External library resolution and Boot loader integration (U8)",
+        "activity_description": "Design and implement a uniform mechanism to resolve and add module-dependent external JARs to the Boot loader so OOTB modules can consume third-party libraries consistently.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Unit and integration testing",
+        "activity_description": "Write unit tests for all new components, integration tests against a YARN mini-cluster covering HDFS staging, RM REST submission, async flows, multi-instance, and Boot loader resolution; add test cases that document the JAR-to-Boot-loader flow (U7 test portion).",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Reference documentation (U7)",
+        "activity_description": "Produce reference documentation and examples for resolving and adding JARs to the Boot loader, suitable as a porting reference for modules with external dependencies.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "End-to-end verification, hardening and finalization",
+        "activity_description": "Run end-to-end deployment scenarios across stories U1–U8, fix cross-component defects, tighten logging/error reporting, and verify backward compatibility before sign-off.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 33
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

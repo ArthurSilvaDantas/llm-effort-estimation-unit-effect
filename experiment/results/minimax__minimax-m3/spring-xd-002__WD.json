@@ -1,0 +1,234 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-002",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788417181-TKdUnvKEatSvSe6dKVFw",
+    "object": "chat.completion",
+    "created": 1788417181,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Follow existing Spring XD module conventions for source/sink modules (U1, U2, U6) using the Options metadata DSL and MessageBatch/MesssageHandler abstractions.\",\n    \"Use Spring Data Redis (Lettuce/Jedis client) for the Redis sink (U2) with configurable serializers and key/value strategy.\",\n    \"Use Spring Kafka (KafkaTemplate-based) for the Kafka sink (U6) with pluggable serializers and partitioner support.\",\n    \"Use Spring JdbcTemplate / JdbcPollingChannelAdapter-style polling for the JDBC source (U1) with pluggable SQL queries, row mappers and a polling trigger.\",\n    \"For ZK node security (U3), use Apache Curator's ZK ACL APIs (digest auth) and integrate with Spring XD's existing security/role model; restrict access to zNodes used for stream/job/queue definitions.\",\n    \"For the extensible Trigger abstraction (U4), extract a public Trigger SPI interface and add a TriggerPlugin/TriggerFactory registration mechanism loaded via Spring's component scanning.\",\n    \"For HTTPS (U8), rely on Spring Boot 1.1.7+ embedded server TLS support (server.ssl.* properties) and update the build (spring-xd build file) to pick up the 1.1.7 SNAPSHOT as noted in the issue.\",\n    \"For the E2E test fix (U7), the root cause is the Protractor webdriver starting before the embedded XD admin server is fully listening; fix by using the existing grunt-protractor-webdriver pattern, splitting the test target, and adjusting timeouts/ports.\",\n    \"Reuse XD's existing module packaging, admin REST endpoints, and single-node/integration test infrastructure rather than introducing new frameworks.\",\n    \"All development is done by a single developer familiar with Spring XD internals (assumption), 8-hour workdays.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs all activities (architecture, implementation, test, documentation) in 8-hour workdays.\",\n    \"The Spring XD build environment, CI, Grunt/Protractor tooling, ZK integration, Spring Boot upgrade path, and admin server are already available and functional.\",\n    \"Required client libraries (JDBC drivers per database, Jedis/Lettuce, Kafka client, Curator) are available in the existing dependency management and do not require new repository setup.\",\n    \"No new infrastructure provisioning is required for databases, Redis, Kafka brokers, or ZK ensembles - existing local/docker-based test fixtures are sufficient.\",\n    \"User story U5 is treated as documentation + sample module only (per the 11/20 update), not a generic framework refactor.\",\n    \"HTTPS work (U8) assumes the 1.1.7 SNAPSHOT of Spring Boot can be referenced and that self-signed certs are sufficient for testing.\",\n    \"No production-grade hardening, performance tuning, or large-scale load testing is included beyond basic functional and integration tests.\",\n    \"Code review, merge and CI overhead is implicitly included within each activity estimate.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture and design\",\n      \"activity_description\": \"Review existing XD module SPI, security model, trigger internals and build configuration. Produce a short design note covering the JDBC source, Redis sink, Kafka sink, ZK ACL model, Trigger SPI, HTTPS wiring and E2E test fix approach. Identify shared abstractions to avoid duplication.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Native JDBC source module\",\n      \"activity_description\": \"Implement a new native source module that ingests rows by polling a JDBC datasource. Includes Options metadata (query, rowMapper, pollDelay, batchSize), integration with the Trigger abstraction, unit tests with an embedded DB and an integration test against H2/MySQL/Postgres.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Redis sink module\",\n      \"activity_description\": \"Implement a new native sink that writes XD messages to Redis (string/list/set/hash modes). Include Options for host/port, mode, key, key/value expression, TTL and serializer. Unit and integration tests using an embedded Redis or Testcontainers Redis.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - ZooKeeper node security\",\n      \"activity_description\": \"Design and implement ACL-based security for ZooKeeper zNodes used by XD. Add digest-based authentication, update CuratorFramework factory configuration, expose a way to provision credentials per user/app, update admin/CLI interactions to authenticate, and add tests covering read/write restrictions on stream/job zNodes.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Extensible Trigger abstraction\",\n      \"activity_description\": \"Refactor the internal Trigger class into a public SPI. Introduce a TriggerFactory / TriggerRegistry so that custom triggers can be registered as Spring beans. Provide a simple example custom trigger and document the extension point. Update existing triggers to conform to the new SPI.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Custom module guidance and example\",\n      \"activity_description\": \"Create a worked example custom source/sink module and accompanying documentation (README + reference guide section) showing recommended structure, Options metadata, packaging, unit/integration test layout, and registration with the XD container.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Kafka sink module\",\n      \"activity_description\": \"Implement a native Kafka sink that publishes XD messages to a Kafka broker. Include Options for brokers, topic, key/value serializers, partitioner, and async/batch settings. Unit tests with an embedded Kafka broker and an integration test verifying end-to-end publish.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Fix grunt test:e2e socket hang up (XD-2015)\",\n      \"activity_description\": \"Diagnose why grunt test:e2e fails with 'Fatal error: socket hang up' when server and tests run in one process. Fix the Grunt/Protractor configuration (webdriver lifecycle, port reuse, readiness wait) so that a single 'grunt test:e2e' invocation runs successfully. Verify by re-running the full e2e suite.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - HTTPS support for Admin server\",\n      \"activity_description\": \"Update the XD build to depend on Spring Boot 1.1.7 (SNAPSHOT) and enable HTTPS on the embedded admin server via server.ssl.* properties. Provide sample keystore, document how operators configure certificates, and add an integration test that hits the admin REST API over HTTPS.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration testing\",\n      \"activity_description\": \"Run combined integration tests that exercise JDBC source -> Redis sink, JDBC source -> Kafka sink, and a custom trigger against a secure ZK ensemble over HTTPS, to ensure the new pieces work together and do not regress existing functionality.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation, release notes and cleanup\",\n      \"activity_description\": \"Update reference guide and module catalog with the new JDBC source, Redis sink, Kafka sink, ZK security configuration, Trigger extension point and HTTPS setup. Write release notes summarizing the new features and the E2E test fix. Final code cleanup and review.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 38\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. It describes Spring XD (a now-defunct project by Spring), and lists 8 user stories (U1-U8) that represent the requirements for a software increment.\n\nLet me break down each user story:\n\nU1: Native JDBC source module to ingest data from various databases\nU2: Redis sink for data ingestion\nU3: Security for ZooKeeper nodes (zNodes)\nU4: Extensible Trigger abstraction (SPI for custom triggers)\nU5: Documentation/example for custom module creation\nU6: Kafka sink for mass data publishing\nU7: Fix for grunt test:e2e socket hang up issue\nU8: HTTPS support for Admin server\n\nNow I need to break this down into a Work Breakdown Structure and estimate effort for each activity.\n\nLet me think about the activities needed:\n\n1. **Design and Architecture** - Overall design for the increment\n2. **U1: JDBC Source Module** - Create a new JDBC source module\n3. **U2: Redis Sink** - Create a Redis sink module\n4. **U3: ZK Security** - Implement security for ZK nodes\n5. **U4: Trigger Abstraction Extension** - Make Trigger extensible\n6. **U5: Custom Module Documentation/Example** - Create example and docs\n7. **U6: Kafka Sink** - Create Kafka sink\n8. **U7: E2E Test Fix** - Fix grunt test:e2e socket hang up\n9. **U8: HTTPS Support** - Enable HTTPS for Admin server\n\nPlus:\n- Integration testing across all modules\n- Code review and documentation\n\nLet me think about reasonable effort estimates. The specification is about Spring XD which is a complex distributed system. Each module is a significant piece of work.\n\nI'll provide detailed estimates:\n\nFor each major user story, I'll estimate:\n- Implementation\n- Testing\n- Documentation\n\nLet me think about what a reasonable workday estimate would be:\n\n1. Design/Architecture: 3-5 days\n2. U1 JDBC Source: 5-7 days\n3. U2 Redis Sink: 4-6 days\n4. U3 ZK Security: 6-8 days\n5. U4 Trigger Extension: 3-4 days\n6. U5 Custom Module Docs: 2-3 days\n7. U6 Kafka Sink: 4-6 days\n8. U7 E2E Fix: 2-3 days\n9. U8 HTTPS Support: 2-3 days\n10. Integration testing: 3-5 days\n11. Documentation: 2-3 days\n\nLet me make these reasonable estimates. I need to consider this is a software increment with 8 features, some related, some not. This is essentially a sprint of work.\n\nTotal estimate: roughly 36-53 days, let me settle on something around 40-45 days.\n\nLet me be more specific:\n\n1. Design and Architecture: 3 days\n2. U1 JDBC Source Module: 5 days\n3. U2 Redis Sink: 4 days\n4. U3 ZK Security: 7 days\n5. U4 Trigger Extension: 3 days\n6. U5 Custom Module Documentation: 2 days\n7. U6 Kafka Sink: 5 days\n8. U7 E2E Test Fix: 2 days\n9. U8 HTTPS Support: 2 days\n10. Cross-cutting integration testing: 3 days\n11. Documentation and release notes: 2 days\n\nTotal: 38 days\n\nThat seems reasonable. Let me think about technical decisions and assumptions.\n\nTechnical/Design Decisions:\n- Use Spring Boot's built-in HTTPS support for U8\n- Use Spring Data Redis for U2\n- Use Spring Kafka for U6\n- Use Spring's JdbcTemplate for U1\n- Use Apache Curator for ZK security (U3)\n- Use existing XD test infrastructure for E2E fix (U7)\n- Follow XD module conventions for sources and sinks\n- Provide SPI interface for Trigger extensibility (U4)\n\nAssumptions:\n- Single developer performing all work\n- 8-hour workdays\n- Existing XD build infrastructure is in place\n- Database drivers available as needed\n- Redis client libraries available\n- Kafka client libraries available\n- ZK already integrated\n- Spring Boot version already determined\n\nLet me finalize the estimates and structure the output as JSON.\n\nActually, I should be more thorough. Let me reconsider each item:\n\nU1 (JDBC Source): This is a new source module. Need to:\n- Define module metadata\n- Implement polling logic\n- Handle different SQL dialects/databases\n- Configuration for connection\n- Tests\n~5 days\n\nU2 (Redis Sink): Need to:\n- Connect to Redis\n- Serialize messages\n- Support different Redis data structures\n- Tests\n~4 days\n\nU3 (ZK Security): This is more complex. Need to:\n- Design ACL system\n- Integrate with XD's existing security\n- Update ZK client configurations\n- Admin UI updates\n- Tests\n~7 days\n\nU4 (Trigger Extension): Need to:\n- Define SPI interface\n- Refactor existing trigger code\n- Add registration mechanism\n- Tests\n~3 days\n\nU5 (Custom Module Docs): Need to:\n- Create example module\n- Write documentation\n~2 days\n\nU6 (Kafka Sink): Need to:\n- Integrate Kafka producer\n- Handle serialization\n- Support different partitioning\n- Tests\n~5 days\n\nU7 (E2E Test Fix): Need to:\n- Investigate socket hang up\n- Fix Grunt configuration\n- Update Protractor\n- Test fixes\n~2 days\n\nU8 (HTTPS): Need to:\n- Update build to use Spring Boot 1.1.7+\n- Configure HTTPS\n- Test\n~2 days\n\nTotal implementation: 30 days\nPlus architecture/design: 3 days\nPlus integration testing: 3 days\nPlus documentation: 2 days\nGrand total: 38 days\n\nLet me write this up as JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. It describes Spring XD (a now-defunct project by Spring), and lists 8 user stories (U1-U8) that represent the requirements for a software increment.\n\nLet me break down each user story:\n\nU1: Native JDBC source module to ingest data from various databases\nU2: Redis sink for data ingestion\nU3: Security for ZooKeeper nodes (zNodes)\nU4: Extensible Trigger abstraction (SPI for custom triggers)\nU5: Documentation/example for custom module creation\nU6: Kafka sink for mass data publishing\nU7: Fix for grunt test:e2e socket hang up issue\nU8: HTTPS support for Admin server\n\nNow I need to break this down into a Work Breakdown Structure and estimate effort for each activity.\n\nLet me think about the activities needed:\n\n1. **Design and Architecture** - Overall design for the increment\n2. **U1: JDBC Source Module** - Create a new JDBC source module\n3. **U2: Redis Sink** - Create a Redis sink module\n4. **U3: ZK Security** - Implement security for ZK nodes\n5. **U4: Trigger Abstraction Extension** - Make Trigger extensible\n6. **U5: Custom Module Documentation/Example** - Create example and docs\n7. **U6: Kafka Sink** - Create Kafka sink\n8. **U7: E2E Test Fix** - Fix grunt test:e2e socket hang up\n9. **U8: HTTPS Support** - Enable HTTPS for Admin server\n\nPlus:\n- Integration testing across all modules\n- Code review and documentation\n\nLet me think about reasonable effort estimates. The specification is about Spring XD which is a complex distributed system. Each module is a significant piece of work.\n\nI'll provide detailed estimates:\n\nFor each major user story, I'll estimate:\n- Implementation\n- Testing\n- Documentation\n\nLet me think about what a reasonable workday estimate would be:\n\n1. Design/Architecture: 3-5 days\n2. U1 JDBC Source: 5-7 days\n3. U2 Redis Sink: 4-6 days\n4. U3 ZK Security: 6-8 days\n5. U4 Trigger Extension: 3-4 days\n6. U5 Custom Module Docs: 2-3 days\n7. U6 Kafka Sink: 4-6 days\n8. U7 E2E Fix: 2-3 days\n9. U8 HTTPS Support: 2-3 days\n10. Integration testing: 3-5 days\n11. Documentation: 2-3 days\n\nLet me make these reasonable estimates. I need to consider this is a software increment with 8 features, some related, some not. This is essentially a sprint of work.\n\nTotal estimate: roughly 36-53 days, let me settle on something around 40-45 days.\n\nLet me be more specific:\n\n1. Design and Architecture: 3 days\n2. U1 JDBC Source Module: 5 days\n3. U2 Redis Sink: 4 days\n4. U3 ZK Security: 7 days\n5. U4 Trigger Extension: 3 days\n6. U5 Custom Module Documentation: 2 days\n7. U6 Kafka Sink: 5 days\n8. U7 E2E Test Fix: 2 days\n9. U8 HTTPS Support: 2 days\n10. Cross-cutting integration testing: 3 days\n11. Documentation and release notes: 2 days\n\nTotal: 38 days\n\nThat seems reasonable. Let me think about technical decisions and assumptions.\n\nTechnical/Design Decisions:\n- Use Spring Boot's built-in HTTPS support for U8\n- Use Spring Data Redis for U2\n- Use Spring Kafka for U6\n- Use Spring's JdbcTemplate for U1\n- Use Apache Curator for ZK security (U3)\n- Use existing XD test infrastructure for E2E fix (U7)\n- Follow XD module conventions for sources and sinks\n- Provide SPI interface for Trigger extensibility (U4)\n\nAssumptions:\n- Single developer performing all work\n- 8-hour workdays\n- Existing XD build infrastructure is in place\n- Database drivers available as needed\n- Redis client libraries available\n- Kafka client libraries available\n- ZK already integrated\n- Spring Boot version already determined\n\nLet me finalize the estimates and structure the output as JSON.\n\nActually, I should be more thorough. Let me reconsider each item:\n\nU1 (JDBC Source): This is a new source module. Need to:\n- Define module metadata\n- Implement polling logic\n- Handle different SQL dialects/databases\n- Configuration for connection\n- Tests\n~5 days\n\nU2 (Redis Sink): Need to:\n- Connect to Redis\n- Serialize messages\n- Support different Redis data structures\n- Tests\n~4 days\n\nU3 (ZK Security): This is more complex. Need to:\n- Design ACL system\n- Integrate with XD's existing security\n- Update ZK client configurations\n- Admin UI updates\n- Tests\n~7 days\n\nU4 (Trigger Extension): Need to:\n- Define SPI interface\n- Refactor existing trigger code\n- Add registration mechanism\n- Tests\n~3 days\n\nU5 (Custom Module Docs): Need to:\n- Create example module\n- Write documentation\n~2 days\n\nU6 (Kafka Sink): Need to:\n- Integrate Kafka producer\n- Handle serialization\n- Support different partitioning\n- Tests\n~5 days\n\nU7 (E2E Test Fix): Need to:\n- Investigate socket hang up\n- Fix Grunt configuration\n- Update Protractor\n- Test fixes\n~2 days\n\nU8 (HTTPS): Need to:\n- Update build to use Spring Boot 1.1.7+\n- Configure HTTPS\n- Test\n~2 days\n\nTotal implementation: 30 days\nPlus architecture/design: 3 days\nPlus integration testing: 3 days\nPlus documentation: 2 days\nGrand total: 38 days\n\nLet me write this up as JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1502,
+      "completion_tokens": 2884,
+      "total_tokens": 4386,
+      "cost": 0.00387396,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00387396,
+        "upstream_inference_prompt_cost": 0.00041316,
+        "upstream_inference_completions_cost": 0.0034608
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1259,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Follow existing Spring XD module conventions for source/sink modules (U1, U2, U6) using the Options metadata DSL and MessageBatch/MesssageHandler abstractions.\",\n    \"Use Spring Data Redis (Lettuce/Jedis client) for the Redis sink (U2) with configurable serializers and key/value strategy.\",\n    \"Use Spring Kafka (KafkaTemplate-based) for the Kafka sink (U6) with pluggable serializers and partitioner support.\",\n    \"Use Spring JdbcTemplate / JdbcPollingChannelAdapter-style polling for the JDBC source (U1) with pluggable SQL queries, row mappers and a polling trigger.\",\n    \"For ZK node security (U3), use Apache Curator's ZK ACL APIs (digest auth) and integrate with Spring XD's existing security/role model; restrict access to zNodes used for stream/job/queue definitions.\",\n    \"For the extensible Trigger abstraction (U4), extract a public Trigger SPI interface and add a TriggerPlugin/TriggerFactory registration mechanism loaded via Spring's component scanning.\",\n    \"For HTTPS (U8), rely on Spring Boot 1.1.7+ embedded server TLS support (server.ssl.* properties) and update the build (spring-xd build file) to pick up the 1.1.7 SNAPSHOT as noted in the issue.\",\n    \"For the E2E test fix (U7), the root cause is the Protractor webdriver starting before the embedded XD admin server is fully listening; fix by using the existing grunt-protractor-webdriver pattern, splitting the test target, and adjusting timeouts/ports.\",\n    \"Reuse XD's existing module packaging, admin REST endpoints, and single-node/integration test infrastructure rather than introducing new frameworks.\",\n    \"All development is done by a single developer familiar with Spring XD internals (assumption), 8-hour workdays.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs all activities (architecture, implementation, test, documentation) in 8-hour workdays.\",\n    \"The Spring XD build environment, CI, Grunt/Protractor tooling, ZK integration, Spring Boot upgrade path, and admin server are already available and functional.\",\n    \"Required client libraries (JDBC drivers per database, Jedis/Lettuce, Kafka client, Curator) are available in the existing dependency management and do not require new repository setup.\",\n    \"No new infrastructure provisioning is required for databases, Redis, Kafka brokers, or ZK ensembles - existing local/docker-based test fixtures are sufficient.\",\n    \"User story U5 is treated as documentation + sample module only (per the 11/20 update), not a generic framework refactor.\",\n    \"HTTPS work (U8) assumes the 1.1.7 SNAPSHOT of Spring Boot can be referenced and that self-signed certs are sufficient for testing.\",\n    \"No production-grade hardening, performance tuning, or large-scale load testing is included beyond basic functional and integration tests.\",\n    \"Code review, merge and CI overhead is implicitly included within each activity estimate.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture and design\",\n      \"activity_description\": \"Review existing XD module SPI, security model, trigger internals and build configuration. Produce a short design note covering the JDBC source, Redis sink, Kafka sink, ZK ACL model, Trigger SPI, HTTPS wiring and E2E test fix approach. Identify shared abstractions to avoid duplication.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Native JDBC source module\",\n      \"activity_description\": \"Implement a new native source module that ingests rows by polling a JDBC datasource. Includes Options metadata (query, rowMapper, pollDelay, batchSize), integration with the Trigger abstraction, unit tests with an embedded DB and an integration test against H2/MySQL/Postgres.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Redis sink module\",\n      \"activity_description\": \"Implement a new native sink that writes XD messages to Redis (string/list/set/hash modes). Include Options for host/port, mode, key, key/value expression, TTL and serializer. Unit and integration tests using an embedded Redis or Testcontainers Redis.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - ZooKeeper node security\",\n      \"activity_description\": \"Design and implement ACL-based security for ZooKeeper zNodes used by XD. Add digest-based authentication, update CuratorFramework factory configuration, expose a way to provision credentials per user/app, update admin/CLI interactions to authenticate, and add tests covering read/write restrictions on stream/job zNodes.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Extensible Trigger abstraction\",\n      \"activity_description\": \"Refactor the internal Trigger class into a public SPI. Introduce a TriggerFactory / TriggerRegistry so that custom triggers can be registered as Spring beans. Provide a simple example custom trigger and document the extension point. Update existing triggers to conform to the new SPI.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Custom module guidance and example\",\n      \"activity_description\": \"Create a worked example custom source/sink module and accompanying documentation (README + reference guide section) showing recommended structure, Options metadata, packaging, unit/integration test layout, and registration with the XD container.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Kafka sink module\",\n      \"activity_description\": \"Implement a native Kafka sink that publishes XD messages to a Kafka broker. Include Options for brokers, topic, key/value serializers, partitioner, and async/batch settings. Unit tests with an embedded Kafka broker and an integration test verifying end-to-end publish.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Fix grunt test:e2e socket hang up (XD-2015)\",\n      \"activity_description\": \"Diagnose why grunt test:e2e fails with 'Fatal error: socket hang up' when server and tests run in one process. Fix the Grunt/Protractor configuration (webdriver lifecycle, port reuse, readiness wait) so that a single 'grunt test:e2e' invocation runs successfully. Verify by re-running the full e2e suite.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - HTTPS support for Admin server\",\n      \"activity_description\": \"Update the XD build to depend on Spring Boot 1.1.7 (SNAPSHOT) and enable HTTPS on the embedded admin server via server.ssl.* properties. Provide sample keystore, document how operators configure certificates, and add an integration test that hits the admin REST API over HTTPS.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration testing\",\n      \"activity_description\": \"Run combined integration tests that exercise JDBC source -> Redis sink, JDBC source -> Kafka sink, and a custom trigger against a secure ZK ensemble over HTTPS, to ensure the new pieces work together and do not regress existing functionality.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation, release notes and cleanup\",\n      \"activity_description\": \"Update reference guide and module catalog with the new JDBC source, Redis sink, Kafka sink, ZK security configuration, Trigger extension point and HTTPS setup. Write release notes summarizing the new features and the E2E test fix. Final code cleanup and review.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 38\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1502,
+    "completion_tokens": 2884,
+    "total_tokens": 4386,
+    "cost": 0.00387396,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00387396,
+      "upstream_inference_prompt_cost": 0.00041316,
+      "upstream_inference_completions_cost": 0.0034608
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1259,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788417211-9gOKg8DzkY1lcfQerZHH",
+    "object": "chat.completion",
+    "created": 1788417211,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3254,
+      "completion_tokens": 19,
+      "total_tokens": 3273,
+      "cost": 0.00064212,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1487,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00064212,
+        "upstream_inference_prompt_cost": 0.00061932,
+        "upstream_inference_completions_cost": 2.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Follow existing Spring XD module conventions for source/sink modules (U1, U2, U6) using the Options metadata DSL and MessageBatch/MesssageHandler abstractions.",
+      "Use Spring Data Redis (Lettuce/Jedis client) for the Redis sink (U2) with configurable serializers and key/value strategy.",
+      "Use Spring Kafka (KafkaTemplate-based) for the Kafka sink (U6) with pluggable serializers and partitioner support.",
+      "Use Spring JdbcTemplate / JdbcPollingChannelAdapter-style polling for the JDBC source (U1) with pluggable SQL queries, row mappers and a polling trigger.",
+      "For ZK node security (U3), use Apache Curator's ZK ACL APIs (digest auth) and integrate with Spring XD's existing security/role model; restrict access to zNodes used for stream/job/queue definitions.",
+      "For the extensible Trigger abstraction (U4), extract a public Trigger SPI interface and add a TriggerPlugin/TriggerFactory registration mechanism loaded via Spring's component scanning.",
+      "For HTTPS (U8), rely on Spring Boot 1.1.7+ embedded server TLS support (server.ssl.* properties) and update the build (spring-xd build file) to pick up the 1.1.7 SNAPSHOT as noted in the issue.",
+      "For the E2E test fix (U7), the root cause is the Protractor webdriver starting before the embedded XD admin server is fully listening; fix by using the existing grunt-protractor-webdriver pattern, splitting the test target, and adjusting timeouts/ports.",
+      "Reuse XD's existing module packaging, admin REST endpoints, and single-node/integration test infrastructure rather than introducing new frameworks.",
+      "All development is done by a single developer familiar with Spring XD internals (assumption), 8-hour workdays."
+    ],
+    "assumptions": [
+      "A single developer performs all activities (architecture, implementation, test, documentation) in 8-hour workdays.",
+      "The Spring XD build environment, CI, Grunt/Protractor tooling, ZK integration, Spring Boot upgrade path, and admin server are already available and functional.",
+      "Required client libraries (JDBC drivers per database, Jedis/Lettuce, Kafka client, Curator) are available in the existing dependency management and do not require new repository setup.",
+      "No new infrastructure provisioning is required for databases, Redis, Kafka brokers, or ZK ensembles - existing local/docker-based test fixtures are sufficient.",
+      "User story U5 is treated as documentation + sample module only (per the 11/20 update), not a generic framework refactor.",
+      "HTTPS work (U8) assumes the 1.1.7 SNAPSHOT of Spring Boot can be referenced and that self-signed certs are sufficient for testing.",
+      "No production-grade hardening, performance tuning, or large-scale load testing is included beyond basic functional and integration tests.",
+      "Code review, merge and CI overhead is implicitly included within each activity estimate."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Architecture and design",
+        "activity_description": "Review existing XD module SPI, security model, trigger internals and build configuration. Produce a short design note covering the JDBC source, Redis sink, Kafka sink, ZK ACL model, Trigger SPI, HTTPS wiring and E2E test fix approach. Identify shared abstractions to avoid duplication."
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Native JDBC source module",
+        "activity_description": "Implement a new native source module that ingests rows by polling a JDBC datasource. Includes Options metadata (query, rowMapper, pollDelay, batchSize), integration with the Trigger abstraction, unit tests with an embedded DB and an integration test against H2/MySQL/Postgres."
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Redis sink module",
+        "activity_description": "Implement a new native sink that writes XD messages to Redis (string/list/set/hash modes). Include Options for host/port, mode, key, key/value expression, TTL and serializer. Unit and integration tests using an embedded Redis or Testcontainers Redis."
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - ZooKeeper node security",
+        "activity_description": "Design and implement ACL-based security for ZooKeeper zNodes used by XD. Add digest-based authentication, update CuratorFramework factory configuration, expose a way to provision credentials per user/app, update admin/CLI interactions to authenticate, and add tests covering read/write restrictions on stream/job zNodes."
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Extensible Trigger abstraction",
+        "activity_description": "Refactor the internal Trigger class into a public SPI. Introduce a TriggerFactory / TriggerRegistry so that custom triggers can be registered as Spring beans. Provide a simple example custom trigger and document the extension point. Update existing triggers to conform to the new SPI."
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - Custom module guidance and example",
+        "activity_description": "Create a worked example custom source/sink module and accompanying documentation (README + reference guide section) showing recommended structure, Options metadata, packaging, unit/integration test layout, and registration with the XD container."
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - Kafka sink module",
+        "activity_description": "Implement a native Kafka sink that publishes XD messages to a Kafka broker. Include Options for brokers, topic, key/value serializers, partitioner, and async/batch settings. Unit tests with an embedded Kafka broker and an integration test verifying end-to-end publish."
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 - Fix grunt test:e2e socket hang up (XD-2015)",
+        "activity_description": "Diagnose why grunt test:e2e fails with 'Fatal error: socket hang up' when server and tests run in one process. Fix the Grunt/Protractor configuration (webdriver lifecycle, port reuse, readiness wait) so that a single 'grunt test:e2e' invocation runs successfully. Verify by re-running the full e2e suite."
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8 - HTTPS support for Admin server",
+        "activity_description": "Update the XD build to depend on Spring Boot 1.1.7 (SNAPSHOT) and enable HTTPS on the embedded admin server via server.ssl.* properties. Provide sample keystore, document how operators configure certificates, and add an integration test that hits the admin REST API over HTTPS."
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature integration testing",
+        "activity_description": "Run combined integration tests that exercise JDBC source -> Redis sink, JDBC source -> Kafka sink, and a custom trigger against a secure ZK ensemble over HTTPS, to ensure the new pieces work together and do not regress existing functionality."
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation, release notes and cleanup",
+        "activity_description": "Update reference guide and module catalog with the new JDBC source, Redis sink, Kafka sink, ZK security configuration, Trigger extension point and HTTPS setup. Write release notes summarizing the new features and the E2E test fix. Final code cleanup and review."
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 38
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

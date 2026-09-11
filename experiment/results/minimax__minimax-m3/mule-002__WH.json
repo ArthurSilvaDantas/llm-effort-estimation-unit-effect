@@ -1,0 +1,180 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "mule-002",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788420097-9yPCSbtUxaWpzTx6sahY",
+    "object": "chat.completion",
+    "created": 1788420097,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Reuse the existing DeploymentService interface to add domain lifecycle operations (deploy/undeploy/redeploy) and overload deploy(Application) with a properties map parameter to keep API backward compatible.\",\n    \"Model a 'Domain' as a first-class deployable artifact that owns a set of deployed Applications, stored in a shared in-memory/cluster-aware repository so redeploy can diff and update child apps atomically.\",\n    \"Author AMQP transport as an XSD-defined module (camel/amqp-style) that generates namespace-aware Spring beans, so U4/U6 are satisfied by a single schema artifact and IDE tooling (xmlbeans) gets autocompletion for free.\",\n    \"Provide the project skeleton as a Maven Archetype (mvn-archetype) with placeholder flows, connectors, and a shared configuration block referencing the AMQP namespace defined in U6.\",\n    \"Implement U7 as a service-activator/bridge that continuously polls the broker queue and dispatches MuleEvents to inbound flows, and U8 as a requestor/MessageReceiver that consumes a single message on demand within a flow.\",\n    \"Use a common AMQP connector configuration bean (id, host, port, credentials, virtualHost) declared once at the top-level config and referenced via the new namespace from U6 to avoid duplication.\",\n    \"Persist domain metadata and per-app override property maps in the existing Mule deployment registry; use Mule's standard object store so it works in HA/clustered deployments.\"\n  ],\n  \"assumptions\": [\n    \"The work is implemented by a single experienced Mule/Java developer (assumed 6-8 hours of effective coding per workday).\",\n    \"Mule core 3.x DeploymentService already exists; this increment extends it rather than rebuilding it from scratch.\",\n    \"A broker abstraction (e.g., RabbitMQ via amqp-client) is already available or included as a transitive test dependency; no broker protocol implementation is required.\",\n    \"The XSD is consumed via Spring/xmlbeans which is the standard Mule module packaging mechanism; no custom IDE plugin is built, only schemas that the IDE auto-discovers.\",\n    \"Unit and integration tests run against a local/in-memory broker; no full multi-node cluster test harness is built.\",\n    \"U3 (specs review) is interpreted as producing/updating the public-facing specification documents (e.g., Markdown/Confluence + a simple review feedback template) rather than building a commenting web app.\",\n    \"All times are pure development effort; meetings, code reviews, and waiting time are excluded from the reported hours.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Domain management in DeploymentService (U1)\",\n      \"activity_description\": \"Extend DeploymentService with deployDomain, undeployDomain and redeployDomain operations. Add a DomainRepository that tracks domain -> applications mapping, cascading undeploy and atomic redeploy (stop apps, swap artifacts, restart apps). Add corresponding MBean/JMX management hooks and unit tests.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Application deploy with property override (U2)\",\n      \"activity_description\": \"Overload DeploymentService.deploy with a deployment-override-properties parameter (Map<String,String>) and thread it through to the application's property-placeholder configuration so values supplied at deploy time win over packaged values. Add unit and integration tests covering precedence and missing-key fallback.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Specification artifacts for public review (U3)\",\n      \"activity_description\": \"Produce/refresh the markdown spec documents for the AMQP transport, the base skeleton and the domain deployment feature, publish them under docs/, and add a short CONTRIBUTING-style feedback template (e.g., GitHub issues or a markdown form) so community members can review and comment.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"AMQP transport XSD schema (U4)\",\n      \"activity_description\": \"Design and author the amqp.xsd schema covering connector, endpoint, and message-receiver element types with attribute groups, default values and documentation annotations. Wire the schema into the module so IDEs (IntelliJ, Eclipse) pick it up via META-INF/spring.schemas and offer autocompletion and validation.\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Maven archetype base project skeleton (U5)\",\n      \"activity_description\": \"Create a Maven archetype project (mule-project-skeleton) containing agreed placeholder structure: src/main/app, src/main/resources/config, transactional template, sample flow with AMQP endpoint placeholders, a parent POM that pulls in the AMQP module and a hello-world test flow. Validate by generating a project from the archetype and running it.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Centralized AMQP transport configuration (U6)\",\n      \"activity_description\": \"Refactor AMQP transport registration to expose a single top-level namespace and a reusable <amqp:connector> definition pattern. Update existing samples/tests to demonstrate declaring the connector once and referencing it from many flows. Ensure the XSD from A4 supports the global/bean reuse pattern.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Continuous AMQP message consumer (U7)\",\n      \"activity_description\": \"Implement an inbound message receiver that registers a consumer on the configured queue, creates a MuleEvent per message and dispatches it into the configured flow. Handle acknowledgements, redelivery, error routing, and connection recovery. Add unit tests with a stubbed channel and integration tests against a test broker.\",\n      \"most_likely_effort\": 26\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"On-demand/instant AMQP message consumer (U8)\",\n      \"activity_description\": \"Implement an outbound message processor / <amqp:consume> component usable inside a flow that fetches a single message (with optional timeout) and returns it as a MuleMessage payload. Add unit and integration tests covering empty-queue, timeout and payload transformation cases.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-feature integration and CI wiring\",\n      \"activity_description\": \"Wire all features together in a sample domain that deploys an app using the skeleton, the central AMQP config, both continuous and instant consumers, and property overrides. Add a CI job (Maven) running unit and integration tests on every push.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Developer and user documentation\",\n      \"activity_description\": \"Write usage docs: how to deploy/undeploy/redeploy a domain, how to override properties, AMQP namespace reference (auto-generated from XSD), continuous vs instant consumer cookbook, and a getting-started for the archetype.\",\n      \"most_likely_effort\": 14\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 182\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification for Mule ESB and break down the development activities needed to implement these user stories.\n\nThe user stories are:\n- U1: Domain management (deploy/undeploy/redeploy domains with apps) - DeploymentService\n- U2: Deploy new application with property override via DeploymentService\n- U3: Review specs for product owners/community members\n- U4: AMQP schema for IDE help\n- U5: Base project skeleton\n- U6: Single point AMQP transport configuration\n- U7: Continuous AMQP message consumption\n- U8: Instant AMQP message consumption\n\nLet me create a WBS and estimate effort for each activity.\n\nActivities I see:\n1. Domain management DeploymentService (U1)\n2. Application deployment with property override (U2)\n3. Spec documentation/review (U3)\n4. AMQP XSD schema development (U4)\n5. Base project skeleton/Maven archetype (U5)\n6. AMQP transport namespace/config refactor (U6)\n7. Continuous AMQP message consumer (U7)\n8. Instant AMQP message consumer (U8)\n9. Testing/QA\n10. Documentation\n11. Integration\n\nLet me estimate each in work-hours realistically.\n\nFor a senior developer:\n- U1 Domain mgmt: ~24h\n- U2 App deploy w/ props: ~16h\n- U3 Specs review/docs: ~8h\n- U4 AMQP XSD: ~20h\n- U5 Base skeleton: ~16h\n- U6 AMQP config namespace: ~20h\n- U7 Continuous consumer: ~24h\n- U8 Instant consumer: ~16h\n- Tests: ~24h\n- Docs: ~12h\n- Integration/CI: ~8h\n\nTotal: ~188h\n\nLet me refine.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification for Mule ESB and break down the development activities needed to implement these user stories.\n\nThe user stories are:\n- U1: Domain management (deploy/undeploy/redeploy domains with apps) - DeploymentService\n- U2: Deploy new application with property override via DeploymentService\n- U3: Review specs for product owners/community members\n- U4: AMQP schema for IDE help\n- U5: Base project skeleton\n- U6: Single point AMQP transport configuration\n- U7: Continuous AMQP message consumption\n- U8: Instant AMQP message consumption\n\nLet me create a WBS and estimate effort for each activity.\n\nActivities I see:\n1. Domain management DeploymentService (U1)\n2. Application deployment with property override (U2)\n3. Spec documentation/review (U3)\n4. AMQP XSD schema development (U4)\n5. Base project skeleton/Maven archetype (U5)\n6. AMQP transport namespace/config refactor (U6)\n7. Continuous AMQP message consumer (U7)\n8. Instant AMQP message consumer (U8)\n9. Testing/QA\n10. Documentation\n11. Integration\n\nLet me estimate each in work-hours realistically.\n\nFor a senior developer:\n- U1 Domain mgmt: ~24h\n- U2 App deploy w/ props: ~16h\n- U3 Specs review/docs: ~8h\n- U4 AMQP XSD: ~20h\n- U5 Base skeleton: ~16h\n- U6 AMQP config namespace: ~20h\n- U7 Continuous consumer: ~24h\n- U8 Instant consumer: ~16h\n- Tests: ~24h\n- Docs: ~12h\n- Integration/CI: ~8h\n\nTotal: ~188h\n\nLet me refine.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1187,
+      "completion_tokens": 1988,
+      "total_tokens": 3175,
+      "cost": 0.00270426,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00270426,
+        "upstream_inference_prompt_cost": 0.00031866,
+        "upstream_inference_completions_cost": 0.0023856
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 387,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Reuse the existing DeploymentService interface to add domain lifecycle operations (deploy/undeploy/redeploy) and overload deploy(Application) with a properties map parameter to keep API backward compatible.\",\n    \"Model a 'Domain' as a first-class deployable artifact that owns a set of deployed Applications, stored in a shared in-memory/cluster-aware repository so redeploy can diff and update child apps atomically.\",\n    \"Author AMQP transport as an XSD-defined module (camel/amqp-style) that generates namespace-aware Spring beans, so U4/U6 are satisfied by a single schema artifact and IDE tooling (xmlbeans) gets autocompletion for free.\",\n    \"Provide the project skeleton as a Maven Archetype (mvn-archetype) with placeholder flows, connectors, and a shared configuration block referencing the AMQP namespace defined in U6.\",\n    \"Implement U7 as a service-activator/bridge that continuously polls the broker queue and dispatches MuleEvents to inbound flows, and U8 as a requestor/MessageReceiver that consumes a single message on demand within a flow.\",\n    \"Use a common AMQP connector configuration bean (id, host, port, credentials, virtualHost) declared once at the top-level config and referenced via the new namespace from U6 to avoid duplication.\",\n    \"Persist domain metadata and per-app override property maps in the existing Mule deployment registry; use Mule's standard object store so it works in HA/clustered deployments.\"\n  ],\n  \"assumptions\": [\n    \"The work is implemented by a single experienced Mule/Java developer (assumed 6-8 hours of effective coding per workday).\",\n    \"Mule core 3.x DeploymentService already exists; this increment extends it rather than rebuilding it from scratch.\",\n    \"A broker abstraction (e.g., RabbitMQ via amqp-client) is already available or included as a transitive test dependency; no broker protocol implementation is required.\",\n    \"The XSD is consumed via Spring/xmlbeans which is the standard Mule module packaging mechanism; no custom IDE plugin is built, only schemas that the IDE auto-discovers.\",\n    \"Unit and integration tests run against a local/in-memory broker; no full multi-node cluster test harness is built.\",\n    \"U3 (specs review) is interpreted as producing/updating the public-facing specification documents (e.g., Markdown/Confluence + a simple review feedback template) rather than building a commenting web app.\",\n    \"All times are pure development effort; meetings, code reviews, and waiting time are excluded from the reported hours.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Domain management in DeploymentService (U1)\",\n      \"activity_description\": \"Extend DeploymentService with deployDomain, undeployDomain and redeployDomain operations. Add a DomainRepository that tracks domain -> applications mapping, cascading undeploy and atomic redeploy (stop apps, swap artifacts, restart apps). Add corresponding MBean/JMX management hooks and unit tests.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Application deploy with property override (U2)\",\n      \"activity_description\": \"Overload DeploymentService.deploy with a deployment-override-properties parameter (Map<String,String>) and thread it through to the application's property-placeholder configuration so values supplied at deploy time win over packaged values. Add unit and integration tests covering precedence and missing-key fallback.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Specification artifacts for public review (U3)\",\n      \"activity_description\": \"Produce/refresh the markdown spec documents for the AMQP transport, the base skeleton and the domain deployment feature, publish them under docs/, and add a short CONTRIBUTING-style feedback template (e.g., GitHub issues or a markdown form) so community members can review and comment.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"AMQP transport XSD schema (U4)\",\n      \"activity_description\": \"Design and author the amqp.xsd schema covering connector, endpoint, and message-receiver element types with attribute groups, default values and documentation annotations. Wire the schema into the module so IDEs (IntelliJ, Eclipse) pick it up via META-INF/spring.schemas and offer autocompletion and validation.\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Maven archetype base project skeleton (U5)\",\n      \"activity_description\": \"Create a Maven archetype project (mule-project-skeleton) containing agreed placeholder structure: src/main/app, src/main/resources/config, transactional template, sample flow with AMQP endpoint placeholders, a parent POM that pulls in the AMQP module and a hello-world test flow. Validate by generating a project from the archetype and running it.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Centralized AMQP transport configuration (U6)\",\n      \"activity_description\": \"Refactor AMQP transport registration to expose a single top-level namespace and a reusable <amqp:connector> definition pattern. Update existing samples/tests to demonstrate declaring the connector once and referencing it from many flows. Ensure the XSD from A4 supports the global/bean reuse pattern.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Continuous AMQP message consumer (U7)\",\n      \"activity_description\": \"Implement an inbound message receiver that registers a consumer on the configured queue, creates a MuleEvent per message and dispatches it into the configured flow. Handle acknowledgements, redelivery, error routing, and connection recovery. Add unit tests with a stubbed channel and integration tests against a test broker.\",\n      \"most_likely_effort\": 26\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"On-demand/instant AMQP message consumer (U8)\",\n      \"activity_description\": \"Implement an outbound message processor / <amqp:consume> component usable inside a flow that fetches a single message (with optional timeout) and returns it as a MuleMessage payload. Add unit and integration tests covering empty-queue, timeout and payload transformation cases.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-feature integration and CI wiring\",\n      \"activity_description\": \"Wire all features together in a sample domain that deploys an app using the skeleton, the central AMQP config, both continuous and instant consumers, and property overrides. Add a CI job (Maven) running unit and integration tests on every push.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Developer and user documentation\",\n      \"activity_description\": \"Write usage docs: how to deploy/undeploy/redeploy a domain, how to override properties, AMQP namespace reference (auto-generated from XSD), continuous vs instant consumer cookbook, and a getting-started for the archetype.\",\n      \"most_likely_effort\": 14\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 182\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1187,
+    "completion_tokens": 1988,
+    "total_tokens": 3175,
+    "cost": 0.00270426,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00270426,
+      "upstream_inference_prompt_cost": 0.00031866,
+      "upstream_inference_completions_cost": 0.0023856
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 387,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Reuse the existing DeploymentService interface to add domain lifecycle operations (deploy/undeploy/redeploy) and overload deploy(Application) with a properties map parameter to keep API backward compatible.",
+      "Model a 'Domain' as a first-class deployable artifact that owns a set of deployed Applications, stored in a shared in-memory/cluster-aware repository so redeploy can diff and update child apps atomically.",
+      "Author AMQP transport as an XSD-defined module (camel/amqp-style) that generates namespace-aware Spring beans, so U4/U6 are satisfied by a single schema artifact and IDE tooling (xmlbeans) gets autocompletion for free.",
+      "Provide the project skeleton as a Maven Archetype (mvn-archetype) with placeholder flows, connectors, and a shared configuration block referencing the AMQP namespace defined in U6.",
+      "Implement U7 as a service-activator/bridge that continuously polls the broker queue and dispatches MuleEvents to inbound flows, and U8 as a requestor/MessageReceiver that consumes a single message on demand within a flow.",
+      "Use a common AMQP connector configuration bean (id, host, port, credentials, virtualHost) declared once at the top-level config and referenced via the new namespace from U6 to avoid duplication.",
+      "Persist domain metadata and per-app override property maps in the existing Mule deployment registry; use Mule's standard object store so it works in HA/clustered deployments."
+    ],
+    "assumptions": [
+      "The work is implemented by a single experienced Mule/Java developer (assumed 6-8 hours of effective coding per workday).",
+      "Mule core 3.x DeploymentService already exists; this increment extends it rather than rebuilding it from scratch.",
+      "A broker abstraction (e.g., RabbitMQ via amqp-client) is already available or included as a transitive test dependency; no broker protocol implementation is required.",
+      "The XSD is consumed via Spring/xmlbeans which is the standard Mule module packaging mechanism; no custom IDE plugin is built, only schemas that the IDE auto-discovers.",
+      "Unit and integration tests run against a local/in-memory broker; no full multi-node cluster test harness is built.",
+      "U3 (specs review) is interpreted as producing/updating the public-facing specification documents (e.g., Markdown/Confluence + a simple review feedback template) rather than building a commenting web app.",
+      "All times are pure development effort; meetings, code reviews, and waiting time are excluded from the reported hours."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Domain management in DeploymentService (U1)",
+        "activity_description": "Extend DeploymentService with deployDomain, undeployDomain and redeployDomain operations. Add a DomainRepository that tracks domain -> applications mapping, cascading undeploy and atomic redeploy (stop apps, swap artifacts, restart apps). Add corresponding MBean/JMX management hooks and unit tests.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Application deploy with property override (U2)",
+        "activity_description": "Overload DeploymentService.deploy with a deployment-override-properties parameter (Map<String,String>) and thread it through to the application's property-placeholder configuration so values supplied at deploy time win over packaged values. Add unit and integration tests covering precedence and missing-key fallback.",
+        "most_likely_effort": 18
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Specification artifacts for public review (U3)",
+        "activity_description": "Produce/refresh the markdown spec documents for the AMQP transport, the base skeleton and the domain deployment feature, publish them under docs/, and add a short CONTRIBUTING-style feedback template (e.g., GitHub issues or a markdown form) so community members can review and comment.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "AMQP transport XSD schema (U4)",
+        "activity_description": "Design and author the amqp.xsd schema covering connector, endpoint, and message-receiver element types with attribute groups, default values and documentation annotations. Wire the schema into the module so IDEs (IntelliJ, Eclipse) pick it up via META-INF/spring.schemas and offer autocompletion and validation.",
+        "most_likely_effort": 22
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Maven archetype base project skeleton (U5)",
+        "activity_description": "Create a Maven archetype project (mule-project-skeleton) containing agreed placeholder structure: src/main/app, src/main/resources/config, transactional template, sample flow with AMQP endpoint placeholders, a parent POM that pulls in the AMQP module and a hello-world test flow. Validate by generating a project from the archetype and running it.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Centralized AMQP transport configuration (U6)",
+        "activity_description": "Refactor AMQP transport registration to expose a single top-level namespace and a reusable <amqp:connector> definition pattern. Update existing samples/tests to demonstrate declaring the connector once and referencing it from many flows. Ensure the XSD from A4 supports the global/bean reuse pattern.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Continuous AMQP message consumer (U7)",
+        "activity_description": "Implement an inbound message receiver that registers a consumer on the configured queue, creates a MuleEvent per message and dispatches it into the configured flow. Handle acknowledgements, redelivery, error routing, and connection recovery. Add unit tests with a stubbed channel and integration tests against a test broker.",
+        "most_likely_effort": 26
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "On-demand/instant AMQP message consumer (U8)",
+        "activity_description": "Implement an outbound message processor / <amqp:consume> component usable inside a flow that fetches a single message (with optional timeout) and returns it as a MuleMessage payload. Add unit and integration tests covering empty-queue, timeout and payload transformation cases.",
+        "most_likely_effort": 18
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Cross-feature integration and CI wiring",
+        "activity_description": "Wire all features together in a sample domain that deploys an app using the skeleton, the central AMQP config, both continuous and instant consumers, and property overrides. Add a CI job (Maven) running unit and integration tests on every push.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Developer and user documentation",
+        "activity_description": "Write usage docs: how to deploy/undeploy/redeploy a domain, how to override properties, AMQP namespace reference (auto-generated from XSD), continuous vs instant consumer cookbook, and a getting-started for the archetype.",
+        "most_likely_effort": 14
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 182
+    }
+  }
+}

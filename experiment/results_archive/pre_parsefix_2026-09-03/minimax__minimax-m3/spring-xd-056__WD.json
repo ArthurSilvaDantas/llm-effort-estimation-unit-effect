@@ -1,0 +1,165 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-056",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "failed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [
+    {
+      "stage": "estimation",
+      "outcome": "parse_failure",
+      "error_type": "JSONDecodeError",
+      "error_message": "Extra data: line 83 column 1 (char 6389)"
+    }
+  ],
+  "estimation_response": {
+    "id": "gen-1788414207-BV7cNi3XRdsQgABiFIab",
+    "object": "chat.completion",
+    "created": 1788414207,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Spring Cloud Stream as the target module registry/runtime for sinks, sources, and processors (U1, U7, U8).\",\n    \"Implement the HDFS sink (U1) on top of the Hadoop FileSystem API (HDFS client) and expose it as a deployable Spring Cloud Stream app with standard configuration properties (path, format, partitioning, rolling policy).\",\n    \"Reuse Spring Shell as the foundation for the new hadoop:* shell commands (U2) and route them through the existing shell command infrastructure targeted by U5.\",\n    \"For composed jobs (U3, U4), evaluate a relational database (e.g., HSQLDB/PostgreSQL/MySQL) backed by Spring Batch and Spring Cloud Task job repositories as the primary persistence option, with an in-memory implementation available for tests.\",\n    \"Model composed-job orchestration (U4) as a parent Spring Batch job that launches child jobs as steps, using the chosen repository to persist definitions and execution state.\",\n    \"Implement expression-based message binding (U6) using Spring Expression Language (SpEL) evaluated against incoming Message headers/payload, configurable per module binding.\",\n    \"Treat the JDBC (U7) and Kafka (U8) module moves as cross-repo migrations: copy the existing XD module code into the s-c-s repo, adapt packaging, dependencies, and binder configuration, and remove the old XD versions.\",\n    \"Shell command isolation tests (U5) will be implemented as plain JUnit tests that instantiate the command beans directly with mocked collaborators, without booting the full stream runtime.\",\n    \"All new modules ship with unit tests; cross-module behavior is verified by a small set of integration tests against an embedded broker/filesystem where possible.\"\n  ],\n  \"assumptions\": [\n    \"A single developer implements all activities full-time; one workday equals 8 productive hours.\",\n    \"The Spring XD source code and existing JDBC/Kafka modules are available and can be moved/adapted with no third-party blockers.\",\n    \"Hadoop client dependencies, JDBC drivers, and Kafka binder dependencies are already available in the target build system.\",\n    \"No production hardening (security review, performance tuning, multi-cluster HA) is included beyond a working increment that passes the new tests.\",\n    \"Documentation is limited to README/usage updates for new modules and shell commands; no separate user guide rewrite is included.\",\n    \"Effort estimates include coding, local debugging, unit tests, and code review iterations, but exclude calendar waits (e.g., CI, reviews by other people).\",\n    \"U3 is treated primarily as a design/spike plus a minimal working repository implementation; a fully production-grade job repository is out of scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture and design\",\n      \"activity_description\": \"Establish the overall design for the increment: module registry conventions, hadoop:* shell command set, composed-job repository choice, expression-binding model, and the JDBC/Kafka module migration plan. Produce short design notes for each user story.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"HDFS sink module (U1)\",\n      \"activity_description\": \"Implement a Spring Cloud Stream sink that writes incoming messages to HDFS. Includes configuration metadata, partitioning support, file rolling policy, and unit tests.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Hadoop shell commands (U2)\",\n      \"activity_description\": \"Add hadoop:* commands to the shell (e.g., ls, cat, copy, delete, mkdir) using Spring Shell, backed by the Hadoop FileSystem API. Includes command-level unit tests and help text.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Composed jobs repository exploration (U3)\",\n      \"activity_description\": \"Investigate repository options for storing and retrieving composed job definitions, choose one (relational DB-backed), and implement a minimal CRUD repository interface and in-memory/DB-backed implementation with unit tests.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Composed jobs orchestration (U4)\",\n      \"activity_description\": \"Implement orchestration of composed jobs: parent job that runs child jobs in order or based on exit status, uses the repository from A4 for definition and state, and exposes them through shell/API. Includes unit and integration tests.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Shell command isolation test coverage (U5)\",\n      \"activity_description\": \"Add JUnit-based isolation tests for the existing and new shell commands (including hadoop:* from A3) by instantiating command beans directly with mocked collaborators, avoiding full stream deployment.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Expression-based message binding (U6)\",\n      \"activity_description\": \"Implement XD-like binding of incoming messages to module inputs using SpEL expressions, so that headers/payload fields can be mapped to method parameters or downstream channels. Includes configuration support and unit tests.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"JDBC module migration (U7)\",\n      \"activity_description\": \"Move the JDBC module from XD into the s-c-s repo, repackage it as a Spring Cloud Stream sink, update dependencies and tests, and remove the XD version.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Kafka module migration (U8)\",\n      \"activity_description\": \"Move the Kafka module from XD into the s-c-s repo, repackage it as a Spring Cloud Stream source, update binder configuration and tests, and remove the XD version.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing and end-to-end validation\",\n      \"activity_description\": \"Run a small set of integration tests that exercise the new HDFS sink, JDBC sink, Kafka source, composed jobs, and hadoop shell commands together against embedded infrastructure.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and cleanup\",\n      \"activity_description\": \"Update module READMEs, shell command help, and a short release note describing the new and migrated modules; final code cleanup and minor refactors.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 27\n  }\n}\n```\n\nNotes on the effort figures embedded above (workdays):\n\n- A1 Architecture and design: 2\n- A2 HDFS sink module (U1): 3\n- A3 Hadoop shell commands (U2): 2\n- A4 Composed jobs repository exploration (U3): 2\n- A5 Composed jobs orchestration (U4): 5\n- A6 Shell command isolation test coverage (U5): 3\n- A7 Expression-based message binding (U6): 4\n- A8 JDBC module migration (U7): 2\n- A9 Kafka module migration (U8): 2\n- A10 Integration testing and end-to-end validation: 2\n- A11 Documentation and cleanup: 1\n\nSum: 2 + 3 + 2 + 2 + 5 + 3 + 4 + 2 + 2 + 2 + 1 = **27 workdays** (most likely total).",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. The specification describes a Spring-related project (likely Spring Cloud Data Flow or Spring Cloud Stream based on the \"s-c-d\" and \"s-c-s\" abbreviations) with 8 user stories that need to be implemented.\n\nLet me break down the user stories:\n- U1: Add HDFS sink to module registry (streaming pipeline to write to Hadoop)\n- U2: Add support for Hadoop commands in shell\n- U3: Explore repository options for \"composed jobs\" (read/write job definitions)\n- U4: Orchestrate composed jobs (multiple jobs into single workflow)\n- U5: Add test coverage for shell commands in isolation\n- U6: Support XD-like features where modules bind to incoming messages via expressions\n- U7: Move JDBC module from XD to s-c-s repo (use as sink)\n- U8: Move Kafka module from XD to s-c-s repo (use as source)\n\nNow let me create a Work Breakdown Structure (WBS) for these activities:\n\n1. **Project Setup & Architecture** - Initial setup, design decisions, module structure\n2. **HDFS Sink Module (U1)** - Develop the HDFS sink for module registry\n3. **Hadoop Shell Commands (U2)** - Add hadoop commands support in shell\n4. **Composed Jobs Repository (U3)** - Research and implement repository options\n5. **Composed Jobs Orchestration (U4)** - Implement workflow orchestration\n6. **Shell Command Test Coverage (U5)** - Add isolated test coverage for shell commands\n7. **Message Binding via Expressions (U6)** - Implement expression-based message binding\n8. **JDBC Module Migration (U7)** - Move JDBC module from XD to s-c-s repo\n9. **Kafka Module Migration (U8)** - Move Kafka module from XD to s-c-s repo\n10. **Integration Testing** - End-to-end testing\n11. **Documentation** - Update user/developer docs\n\nLet me estimate each activity in workdays (1 workday = 8 hours):\n\nTechnical and Design Decisions:\n- Use Spring Cloud Stream for streaming modules\n- HDFS integration using Hadoop FileSystem API\n- Shell commands implemented using Spring Shell\n- Composed jobs using Spring Batch composite jobs\n- Expression binding using SpEL\n- Module migration preserving existing API\n\nAssumptions:\n- Existing Spring XD codebase is available\n- Hadoop client libraries available\n- Spring Cloud Stream already set up\n- Single developer implementing all\n- Standard working day of 8 hours\n- Includes unit tests and basic integration tests for each feature\n\nLet me estimate efforts:\n\n1. Project Setup & Architecture Design: 2 workdays\n2. HDFS Sink Module (U1): 3 workdays (new module, configuration, tests)\n3. Hadoop Shell Commands (U2): 2 workdays (shell command implementation)\n4. Composed Jobs Repository Research (U3): 2 workdays (exploration/spike)\n5. Composed Jobs Orchestration (U4): 5 workdays (complex workflow)\n6. Shell Command Test Coverage (U5): 3 workdays (test infrastructure + tests)\n7. Message Binding via Expressions (U6): 4 workdays (core feature)\n8. JDBC Module Migration (U7): 2 workdays (move code, adapt)\n9. Kafka Module Migration (U8): 2 workdays (move code, adapt)\n10. Integration Testing & QA: 3 workdays\n11. Documentation: 1 workday\n\nTotal: 2+3+2+2+5+3+4+2+2+3+1 = 29 workdays\n\nLet me reconsider some estimates. U4 (orchestrate composed jobs) is a complex feature that might need more. U6 (expression-based binding) is also complex.\n\nLet me also consider that the activities need code, tests, and review. The estimates should reflect the most likely effort including all these aspects.\n\nRefined estimates:\n1. Architecture & Design: 2 days\n2. HDFS Sink (U1): 3 days\n3. Hadoop Shell Commands (U2): 2 days\n4. Composed Jobs Repository (U3): 2 days\n5. Composed Jobs Orchestration (U4): 5 days\n6. Shell Command Test Coverage (U5): 3 days\n7. Expression-based Message Binding (U6): 4 days\n8. JDBC Module Migration (U7): 2 days\n9. Kafka Module Migration (U8): 2 days\n10. Integration Testing: 2 days\n11. Documentation: 1 day\n\nTotal: 28 workdays\n\nLet me finalize this and output as JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. The specification describes a Spring-related project (likely Spring Cloud Data Flow or Spring Cloud Stream based on the \"s-c-d\" and \"s-c-s\" abbreviations) with 8 user stories that need to be implemented.\n\nLet me break down the user stories:\n- U1: Add HDFS sink to module registry (streaming pipeline to write to Hadoop)\n- U2: Add support for Hadoop commands in shell\n- U3: Explore repository options for \"composed jobs\" (read/write job definitions)\n- U4: Orchestrate composed jobs (multiple jobs into single workflow)\n- U5: Add test coverage for shell commands in isolation\n- U6: Support XD-like features where modules bind to incoming messages via expressions\n- U7: Move JDBC module from XD to s-c-s repo (use as sink)\n- U8: Move Kafka module from XD to s-c-s repo (use as source)\n\nNow let me create a Work Breakdown Structure (WBS) for these activities:\n\n1. **Project Setup & Architecture** - Initial setup, design decisions, module structure\n2. **HDFS Sink Module (U1)** - Develop the HDFS sink for module registry\n3. **Hadoop Shell Commands (U2)** - Add hadoop commands support in shell\n4. **Composed Jobs Repository (U3)** - Research and implement repository options\n5. **Composed Jobs Orchestration (U4)** - Implement workflow orchestration\n6. **Shell Command Test Coverage (U5)** - Add isolated test coverage for shell commands\n7. **Message Binding via Expressions (U6)** - Implement expression-based message binding\n8. **JDBC Module Migration (U7)** - Move JDBC module from XD to s-c-s repo\n9. **Kafka Module Migration (U8)** - Move Kafka module from XD to s-c-s repo\n10. **Integration Testing** - End-to-end testing\n11. **Documentation** - Update user/developer docs\n\nLet me estimate each activity in workdays (1 workday = 8 hours):\n\nTechnical and Design Decisions:\n- Use Spring Cloud Stream for streaming modules\n- HDFS integration using Hadoop FileSystem API\n- Shell commands implemented using Spring Shell\n- Composed jobs using Spring Batch composite jobs\n- Expression binding using SpEL\n- Module migration preserving existing API\n\nAssumptions:\n- Existing Spring XD codebase is available\n- Hadoop client libraries available\n- Spring Cloud Stream already set up\n- Single developer implementing all\n- Standard working day of 8 hours\n- Includes unit tests and basic integration tests for each feature\n\nLet me estimate efforts:\n\n1. Project Setup & Architecture Design: 2 workdays\n2. HDFS Sink Module (U1): 3 workdays (new module, configuration, tests)\n3. Hadoop Shell Commands (U2): 2 workdays (shell command implementation)\n4. Composed Jobs Repository Research (U3): 2 workdays (exploration/spike)\n5. Composed Jobs Orchestration (U4): 5 workdays (complex workflow)\n6. Shell Command Test Coverage (U5): 3 workdays (test infrastructure + tests)\n7. Message Binding via Expressions (U6): 4 workdays (core feature)\n8. JDBC Module Migration (U7): 2 workdays (move code, adapt)\n9. Kafka Module Migration (U8): 2 workdays (move code, adapt)\n10. Integration Testing & QA: 3 workdays\n11. Documentation: 1 workday\n\nTotal: 2+3+2+2+5+3+4+2+2+3+1 = 29 workdays\n\nLet me reconsider some estimates. U4 (orchestrate composed jobs) is a complex feature that might need more. U6 (expression-based binding) is also complex.\n\nLet me also consider that the activities need code, tests, and review. The estimates should reflect the most likely effort including all these aspects.\n\nRefined estimates:\n1. Architecture & Design: 2 days\n2. HDFS Sink (U1): 3 days\n3. Hadoop Shell Commands (U2): 2 days\n4. Composed Jobs Repository (U3): 2 days\n5. Composed Jobs Orchestration (U4): 5 days\n6. Shell Command Test Coverage (U5): 3 days\n7. Expression-based Message Binding (U6): 4 days\n8. JDBC Module Migration (U7): 2 days\n9. Kafka Module Migration (U8): 2 days\n10. Integration Testing: 2 days\n11. Documentation: 1 day\n\nTotal: 28 workdays\n\nLet me finalize this and output as JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1400,
+      "completion_tokens": 2541,
+      "total_tokens": 3941,
+      "cost": 0.00343176,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00343176,
+        "upstream_inference_prompt_cost": 0.00038256,
+        "upstream_inference_completions_cost": 0.0030492
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 980,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Spring Cloud Stream as the target module registry/runtime for sinks, sources, and processors (U1, U7, U8).\",\n    \"Implement the HDFS sink (U1) on top of the Hadoop FileSystem API (HDFS client) and expose it as a deployable Spring Cloud Stream app with standard configuration properties (path, format, partitioning, rolling policy).\",\n    \"Reuse Spring Shell as the foundation for the new hadoop:* shell commands (U2) and route them through the existing shell command infrastructure targeted by U5.\",\n    \"For composed jobs (U3, U4), evaluate a relational database (e.g., HSQLDB/PostgreSQL/MySQL) backed by Spring Batch and Spring Cloud Task job repositories as the primary persistence option, with an in-memory implementation available for tests.\",\n    \"Model composed-job orchestration (U4) as a parent Spring Batch job that launches child jobs as steps, using the chosen repository to persist definitions and execution state.\",\n    \"Implement expression-based message binding (U6) using Spring Expression Language (SpEL) evaluated against incoming Message headers/payload, configurable per module binding.\",\n    \"Treat the JDBC (U7) and Kafka (U8) module moves as cross-repo migrations: copy the existing XD module code into the s-c-s repo, adapt packaging, dependencies, and binder configuration, and remove the old XD versions.\",\n    \"Shell command isolation tests (U5) will be implemented as plain JUnit tests that instantiate the command beans directly with mocked collaborators, without booting the full stream runtime.\",\n    \"All new modules ship with unit tests; cross-module behavior is verified by a small set of integration tests against an embedded broker/filesystem where possible.\"\n  ],\n  \"assumptions\": [\n    \"A single developer implements all activities full-time; one workday equals 8 productive hours.\",\n    \"The Spring XD source code and existing JDBC/Kafka modules are available and can be moved/adapted with no third-party blockers.\",\n    \"Hadoop client dependencies, JDBC drivers, and Kafka binder dependencies are already available in the target build system.\",\n    \"No production hardening (security review, performance tuning, multi-cluster HA) is included beyond a working increment that passes the new tests.\",\n    \"Documentation is limited to README/usage updates for new modules and shell commands; no separate user guide rewrite is included.\",\n    \"Effort estimates include coding, local debugging, unit tests, and code review iterations, but exclude calendar waits (e.g., CI, reviews by other people).\",\n    \"U3 is treated primarily as a design/spike plus a minimal working repository implementation; a fully production-grade job repository is out of scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture and design\",\n      \"activity_description\": \"Establish the overall design for the increment: module registry conventions, hadoop:* shell command set, composed-job repository choice, expression-binding model, and the JDBC/Kafka module migration plan. Produce short design notes for each user story.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"HDFS sink module (U1)\",\n      \"activity_description\": \"Implement a Spring Cloud Stream sink that writes incoming messages to HDFS. Includes configuration metadata, partitioning support, file rolling policy, and unit tests.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Hadoop shell commands (U2)\",\n      \"activity_description\": \"Add hadoop:* commands to the shell (e.g., ls, cat, copy, delete, mkdir) using Spring Shell, backed by the Hadoop FileSystem API. Includes command-level unit tests and help text.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Composed jobs repository exploration (U3)\",\n      \"activity_description\": \"Investigate repository options for storing and retrieving composed job definitions, choose one (relational DB-backed), and implement a minimal CRUD repository interface and in-memory/DB-backed implementation with unit tests.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Composed jobs orchestration (U4)\",\n      \"activity_description\": \"Implement orchestration of composed jobs: parent job that runs child jobs in order or based on exit status, uses the repository from A4 for definition and state, and exposes them through shell/API. Includes unit and integration tests.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Shell command isolation test coverage (U5)\",\n      \"activity_description\": \"Add JUnit-based isolation tests for the existing and new shell commands (including hadoop:* from A3) by instantiating command beans directly with mocked collaborators, avoiding full stream deployment.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Expression-based message binding (U6)\",\n      \"activity_description\": \"Implement XD-like binding of incoming messages to module inputs using SpEL expressions, so that headers/payload fields can be mapped to method parameters or downstream channels. Includes configuration support and unit tests.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"JDBC module migration (U7)\",\n      \"activity_description\": \"Move the JDBC module from XD into the s-c-s repo, repackage it as a Spring Cloud Stream sink, update dependencies and tests, and remove the XD version.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Kafka module migration (U8)\",\n      \"activity_description\": \"Move the Kafka module from XD into the s-c-s repo, repackage it as a Spring Cloud Stream source, update binder configuration and tests, and remove the XD version.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing and end-to-end validation\",\n      \"activity_description\": \"Run a small set of integration tests that exercise the new HDFS sink, JDBC sink, Kafka source, composed jobs, and hadoop shell commands together against embedded infrastructure.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and cleanup\",\n      \"activity_description\": \"Update module READMEs, shell command help, and a short release note describing the new and migrated modules; final code cleanup and minor refactors.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 27\n  }\n}\n```\n\nNotes on the effort figures embedded above (workdays):\n\n- A1 Architecture and design: 2\n- A2 HDFS sink module (U1): 3\n- A3 Hadoop shell commands (U2): 2\n- A4 Composed jobs repository exploration (U3): 2\n- A5 Composed jobs orchestration (U4): 5\n- A6 Shell command isolation test coverage (U5): 3\n- A7 Expression-based message binding (U6): 4\n- A8 JDBC module migration (U7): 2\n- A9 Kafka module migration (U8): 2\n- A10 Integration testing and end-to-end validation: 2\n- A11 Documentation and cleanup: 1\n\nSum: 2 + 3 + 2 + 2 + 5 + 3 + 4 + 2 + 2 + 2 + 1 = **27 workdays** (most likely total).",
+  "usage": {
+    "prompt_tokens": 1400,
+    "completion_tokens": 2541,
+    "total_tokens": 3941,
+    "cost": 0.00343176,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00343176,
+      "upstream_inference_prompt_cost": 0.00038256,
+      "upstream_inference_completions_cost": 0.0030492
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 980,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788414234-gPnbm4L9VeGwzjOqA6Rh",
+    "object": "chat.completion",
+    "created": 1788414234,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one estimated workday, for the purpose of converting the effort estimate. I need to return valid JSON with the number of work hours per workday.\n\nIn my assumptions, I stated \"A single developer implements all activities full-time; one workday equals 8 productive hours.\" So the answer is 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one estimated workday, for the purpose of converting the effort estimate. I need to return valid JSON with the number of work hours per workday.\n\nIn my assumptions, I stated \"A single developer implements all activities full-time; one workday equals 8 productive hours.\" So the answer is 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3088,
+      "completion_tokens": 91,
+      "total_tokens": 3179,
+      "cost": 0.00099816,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00099816,
+        "upstream_inference_prompt_cost": 0.00088896,
+        "upstream_inference_completions_cost": 0.0001092
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 73,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

@@ -1,0 +1,257 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-007",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788417965-BQxOZx4S8qFoajqqiyC3",
+    "object": "chat.completion",
+    "created": 1788417965,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Go modules with external Fabric repository references instead of vendored internal copies\",\n    \"Pin each externalized module to a specific tagged Fabric release to ensure reproducible builds\",\n    \"For modules that exist as 'modified copies' (gossip protoext, common utilities, configtxgen, configtxlator), evaluate whether SDK modifications should be upstreamed or reintroduced as a thin SDK-local adapter layer\",\n    \"For unmodified copies (cauthdsl, ccprovider, ledger portions), perform a straight externalization with import-path rewrites\",\n    \"Implement the chaincode go.mod honoring as a feature-flagged, opt-in workaround with clear deprecation comments, since U6 acknowledges it is short-lived\",\n    \"Preserve existing public SDK APIs; introduce internal adapter packages where needed to avoid breaking consumers\",\n    \"Update CI/CD pipelines (linters, unit tests, integration tests) to consume the new external modules\"\n  ],\n  \"assumptions\": [\n    \"A single senior Go developer is performing all work and is familiar with both Fabric core and Fabric Go SDK\",\n    \"A workday is 8 hours of focused development effort (excludes meetings, code reviews beyond self-review)\",\n    \"Upstream Fabric already has the required packages exposed and tagged as Go modules (or will be coordinated in parallel)\",\n    \"The SDK's existing test suite is comprehensive enough to validate the refactor; no new test cases for previously untested code paths are required\",\n    \"No new features are introduced; this is a pure refactoring/externalization effort plus one temporary workaround\",\n    \"Code review/merge cycle with maintainers is not included in the developer effort estimate\",\n    \"Ledger externalization (U4) is treated as the largest item because it spans core/ledger and has many transitive consumers within the SDK\",\n    \"Effort estimates for U1, U5, U7, U8 include time to reconcile SDK-specific modifications with upstream behavior\",\n    \"U6 implementation focuses on the chaincode packaging/build path only; documentation of its temporary nature is included\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and design\",\n      \"activity_description\": \"Inventory all eight user stories, survey the current internal/third_party copies in fabric-sdk-go, identify the Fabric upstream modules to depend on, decide on import-path mapping, and document the externalization strategy.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Externalize gossip protoext (U1)\",\n      \"activity_description\": \"Remove the modified internal copy of gossip protoext utilities, reconcile SDK-specific modifications with upstream behavior, update all import paths in the SDK, and add the external Fabric module dependency.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Externalize cauthdsl utilities (U2)\",\n      \"activity_description\": \"Delete the third_party copy of common/cauthdsl, point the SDK to the upstream Fabric module, and update affected import paths.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Externalize ccprovider structures (U3)\",\n      \"activity_description\": \"Delete the third_party copy of core/common/ccprovider, point the SDK to the upstream Fabric module, and update affected import paths.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Externalize ledger structures (U4)\",\n      \"activity_description\": \"Delete the third_party copy of core/ledger used by the SDK, add the external Fabric ledger module dependency, and update all transitive import paths and consumer code.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Externalize common utilities (U5)\",\n      \"activity_description\": \"Remove the modified internal copies of common utilities and core utilities, reconcile SDK modifications, and switch to the upstream Fabric modules with updated import paths.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement chaincode go.mod workaround (U6)\",\n      \"activity_description\": \"Modify the chaincode packaging/build path to honor go.mod files present in a chaincode package as a temporary, short-lived workaround. Include deprecation comments and feature flag.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Externalize configtxgen functions (U7)\",\n      \"activity_description\": \"Remove the modified internal copy of configtxgen functions, reconcile SDK-specific changes with upstream, update import paths in pkg/fab/resource/configtx.go and related files, and depend on the external module.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Externalize configtxlator functions (U8)\",\n      \"activity_description\": \"Remove the modified internal copy of configtxlator functions, reconcile SDK-specific changes with upstream, update import paths, and depend on the external module.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Build and CI/CD updates\",\n      \"activity_description\": \"Update go.mod and go.sum to reflect new external dependencies, remove replace directives where no longer needed, update CI scripts, linter configurations, and Makefile targets to handle the new module layout.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration testing and regression fixes\",\n      \"activity_description\": \"Run the full unit and integration test suites across the SDK, fix regressions caused by API differences between the SDK's internal copies and the external modules, and verify end-to-end scenarios for each externalized package.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update README, CHANGELOG, migration notes, and developer docs to reflect the removal of internal/third_party copies, the new module dependencies, and the temporary nature of the chaincode go.mod workaround.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 30.0\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully. The software increment is about Hyperledger Fabric Go SDK, specifically about replacing internal copies of code with externalized references to the actual Fabric code repositories.\n\nLet me break down the user stories:\n- U1: Externalize gossip utilities (protoext) - currently modified copy in SDK\n- U2: Externalize cauthdsl utilities\n- U3: Externalize ccprovider structures\n- U4: Externalize ledger structures\n- U5: Externalize common utilities (modified copies)\n- U6: Temporary workaround for chaincode go.mod files\n- U7: Externalize configtxgen functions\n- U8: Externalize configtxlator functions\n\nThis is a refactoring effort focused on removing duplicated code and replacing it with external module references. Let me think about the work breakdown.\n\nMain technical decisions:\n1. Use Go modules to externalize dependencies\n2. Pin to specific Fabric versions/tags\n3. Each module needs to be properly tagged and versioned in Fabric\n4. Need to handle API compatibility issues\n5. Update go.mod and replace directives\n6. Remove internal copies and update import paths\n7. Test integration with new external modules\n8. Handle the chaincode go.mod workaround (U6) - which is a temporary measure\n\nLet me think about the activities:\n\n1. **Analysis & Planning** - Investigate each module, understand dependencies, identify API mismatches\n2. **Externalize gossip (protoext) - U1** - Remove internal copy, use external module\n3. **Externalize cauthdsl - U2** - Remove internal copy, use external module\n4. **Externalize ccprovider - U3** - Remove internal copy, use external module\n5. **Externalize ledger - U4** - Remove internal copy, use external module\n6. **Externalize common utilities - U5** - Remove internal copies, use external modules\n7. **Chaincode go.mod workaround - U6** - Add temporary support\n8. **Externalize configtxgen - U7** - Remove internal copy, use external module\n9. **Externalize configtxlator - U8** - Remove internal copy, use external module\n10. **Testing & Integration** - Test all changes\n11. **Documentation** - Update documentation\n\nLet me estimate each:\n\n1. Analysis & Planning: 2-3 days\n2. U1 - gossip protoext: 1-2 days (smaller module)\n3. U2 - cauthdsl: 1-2 days\n4. U3 - ccprovider: 1-2 days\n5. U4 - ledger: 3-5 days (larger, more complex)\n6. U5 - common utilities: 2-3 days\n7. U6 - chaincode go.mod: 1-2 days\n8. U7 - configtxgen: 2-3 days\n9. U8 - configtxlator: 2-3 days\n10. Testing & Integration: 3-5 days\n11. Documentation: 1-2 days\n\nLet me refine these estimates:\n\nLooking at this more carefully:\n- The gossip protoext (U1) is described as a \"modified version\" so there's some work to merge changes back or adapt\n- The common utilities (U5) is also modified\n- The configtxgen (U7) and configtxlator (U8) are modified versions\n- The cauthdsl, ccprovider, ledger (U2-U4) seem to be just copies\n\nLet me re-estimate with this in mind:\n\n1. Analysis & Design: 3 days\n2. U1 gossip protoext externalization: 2 days\n3. U2 cauthdsl externalization: 1 day\n4. U3 ccprovider externalization: 1.5 days\n5. U4 ledger externalization: 4 days\n6. U5 common utilities externalization: 3 days\n7. U6 chaincode go.mod workaround: 2 days\n8. U7 configtxgen externalization: 3 days\n9. U8 configtxlator externalization: 3 days\n10. Integration testing: 4 days\n11. CI/CD and build system updates: 2 days\n12. Documentation: 1 day\n\nTotal: ~29.5 days\n\nLet me round to reasonable values and create a more structured estimate.\n\nActually, let me think about this more carefully. The user stories suggest this is a refactoring effort to:\n1. Stop maintaining internal copies\n2. Use external modules from the main Fabric repository\n3. Handle the temporary workaround for chaincode go.mod\n\nThe work involved for each:\n- Identifying the current internal copy\n- Comparing with upstream Fabric\n- Resolving any modifications\n- Updating import paths throughout the SDK\n- Updating go.mod\n- Verifying tests still pass\n- Resolving API differences\n\nLet me finalize my estimates:\n\nActivities:\n1. A1: Requirements Analysis & Design - 2 days\n2. A2: Externalize gossip protoext (U1) - 1.5 days\n3. A3: Externalize cauthdsl (U2) - 1 day\n4. A4: Externalize ccprovider (U3) - 1.5 days\n5. A5: Externalize ledger (U4) - 4 days\n6. A6: Externalize common utilities (U5) - 3 days\n7. A7: Chaincode go.mod workaround (U6) - 1.5 days\n8. A8: Externalize configtxgen (U7) - 2.5 days\n9. A9: Externalize configtxlator (U8) - 2.5 days\n10. A10: Build & CI/CD updates - 1.5 days\n11. A11: Integration Testing - 3 days\n12. A12: Documentation - 1 day\n\nTotal: 25 days\n\nLet me think about realistic effort estimates. Looking at the original Fabric SDK work that was done (this is from the Fabric SDK Go project around 2019-2020), the actual work was significant.\n\nI think my estimates are reasonable. Let me finalize.\n\nFinal estimates:\n1. A1: Requirements Analysis & Design - 2\n2. A2: Externalize gossip protoext (U1) - 1.5\n3. A3: Externalize cauthdsl (U2) - 1\n4. A4: Externalize ccprovider (U3) - 1.5\n5. A5: Externalize ledger (U4) - 4\n6. A6: Externalize common utilities (U5) - 3\n7. A7: Chaincode go.mod workaround (U6) - 1.5\n8. A8: Externalize configtxgen (U7) - 2.5\n9. A9: Externalize configtxlator (U8) - 2.5\n10. A10: Build & CI/CD updates - 1.5\n11. A11: Integration Testing - 3\n12. A12: Documentation - 1\n\nTotal: 25 days\n\nLet me reconsider. The \"ledger\" one is probably the biggest task. The gossip protoext is more involved due to modifications. The configtxgen and configtxlator are also significant because they have modifications.\n\nLet me also think about U6 more carefully - \"honor go.mod files that are part of a chaincode package. This is likely to do more harm than good so it needs to be short lived.\" This is a workaround implementation, which could be quite tricky.\n\nLet me adjust:\n- A1: 2\n- A2: 2 (modified version, more work)\n- A3: 1\n- A4: 2 (some complexity)\n- A5: 5 (largest module)\n- A6: 3 (modified versions)\n- A7: 2 (workaround with caveats)\n- A8: 3 (modified)\n- A9: 3 (modified)\n- A10: 2\n- A11: 4\n- A12: 1\n\nTotal: 30 days\n\nI think this is more realistic. Let me finalize the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully. The software increment is about Hyperledger Fabric Go SDK, specifically about replacing internal copies of code with externalized references to the actual Fabric code repositories.\n\nLet me break down the user stories:\n- U1: Externalize gossip utilities (protoext) - currently modified copy in SDK\n- U2: Externalize cauthdsl utilities\n- U3: Externalize ccprovider structures\n- U4: Externalize ledger structures\n- U5: Externalize common utilities (modified copies)\n- U6: Temporary workaround for chaincode go.mod files\n- U7: Externalize configtxgen functions\n- U8: Externalize configtxlator functions\n\nThis is a refactoring effort focused on removing duplicated code and replacing it with external module references. Let me think about the work breakdown.\n\nMain technical decisions:\n1. Use Go modules to externalize dependencies\n2. Pin to specific Fabric versions/tags\n3. Each module needs to be properly tagged and versioned in Fabric\n4. Need to handle API compatibility issues\n5. Update go.mod and replace directives\n6. Remove internal copies and update import paths\n7. Test integration with new external modules\n8. Handle the chaincode go.mod workaround (U6) - which is a temporary measure\n\nLet me think about the activities:\n\n1. **Analysis & Planning** - Investigate each module, understand dependencies, identify API mismatches\n2. **Externalize gossip (protoext) - U1** - Remove internal copy, use external module\n3. **Externalize cauthdsl - U2** - Remove internal copy, use external module\n4. **Externalize ccprovider - U3** - Remove internal copy, use external module\n5. **Externalize ledger - U4** - Remove internal copy, use external module\n6. **Externalize common utilities - U5** - Remove internal copies, use external modules\n7. **Chaincode go.mod workaround - U6** - Add temporary support\n8. **Externalize configtxgen - U7** - Remove internal copy, use external module\n9. **Externalize configtxlator - U8** - Remove internal copy, use external module\n10. **Testing & Integration** - Test all changes\n11. **Documentation** - Update documentation\n\nLet me estimate each:\n\n1. Analysis & Planning: 2-3 days\n2. U1 - gossip protoext: 1-2 days (smaller module)\n3. U2 - cauthdsl: 1-2 days\n4. U3 - ccprovider: 1-2 days\n5. U4 - ledger: 3-5 days (larger, more complex)\n6. U5 - common utilities: 2-3 days\n7. U6 - chaincode go.mod: 1-2 days\n8. U7 - configtxgen: 2-3 days\n9. U8 - configtxlator: 2-3 days\n10. Testing & Integration: 3-5 days\n11. Documentation: 1-2 days\n\nLet me refine these estimates:\n\nLooking at this more carefully:\n- The gossip protoext (U1) is described as a \"modified version\" so there's some work to merge changes back or adapt\n- The common utilities (U5) is also modified\n- The configtxgen (U7) and configtxlator (U8) are modified versions\n- The cauthdsl, ccprovider, ledger (U2-U4) seem to be just copies\n\nLet me re-estimate with this in mind:\n\n1. Analysis & Design: 3 days\n2. U1 gossip protoext externalization: 2 days\n3. U2 cauthdsl externalization: 1 day\n4. U3 ccprovider externalization: 1.5 days\n5. U4 ledger externalization: 4 days\n6. U5 common utilities externalization: 3 days\n7. U6 chaincode go.mod workaround: 2 days\n8. U7 configtxgen externalization: 3 days\n9. U8 configtxlator externalization: 3 days\n10. Integration testing: 4 days\n11. CI/CD and build system updates: 2 days\n12. Documentation: 1 day\n\nTotal: ~29.5 days\n\nLet me round to reasonable values and create a more structured estimate.\n\nActually, let me think about this more carefully. The user stories suggest this is a refactoring effort to:\n1. Stop maintaining internal copies\n2. Use external modules from the main Fabric repository\n3. Handle the temporary workaround for chaincode go.mod\n\nThe work involved for each:\n- Identifying the current internal copy\n- Comparing with upstream Fabric\n- Resolving any modifications\n- Updating import paths throughout the SDK\n- Updating go.mod\n- Verifying tests still pass\n- Resolving API differences\n\nLet me finalize my estimates:\n\nActivities:\n1. A1: Requirements Analysis & Design - 2 days\n2. A2: Externalize gossip protoext (U1) - 1.5 days\n3. A3: Externalize cauthdsl (U2) - 1 day\n4. A4: Externalize ccprovider (U3) - 1.5 days\n5. A5: Externalize ledger (U4) - 4 days\n6. A6: Externalize common utilities (U5) - 3 days\n7. A7: Chaincode go.mod workaround (U6) - 1.5 days\n8. A8: Externalize configtxgen (U7) - 2.5 days\n9. A9: Externalize configtxlator (U8) - 2.5 days\n10. A10: Build & CI/CD updates - 1.5 days\n11. A11: Integration Testing - 3 days\n12. A12: Documentation - 1 day\n\nTotal: 25 days\n\nLet me think about realistic effort estimates. Looking at the original Fabric SDK work that was done (this is from the Fabric SDK Go project around 2019-2020), the actual work was significant.\n\nI think my estimates are reasonable. Let me finalize.\n\nFinal estimates:\n1. A1: Requirements Analysis & Design - 2\n2. A2: Externalize gossip protoext (U1) - 1.5\n3. A3: Externalize cauthdsl (U2) - 1\n4. A4: Externalize ccprovider (U3) - 1.5\n5. A5: Externalize ledger (U4) - 4\n6. A6: Externalize common utilities (U5) - 3\n7. A7: Chaincode go.mod workaround (U6) - 1.5\n8. A8: Externalize configtxgen (U7) - 2.5\n9. A9: Externalize configtxlator (U8) - 2.5\n10. A10: Build & CI/CD updates - 1.5\n11. A11: Integration Testing - 3\n12. A12: Documentation - 1\n\nTotal: 25 days\n\nLet me reconsider. The \"ledger\" one is probably the biggest task. The gossip protoext is more involved due to modifications. The configtxgen and configtxlator are also significant because they have modifications.\n\nLet me also think about U6 more carefully - \"honor go.mod files that are part of a chaincode package. This is likely to do more harm than good so it needs to be short lived.\" This is a workaround implementation, which could be quite tricky.\n\nLet me adjust:\n- A1: 2\n- A2: 2 (modified version, more work)\n- A3: 1\n- A4: 2 (some complexity)\n- A5: 5 (largest module)\n- A6: 3 (modified versions)\n- A7: 2 (workaround with caveats)\n- A8: 3 (modified)\n- A9: 3 (modified)\n- A10: 2\n- A11: 4\n- A12: 1\n\nTotal: 30 days\n\nI think this is more realistic. Let me finalize the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1470,
+      "completion_tokens": 3187,
+      "total_tokens": 4657,
+      "cost": 0.00422796,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00422796,
+        "upstream_inference_prompt_cost": 0.00040356,
+        "upstream_inference_completions_cost": 0.0038244
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1735,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Adopt Go modules with external Fabric repository references instead of vendored internal copies\",\n    \"Pin each externalized module to a specific tagged Fabric release to ensure reproducible builds\",\n    \"For modules that exist as 'modified copies' (gossip protoext, common utilities, configtxgen, configtxlator), evaluate whether SDK modifications should be upstreamed or reintroduced as a thin SDK-local adapter layer\",\n    \"For unmodified copies (cauthdsl, ccprovider, ledger portions), perform a straight externalization with import-path rewrites\",\n    \"Implement the chaincode go.mod honoring as a feature-flagged, opt-in workaround with clear deprecation comments, since U6 acknowledges it is short-lived\",\n    \"Preserve existing public SDK APIs; introduce internal adapter packages where needed to avoid breaking consumers\",\n    \"Update CI/CD pipelines (linters, unit tests, integration tests) to consume the new external modules\"\n  ],\n  \"assumptions\": [\n    \"A single senior Go developer is performing all work and is familiar with both Fabric core and Fabric Go SDK\",\n    \"A workday is 8 hours of focused development effort (excludes meetings, code reviews beyond self-review)\",\n    \"Upstream Fabric already has the required packages exposed and tagged as Go modules (or will be coordinated in parallel)\",\n    \"The SDK's existing test suite is comprehensive enough to validate the refactor; no new test cases for previously untested code paths are required\",\n    \"No new features are introduced; this is a pure refactoring/externalization effort plus one temporary workaround\",\n    \"Code review/merge cycle with maintainers is not included in the developer effort estimate\",\n    \"Ledger externalization (U4) is treated as the largest item because it spans core/ledger and has many transitive consumers within the SDK\",\n    \"Effort estimates for U1, U5, U7, U8 include time to reconcile SDK-specific modifications with upstream behavior\",\n    \"U6 implementation focuses on the chaincode packaging/build path only; documentation of its temporary nature is included\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and design\",\n      \"activity_description\": \"Inventory all eight user stories, survey the current internal/third_party copies in fabric-sdk-go, identify the Fabric upstream modules to depend on, decide on import-path mapping, and document the externalization strategy.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Externalize gossip protoext (U1)\",\n      \"activity_description\": \"Remove the modified internal copy of gossip protoext utilities, reconcile SDK-specific modifications with upstream behavior, update all import paths in the SDK, and add the external Fabric module dependency.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Externalize cauthdsl utilities (U2)\",\n      \"activity_description\": \"Delete the third_party copy of common/cauthdsl, point the SDK to the upstream Fabric module, and update affected import paths.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Externalize ccprovider structures (U3)\",\n      \"activity_description\": \"Delete the third_party copy of core/common/ccprovider, point the SDK to the upstream Fabric module, and update affected import paths.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Externalize ledger structures (U4)\",\n      \"activity_description\": \"Delete the third_party copy of core/ledger used by the SDK, add the external Fabric ledger module dependency, and update all transitive import paths and consumer code.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Externalize common utilities (U5)\",\n      \"activity_description\": \"Remove the modified internal copies of common utilities and core utilities, reconcile SDK modifications, and switch to the upstream Fabric modules with updated import paths.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement chaincode go.mod workaround (U6)\",\n      \"activity_description\": \"Modify the chaincode packaging/build path to honor go.mod files present in a chaincode package as a temporary, short-lived workaround. Include deprecation comments and feature flag.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Externalize configtxgen functions (U7)\",\n      \"activity_description\": \"Remove the modified internal copy of configtxgen functions, reconcile SDK-specific changes with upstream, update import paths in pkg/fab/resource/configtx.go and related files, and depend on the external module.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Externalize configtxlator functions (U8)\",\n      \"activity_description\": \"Remove the modified internal copy of configtxlator functions, reconcile SDK-specific changes with upstream, update import paths, and depend on the external module.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Build and CI/CD updates\",\n      \"activity_description\": \"Update go.mod and go.sum to reflect new external dependencies, remove replace directives where no longer needed, update CI scripts, linter configurations, and Makefile targets to handle the new module layout.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration testing and regression fixes\",\n      \"activity_description\": \"Run the full unit and integration test suites across the SDK, fix regressions caused by API differences between the SDK's internal copies and the external modules, and verify end-to-end scenarios for each externalized package.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update README, CHANGELOG, migration notes, and developer docs to reflect the removal of internal/third_party copies, the new module dependencies, and the temporary nature of the chaincode go.mod workaround.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 30.0\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1470,
+    "completion_tokens": 3187,
+    "total_tokens": 4657,
+    "cost": 0.00422796,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00422796,
+      "upstream_inference_prompt_cost": 0.00040356,
+      "upstream_inference_completions_cost": 0.0038244
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1735,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788417989-W8fzG5wRupLcMooBjNrt",
+    "object": "chat.completion",
+    "created": 1788417989,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking for the conversion factor between workdays and work-hours. This is a simple factual question about the assumption I made earlier. In my assumptions, I stated \"A workday is 8 hours of focused development effort\". So I should return 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking for the conversion factor between workdays and work-hours. This is a simple factual question about the assumption I made earlier. In my assumptions, I stated \"A workday is 8 hours of focused development effort\". So I should return 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3049,
+      "completion_tokens": 73,
+      "total_tokens": 3122,
+      "cost": 0.00096486,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00096486,
+        "upstream_inference_prompt_cost": 0.00087726,
+        "upstream_inference_completions_cost": 8.76e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 55,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Adopt Go modules with external Fabric repository references instead of vendored internal copies",
+      "Pin each externalized module to a specific tagged Fabric release to ensure reproducible builds",
+      "For modules that exist as 'modified copies' (gossip protoext, common utilities, configtxgen, configtxlator), evaluate whether SDK modifications should be upstreamed or reintroduced as a thin SDK-local adapter layer",
+      "For unmodified copies (cauthdsl, ccprovider, ledger portions), perform a straight externalization with import-path rewrites",
+      "Implement the chaincode go.mod honoring as a feature-flagged, opt-in workaround with clear deprecation comments, since U6 acknowledges it is short-lived",
+      "Preserve existing public SDK APIs; introduce internal adapter packages where needed to avoid breaking consumers",
+      "Update CI/CD pipelines (linters, unit tests, integration tests) to consume the new external modules"
+    ],
+    "assumptions": [
+      "A single senior Go developer is performing all work and is familiar with both Fabric core and Fabric Go SDK",
+      "A workday is 8 hours of focused development effort (excludes meetings, code reviews beyond self-review)",
+      "Upstream Fabric already has the required packages exposed and tagged as Go modules (or will be coordinated in parallel)",
+      "The SDK's existing test suite is comprehensive enough to validate the refactor; no new test cases for previously untested code paths are required",
+      "No new features are introduced; this is a pure refactoring/externalization effort plus one temporary workaround",
+      "Code review/merge cycle with maintainers is not included in the developer effort estimate",
+      "Ledger externalization (U4) is treated as the largest item because it spans core/ledger and has many transitive consumers within the SDK",
+      "Effort estimates for U1, U5, U7, U8 include time to reconcile SDK-specific modifications with upstream behavior",
+      "U6 implementation focuses on the chaincode packaging/build path only; documentation of its temporary nature is included"
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and design",
+        "activity_description": "Inventory all eight user stories, survey the current internal/third_party copies in fabric-sdk-go, identify the Fabric upstream modules to depend on, decide on import-path mapping, and document the externalization strategy.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Externalize gossip protoext (U1)",
+        "activity_description": "Remove the modified internal copy of gossip protoext utilities, reconcile SDK-specific modifications with upstream behavior, update all import paths in the SDK, and add the external Fabric module dependency.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Externalize cauthdsl utilities (U2)",
+        "activity_description": "Delete the third_party copy of common/cauthdsl, point the SDK to the upstream Fabric module, and update affected import paths.",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Externalize ccprovider structures (U3)",
+        "activity_description": "Delete the third_party copy of core/common/ccprovider, point the SDK to the upstream Fabric module, and update affected import paths.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Externalize ledger structures (U4)",
+        "activity_description": "Delete the third_party copy of core/ledger used by the SDK, add the external Fabric ledger module dependency, and update all transitive import paths and consumer code.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Externalize common utilities (U5)",
+        "activity_description": "Remove the modified internal copies of common utilities and core utilities, reconcile SDK modifications, and switch to the upstream Fabric modules with updated import paths.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Implement chaincode go.mod workaround (U6)",
+        "activity_description": "Modify the chaincode packaging/build path to honor go.mod files present in a chaincode package as a temporary, short-lived workaround. Include deprecation comments and feature flag.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Externalize configtxgen functions (U7)",
+        "activity_description": "Remove the modified internal copy of configtxgen functions, reconcile SDK-specific changes with upstream, update import paths in pkg/fab/resource/configtx.go and related files, and depend on the external module.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Externalize configtxlator functions (U8)",
+        "activity_description": "Remove the modified internal copy of configtxlator functions, reconcile SDK-specific changes with upstream, update import paths, and depend on the external module.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Build and CI/CD updates",
+        "activity_description": "Update go.mod and go.sum to reflect new external dependencies, remove replace directives where no longer needed, update CI scripts, linter configurations, and Makefile targets to handle the new module layout.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Integration testing and regression fixes",
+        "activity_description": "Run the full unit and integration test suites across the SDK, fix regressions caused by API differences between the SDK's internal copies and the external modules, and verify end-to-end scenarios for each externalized package.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation updates",
+        "activity_description": "Update README, CHANGELOG, migration notes, and developer docs to reflect the removal of internal/third_party copies, the new module dependencies, and the temporary nature of the chaincode go.mod workaround.",
+        "most_likely_effort": 1.5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 30.0
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

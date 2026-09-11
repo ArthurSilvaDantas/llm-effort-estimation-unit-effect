@@ -1,0 +1,248 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-011",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788415686-788GBFY202rwAMhLPv3x",
+    "object": "chat.completion",
+    "created": 1788415686,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implementation will be in Go, extending an existing fabric channel configuration library (e.g., fabric-config or similar configtx helper package) since Hyperledger Fabric is Go-based.\",\n    \"Each new helper function will follow the existing builder/update pattern in the package, returning a value or error so the caller can chain further configuration updates and produce a ConfigUpdate envelope.\",\n    \"The ConfigUpdate envelope computation is delegated to existing helper utilities (e.g., a ComputeConfigUpdate function); new functions only mutate the in-memory Config structure.\",\n    \"For capabilities (U5), the toggle approach (EnableV20_X / DisableV20_X) is preferred over arbitrary string setters, because the spec says 'Consider whether we should allow setting unsupported capabilities... or if we should just have toggles'. This avoids typos and unsupported values.\",\n    \"For U4, three separate getter functions (one per capability type: orderer, application, channel) are provided rather than a single multi-purpose function, for clarity and idiomatic Go usage.\",\n    \"U3 (getOrgPolicies) and U6 (getApplicationConfig) are read-only helpers that return strongly-typed config.Application / []config.Policy structures so callers do not need to manually traverse the protos.\",\n    \"U7 ACL helpers modify a single Application group's ACLs in place; both Add and Remove variants are provided for symmetry with existing add/remove patterns in the package.\",\n    \"U8 refactoring keeps existing assertion behavior and code coverage, but reorganizes the monolithic example test into five focused, named example tests that each demonstrate one slice of functionality.\",\n    \"Unit tests and the example test described in the spec are treated as part of each activity's deliverable, not a separate phase.\",\n    \"No new dependencies are introduced; all work is contained in the existing config package.\"\n  ],\n  \"assumptions\": [\n    \"One experienced Go developer who already knows the Hyperledger Fabric config package performs all work, including design, implementation, testing, and example updates.\",\n    \"1 workday = 8 productive hours (no overhead subtracted for meetings, etc., because the task is the developer's total software development effort).\",\n    \"The starting code base already contains analogous functions (e.g., addOrdererOrg, removeApplicationOrg, anchor peer helpers), so the new functions can reuse shared internal helpers for navigating OrdererGroups/ApplicationGroups.\",\n    \"The example test referenced in the acceptance criteria is an integration/example test that lives alongside the package (e.g., in an examples/ directory) and exercises the new functions end-to-end on a realistic Config block.\",\n    \"Code review, CI, and merging are not counted as part of development effort; only authoring, local testing, and example demonstration are.\",\n    \"No documentation beyond standard Go doc comments and the example test is required (e.g., no separate markdown guide).\",\n    \"All protobuf/generated structures referenced (config.Application, config.Capabilities, config.Policy) already exist in the codebase and do not need to be created or modified.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A0\",\n      \"activity_name\": \"Codebase exploration and shared helper design\",\n      \"activity_description\": \"Review existing config package functions, identify shared internal helpers to reuse for endpoint/ACL/capability operations, and confirm the ConfigUpdate computation path used by the new functions.\"\n    },\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Add orderer endpoint helper\",\n      \"activity_description\": \"Implement a function that takes an existing Config and adds an orderer endpoint to a given orderer org's config group, computes the ConfigUpdate, and extend the example test to demonstrate adding an orderer endpoint.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U2 - Remove orderer endpoint helper\",\n      \"activity_description\": \"Implement the symmetric remove function for an orderer endpoint from an orderer org's config group and add a corresponding example.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U3 - Get organization policies helper\",\n      \"activity_description\": \"Implement a function that retrieves the existing policies for a given organization regardless of whether it is an application, orderer, or consortium org, returning a typed policy collection, and update the example test.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4 - Get capabilities helpers\",\n      \"activity_description\": \"Implement three getter functions (orderer, application, channel capabilities) that each return a config.Capabilities value from a Config block/transaction.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - Add/remove (enable/disable) capabilities\",\n      \"activity_description\": \"Implement Enable/Disable toggle functions for application, orderer, and channel capabilities, allow further ConfigUpdate processing on the returned config, and extend the example test to demonstrate enabling/disabling capabilities.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - Get application configuration helper\",\n      \"activity_description\": \"Implement a function that returns the existing application configuration as a config.Application value without manual proto traversal.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 - Add/remove application group ACLs\",\n      \"activity_description\": \"Implement helpers to add and remove ACLs on an application group's configuration, allow further ConfigUpdate processing, and update the example test to demonstrate ACL changes.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - Refactor example tests into focused cases\",\n      \"activity_description\": \"Split the existing monolithic end-to-end example test into separate, smaller example tests covering: (a) orderer configuration incl. orderer policies, (b) application values incl. application policies, (c) organization management (add/remove orgs, anchor peers, orderer endpoints), (d) MSP modifications, (e) capabilities. Each example must independently compile and pass.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Integration testing, debugging, and cleanup\",\n      \"activity_description\": \"Run the full example test suite and unit tests, fix any issues found across the new helpers and refactored examples, and perform final code cleanup (consistent naming, error wrapping, Go doc comments).\"\n    }\n  ],\n  \"most_likely_effort\": {\n    \"A0\": 0.5,\n    \"A1\": 1.5,\n    \"A2\": 1.0,\n    \"A3\": 1.5,\n    \"A4\": 1.0,\n    \"A5\": 2.0,\n    \"A6\": 1.0,\n    \"A7\": 1.5,\n    \"A8\": 2.0,\n    \"A9\": 1.5\n  },\n  \"reported_total\": {\n    \"most_likely_effort\": 13.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully.\n\nThe specification describes a set of user stories (U1-U8) for enhancing a Hyperledger Fabric channel configuration library. This is essentially a Go library (since Hyperledger Fabric is written in Go) that helps administrators modify channel configurations.\n\nLet me break down what needs to be done:\n\n1. **U1**: Add a function to add an orderer endpoint to an orderer org's config group. Need example test.\n2. **U2**: Add a function to remove an orderer endpoint from an orderer org's config group. Need example test.\n3. **U3**: Add a function to retrieve existing policies for a specific organization (application/orderer/consortium). Update example test.\n4. **U4**: Add a function to retrieve orderer, application, and channel capabilities returning config.Capabilities.\n5. **U5**: Add functions to add and remove application, orderer, and channel capabilities. Update example tests.\n6. **U6**: Add a function to retrieve application configuration returning config.Application.\n7. **U7**: Add functions to update application group's ACLs by adding or removing ACLs. Update example tests.\n8. **U8**: Refactor example tests to be smaller and more varied - splitting out:\n   - updating orderer configuration (including orderer policies)\n   - updating application specific values (including application policies)\n   - organization management (adding/removing orgs and anchor peers/orderer endpoints)\n   - msp modifications\n   - capabilities\n\nThis appears to be similar to the fabric-sdk-go or the configtxlator library work.\n\nLet me think about the technical decisions and assumptions:\n\n**Technical decisions:**\n- Language: Go (since Hyperledger Fabric is Go)\n- Package: The configtx library (likely in `github.com/hyperledger/fabric-config` or similar)\n- Functions will be added to the config package\n- Existing Config block parsing will be used\n- Use protos for config types\n- Maintain backward compatibility\n- For capabilities, allow toggles (Enable/Disable pattern) rather than arbitrary setting\n- Functions should be chainable in the config builder pattern\n\n**Assumptions:**\n- Developer is experienced with Go and Hyperledger Fabric internals\n- The existing config package structure is used (similar to fabric-config)\n- Code review and testing infrastructure is in place\n- Unit tests are part of the development work\n- The example test is an integration test that exercises the SDK\n- One developer performs all work\n- 1 workday = 8 hours\n- Existing similar functions can serve as reference (e.g., addOrdererOrg, addApplicationOrg)\n- The ConfigUpdate computation already exists in helper functions\n\nLet me now create a WBS:\n\n**WBS Activities:**\n\n1. **Setup and Exploration** - Understanding existing codebase, similar functions\n2. **U1: Add orderer endpoint** - Implement addOrdererEndpoint function + example\n3. **U2: Remove orderer endpoint** - Implement removeOrdererEndpoint function + example\n4. **U3: Get organization policies** - Implement getOrgPolicies function + example\n5. **U4: Get capabilities** - Implement getOrdererCapabilities, getApplicationCapabilities, getChannelCapabilities\n6. **U5: Add/remove capabilities** - Implement Enable/Disable capability functions + examples\n7. **U6: Get application config** - Implement getApplicationConfig function\n8. **U7: Add/remove ACLs** - Implement addACL/removeACL functions + examples\n9. **U8: Refactor example tests** - Split the giant example test into 5 smaller tests\n10. **Integration testing and bug fixing** - Ensure all examples run successfully\n11. **Documentation** - Code comments, possibly docstrings\n\nLet me estimate each:\n\n1. **Setup and Exploration**: This is a developer already familiar with the codebase, but to ensure understanding of all the existing structures - 1 day\n\n2. **U1 (addOrdererEndpoint)**: Following existing patterns for similar functions, this should be straightforward. Function impl ~0.5-1 day, example test ~0.5 day. Total: 1.5 days\n\n3. **U2 (removeOrdererEndpoint)**: Similar to U1. Total: 1 day\n\n4. **U3 (getOrgPolicies)**: Need to handle 3 org types (application, orderer, consortium). Total: 1.5 days\n\n5. **U4 (getCapabilities)**: Three getters for capabilities. Total: 1 day\n\n6. **U5 (Enable/Disable capabilities)**: For U5, the design says \"Consider whether we should allow setting unsupported capabilities... or if we should just have toggles\". Three capabilities, two operations each = 6 functions, but they follow a pattern. Total: 2 days\n\n7. **U6 (getApplicationConfig)**: Single function, but need to construct config.Application from raw config. Total: 1 day\n\n8. **U7 (add/remove ACLs)**: Two functions, plus examples. Total: 1.5 days\n\n9. **U8 (refactor examples)**: Splitting existing test into 5. This requires reorganizing test code. Total: 2 days\n\n10. **Integration testing, debugging, code review**: Total: 1.5 days\n\n11. **Documentation**: Total: 0.5 days\n\nTotal: 1 + 1.5 + 1 + 1.5 + 1 + 2 + 1 + 1.5 + 2 + 1.5 + 0.5 = 14.5 days\n\nLet me reconsider these estimates. Looking at this more carefully - the user is one experienced developer working alone.\n\nActually, looking at this work, it's similar to what was done in the hyperledger/fabric-config repo. The functions are not trivially small - they need careful handling of protos, config structures, and ensuring the config update is correctly computed.\n\nLet me refine:\n\n- Setup: 0.5 days (developer is experienced)\n- U1: 1.5 days (function + example + tests)\n- U2: 1 day (similar pattern to U1)\n- U3: 1.5 days (3 org types, getPolicies function)\n- U4: 1 day (3 simple getter functions)\n- U5: 2 days (6 functions, design decision for toggle approach, examples)\n- U6: 1 day (one function, construct Application)\n- U7: 1.5 days (2 functions + examples)\n- U8: 2 days (refactor into 5 example tests, ensure each works)\n- Integration & debug: 1.5 days\n- Final review & cleanup: 0.5 days\n\nTotal: 14 days\n\nActually, I think this is reasonable. Let me present the final answer.\n\nWait, let me re-read the spec to make sure I haven't missed anything.\n\nU1: Add orderer endpoint - function + example\nU2: Remove orderer endpoint - function + example\nU3: Get org policies - function + example\nU4: Get capabilities (orderer, application, channel) - function returning config.Capabilities\nU5: Add/remove capabilities - design decision (toggle vs set), functions for all 3 types\nU6: Get application config - function returning config.Application\nU7: Add/remove ACLs - functions + example\nU8: Refactor examples - split into 5 categories\n\nThis is a focused, well-scoped increment. 14 days sounds about right for a single experienced developer.\n\nLet me also add a few more considerations:\n- U4 might also need separate functions for each of the 3 capability types OR a unified one. Reading again: \"I should be able to call a function for retrieving orderer, application, and channel capabilities that returns a config.Capabilities\" - this could be 3 functions or one with a parameter. Let me assume 3 functions (one per type).\n\nLet me finalize the WBS and estimates.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully.\n\nThe specification describes a set of user stories (U1-U8) for enhancing a Hyperledger Fabric channel configuration library. This is essentially a Go library (since Hyperledger Fabric is written in Go) that helps administrators modify channel configurations.\n\nLet me break down what needs to be done:\n\n1. **U1**: Add a function to add an orderer endpoint to an orderer org's config group. Need example test.\n2. **U2**: Add a function to remove an orderer endpoint from an orderer org's config group. Need example test.\n3. **U3**: Add a function to retrieve existing policies for a specific organization (application/orderer/consortium). Update example test.\n4. **U4**: Add a function to retrieve orderer, application, and channel capabilities returning config.Capabilities.\n5. **U5**: Add functions to add and remove application, orderer, and channel capabilities. Update example tests.\n6. **U6**: Add a function to retrieve application configuration returning config.Application.\n7. **U7**: Add functions to update application group's ACLs by adding or removing ACLs. Update example tests.\n8. **U8**: Refactor example tests to be smaller and more varied - splitting out:\n   - updating orderer configuration (including orderer policies)\n   - updating application specific values (including application policies)\n   - organization management (adding/removing orgs and anchor peers/orderer endpoints)\n   - msp modifications\n   - capabilities\n\nThis appears to be similar to the fabric-sdk-go or the configtxlator library work.\n\nLet me think about the technical decisions and assumptions:\n\n**Technical decisions:**\n- Language: Go (since Hyperledger Fabric is Go)\n- Package: The configtx library (likely in `github.com/hyperledger/fabric-config` or similar)\n- Functions will be added to the config package\n- Existing Config block parsing will be used\n- Use protos for config types\n- Maintain backward compatibility\n- For capabilities, allow toggles (Enable/Disable pattern) rather than arbitrary setting\n- Functions should be chainable in the config builder pattern\n\n**Assumptions:**\n- Developer is experienced with Go and Hyperledger Fabric internals\n- The existing config package structure is used (similar to fabric-config)\n- Code review and testing infrastructure is in place\n- Unit tests are part of the development work\n- The example test is an integration test that exercises the SDK\n- One developer performs all work\n- 1 workday = 8 hours\n- Existing similar functions can serve as reference (e.g., addOrdererOrg, addApplicationOrg)\n- The ConfigUpdate computation already exists in helper functions\n\nLet me now create a WBS:\n\n**WBS Activities:**\n\n1. **Setup and Exploration** - Understanding existing codebase, similar functions\n2. **U1: Add orderer endpoint** - Implement addOrdererEndpoint function + example\n3. **U2: Remove orderer endpoint** - Implement removeOrdererEndpoint function + example\n4. **U3: Get organization policies** - Implement getOrgPolicies function + example\n5. **U4: Get capabilities** - Implement getOrdererCapabilities, getApplicationCapabilities, getChannelCapabilities\n6. **U5: Add/remove capabilities** - Implement Enable/Disable capability functions + examples\n7. **U6: Get application config** - Implement getApplicationConfig function\n8. **U7: Add/remove ACLs** - Implement addACL/removeACL functions + examples\n9. **U8: Refactor example tests** - Split the giant example test into 5 smaller tests\n10. **Integration testing and bug fixing** - Ensure all examples run successfully\n11. **Documentation** - Code comments, possibly docstrings\n\nLet me estimate each:\n\n1. **Setup and Exploration**: This is a developer already familiar with the codebase, but to ensure understanding of all the existing structures - 1 day\n\n2. **U1 (addOrdererEndpoint)**: Following existing patterns for similar functions, this should be straightforward. Function impl ~0.5-1 day, example test ~0.5 day. Total: 1.5 days\n\n3. **U2 (removeOrdererEndpoint)**: Similar to U1. Total: 1 day\n\n4. **U3 (getOrgPolicies)**: Need to handle 3 org types (application, orderer, consortium). Total: 1.5 days\n\n5. **U4 (getCapabilities)**: Three getters for capabilities. Total: 1 day\n\n6. **U5 (Enable/Disable capabilities)**: For U5, the design says \"Consider whether we should allow setting unsupported capabilities... or if we should just have toggles\". Three capabilities, two operations each = 6 functions, but they follow a pattern. Total: 2 days\n\n7. **U6 (getApplicationConfig)**: Single function, but need to construct config.Application from raw config. Total: 1 day\n\n8. **U7 (add/remove ACLs)**: Two functions, plus examples. Total: 1.5 days\n\n9. **U8 (refactor examples)**: Splitting existing test into 5. This requires reorganizing test code. Total: 2 days\n\n10. **Integration testing, debugging, code review**: Total: 1.5 days\n\n11. **Documentation**: Total: 0.5 days\n\nTotal: 1 + 1.5 + 1 + 1.5 + 1 + 2 + 1 + 1.5 + 2 + 1.5 + 0.5 = 14.5 days\n\nLet me reconsider these estimates. Looking at this more carefully - the user is one experienced developer working alone.\n\nActually, looking at this work, it's similar to what was done in the hyperledger/fabric-config repo. The functions are not trivially small - they need careful handling of protos, config structures, and ensuring the config update is correctly computed.\n\nLet me refine:\n\n- Setup: 0.5 days (developer is experienced)\n- U1: 1.5 days (function + example + tests)\n- U2: 1 day (similar pattern to U1)\n- U3: 1.5 days (3 org types, getPolicies function)\n- U4: 1 day (3 simple getter functions)\n- U5: 2 days (6 functions, design decision for toggle approach, examples)\n- U6: 1 day (one function, construct Application)\n- U7: 1.5 days (2 functions + examples)\n- U8: 2 days (refactor into 5 example tests, ensure each works)\n- Integration & debug: 1.5 days\n- Final review & cleanup: 0.5 days\n\nTotal: 14 days\n\nActually, I think this is reasonable. Let me present the final answer.\n\nWait, let me re-read the spec to make sure I haven't missed anything.\n\nU1: Add orderer endpoint - function + example\nU2: Remove orderer endpoint - function + example\nU3: Get org policies - function + example\nU4: Get capabilities (orderer, application, channel) - function returning config.Capabilities\nU5: Add/remove capabilities - design decision (toggle vs set), functions for all 3 types\nU6: Get application config - function returning config.Application\nU7: Add/remove ACLs - functions + example\nU8: Refactor examples - split into 5 categories\n\nThis is a focused, well-scoped increment. 14 days sounds about right for a single experienced developer.\n\nLet me also add a few more considerations:\n- U4 might also need separate functions for each of the 3 capability types OR a unified one. Reading again: \"I should be able to call a function for retrieving orderer, application, and channel capabilities that returns a config.Capabilities\" - this could be 3 functions or one with a parameter. Let me assume 3 functions (one per type).\n\nLet me finalize the WBS and estimates.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1517,
+      "completion_tokens": 3177,
+      "total_tokens": 4694,
+      "cost": 0.00423006,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00423006,
+        "upstream_inference_prompt_cost": 0.00041766,
+        "upstream_inference_completions_cost": 0.0038124
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1685,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implementation will be in Go, extending an existing fabric channel configuration library (e.g., fabric-config or similar configtx helper package) since Hyperledger Fabric is Go-based.\",\n    \"Each new helper function will follow the existing builder/update pattern in the package, returning a value or error so the caller can chain further configuration updates and produce a ConfigUpdate envelope.\",\n    \"The ConfigUpdate envelope computation is delegated to existing helper utilities (e.g., a ComputeConfigUpdate function); new functions only mutate the in-memory Config structure.\",\n    \"For capabilities (U5), the toggle approach (EnableV20_X / DisableV20_X) is preferred over arbitrary string setters, because the spec says 'Consider whether we should allow setting unsupported capabilities... or if we should just have toggles'. This avoids typos and unsupported values.\",\n    \"For U4, three separate getter functions (one per capability type: orderer, application, channel) are provided rather than a single multi-purpose function, for clarity and idiomatic Go usage.\",\n    \"U3 (getOrgPolicies) and U6 (getApplicationConfig) are read-only helpers that return strongly-typed config.Application / []config.Policy structures so callers do not need to manually traverse the protos.\",\n    \"U7 ACL helpers modify a single Application group's ACLs in place; both Add and Remove variants are provided for symmetry with existing add/remove patterns in the package.\",\n    \"U8 refactoring keeps existing assertion behavior and code coverage, but reorganizes the monolithic example test into five focused, named example tests that each demonstrate one slice of functionality.\",\n    \"Unit tests and the example test described in the spec are treated as part of each activity's deliverable, not a separate phase.\",\n    \"No new dependencies are introduced; all work is contained in the existing config package.\"\n  ],\n  \"assumptions\": [\n    \"One experienced Go developer who already knows the Hyperledger Fabric config package performs all work, including design, implementation, testing, and example updates.\",\n    \"1 workday = 8 productive hours (no overhead subtracted for meetings, etc., because the task is the developer's total software development effort).\",\n    \"The starting code base already contains analogous functions (e.g., addOrdererOrg, removeApplicationOrg, anchor peer helpers), so the new functions can reuse shared internal helpers for navigating OrdererGroups/ApplicationGroups.\",\n    \"The example test referenced in the acceptance criteria is an integration/example test that lives alongside the package (e.g., in an examples/ directory) and exercises the new functions end-to-end on a realistic Config block.\",\n    \"Code review, CI, and merging are not counted as part of development effort; only authoring, local testing, and example demonstration are.\",\n    \"No documentation beyond standard Go doc comments and the example test is required (e.g., no separate markdown guide).\",\n    \"All protobuf/generated structures referenced (config.Application, config.Capabilities, config.Policy) already exist in the codebase and do not need to be created or modified.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A0\",\n      \"activity_name\": \"Codebase exploration and shared helper design\",\n      \"activity_description\": \"Review existing config package functions, identify shared internal helpers to reuse for endpoint/ACL/capability operations, and confirm the ConfigUpdate computation path used by the new functions.\"\n    },\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Add orderer endpoint helper\",\n      \"activity_description\": \"Implement a function that takes an existing Config and adds an orderer endpoint to a given orderer org's config group, computes the ConfigUpdate, and extend the example test to demonstrate adding an orderer endpoint.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U2 - Remove orderer endpoint helper\",\n      \"activity_description\": \"Implement the symmetric remove function for an orderer endpoint from an orderer org's config group and add a corresponding example.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U3 - Get organization policies helper\",\n      \"activity_description\": \"Implement a function that retrieves the existing policies for a given organization regardless of whether it is an application, orderer, or consortium org, returning a typed policy collection, and update the example test.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U4 - Get capabilities helpers\",\n      \"activity_description\": \"Implement three getter functions (orderer, application, channel capabilities) that each return a config.Capabilities value from a Config block/transaction.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - Add/remove (enable/disable) capabilities\",\n      \"activity_description\": \"Implement Enable/Disable toggle functions for application, orderer, and channel capabilities, allow further ConfigUpdate processing on the returned config, and extend the example test to demonstrate enabling/disabling capabilities.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - Get application configuration helper\",\n      \"activity_description\": \"Implement a function that returns the existing application configuration as a config.Application value without manual proto traversal.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 - Add/remove application group ACLs\",\n      \"activity_description\": \"Implement helpers to add and remove ACLs on an application group's configuration, allow further ConfigUpdate processing, and update the example test to demonstrate ACL changes.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - Refactor example tests into focused cases\",\n      \"activity_description\": \"Split the existing monolithic end-to-end example test into separate, smaller example tests covering: (a) orderer configuration incl. orderer policies, (b) application values incl. application policies, (c) organization management (add/remove orgs, anchor peers, orderer endpoints), (d) MSP modifications, (e) capabilities. Each example must independently compile and pass.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Integration testing, debugging, and cleanup\",\n      \"activity_description\": \"Run the full example test suite and unit tests, fix any issues found across the new helpers and refactored examples, and perform final code cleanup (consistent naming, error wrapping, Go doc comments).\"\n    }\n  ],\n  \"most_likely_effort\": {\n    \"A0\": 0.5,\n    \"A1\": 1.5,\n    \"A2\": 1.0,\n    \"A3\": 1.5,\n    \"A4\": 1.0,\n    \"A5\": 2.0,\n    \"A6\": 1.0,\n    \"A7\": 1.5,\n    \"A8\": 2.0,\n    \"A9\": 1.5\n  },\n  \"reported_total\": {\n    \"most_likely_effort\": 13.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1517,
+    "completion_tokens": 3177,
+    "total_tokens": 4694,
+    "cost": 0.00423006,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00423006,
+      "upstream_inference_prompt_cost": 0.00041766,
+      "upstream_inference_completions_cost": 0.0038124
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1685,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788415716-Kgr9gLWSUtGGMJgkEf9c",
+    "object": "chat.completion",
+    "created": 1788415716,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking for the conversion factor between workdays and work-hours that I implicitly used in my previous estimate. In my assumptions I stated \"1 workday = 8 productive hours\". So I should return 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking for the conversion factor between workdays and work-hours that I implicitly used in my previous estimate. In my assumptions I stated \"1 workday = 8 productive hours\". So I should return 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3136,
+      "completion_tokens": 64,
+      "total_tokens": 3200,
+      "cost": 0.00065712,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1502,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00065712,
+        "upstream_inference_prompt_cost": 0.00058032,
+        "upstream_inference_completions_cost": 7.68e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 46,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implementation will be in Go, extending an existing fabric channel configuration library (e.g., fabric-config or similar configtx helper package) since Hyperledger Fabric is Go-based.",
+      "Each new helper function will follow the existing builder/update pattern in the package, returning a value or error so the caller can chain further configuration updates and produce a ConfigUpdate envelope.",
+      "The ConfigUpdate envelope computation is delegated to existing helper utilities (e.g., a ComputeConfigUpdate function); new functions only mutate the in-memory Config structure.",
+      "For capabilities (U5), the toggle approach (EnableV20_X / DisableV20_X) is preferred over arbitrary string setters, because the spec says 'Consider whether we should allow setting unsupported capabilities... or if we should just have toggles'. This avoids typos and unsupported values.",
+      "For U4, three separate getter functions (one per capability type: orderer, application, channel) are provided rather than a single multi-purpose function, for clarity and idiomatic Go usage.",
+      "U3 (getOrgPolicies) and U6 (getApplicationConfig) are read-only helpers that return strongly-typed config.Application / []config.Policy structures so callers do not need to manually traverse the protos.",
+      "U7 ACL helpers modify a single Application group's ACLs in place; both Add and Remove variants are provided for symmetry with existing add/remove patterns in the package.",
+      "U8 refactoring keeps existing assertion behavior and code coverage, but reorganizes the monolithic example test into five focused, named example tests that each demonstrate one slice of functionality.",
+      "Unit tests and the example test described in the spec are treated as part of each activity's deliverable, not a separate phase.",
+      "No new dependencies are introduced; all work is contained in the existing config package."
+    ],
+    "assumptions": [
+      "One experienced Go developer who already knows the Hyperledger Fabric config package performs all work, including design, implementation, testing, and example updates.",
+      "1 workday = 8 productive hours (no overhead subtracted for meetings, etc., because the task is the developer's total software development effort).",
+      "The starting code base already contains analogous functions (e.g., addOrdererOrg, removeApplicationOrg, anchor peer helpers), so the new functions can reuse shared internal helpers for navigating OrdererGroups/ApplicationGroups.",
+      "The example test referenced in the acceptance criteria is an integration/example test that lives alongside the package (e.g., in an examples/ directory) and exercises the new functions end-to-end on a realistic Config block.",
+      "Code review, CI, and merging are not counted as part of development effort; only authoring, local testing, and example demonstration are.",
+      "No documentation beyond standard Go doc comments and the example test is required (e.g., no separate markdown guide).",
+      "All protobuf/generated structures referenced (config.Application, config.Capabilities, config.Policy) already exist in the codebase and do not need to be created or modified."
+    ],
+    "activities": [
+      {
+        "activity_id": "A0",
+        "activity_name": "Codebase exploration and shared helper design",
+        "activity_description": "Review existing config package functions, identify shared internal helpers to reuse for endpoint/ACL/capability operations, and confirm the ConfigUpdate computation path used by the new functions."
+      },
+      {
+        "activity_id": "A1",
+        "activity_name": "U1 - Add orderer endpoint helper",
+        "activity_description": "Implement a function that takes an existing Config and adds an orderer endpoint to a given orderer org's config group, computes the ConfigUpdate, and extend the example test to demonstrate adding an orderer endpoint."
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U2 - Remove orderer endpoint helper",
+        "activity_description": "Implement the symmetric remove function for an orderer endpoint from an orderer org's config group and add a corresponding example."
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U3 - Get organization policies helper",
+        "activity_description": "Implement a function that retrieves the existing policies for a given organization regardless of whether it is an application, orderer, or consortium org, returning a typed policy collection, and update the example test."
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U4 - Get capabilities helpers",
+        "activity_description": "Implement three getter functions (orderer, application, channel capabilities) that each return a config.Capabilities value from a Config block/transaction."
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U5 - Add/remove (enable/disable) capabilities",
+        "activity_description": "Implement Enable/Disable toggle functions for application, orderer, and channel capabilities, allow further ConfigUpdate processing on the returned config, and extend the example test to demonstrate enabling/disabling capabilities."
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U6 - Get application configuration helper",
+        "activity_description": "Implement a function that returns the existing application configuration as a config.Application value without manual proto traversal."
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7 - Add/remove application group ACLs",
+        "activity_description": "Implement helpers to add and remove ACLs on an application group's configuration, allow further ConfigUpdate processing, and update the example test to demonstrate ACL changes."
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8 - Refactor example tests into focused cases",
+        "activity_description": "Split the existing monolithic end-to-end example test into separate, smaller example tests covering: (a) orderer configuration incl. orderer policies, (b) application values incl. application policies, (c) organization management (add/remove orgs, anchor peers, orderer endpoints), (d) MSP modifications, (e) capabilities. Each example must independently compile and pass."
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Integration testing, debugging, and cleanup",
+        "activity_description": "Run the full example test suite and unit tests, fix any issues found across the new helpers and refactored examples, and perform final code cleanup (consistent naming, error wrapping, Go doc comments)."
+      }
+    ],
+    "most_likely_effort": {
+      "A0": 0.5,
+      "A1": 1.5,
+      "A2": 1.0,
+      "A3": 1.5,
+      "A4": 1.0,
+      "A5": 2.0,
+      "A6": 1.0,
+      "A7": 1.5,
+      "A8": 2.0,
+      "A9": 1.5
+    },
+    "reported_total": {
+      "most_likely_effort": 13.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

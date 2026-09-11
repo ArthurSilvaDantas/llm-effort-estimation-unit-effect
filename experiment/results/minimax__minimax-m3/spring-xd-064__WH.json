@@ -1,0 +1,192 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-064",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788420680-1EisNoNCxfpW7kQgNmph",
+    "object": "chat.completion",
+    "created": 1788420680,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target platform is Spring XD (eXtended Data) running on the JVM, with ported modules targeting the spring-cloud-stream (s-c-s) repository.\",\n    \"Reuse existing Spring XD module/options metadata model for the Cassandra and analytic-pmml modules to minimize behavioral drift during the port.\",\n    \"Implement multiple-bindings-per-type (U1) by extending the binder configuration model to allow named, distinct binder instances bound to the same input/output contract, with channel resolution at runtime.\",\n    \"For HDFS HA (U2), replace NameNodeProxies.createNonHAProxy with a HA-aware proxy that reads nameservice IDs from core-site.xml and uses HDFS HA RPC failover; keep the legacy non-HA path as a fallback.\",\n    \"Job-composition REST endpoints (U5, U6) are added to the Spring XD Admin REST controller layer using Spring MVC, returning JSON; U6 returns an adjacency-list representation of the composed job graph.\",\n    \"UI changes (U7, U8) are implemented in the existing XD Admin UI (AngularJS-based) and reuse the existing job-list/job-detail view templates; no new UI framework is introduced.\",\n    \"Testing strategy: JUnit + Mockito for unit tests, Spring XD test harness for integration tests, and Selenium-style smoke tests for the UI changes.\",\n    \"Build system assumed to be Maven (consistent with Spring XD/s-c-s conventions).\",\n    \"All eight user stories are independent and can be developed in parallel by a single developer sequentially; no cross-story refactoring is assumed unless explicitly noted (e.g., U5/U6 share a DTO).\",\n    \"No production deployment, infrastructure provisioning, or DevOps pipeline work is included in the scope.\"\n  ],\n  \"assumptions\": [\n    \"A single full-time developer performs all work; 1 work-hour equals 1 wall-clock hour of focused development.\",\n    \"Existing Spring XD source tree, s-c-s source tree, and CI infrastructure are available and not part of the increment.\",\n    \"Cassandra (U3) and analytic-pmml (U4) modules already exist in XD and are functionally stable; the work is a code move, dependency re-alignment, and re-test, not a re-implementation.\",\n    \"PMML evaluation engine (e.g., JPMML) is reused as-is in the ported analytic-pmml module; no new PMML features are added.\",\n    \"The job composition graph (U6) is bounded to a single composed job's direct parent/children and one level of nesting; recursive traversal is not required for the first increment.\",\n    \"The REST endpoints in U5/U6 are read-only; no mutation or composition management is included.\",\n    \"Visual differentiation in U7 uses color/iconography cues within the existing UI palette and does not require a new design system.\",\n    \"The 'detail page' referenced in U8 already exists for both standalone and composed jobs; U8 only fixes routing/navigation so the correct page is rendered from either entry point.\",\n    \"No production-grade performance testing, load testing, or security hardening is included beyond standard unit/integration coverage.\",\n    \"Code reviews, merging, and minor build fixes are folded into the per-activity effort rather than tracked separately.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Review all 8 user stories, study the relevant Spring XD / s-c-s code paths (binder config, HDFS module location, Admin REST, Admin UI, Cassandra/PMML modules), and produce a short design note covering the multi-binder extension, HDFS HA proxy change, module-port strategy, REST contracts for U5/U6, and UI changes for U7/U8.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Multi-binder support for same binding type\",\n      \"activity_description\": \"Extend Spring XD binder configuration to allow multiple distinct external systems of the same binding type (e.g., two Kafka binders) per module. Introduce named binder references, update channel-to-binder resolution, and provide configuration syntax and validation.\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - HDFS HA support for custom module location\",\n      \"activity_description\": \"Modify the XD module-location loader so that when HDFS is the module location store and the namenode is configured for HA (dfs.nameservices in core-site.xml), it uses an HA-aware NameNode proxy. Update config parsing and add unit/integration tests against a simulated HA cluster config.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Port Cassandra module from XD to s-c-s\",\n      \"activity_description\": \"Move the Cassandra module source tree from spring-xd to spring-cloud-stream, realign package names, update Maven coordinates and dependencies, adapt to s-c-s module conventions, and verify sink behavior in a streaming pipeline (write/read integration test).\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Port analytic-pmml module from XD to s-c-s\",\n      \"activity_description\": \"Port the analytic-pmml processor module from spring-xd to spring-cloud-stream, including PMML model loading, JPMML evaluator integration, and processor message mapping. Add tests covering a representative PMML model and verify use as a processor in a stream pipeline.\",\n      \"most_likely_effort\": 26\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - REST endpoint for job composition flag\",\n      \"activity_description\": \"Add a new Admin REST endpoint that returns a boolean 'composed' flag indicating whether a given job is a parent in a composed-job relationship or standalone. Update controller, DTO, and unit/integration tests.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - REST endpoint for job composition graph\",\n      \"activity_description\": \"Add an Admin REST endpoint that returns the job-composition graph (nodes and edges representing parent-child relationships) for a given composed job. Implement DTO, controller method, service-layer traversal, and tests.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - UI visual differentiation for composed jobs\",\n      \"activity_description\": \"Update the XD Admin UI job list/detail views to visually distinguish composed-job entries from standalone jobs (icon, color band, and/or label) using the new U5 flag and U6 graph data. Update Angular templates, controllers, and CSS.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - UI navigation fix for composed vs singular jobs\",\n      \"activity_description\": \"Fix job-list navigation so that clicking a job entry routes to the correct detail page regardless of whether the entity is standalone or part of a composed job. Update UI routing, controller logic, and add UI tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration, end-to-end, and regression testing\",\n      \"activity_description\": \"Run and extend integration tests covering multi-binder scenarios, HDFS HA module loading, the two ported modules in pipeline tests, both new REST endpoints, and UI smoke tests. Fix defects discovered during regression.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update reference docs: multi-binder configuration syntax, HDFS HA configuration, Cassandra/PMML module usage in s-c-s, the two new REST endpoints, and UI changes. Update changelogs and migration notes.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 157\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully. It contains:\n\n1. A general description of the Spring Framework\n2. 8 user stories (U1-U8) that relate to Spring XD (eXtended Data) which is a different project - related to Hadoop, streaming data pipelines, modules, etc.\n\nLet me break down the user stories:\n\n- U1: Multiple external systems connection for the same binding type (read from one, write to another) - This is about Spring Cloud Stream or Spring Integration binders\n- U2: HDFS for custom module location with HA namenode support - XD module location with HDFS HA\n- U3: Move cassandra module from XD to spring-cloud-stream repo\n- U4: Port analytic-pmml module from XD to s-c-s repo\n- U5: REST endpoint for job composition flag\n- U6: REST endpoint for job composition graph\n- U7: Visual differentiation between job-composition workflow and single job (UI)\n- U8: Click-through to detail page from both singular and composed jobs (UI)\n\nLet me create a WBS for this:\n\n1. Requirements analysis & design\n2. U1: Multiple binders support\n3. U2: HDFS HA support for XD module location\n4. U3: Port cassandra module to s-c-s\n5. U4: Port analytic-pmml module to s-c-s\n6. U5: REST endpoint for job composition flag\n7. U6: REST endpoint for job composition graph\n8. U7: UI visual differentiation\n9. U8: UI navigation for composed jobs\n10. Testing (unit, integration)\n11. Documentation\n\nLet me estimate each:\n\n- Requirements & design: 8 hours\n- U1 (multiple binders): This is a significant feature - allows multiple connections per binding type. Need to refactor binder configuration. 16-24 hours. Let's say 20.\n- U2 (HDFS HA): Need to modify NameNode proxy logic. 12-16 hours. Let's say 14.\n- U3 (Cassandra port): Need to port a module. 16-20 hours. Let's say 18.\n- U4 (analytic-pmml port): Another module port. PMML is complex. 20-24 hours. Let's say 22.\n- U5 (REST flag endpoint): Add REST endpoint. 6-8 hours. Let's say 7.\n- U6 (REST graph endpoint): More complex endpoint with graph data. 10-14 hours. Let's say 12.\n- U7 (UI differentiation): UI work. 8-12 hours. Let's say 10.\n- U8 (UI navigation): UI work. 6-8 hours. Let's say 7.\n- Testing: 24-32 hours\n- Documentation: 8-12 hours\n\nLet me refine the totals:\n- 8 + 20 + 14 + 18 + 22 + 7 + 12 + 10 + 7 + 28 + 10 = 156 hours\n\nLet me reconsider. The spec is for a software increment, so this is what needs to be done. Let me be more precise.\n\nActually, let me re-read the spec. The user stories mention \"XD\" which is Spring XD - this is a separate project from Spring Framework. The Spring Framework description at the beginning is just context.\n\nLet me think about each more carefully:\n\nU1: \"connect to multiple external systems for the same binding type\" - This sounds like Spring Cloud Stream functionality where you might have multiple input/output bindings to different systems. Could be 16-24 hours.\n\nU2: HDFS HA support for module location - This is a bug fix/enhancement. 8-16 hours.\n\nU3: Port cassandra module - Move code from one repo to another. Need to update dependencies, build, tests. 16-24 hours.\n\nU4: Port analytic-pmml module - Similar to U3 but PMML adds complexity. 20-28 hours.\n\nU5: REST endpoint for flag - Simple endpoint. 4-8 hours.\n\nU6: REST endpoint for graph - More complex. 8-16 hours.\n\nU7: UI visual differentiation - UI work. 6-10 hours.\n\nU8: UI navigation - UI work. 4-8 hours.\n\nPlus cross-cutting:\n- Requirements/Design: 8 hours\n- Unit/Integration testing: 20-30 hours\n- Documentation: 6-10 hours\n\nLet me finalize:\n- A1: Requirements Analysis & Technical Design: 8h\n- A2: U1 - Multiple External Systems Binding Support: 20h\n- A3: U2 - HDFS HA Support for Custom Module Location: 12h\n- A4: U3 - Port Cassandra Module to s-c-s: 18h\n- A5: U4 - Port analytic-pmml Module to s-c-s: 24h\n- A6: U5 - REST Endpoint for Job Composition Flag: 6h\n- A7: U6 - REST Endpoint for Job Composition Graph: 12h\n- A8: U7 - UI Visual Differentiation: 10h\n- A9: U8 - UI Navigation for Composed Jobs: 6h\n- A10: Integration & Testing: 24h\n- A11: Documentation: 8h\n\nTotal: 8+20+12+18+24+6+12+10+6+24+8 = 148 hours\n\nLet me round/adjust slightly for realism. I'll go with 148 hours.\n\nActually, let me think about this more. These are independent user stories, so a WBS approach makes sense. Let me be more specific about the technical decisions.\n\nTechnical/Design decisions:\n- Use Spring Cloud Stream as the target for U3, U4 modules\n- REST endpoints will use Spring MVC\n- UI changes will use existing XD UI framework (Angular likely)\n- Multiple binders will leverage Spring Cloud Stream's multi-binder support\n- HDFS HA will use Hadoop's HA configuration patterns\n\nAssumptions:\n- All code is Java\n- Spring XD is the primary platform\n- One developer doing all work\n- 8-hour workdays\n- No external dependencies blocking\n- Maven/Gradle build system\n- Existing test infrastructure can be reused\n\nLet me finalize my estimates. I'll keep my list above.\n\nTotal = 148 hours.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully. It contains:\n\n1. A general description of the Spring Framework\n2. 8 user stories (U1-U8) that relate to Spring XD (eXtended Data) which is a different project - related to Hadoop, streaming data pipelines, modules, etc.\n\nLet me break down the user stories:\n\n- U1: Multiple external systems connection for the same binding type (read from one, write to another) - This is about Spring Cloud Stream or Spring Integration binders\n- U2: HDFS for custom module location with HA namenode support - XD module location with HDFS HA\n- U3: Move cassandra module from XD to spring-cloud-stream repo\n- U4: Port analytic-pmml module from XD to s-c-s repo\n- U5: REST endpoint for job composition flag\n- U6: REST endpoint for job composition graph\n- U7: Visual differentiation between job-composition workflow and single job (UI)\n- U8: Click-through to detail page from both singular and composed jobs (UI)\n\nLet me create a WBS for this:\n\n1. Requirements analysis & design\n2. U1: Multiple binders support\n3. U2: HDFS HA support for XD module location\n4. U3: Port cassandra module to s-c-s\n5. U4: Port analytic-pmml module to s-c-s\n6. U5: REST endpoint for job composition flag\n7. U6: REST endpoint for job composition graph\n8. U7: UI visual differentiation\n9. U8: UI navigation for composed jobs\n10. Testing (unit, integration)\n11. Documentation\n\nLet me estimate each:\n\n- Requirements & design: 8 hours\n- U1 (multiple binders): This is a significant feature - allows multiple connections per binding type. Need to refactor binder configuration. 16-24 hours. Let's say 20.\n- U2 (HDFS HA): Need to modify NameNode proxy logic. 12-16 hours. Let's say 14.\n- U3 (Cassandra port): Need to port a module. 16-20 hours. Let's say 18.\n- U4 (analytic-pmml port): Another module port. PMML is complex. 20-24 hours. Let's say 22.\n- U5 (REST flag endpoint): Add REST endpoint. 6-8 hours. Let's say 7.\n- U6 (REST graph endpoint): More complex endpoint with graph data. 10-14 hours. Let's say 12.\n- U7 (UI differentiation): UI work. 8-12 hours. Let's say 10.\n- U8 (UI navigation): UI work. 6-8 hours. Let's say 7.\n- Testing: 24-32 hours\n- Documentation: 8-12 hours\n\nLet me refine the totals:\n- 8 + 20 + 14 + 18 + 22 + 7 + 12 + 10 + 7 + 28 + 10 = 156 hours\n\nLet me reconsider. The spec is for a software increment, so this is what needs to be done. Let me be more precise.\n\nActually, let me re-read the spec. The user stories mention \"XD\" which is Spring XD - this is a separate project from Spring Framework. The Spring Framework description at the beginning is just context.\n\nLet me think about each more carefully:\n\nU1: \"connect to multiple external systems for the same binding type\" - This sounds like Spring Cloud Stream functionality where you might have multiple input/output bindings to different systems. Could be 16-24 hours.\n\nU2: HDFS HA support for module location - This is a bug fix/enhancement. 8-16 hours.\n\nU3: Port cassandra module - Move code from one repo to another. Need to update dependencies, build, tests. 16-24 hours.\n\nU4: Port analytic-pmml module - Similar to U3 but PMML adds complexity. 20-28 hours.\n\nU5: REST endpoint for flag - Simple endpoint. 4-8 hours.\n\nU6: REST endpoint for graph - More complex. 8-16 hours.\n\nU7: UI visual differentiation - UI work. 6-10 hours.\n\nU8: UI navigation - UI work. 4-8 hours.\n\nPlus cross-cutting:\n- Requirements/Design: 8 hours\n- Unit/Integration testing: 20-30 hours\n- Documentation: 6-10 hours\n\nLet me finalize:\n- A1: Requirements Analysis & Technical Design: 8h\n- A2: U1 - Multiple External Systems Binding Support: 20h\n- A3: U2 - HDFS HA Support for Custom Module Location: 12h\n- A4: U3 - Port Cassandra Module to s-c-s: 18h\n- A5: U4 - Port analytic-pmml Module to s-c-s: 24h\n- A6: U5 - REST Endpoint for Job Composition Flag: 6h\n- A7: U6 - REST Endpoint for Job Composition Graph: 12h\n- A8: U7 - UI Visual Differentiation: 10h\n- A9: U8 - UI Navigation for Composed Jobs: 6h\n- A10: Integration & Testing: 24h\n- A11: Documentation: 8h\n\nTotal: 8+20+12+18+24+6+12+10+6+24+8 = 148 hours\n\nLet me round/adjust slightly for realism. I'll go with 148 hours.\n\nActually, let me think about this more. These are independent user stories, so a WBS approach makes sense. Let me be more specific about the technical decisions.\n\nTechnical/Design decisions:\n- Use Spring Cloud Stream as the target for U3, U4 modules\n- REST endpoints will use Spring MVC\n- UI changes will use existing XD UI framework (Angular likely)\n- Multiple binders will leverage Spring Cloud Stream's multi-binder support\n- HDFS HA will use Hadoop's HA configuration patterns\n\nAssumptions:\n- All code is Java\n- Spring XD is the primary platform\n- One developer doing all work\n- 8-hour workdays\n- No external dependencies blocking\n- Maven/Gradle build system\n- Existing test infrastructure can be reused\n\nLet me finalize my estimates. I'll keep my list above.\n\nTotal = 148 hours.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1396,
+      "completion_tokens": 3130,
+      "total_tokens": 4526,
+      "cost": 0.00413736,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00413736,
+        "upstream_inference_prompt_cost": 0.00038136,
+        "upstream_inference_completions_cost": 0.003756
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1339,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target platform is Spring XD (eXtended Data) running on the JVM, with ported modules targeting the spring-cloud-stream (s-c-s) repository.\",\n    \"Reuse existing Spring XD module/options metadata model for the Cassandra and analytic-pmml modules to minimize behavioral drift during the port.\",\n    \"Implement multiple-bindings-per-type (U1) by extending the binder configuration model to allow named, distinct binder instances bound to the same input/output contract, with channel resolution at runtime.\",\n    \"For HDFS HA (U2), replace NameNodeProxies.createNonHAProxy with a HA-aware proxy that reads nameservice IDs from core-site.xml and uses HDFS HA RPC failover; keep the legacy non-HA path as a fallback.\",\n    \"Job-composition REST endpoints (U5, U6) are added to the Spring XD Admin REST controller layer using Spring MVC, returning JSON; U6 returns an adjacency-list representation of the composed job graph.\",\n    \"UI changes (U7, U8) are implemented in the existing XD Admin UI (AngularJS-based) and reuse the existing job-list/job-detail view templates; no new UI framework is introduced.\",\n    \"Testing strategy: JUnit + Mockito for unit tests, Spring XD test harness for integration tests, and Selenium-style smoke tests for the UI changes.\",\n    \"Build system assumed to be Maven (consistent with Spring XD/s-c-s conventions).\",\n    \"All eight user stories are independent and can be developed in parallel by a single developer sequentially; no cross-story refactoring is assumed unless explicitly noted (e.g., U5/U6 share a DTO).\",\n    \"No production deployment, infrastructure provisioning, or DevOps pipeline work is included in the scope.\"\n  ],\n  \"assumptions\": [\n    \"A single full-time developer performs all work; 1 work-hour equals 1 wall-clock hour of focused development.\",\n    \"Existing Spring XD source tree, s-c-s source tree, and CI infrastructure are available and not part of the increment.\",\n    \"Cassandra (U3) and analytic-pmml (U4) modules already exist in XD and are functionally stable; the work is a code move, dependency re-alignment, and re-test, not a re-implementation.\",\n    \"PMML evaluation engine (e.g., JPMML) is reused as-is in the ported analytic-pmml module; no new PMML features are added.\",\n    \"The job composition graph (U6) is bounded to a single composed job's direct parent/children and one level of nesting; recursive traversal is not required for the first increment.\",\n    \"The REST endpoints in U5/U6 are read-only; no mutation or composition management is included.\",\n    \"Visual differentiation in U7 uses color/iconography cues within the existing UI palette and does not require a new design system.\",\n    \"The 'detail page' referenced in U8 already exists for both standalone and composed jobs; U8 only fixes routing/navigation so the correct page is rendered from either entry point.\",\n    \"No production-grade performance testing, load testing, or security hardening is included beyond standard unit/integration coverage.\",\n    \"Code reviews, merging, and minor build fixes are folded into the per-activity effort rather than tracked separately.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Review all 8 user stories, study the relevant Spring XD / s-c-s code paths (binder config, HDFS module location, Admin REST, Admin UI, Cassandra/PMML modules), and produce a short design note covering the multi-binder extension, HDFS HA proxy change, module-port strategy, REST contracts for U5/U6, and UI changes for U7/U8.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Multi-binder support for same binding type\",\n      \"activity_description\": \"Extend Spring XD binder configuration to allow multiple distinct external systems of the same binding type (e.g., two Kafka binders) per module. Introduce named binder references, update channel-to-binder resolution, and provide configuration syntax and validation.\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - HDFS HA support for custom module location\",\n      \"activity_description\": \"Modify the XD module-location loader so that when HDFS is the module location store and the namenode is configured for HA (dfs.nameservices in core-site.xml), it uses an HA-aware NameNode proxy. Update config parsing and add unit/integration tests against a simulated HA cluster config.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Port Cassandra module from XD to s-c-s\",\n      \"activity_description\": \"Move the Cassandra module source tree from spring-xd to spring-cloud-stream, realign package names, update Maven coordinates and dependencies, adapt to s-c-s module conventions, and verify sink behavior in a streaming pipeline (write/read integration test).\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Port analytic-pmml module from XD to s-c-s\",\n      \"activity_description\": \"Port the analytic-pmml processor module from spring-xd to spring-cloud-stream, including PMML model loading, JPMML evaluator integration, and processor message mapping. Add tests covering a representative PMML model and verify use as a processor in a stream pipeline.\",\n      \"most_likely_effort\": 26\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - REST endpoint for job composition flag\",\n      \"activity_description\": \"Add a new Admin REST endpoint that returns a boolean 'composed' flag indicating whether a given job is a parent in a composed-job relationship or standalone. Update controller, DTO, and unit/integration tests.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - REST endpoint for job composition graph\",\n      \"activity_description\": \"Add an Admin REST endpoint that returns the job-composition graph (nodes and edges representing parent-child relationships) for a given composed job. Implement DTO, controller method, service-layer traversal, and tests.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - UI visual differentiation for composed jobs\",\n      \"activity_description\": \"Update the XD Admin UI job list/detail views to visually distinguish composed-job entries from standalone jobs (icon, color band, and/or label) using the new U5 flag and U6 graph data. Update Angular templates, controllers, and CSS.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - UI navigation fix for composed vs singular jobs\",\n      \"activity_description\": \"Fix job-list navigation so that clicking a job entry routes to the correct detail page regardless of whether the entity is standalone or part of a composed job. Update UI routing, controller logic, and add UI tests.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration, end-to-end, and regression testing\",\n      \"activity_description\": \"Run and extend integration tests covering multi-binder scenarios, HDFS HA module loading, the two ported modules in pipeline tests, both new REST endpoints, and UI smoke tests. Fix defects discovered during regression.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update reference docs: multi-binder configuration syntax, HDFS HA configuration, Cassandra/PMML module usage in s-c-s, the two new REST endpoints, and UI changes. Update changelogs and migration notes.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 157\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1396,
+    "completion_tokens": 3130,
+    "total_tokens": 4526,
+    "cost": 0.00413736,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00413736,
+      "upstream_inference_prompt_cost": 0.00038136,
+      "upstream_inference_completions_cost": 0.003756
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1339,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Target platform is Spring XD (eXtended Data) running on the JVM, with ported modules targeting the spring-cloud-stream (s-c-s) repository.",
+      "Reuse existing Spring XD module/options metadata model for the Cassandra and analytic-pmml modules to minimize behavioral drift during the port.",
+      "Implement multiple-bindings-per-type (U1) by extending the binder configuration model to allow named, distinct binder instances bound to the same input/output contract, with channel resolution at runtime.",
+      "For HDFS HA (U2), replace NameNodeProxies.createNonHAProxy with a HA-aware proxy that reads nameservice IDs from core-site.xml and uses HDFS HA RPC failover; keep the legacy non-HA path as a fallback.",
+      "Job-composition REST endpoints (U5, U6) are added to the Spring XD Admin REST controller layer using Spring MVC, returning JSON; U6 returns an adjacency-list representation of the composed job graph.",
+      "UI changes (U7, U8) are implemented in the existing XD Admin UI (AngularJS-based) and reuse the existing job-list/job-detail view templates; no new UI framework is introduced.",
+      "Testing strategy: JUnit + Mockito for unit tests, Spring XD test harness for integration tests, and Selenium-style smoke tests for the UI changes.",
+      "Build system assumed to be Maven (consistent with Spring XD/s-c-s conventions).",
+      "All eight user stories are independent and can be developed in parallel by a single developer sequentially; no cross-story refactoring is assumed unless explicitly noted (e.g., U5/U6 share a DTO).",
+      "No production deployment, infrastructure provisioning, or DevOps pipeline work is included in the scope."
+    ],
+    "assumptions": [
+      "A single full-time developer performs all work; 1 work-hour equals 1 wall-clock hour of focused development.",
+      "Existing Spring XD source tree, s-c-s source tree, and CI infrastructure are available and not part of the increment.",
+      "Cassandra (U3) and analytic-pmml (U4) modules already exist in XD and are functionally stable; the work is a code move, dependency re-alignment, and re-test, not a re-implementation.",
+      "PMML evaluation engine (e.g., JPMML) is reused as-is in the ported analytic-pmml module; no new PMML features are added.",
+      "The job composition graph (U6) is bounded to a single composed job's direct parent/children and one level of nesting; recursive traversal is not required for the first increment.",
+      "The REST endpoints in U5/U6 are read-only; no mutation or composition management is included.",
+      "Visual differentiation in U7 uses color/iconography cues within the existing UI palette and does not require a new design system.",
+      "The 'detail page' referenced in U8 already exists for both standalone and composed jobs; U8 only fixes routing/navigation so the correct page is rendered from either entry point.",
+      "No production-grade performance testing, load testing, or security hardening is included beyond standard unit/integration coverage.",
+      "Code reviews, merging, and minor build fixes are folded into the per-activity effort rather than tracked separately."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and technical design",
+        "activity_description": "Review all 8 user stories, study the relevant Spring XD / s-c-s code paths (binder config, HDFS module location, Admin REST, Admin UI, Cassandra/PMML modules), and produce a short design note covering the multi-binder extension, HDFS HA proxy change, module-port strategy, REST contracts for U5/U6, and UI changes for U7/U8.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Multi-binder support for same binding type",
+        "activity_description": "Extend Spring XD binder configuration to allow multiple distinct external systems of the same binding type (e.g., two Kafka binders) per module. Introduce named binder references, update channel-to-binder resolution, and provide configuration syntax and validation.",
+        "most_likely_effort": 22
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - HDFS HA support for custom module location",
+        "activity_description": "Modify the XD module-location loader so that when HDFS is the module location store and the namenode is configured for HA (dfs.nameservices in core-site.xml), it uses an HA-aware NameNode proxy. Update config parsing and add unit/integration tests against a simulated HA cluster config.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - Port Cassandra module from XD to s-c-s",
+        "activity_description": "Move the Cassandra module source tree from spring-xd to spring-cloud-stream, realign package names, update Maven coordinates and dependencies, adapt to s-c-s module conventions, and verify sink behavior in a streaming pipeline (write/read integration test).",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Port analytic-pmml module from XD to s-c-s",
+        "activity_description": "Port the analytic-pmml processor module from spring-xd to spring-cloud-stream, including PMML model loading, JPMML evaluator integration, and processor message mapping. Add tests covering a representative PMML model and verify use as a processor in a stream pipeline.",
+        "most_likely_effort": 26
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - REST endpoint for job composition flag",
+        "activity_description": "Add a new Admin REST endpoint that returns a boolean 'composed' flag indicating whether a given job is a parent in a composed-job relationship or standalone. Update controller, DTO, and unit/integration tests.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - REST endpoint for job composition graph",
+        "activity_description": "Add an Admin REST endpoint that returns the job-composition graph (nodes and edges representing parent-child relationships) for a given composed job. Implement DTO, controller method, service-layer traversal, and tests.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 - UI visual differentiation for composed jobs",
+        "activity_description": "Update the XD Admin UI job list/detail views to visually distinguish composed-job entries from standalone jobs (icon, color band, and/or label) using the new U5 flag and U6 graph data. Update Angular templates, controllers, and CSS.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8 - UI navigation fix for composed vs singular jobs",
+        "activity_description": "Fix job-list navigation so that clicking a job entry routes to the correct detail page regardless of whether the entity is standalone or part of a composed job. Update UI routing, controller logic, and add UI tests.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Integration, end-to-end, and regression testing",
+        "activity_description": "Run and extend integration tests covering multi-binder scenarios, HDFS HA module loading, the two ported modules in pipeline tests, both new REST endpoints, and UI smoke tests. Fix defects discovered during regression.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation updates",
+        "activity_description": "Update reference docs: multi-binder configuration syntax, HDFS HA configuration, Cassandra/PMML module usage in s-c-s, the two new REST endpoints, and UI changes. Update changelogs and migration notes.",
+        "most_likely_effort": 8
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 157
+    }
+  }
+}

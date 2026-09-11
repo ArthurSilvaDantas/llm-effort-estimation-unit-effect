@@ -1,0 +1,189 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-041",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788415563-ghdi8gmQRoHCFSE0oSMY",
+    "object": "chat.completion",
+    "created": 1788415563,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Spring XD is treated as a separate (legacy) project built on top of the Spring Framework; all 8 user stories are scoped to Spring XD runtime, container, and admin components, not to Spring Framework core.\",\n    \"For U2, the design will use Spring's SmartLifecycle and conditional context bootstrap tied to job launch/completion events, rather than rewriting the entire module deployer.\",\n    \"For U4 and U5, the integration with Spring Boot will leverage Spring Boot 1.x actuator and configuration-metadata APIs, with module options exposed via @ConfigurationProperties-style metadata files.\",\n    \"For U6, the central configuration service will be implemented using a Spring Cloud Config-style server (file-based git backend) plus XD-Admin/DContainer client integration; consistency with existing Spring XD runtime is prioritized over introducing Spring Cloud Config wholesale.\",\n    \"For U7, performance troubleshooting will follow a profile-then-fix pattern (instrumentation with metrics + targeted code change), assuming a single primary bottleneck is identified and fixed.\",\n    \"For U8, EC2-based CI assumes a Jenkins (or equivalent) controller with EC2 build agents, not a full cloud-native rebuild (e.g., CodeBuild/CodePipeline).\",\n    \"Testing strategy assumes unit + integration tests for code changes, smoke tests for the CI migration, and acceptance runs for benchmarks and Rabbit performance fixes.\",\n    \"Effort is computed for development work only (design, implementation, test, and developer-authored documentation); code review, project management overhead, and operator runbook production are out of scope.\"\n  ],\n  \"assumptions\": [\n    \"The implementer is a single experienced Java/Spring developer familiar with Spring XD internals, Spring Boot actuator, and Spring Cloud Config concepts.\",\n    \"The target environment is Spring XD 1.x (Java 8 baseline) consistent with the era of the user stories; Spring Framework 6.0 / Java 17 baseline mentioned in the spec preamble is informational and not retro-applied to XD.\",\n    \"Existing Spring XD module/composition abstractions remain stable; no breaking runtime model changes are introduced.\",\n    \"For U1, the benchmark suite can be based on an existing JVM/Spring micro-benchmark harness; raw hardware procurement time is excluded.\",\n    \"For U8, EC2 instances, AMIs, and Jenkins plugins are assumed to be licensable/configurable without procurement delays; only developer effort is counted.\",\n    \"Documentation updates in U3 are developer-authored content (Markdown/asciidoc) and do not require dedicated technical writers or graphic designers.\",\n    \"No new public APIs or wire-level protocol changes are introduced beyond what is needed for U5 and U6.\",\n    \"Defect fixes from U7 are assumed to be localized (single component); multi-component refactors are not required.\",\n    \"All effort values are 'most likely' (single-point) estimates in work-hours, with no PERT optimistic/pessimistic spread requested.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup, dependency alignment, and shared design\",\n      \"activity_description\": \"Initial scaffolding: align Spring XD build with required Spring Boot/Cloud versions, create branch, draft high-level design notes covering U2, U4, U5, and U6 interactions, and prepare shared test infrastructure.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Performance benchmark suite and infrastructure documentation\",\n      \"activity_description\": \"Select/extend a micro-benchmark harness (e.g., JMH-based XD benchmarks), author XD cluster scenarios (single-node, multi-node, batch, stream), run the suite, capture results, and publish a reference document with hardware/OS/JVM/XD-version specifics.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Lazy module bootstrap tied to job lifecycle\",\n      \"activity_description\": \"Refactor the module deployer to bootstrap the child application context when the job/stream is launched and shut it down on completion. Add lifecycle hooks, ensure resource cleanup, update unit and integration tests, and verify behavior across redeploys.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Spark streaming documentation and examples update\",\n      \"activity_description\": \"Review existing Spark module docs, add a 'tap at module output' section, document the Reliable receiver semantics, and update at least one runnable example demonstrating tap and reliable delivery.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Boot actuator metrics export integration\",\n      \"activity_description\": \"Wire XD module/app metrics into the Spring Boot MetricRepository export() API: expose counters/gauges for throughput, lag, and error rates, ensure registration happens per module, and add actuator integration tests.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Module options via Boot property source and metadata\",\n      \"activity_description\": \"Replace the XD runtime Control Plane property handling for module options with a Boot-backed PropertySource, generate configuration-metadata (additional-spring-configuration-metadata.json) for each module, and deprecate the legacy CP option registration path with backward compatibility.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Centralized external configuration for XD-Admin and XD-Container\",\n      \"activity_description\": \"Stand up a config server (Spring Cloud Config-style, git-backed), implement XD-Admin and XD-Container clients that bootstrap from external properties, support environment-to-profile mapping, secure the endpoint, and validate with end-to-end tests across dev/stage/prod-like environments.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Rabbit message bus performance troubleshooting and fix\",\n      \"activity_description\": \"Instrument the Rabbit bus (producer/consumer/ack paths) with metrics, profile under representative XD load, isolate the primary bottleneck, implement a targeted fix (e.g., batching, channel pooling, prefetch tuning), and validate with before/after benchmarks.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Migrate CI builds to EC2\",\n      \"activity_description\": \"Provision EC2 build agents (AMI + bootstrap script), migrate Jenkins/equivalent job definitions from existing infrastructure to EC2, configure scaling/destroy policies, and verify parity by running a full build matrix on the new agents.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration testing\",\n      \"activity_description\": \"Run an end-to-end test pass combining U2 (lazy bootstrap), U4 (metrics), U5 (Boot properties), and U6 (central config) on a multi-node XD cluster to catch interaction regressions.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Release notes and developer-facing documentation\",\n      \"activity_description\": \"Write release notes summarizing U1-U8 changes, update the XD reference guide sections affected by U4/U5/U6, and publish the benchmark report from U1.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 452\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully. The specification is about the Spring Framework, but the user stories (U1-U8) are actually about Spring XD (a separate project that was built on top of Spring). These are 8 distinct user stories, each requiring separate development work.\n\nLet me break down each user story:\n\nU1: Publish performance benchmarks with infrastructure specifics for Spring XD cluster reference\n- Need to set up benchmarking infrastructure\n- Run benchmarks across different cluster configurations\n- Document infrastructure specifics\n- Publish results\n\nU2: Bootstrap job module when job launched, shut down when complete (lazy initialization)\n- Modify module lifecycle management\n- Change from eager to lazy context bootstrapping\n- Add proper shutdown hooks\n\nU3: Update Spark streaming documentation\n- Add tap feature documentation\n- Update examples\n- Add Reliable receiver information\n\nU4: Module/app specific metrics from Boot actuator\n- Integrate Boot actuator metrics export API\n- Expose module metrics through actuator\n\nU5: Handle module options via Boot property source management\n- Replace current CP-based property management\n- Use Boot's configuration metadata\n- Migration work\n\nU6: Central external properties management\n- Create config server/client\n- Externalized configuration for XD-Admin and XD-Container\n- Server and client-side support\n\nU7: Troubleshoot Rabbit message bus performance\n- Profiling/analysis\n- Identify bottleneck\n- Fix implementation\n\nU8: Migrate CI builds to EC2\n- Set up EC2 infrastructure\n- Configure CI pipeline on EC2\n- Migration\n\nLet me create a WBS with activities for each user story plus some common activities like project setup, testing, and documentation.\n\nI'll estimate each activity in work-hours.\n\nLet me think about the WBS structure:\n\n1. Project setup and planning\n2. U1: Performance benchmarks\n3. U2: Lazy module bootstrap\n4. U3: Spark streaming documentation\n5. U4: Boot actuator metrics integration\n6. U5: Boot property source for module options\n7. U6: Centralized configuration management\n8. U7: Rabbit message bus performance troubleshooting\n9. U8: CI migration to EC2\n10. Integration testing\n11. Final documentation and release\n\nLet me estimate each:\n\n1. Project setup and planning: 16 hours\n2. U1: Performance benchmarks - 80 hours\n   - Set up benchmark suite: 24h\n   - Run benchmarks on various configs: 32h\n   - Document and publish: 24h\n\n3. U2: Lazy module bootstrap - 40 hours\n   - Design changes: 12h\n   - Implementation: 20h\n   - Testing: 8h\n\n4. U3: Spark streaming documentation - 16 hours\n   - Review current docs: 4h\n   - Update/add content: 8h\n   - Update examples: 4h\n\n5. U4: Boot actuator metrics - 40 hours\n   - Integration design: 8h\n   - Implementation: 20h\n   - Testing: 12h\n\n6. U5: Boot property source - 56 hours\n   - Design migration approach: 12h\n   - Implementation: 32h\n   - Testing: 12h\n\n7. U6: Centralized config - 80 hours\n   - Architecture design: 16h\n   - Server implementation: 24h\n   - Client implementation: 24h\n   - Testing: 16h\n\n8. U7: Rabbit performance - 48 hours\n   - Profiling and analysis: 16h\n   - Identify bottleneck: 8h\n   - Implementation of fixes: 16h\n   - Testing: 8h\n\n9. U8: CI migration to EC2 - 40 hours\n   - EC2 setup: 12h\n   - CI configuration: 16h\n   - Testing and verification: 12h\n\n10. Integration testing: 24 hours\n11. Final documentation and release: 16 hours\n\nTotal: 16 + 80 + 40 + 16 + 40 + 56 + 80 + 48 + 40 + 24 + 16 = 456 hours\n\nWait, I need to make sure I'm being reasonable here. Let me think more carefully.\n\nActually, looking at the spec again, the activities are very different in size. Let me reconsider the breakdown.\n\nFor U1 (Performance benchmarks):\n- Benchmark design & implementation: 32h\n- Benchmark execution & data collection: 24h\n- Documentation & publishing: 24h\nTotal: 80h\n\nFor U2 (Lazy bootstrap):\n- Design analysis: 8h\n- Code changes: 16h\n- Testing: 12h\nTotal: 36h → ~40h\n\nFor U3 (Documentation):\n- Content review & writing: 12h\n- Example updates: 8h\nTotal: 20h → 16-20h\n\nFor U4 (Boot actuator):\n- API integration: 16h\n- Metric exposure implementation: 16h\n- Testing: 12h\nTotal: 44h → 40h\n\nFor U5 (Boot property source):\n- Migration design: 12h\n- Implementation: 28h\n- Testing: 12h\nTotal: 52h → 56h\n\nFor U6 (Centralized config):\n- Architecture: 16h\n- Server impl: 24h\n- Client impl: 20h\n- Testing: 16h\nTotal: 76h → 80h\n\nFor U7 (Rabbit performance):\n- Profiling: 16h\n- Fixes: 24h\n- Testing: 12h\nTotal: 52h → 48h\n\nFor U8 (EC2 CI):\n- Infrastructure setup: 16h\n- Pipeline migration: 20h\n- Testing: 12h\nTotal: 48h → 40h\n\nPlus overhead:\n- Project setup & planning: 12h\n- Integration testing: 16h\n- Final documentation: 8h\n\nTotal: 12 + 80 + 40 + 20 + 40 + 56 + 80 + 48 + 40 + 16 + 8 = 440h\n\nLet me adjust to be more reasonable. I think around 400-500 hours is appropriate for this kind of work.\n\nLet me structure the WBS more formally with clear activity definitions.\n\nI'll go with this structure:\n\nA1: Project Setup and Architecture Design - 16h\nA2: U1 - Performance Benchmarks Suite - 80h\nA3: U2 - Lazy Module Bootstrap Implementation - 40h\nA4: U3 - Spark Streaming Documentation Update - 20h\nA5: U4 - Boot Actuator Metrics Integration - 40h\nA6: U5 - Boot Property Source Migration - 56h\nA7: U6 - Centralized Configuration Management - 80h\nA8: U7 - Rabbit Message Bus Performance - 48h\nA9: U8 - EC2 CI Migration - 40h\nA10: Integration Testing - 24h\nA11: Release Documentation - 8h\n\nTotal: 16 + 80 + 40 + 20 + 40 + 56 + 80 + 48 + 40 + 24 + 8 = 452h\n\nLet me finalize this estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully. The specification is about the Spring Framework, but the user stories (U1-U8) are actually about Spring XD (a separate project that was built on top of Spring). These are 8 distinct user stories, each requiring separate development work.\n\nLet me break down each user story:\n\nU1: Publish performance benchmarks with infrastructure specifics for Spring XD cluster reference\n- Need to set up benchmarking infrastructure\n- Run benchmarks across different cluster configurations\n- Document infrastructure specifics\n- Publish results\n\nU2: Bootstrap job module when job launched, shut down when complete (lazy initialization)\n- Modify module lifecycle management\n- Change from eager to lazy context bootstrapping\n- Add proper shutdown hooks\n\nU3: Update Spark streaming documentation\n- Add tap feature documentation\n- Update examples\n- Add Reliable receiver information\n\nU4: Module/app specific metrics from Boot actuator\n- Integrate Boot actuator metrics export API\n- Expose module metrics through actuator\n\nU5: Handle module options via Boot property source management\n- Replace current CP-based property management\n- Use Boot's configuration metadata\n- Migration work\n\nU6: Central external properties management\n- Create config server/client\n- Externalized configuration for XD-Admin and XD-Container\n- Server and client-side support\n\nU7: Troubleshoot Rabbit message bus performance\n- Profiling/analysis\n- Identify bottleneck\n- Fix implementation\n\nU8: Migrate CI builds to EC2\n- Set up EC2 infrastructure\n- Configure CI pipeline on EC2\n- Migration\n\nLet me create a WBS with activities for each user story plus some common activities like project setup, testing, and documentation.\n\nI'll estimate each activity in work-hours.\n\nLet me think about the WBS structure:\n\n1. Project setup and planning\n2. U1: Performance benchmarks\n3. U2: Lazy module bootstrap\n4. U3: Spark streaming documentation\n5. U4: Boot actuator metrics integration\n6. U5: Boot property source for module options\n7. U6: Centralized configuration management\n8. U7: Rabbit message bus performance troubleshooting\n9. U8: CI migration to EC2\n10. Integration testing\n11. Final documentation and release\n\nLet me estimate each:\n\n1. Project setup and planning: 16 hours\n2. U1: Performance benchmarks - 80 hours\n   - Set up benchmark suite: 24h\n   - Run benchmarks on various configs: 32h\n   - Document and publish: 24h\n\n3. U2: Lazy module bootstrap - 40 hours\n   - Design changes: 12h\n   - Implementation: 20h\n   - Testing: 8h\n\n4. U3: Spark streaming documentation - 16 hours\n   - Review current docs: 4h\n   - Update/add content: 8h\n   - Update examples: 4h\n\n5. U4: Boot actuator metrics - 40 hours\n   - Integration design: 8h\n   - Implementation: 20h\n   - Testing: 12h\n\n6. U5: Boot property source - 56 hours\n   - Design migration approach: 12h\n   - Implementation: 32h\n   - Testing: 12h\n\n7. U6: Centralized config - 80 hours\n   - Architecture design: 16h\n   - Server implementation: 24h\n   - Client implementation: 24h\n   - Testing: 16h\n\n8. U7: Rabbit performance - 48 hours\n   - Profiling and analysis: 16h\n   - Identify bottleneck: 8h\n   - Implementation of fixes: 16h\n   - Testing: 8h\n\n9. U8: CI migration to EC2 - 40 hours\n   - EC2 setup: 12h\n   - CI configuration: 16h\n   - Testing and verification: 12h\n\n10. Integration testing: 24 hours\n11. Final documentation and release: 16 hours\n\nTotal: 16 + 80 + 40 + 16 + 40 + 56 + 80 + 48 + 40 + 24 + 16 = 456 hours\n\nWait, I need to make sure I'm being reasonable here. Let me think more carefully.\n\nActually, looking at the spec again, the activities are very different in size. Let me reconsider the breakdown.\n\nFor U1 (Performance benchmarks):\n- Benchmark design & implementation: 32h\n- Benchmark execution & data collection: 24h\n- Documentation & publishing: 24h\nTotal: 80h\n\nFor U2 (Lazy bootstrap):\n- Design analysis: 8h\n- Code changes: 16h\n- Testing: 12h\nTotal: 36h → ~40h\n\nFor U3 (Documentation):\n- Content review & writing: 12h\n- Example updates: 8h\nTotal: 20h → 16-20h\n\nFor U4 (Boot actuator):\n- API integration: 16h\n- Metric exposure implementation: 16h\n- Testing: 12h\nTotal: 44h → 40h\n\nFor U5 (Boot property source):\n- Migration design: 12h\n- Implementation: 28h\n- Testing: 12h\nTotal: 52h → 56h\n\nFor U6 (Centralized config):\n- Architecture: 16h\n- Server impl: 24h\n- Client impl: 20h\n- Testing: 16h\nTotal: 76h → 80h\n\nFor U7 (Rabbit performance):\n- Profiling: 16h\n- Fixes: 24h\n- Testing: 12h\nTotal: 52h → 48h\n\nFor U8 (EC2 CI):\n- Infrastructure setup: 16h\n- Pipeline migration: 20h\n- Testing: 12h\nTotal: 48h → 40h\n\nPlus overhead:\n- Project setup & planning: 12h\n- Integration testing: 16h\n- Final documentation: 8h\n\nTotal: 12 + 80 + 40 + 20 + 40 + 56 + 80 + 48 + 40 + 16 + 8 = 440h\n\nLet me adjust to be more reasonable. I think around 400-500 hours is appropriate for this kind of work.\n\nLet me structure the WBS more formally with clear activity definitions.\n\nI'll go with this structure:\n\nA1: Project Setup and Architecture Design - 16h\nA2: U1 - Performance Benchmarks Suite - 80h\nA3: U2 - Lazy Module Bootstrap Implementation - 40h\nA4: U3 - Spark Streaming Documentation Update - 20h\nA5: U4 - Boot Actuator Metrics Integration - 40h\nA6: U5 - Boot Property Source Migration - 56h\nA7: U6 - Centralized Configuration Management - 80h\nA8: U7 - Rabbit Message Bus Performance - 48h\nA9: U8 - EC2 CI Migration - 40h\nA10: Integration Testing - 24h\nA11: Release Documentation - 8h\n\nTotal: 16 + 80 + 40 + 20 + 40 + 56 + 80 + 48 + 40 + 24 + 8 = 452h\n\nLet me finalize this estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1445,
+      "completion_tokens": 3228,
+      "total_tokens": 4673,
+      "cost": 0.00426966,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00426966,
+        "upstream_inference_prompt_cost": 0.00039606,
+        "upstream_inference_completions_cost": 0.0038736
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1554,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Spring XD is treated as a separate (legacy) project built on top of the Spring Framework; all 8 user stories are scoped to Spring XD runtime, container, and admin components, not to Spring Framework core.\",\n    \"For U2, the design will use Spring's SmartLifecycle and conditional context bootstrap tied to job launch/completion events, rather than rewriting the entire module deployer.\",\n    \"For U4 and U5, the integration with Spring Boot will leverage Spring Boot 1.x actuator and configuration-metadata APIs, with module options exposed via @ConfigurationProperties-style metadata files.\",\n    \"For U6, the central configuration service will be implemented using a Spring Cloud Config-style server (file-based git backend) plus XD-Admin/DContainer client integration; consistency with existing Spring XD runtime is prioritized over introducing Spring Cloud Config wholesale.\",\n    \"For U7, performance troubleshooting will follow a profile-then-fix pattern (instrumentation with metrics + targeted code change), assuming a single primary bottleneck is identified and fixed.\",\n    \"For U8, EC2-based CI assumes a Jenkins (or equivalent) controller with EC2 build agents, not a full cloud-native rebuild (e.g., CodeBuild/CodePipeline).\",\n    \"Testing strategy assumes unit + integration tests for code changes, smoke tests for the CI migration, and acceptance runs for benchmarks and Rabbit performance fixes.\",\n    \"Effort is computed for development work only (design, implementation, test, and developer-authored documentation); code review, project management overhead, and operator runbook production are out of scope.\"\n  ],\n  \"assumptions\": [\n    \"The implementer is a single experienced Java/Spring developer familiar with Spring XD internals, Spring Boot actuator, and Spring Cloud Config concepts.\",\n    \"The target environment is Spring XD 1.x (Java 8 baseline) consistent with the era of the user stories; Spring Framework 6.0 / Java 17 baseline mentioned in the spec preamble is informational and not retro-applied to XD.\",\n    \"Existing Spring XD module/composition abstractions remain stable; no breaking runtime model changes are introduced.\",\n    \"For U1, the benchmark suite can be based on an existing JVM/Spring micro-benchmark harness; raw hardware procurement time is excluded.\",\n    \"For U8, EC2 instances, AMIs, and Jenkins plugins are assumed to be licensable/configurable without procurement delays; only developer effort is counted.\",\n    \"Documentation updates in U3 are developer-authored content (Markdown/asciidoc) and do not require dedicated technical writers or graphic designers.\",\n    \"No new public APIs or wire-level protocol changes are introduced beyond what is needed for U5 and U6.\",\n    \"Defect fixes from U7 are assumed to be localized (single component); multi-component refactors are not required.\",\n    \"All effort values are 'most likely' (single-point) estimates in work-hours, with no PERT optimistic/pessimistic spread requested.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup, dependency alignment, and shared design\",\n      \"activity_description\": \"Initial scaffolding: align Spring XD build with required Spring Boot/Cloud versions, create branch, draft high-level design notes covering U2, U4, U5, and U6 interactions, and prepare shared test infrastructure.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Performance benchmark suite and infrastructure documentation\",\n      \"activity_description\": \"Select/extend a micro-benchmark harness (e.g., JMH-based XD benchmarks), author XD cluster scenarios (single-node, multi-node, batch, stream), run the suite, capture results, and publish a reference document with hardware/OS/JVM/XD-version specifics.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Lazy module bootstrap tied to job lifecycle\",\n      \"activity_description\": \"Refactor the module deployer to bootstrap the child application context when the job/stream is launched and shut it down on completion. Add lifecycle hooks, ensure resource cleanup, update unit and integration tests, and verify behavior across redeploys.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Spark streaming documentation and examples update\",\n      \"activity_description\": \"Review existing Spark module docs, add a 'tap at module output' section, document the Reliable receiver semantics, and update at least one runnable example demonstrating tap and reliable delivery.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Boot actuator metrics export integration\",\n      \"activity_description\": \"Wire XD module/app metrics into the Spring Boot MetricRepository export() API: expose counters/gauges for throughput, lag, and error rates, ensure registration happens per module, and add actuator integration tests.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Module options via Boot property source and metadata\",\n      \"activity_description\": \"Replace the XD runtime Control Plane property handling for module options with a Boot-backed PropertySource, generate configuration-metadata (additional-spring-configuration-metadata.json) for each module, and deprecate the legacy CP option registration path with backward compatibility.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Centralized external configuration for XD-Admin and XD-Container\",\n      \"activity_description\": \"Stand up a config server (Spring Cloud Config-style, git-backed), implement XD-Admin and XD-Container clients that bootstrap from external properties, support environment-to-profile mapping, secure the endpoint, and validate with end-to-end tests across dev/stage/prod-like environments.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - Rabbit message bus performance troubleshooting and fix\",\n      \"activity_description\": \"Instrument the Rabbit bus (producer/consumer/ack paths) with metrics, profile under representative XD load, isolate the primary bottleneck, implement a targeted fix (e.g., batching, channel pooling, prefetch tuning), and validate with before/after benchmarks.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Migrate CI builds to EC2\",\n      \"activity_description\": \"Provision EC2 build agents (AMI + bootstrap script), migrate Jenkins/equivalent job definitions from existing infrastructure to EC2, configure scaling/destroy policies, and verify parity by running a full build matrix on the new agents.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration testing\",\n      \"activity_description\": \"Run an end-to-end test pass combining U2 (lazy bootstrap), U4 (metrics), U5 (Boot properties), and U6 (central config) on a multi-node XD cluster to catch interaction regressions.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Release notes and developer-facing documentation\",\n      \"activity_description\": \"Write release notes summarizing U1-U8 changes, update the XD reference guide sections affected by U4/U5/U6, and publish the benchmark report from U1.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 452\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1445,
+    "completion_tokens": 3228,
+    "total_tokens": 4673,
+    "cost": 0.00426966,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00426966,
+      "upstream_inference_prompt_cost": 0.00039606,
+      "upstream_inference_completions_cost": 0.0038736
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1554,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Spring XD is treated as a separate (legacy) project built on top of the Spring Framework; all 8 user stories are scoped to Spring XD runtime, container, and admin components, not to Spring Framework core.",
+      "For U2, the design will use Spring's SmartLifecycle and conditional context bootstrap tied to job launch/completion events, rather than rewriting the entire module deployer.",
+      "For U4 and U5, the integration with Spring Boot will leverage Spring Boot 1.x actuator and configuration-metadata APIs, with module options exposed via @ConfigurationProperties-style metadata files.",
+      "For U6, the central configuration service will be implemented using a Spring Cloud Config-style server (file-based git backend) plus XD-Admin/DContainer client integration; consistency with existing Spring XD runtime is prioritized over introducing Spring Cloud Config wholesale.",
+      "For U7, performance troubleshooting will follow a profile-then-fix pattern (instrumentation with metrics + targeted code change), assuming a single primary bottleneck is identified and fixed.",
+      "For U8, EC2-based CI assumes a Jenkins (or equivalent) controller with EC2 build agents, not a full cloud-native rebuild (e.g., CodeBuild/CodePipeline).",
+      "Testing strategy assumes unit + integration tests for code changes, smoke tests for the CI migration, and acceptance runs for benchmarks and Rabbit performance fixes.",
+      "Effort is computed for development work only (design, implementation, test, and developer-authored documentation); code review, project management overhead, and operator runbook production are out of scope."
+    ],
+    "assumptions": [
+      "The implementer is a single experienced Java/Spring developer familiar with Spring XD internals, Spring Boot actuator, and Spring Cloud Config concepts.",
+      "The target environment is Spring XD 1.x (Java 8 baseline) consistent with the era of the user stories; Spring Framework 6.0 / Java 17 baseline mentioned in the spec preamble is informational and not retro-applied to XD.",
+      "Existing Spring XD module/composition abstractions remain stable; no breaking runtime model changes are introduced.",
+      "For U1, the benchmark suite can be based on an existing JVM/Spring micro-benchmark harness; raw hardware procurement time is excluded.",
+      "For U8, EC2 instances, AMIs, and Jenkins plugins are assumed to be licensable/configurable without procurement delays; only developer effort is counted.",
+      "Documentation updates in U3 are developer-authored content (Markdown/asciidoc) and do not require dedicated technical writers or graphic designers.",
+      "No new public APIs or wire-level protocol changes are introduced beyond what is needed for U5 and U6.",
+      "Defect fixes from U7 are assumed to be localized (single component); multi-component refactors are not required.",
+      "All effort values are 'most likely' (single-point) estimates in work-hours, with no PERT optimistic/pessimistic spread requested."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Project setup, dependency alignment, and shared design",
+        "activity_description": "Initial scaffolding: align Spring XD build with required Spring Boot/Cloud versions, create branch, draft high-level design notes covering U2, U4, U5, and U6 interactions, and prepare shared test infrastructure.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Performance benchmark suite and infrastructure documentation",
+        "activity_description": "Select/extend a micro-benchmark harness (e.g., JMH-based XD benchmarks), author XD cluster scenarios (single-node, multi-node, batch, stream), run the suite, capture results, and publish a reference document with hardware/OS/JVM/XD-version specifics.",
+        "most_likely_effort": 80
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Lazy module bootstrap tied to job lifecycle",
+        "activity_description": "Refactor the module deployer to bootstrap the child application context when the job/stream is launched and shut it down on completion. Add lifecycle hooks, ensure resource cleanup, update unit and integration tests, and verify behavior across redeploys.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - Spark streaming documentation and examples update",
+        "activity_description": "Review existing Spark module docs, add a 'tap at module output' section, document the Reliable receiver semantics, and update at least one runnable example demonstrating tap and reliable delivery.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Boot actuator metrics export integration",
+        "activity_description": "Wire XD module/app metrics into the Spring Boot MetricRepository export() API: expose counters/gauges for throughput, lag, and error rates, ensure registration happens per module, and add actuator integration tests.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - Module options via Boot property source and metadata",
+        "activity_description": "Replace the XD runtime Control Plane property handling for module options with a Boot-backed PropertySource, generate configuration-metadata (additional-spring-configuration-metadata.json) for each module, and deprecate the legacy CP option registration path with backward compatibility.",
+        "most_likely_effort": 56
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - Centralized external configuration for XD-Admin and XD-Container",
+        "activity_description": "Stand up a config server (Spring Cloud Config-style, git-backed), implement XD-Admin and XD-Container clients that bootstrap from external properties, support environment-to-profile mapping, secure the endpoint, and validate with end-to-end tests across dev/stage/prod-like environments.",
+        "most_likely_effort": 80
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 - Rabbit message bus performance troubleshooting and fix",
+        "activity_description": "Instrument the Rabbit bus (producer/consumer/ack paths) with metrics, profile under representative XD load, isolate the primary bottleneck, implement a targeted fix (e.g., batching, channel pooling, prefetch tuning), and validate with before/after benchmarks.",
+        "most_likely_effort": 48
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8 - Migrate CI builds to EC2",
+        "activity_description": "Provision EC2 build agents (AMI + bootstrap script), migrate Jenkins/equivalent job definitions from existing infrastructure to EC2, configure scaling/destroy policies, and verify parity by running a full build matrix on the new agents.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature integration testing",
+        "activity_description": "Run an end-to-end test pass combining U2 (lazy bootstrap), U4 (metrics), U5 (Boot properties), and U6 (central config) on a multi-node XD cluster to catch interaction regressions.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Release notes and developer-facing documentation",
+        "activity_description": "Write release notes summarizing U1-U8 changes, update the XD reference guide sections affected by U4/U5/U6, and publish the benchmark report from U1.",
+        "most_likely_effort": 8
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 452
+    }
+  }
+}

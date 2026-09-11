@@ -1,0 +1,213 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "spring-xd-010",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788413394-GI1sd6qVGrojGbv06XTd",
+    "object": "chat.completion",
+    "created": 1788413394,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement Kafka starting-offset control as a deployment-time property; when supplied, it overrides the consumer group's initial position for that deployment, while normal consumer-group offsets continue to provide crash recovery.\",\n    \"Use Kafka consumer partition assignment APIs for explicit source partition allocation at stream deployment, rather than relying on automatic consumer-group rebalancing.\",\n    \"Represent source partition ownership in the stream deployment metadata so assignments can be recreated after container failure or redeployment.\",\n    \"Implement message-bus partition allocation through a coordinator-managed assignment plan with deterministic node-to-partition mapping and reassignment only when required by node membership changes.\",\n    \"Use the existing Spring XD module configuration and message-bus abstractions rather than introducing a new module lifecycle or transport protocol.\",\n    \"Implement reactor-stream as a processor module supporting configurable time windows, field extraction, and aggregation expressions such as min and average.\",\n    \"Implement microbatching as a configurable batching stage that groups messages by elapsed interval and flushes batches downstream while preserving ordering within a batch.\",\n    \"Treat Spark work as a technical investigation and proof of concept, producing a documented recommendation and a minimal integration prototype rather than a production-ready Spark subsystem.\",\n    \"Use automated unit, integration, failure-recovery, and end-to-end tests, with Kafka and the message bus exercised using containerized or locally provisioned test services.\",\n    \"Publish user-facing configuration, deployment, operational, and example documentation in the project wiki.\"\n  ],\n  \"assumptions\": [\n    \"The existing Spring XD codebase, module framework, Kafka source, message bus, build system, and test conventions are available and can be extended without a major platform migration.\",\n    \"Java 17 compatibility is required, and existing project dependencies can be upgraded or adjusted as needed within the increment.\",\n    \"Kafka supports the required explicit partition assignment and offset-seeking behavior, and the target Kafka client exposes those capabilities.\",\n    \"The intended semantics for redeployment with an explicit starting offset are that the supplied offset is honored again; redeployment without an explicit offset resumes from committed progress.\",\n    \"Progress made by running modules must be committed using the existing or an extended checkpoint/consumer-offset mechanism before or during normal processing, with at-least-once delivery preferred over data loss.\",\n    \"Pre-allocation is required for a single stream deployment and does not need to solve arbitrary multi-tenant scheduling optimization.\",\n    \"The message bus has a partitioned transport or routing abstraction that can be extended to accept an explicit assignment plan.\",\n    \"The reactor-stream processor initially supports the documented time-window use cases and a small fixed set of aggregations, not a general-purpose expression language.\",\n    \"Microbatching is interval-based as shown in the example; message-count thresholds, transactions, and cross-node batch coordination are out of scope unless already supported by the platform.\",\n    \"The Spark investigation includes a representative proof of concept and design recommendation, but production hardening, broad Spark-version compatibility, and full operational integration are out of scope.\",\n    \"Rackspace access, credentials, networking, and sufficient virtual-machine quota will be provided; the performance environment will use existing Kafka and Spring XD deployment tooling where possible.\",\n    \"One developer performs implementation, testing, documentation, environment setup, and review preparation; estimates include normal debugging and integration effort but exclude extended external review delays.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and increment design\",\n      \"activity_description\": \"Analyze U1-U8, resolve implied behavior where the specification is incomplete, define deployment-time offset semantics, partition ownership, failure recovery, reactor-stream APIs, microbatching behavior, Spark POC scope, and performance-test success criteria.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository and build baseline preparation\",\n      \"activity_description\": \"Set up the development branch, inspect existing module and transport implementations, verify Java and dependency compatibility, establish local Kafka/message-bus test execution, and add or update build configuration needed for the increment.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Kafka starting-offset control\",\n      \"activity_description\": \"Add stream deployment configuration and runtime handling for explicit starting offsets, including partition-level offset seeking, validation, default behavior, deployment lifecycle integration, and compatibility with normal consumer-group operation.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Offset persistence and crash-recovery behavior\",\n      \"activity_description\": \"Ensure processing progress survives module crashes, integrate or extend offset/checkpoint commits, handle restart and redeployment paths, and implement tests for explicit offsets, committed offsets, duplicate delivery, and failure recovery.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Kafka source partition pre-allocation\",\n      \"activity_description\": \"Implement deployment-time discovery and deterministic allocation of Kafka partitions across source module instances, configure consumers with assigned partitions, handle insufficient or changing module capacity, and test deployment and restart behavior.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Message-bus partition pre-allocation\",\n      \"activity_description\": \"Design and implement coordinator-managed partition assignments between stream-container nodes, propagate assignments during deployment, prevent unnecessary rebalancing, and handle node crash and redeployment scenarios with recovery tests.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Reactor-stream processor module\",\n      \"activity_description\": \"Create the reactor-stream module, define its configuration and lifecycle, implement field extraction, time-window grouping, min/average and related aggregation operations, connect it to existing XD sources and sinks, and add representative examples and tests.\",\n      \"most_likely_effort\": 96\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Microbatching capability\",\n      \"activity_description\": \"Add configurable interval-based batching to the stream processing path, implement flush and downstream delivery behavior, address ordering and shutdown/partial-batch handling, expose module configuration, and test throughput-oriented and failure cases.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Spark investigation and proof of concept\",\n      \"activity_description\": \"Evaluate Spark Streaming integration options, create a minimal proof of concept using XD data flow concepts, compare integration and deployment alternatives, identify limitations and operational concerns, and document the recommended design and follow-on implementation plan.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Performance-testing infrastructure\",\n      \"activity_description\": \"Provision and configure the Rackspace-based performance environment, install or deploy Kafka and Spring XD components, create repeatable baseline and XD benchmark scripts, capture metrics, and document environment operation and test procedures.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and wiki publication\",\n      \"activity_description\": \"Document new source, sink, and processor modules; offset and partition-allocation configuration; microbatching and reactor-stream examples; operational recovery behavior; Spark findings; and performance-test setup and usage in the project wiki.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Integration, system, and regression testing\",\n      \"activity_description\": \"Build end-to-end test scenarios covering deployment, Kafka replay, crash recovery, source and bus partition ownership, reactor windows, microbatching, compatibility with existing modules, and regression execution across supported configurations.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Packaging, CI, and release preparation\",\n      \"activity_description\": \"Update packaging and configuration templates, add automated build and test jobs for the new modules and deployment features, prepare migration or compatibility notes, and assemble release artifacts.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Final validation and defect correction\",\n      \"activity_description\": \"Perform a complete increment review, run acceptance checks against U1-U8, correct integration defects found during final validation, and verify that documentation and delivered artifacts are consistent.\",\n      \"most_likely_effort\": 16\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 720\n  }\n}",
+          "refusal": null,
+          "reasoning": null,
+          "reasoning_details": [
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmQXYCqEJBYvJ10b9Yhw6Jgb9hNHPkREIi1fmRoJQ7buEHd3EduiA2iDBA68WeZUQMNqmiDlPoojTQuPNBFajE1XzEd5CQ4O3U7u15hO9u6nCB-i-imyvLXS5wiajnCjN7cR8xW24CA-0JyM9Mv0YzR4SUqZwHXnDKLwdfSIF5WvMQ5cV2DERnEBsd1fjs9nd0nka6LhVUXfwUIAr_EbRC8AWEIgghhK6UQaJlx6MpNphRRM9y1LVkP9-7k8GXX_q4Ydypy-NtGozbJxFYPuGR9u1FM9ucTnPkzLVa1UwFBKvKzZp5-Oep86rrdXeilGPLNX3RV8NNINRjUHzWRGxN5Dg-eG8NmLTFzOO70Zle1t4zwkq4zXnZSTU7h0pdJfKoE-O07hd70X229yDbEIyf3rfpFh_LFwAddYVnHjawTmFMENOfLByj30v8of8nZvwAfjooOunwqGo7Pf7dFevBPP1aKmTuZGtJgw97GH1bBEPZ6HE9o2CXlWWXJkq62IQEl3FTnEjWZ6JJApPYEBg7_WL9JZIA3nO8JVTFaVHwgYzZQ8XQDrVhOpm03-zgdBCZflLtdmIEdKsHIsTtC5Ic0DtSZVkoPFiP6zop1D6Qw1uQolhZ5cMtksAtG5IMe2dBUqo57ClzOmoi5XaYERVXaJgJmm2rQAuJZ_i8-tzsj2otgrrcWotWyzOWlhb9FJDjYisaIN7M74q5cBdsAm-adRuIetkm8-lGjUPChbffIMvSrxSpNatK6DpG7-7kqdaIMJqKqZOo-73HQZ9fkwgu8BLZj1C8kxIt33pagDTWnDOdI2abQ3ZaQPPDjLrj2MVtWMdUhxJBMBhiMdOp3WOBKRefntZAp4_YovXco78thh_MwZX2niwPmJE3QWx9KRFJst3fRM7wdmBOk9zf7PKIxcwt5Nj06kEuvg7FnrMaCEAcKbJ7KhsBWeMMAIFAJZJ0CGwnzEXZwVJhzfUDof_ZN12bbt_moac-FUs3uTb2opgW8DK2N07PkHBX10KX88qFvwklMMzpfvIfRyXw6aBCBp3mt0kJw4upDf5mTaOGqNqAwnosxlFr2gIpuZqhQD2r2ZyYTwNkZljdsztri5OhAUwqQQuTtzUDQpZ5jJQwHAP1I0AwJ4YIJJVUOuwim9zs2sKQshSxBzL7lEQ6k6bt6BB1iGkWMUSdkuVEJJyRXoOJfe0tuSp3cH7JkVkji_TV1khhxQosebdhKl1X5zeXmyP0rganh-AiHm9mAXzo2fXbUoePeIJypNIcDoQurZvNfqo4BZ6pOZHdJOeUTOxLmSFWIMdXmYpM55UeOfl4YKp_id88oxPTGqRGG9GTBsSaZplHFW94As4VDi_PwI4uPko7k375mmVdbFOfwwUS_RLysDTJHxPaNMu54doD8zxh0fbBbKEV3ij6IxveU1PmtQUlBD6U287uNbPmfEwCxGYR2ZwkKL2a4r8JGxZYEVlQARrd_rG_5YkZZHyEYH9A77zOkbInKFTtEEY6_A04IKanMP8OdtUBeRbHw_cK673z0BRAaFGihiRfjJbPuaURn5cMBgKNlq1-JTxmdEvOyOqAIKIGnU2hYAx7-E1lvyo-ASUrv6bPiJ3NPalPumAtWSdCIbgOpv5uoHkiMVxLcXd13fH2rCCdL2GMVM4JAsUPIumX5hjfMTAKYOM3VoLXkRwLYhSE-nVDbEwq8Hb3BA2Kg7SJkPGVeHL082jPnm70TeUqojq5y38-g2wVV-mqJFvA6YvPSHoIF2YEijdM-O0o8zk29OCSwH4dmAlC360KJ1gAJI4VX0gU-622zZ1DAP_mOy3xlAgxyi0v1TtdiWPQDWZPEXU33N6nmvqWcrQzYFE8Enix95FhqIxQgxerm9VAJVgOmCLzXGMEqrfcWSk6Rxms4Q2lzBv3vQWM0XJUQn-uhtPkfP-gV3kS7k-4GBzANxzLCOPRVTv_w8eHwge5IXBMBcQSaF4JF230h6PMGfkWUiCiEXw-rwZIxae5fc8qAoYfzPEsdVx9bgX7wR4pk5hiBASFsLY-EEa0fg2kOf82jXGYebzk6pKuNUQRzWhneuEoREAW_2Sr_aPUHHHkdheoYr7IxB-LS1MbSqpI_6az6mS2OJw-qzUw6JE7Q_ijnZ4HWWRbIRZaN-f6KdbzRRJ9TI-8NvoYC8Ypz3_Cot2Jvr0a7OF57Fq0M0RZXZ_plX4icXtudqIEzaiLr2HT6BoMZJYwCLh_tq4igl_wSokoj-j6u-_vCKXn7tfD3MdoEyQAq0ethHl6iQBxQ33dxWmh06f0vj6PZpQe6hCPNXegUIQvvMDqp-qdMyk6LrNPe8bS8ETbG5voeK0_0CjYiesFOPnokzekk1Y6czEa3agY6UtvhqGKLNq3F5ZtGwkxTAXlnqEAYA7nXY27m17cbGRw90lELmdSWSA4dRMDM9Je2VsR0MUxbEoBZj7SR5tKIdjsDsW5of28nxtBJnGU-cps8zzQkRtmZ0o4Lbq1kPA2e19IBESQOwbCiHuZDfSOo3rmL-ERlRVeJbL1nDWqKVhhtmKHfy9l5BP9qd0JMKzxZ4mOrqqwymZ58NNbz9SdQnIEMgTeU9EtHKUMV8L7uaDiO9_cWOztne4oIyKgOeZgUy6qOBbvqfmmz6n2pEB_MDOxL9i_lTKrAzKNtbOMeX69jUIUiTFTONPoQVohJUL_WDRI_BVENWgl2ILd-AmF4Q0jhOGl9aB7Ixf90eOa7IYsmirQNupydqRGxjZbsEJ7wvvupmC3ATGqjl6-owdOIHj3CO0m7jdfvQIqCJ2uQAplkxlTOqOewRYlS5oVJJg-m54qsZnVFXcRLdt_y5jFkO4ra2pvgUJd02von260_oYi3qnxig4Xh0Vi8puSBbna8tABPPuFa6hFPP8FN5RbZcXZPCqH9bDU_KIU52NgNML4sHvN-hqNeJmQAasJK538liWoBC_3LpdT_F3BGWW8jDaHUO318e1reYAIXeFvX_gh24t8qJrpBme-n2YmKxjB7Ox5gxqhrkpajqjL_WY-M5I89JECNeF_DH7LYz6jU7gSrP924PVyGRYAp6LrcRcdPcLWUILDKeWR7ORB20qjYFXHuhCdQj-MF3tdD6OCs-VhfcNEOlNeCRNIo6p9Aw5n3e7ad5xmyI0QcJpfJT3g5Ra5j6pIKxrzsHb3b5XUS9O2uV9ks-kb_m3jYlXvKlOJ3STjxSL07-ESNwqWTzW7DC4zSr64Gcuengdpxo30h7xjFY483s0t2-tOGUsr09JCdOU-avHGqRinz-4RuB09okpTI0O96T3F9o68s6vv66daU84FPmmnSRxa8sfFWzMI6gmDyWfNan6HA0IwgraSL8KEVA-di2Q3jeyzfxzdZdI8oE3zthbS-mUk1_A50MEtW-XzYZouV6c0ETK1nizyvwesnJl_vvHqqytY--og0BuZcEl2Fim-jJj7X46VA6bhRJNDKFmPKMmJKdFoL7lF0X9hCnwRkCsk5oYUysSKfEc_C27ay33FcIam6JdpzR2mgYPIs_ckgSCes_sSblPTg==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_0aab640388fb3b70016a9905d362b487d1b338abceb05b0980",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1326,
+      "completion_tokens": 2222,
+      "total_tokens": 3548,
+      "cost": 0.00299775,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1323,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00299775,
+        "upstream_inference_prompt_cost": 0.00033135,
+        "upstream_inference_completions_cost": 0.0026664
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 361,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement Kafka starting-offset control as a deployment-time property; when supplied, it overrides the consumer group's initial position for that deployment, while normal consumer-group offsets continue to provide crash recovery.\",\n    \"Use Kafka consumer partition assignment APIs for explicit source partition allocation at stream deployment, rather than relying on automatic consumer-group rebalancing.\",\n    \"Represent source partition ownership in the stream deployment metadata so assignments can be recreated after container failure or redeployment.\",\n    \"Implement message-bus partition allocation through a coordinator-managed assignment plan with deterministic node-to-partition mapping and reassignment only when required by node membership changes.\",\n    \"Use the existing Spring XD module configuration and message-bus abstractions rather than introducing a new module lifecycle or transport protocol.\",\n    \"Implement reactor-stream as a processor module supporting configurable time windows, field extraction, and aggregation expressions such as min and average.\",\n    \"Implement microbatching as a configurable batching stage that groups messages by elapsed interval and flushes batches downstream while preserving ordering within a batch.\",\n    \"Treat Spark work as a technical investigation and proof of concept, producing a documented recommendation and a minimal integration prototype rather than a production-ready Spark subsystem.\",\n    \"Use automated unit, integration, failure-recovery, and end-to-end tests, with Kafka and the message bus exercised using containerized or locally provisioned test services.\",\n    \"Publish user-facing configuration, deployment, operational, and example documentation in the project wiki.\"\n  ],\n  \"assumptions\": [\n    \"The existing Spring XD codebase, module framework, Kafka source, message bus, build system, and test conventions are available and can be extended without a major platform migration.\",\n    \"Java 17 compatibility is required, and existing project dependencies can be upgraded or adjusted as needed within the increment.\",\n    \"Kafka supports the required explicit partition assignment and offset-seeking behavior, and the target Kafka client exposes those capabilities.\",\n    \"The intended semantics for redeployment with an explicit starting offset are that the supplied offset is honored again; redeployment without an explicit offset resumes from committed progress.\",\n    \"Progress made by running modules must be committed using the existing or an extended checkpoint/consumer-offset mechanism before or during normal processing, with at-least-once delivery preferred over data loss.\",\n    \"Pre-allocation is required for a single stream deployment and does not need to solve arbitrary multi-tenant scheduling optimization.\",\n    \"The message bus has a partitioned transport or routing abstraction that can be extended to accept an explicit assignment plan.\",\n    \"The reactor-stream processor initially supports the documented time-window use cases and a small fixed set of aggregations, not a general-purpose expression language.\",\n    \"Microbatching is interval-based as shown in the example; message-count thresholds, transactions, and cross-node batch coordination are out of scope unless already supported by the platform.\",\n    \"The Spark investigation includes a representative proof of concept and design recommendation, but production hardening, broad Spark-version compatibility, and full operational integration are out of scope.\",\n    \"Rackspace access, credentials, networking, and sufficient virtual-machine quota will be provided; the performance environment will use existing Kafka and Spring XD deployment tooling where possible.\",\n    \"One developer performs implementation, testing, documentation, environment setup, and review preparation; estimates include normal debugging and integration effort but exclude extended external review delays.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and increment design\",\n      \"activity_description\": \"Analyze U1-U8, resolve implied behavior where the specification is incomplete, define deployment-time offset semantics, partition ownership, failure recovery, reactor-stream APIs, microbatching behavior, Spark POC scope, and performance-test success criteria.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository and build baseline preparation\",\n      \"activity_description\": \"Set up the development branch, inspect existing module and transport implementations, verify Java and dependency compatibility, establish local Kafka/message-bus test execution, and add or update build configuration needed for the increment.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Kafka starting-offset control\",\n      \"activity_description\": \"Add stream deployment configuration and runtime handling for explicit starting offsets, including partition-level offset seeking, validation, default behavior, deployment lifecycle integration, and compatibility with normal consumer-group operation.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Offset persistence and crash-recovery behavior\",\n      \"activity_description\": \"Ensure processing progress survives module crashes, integrate or extend offset/checkpoint commits, handle restart and redeployment paths, and implement tests for explicit offsets, committed offsets, duplicate delivery, and failure recovery.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Kafka source partition pre-allocation\",\n      \"activity_description\": \"Implement deployment-time discovery and deterministic allocation of Kafka partitions across source module instances, configure consumers with assigned partitions, handle insufficient or changing module capacity, and test deployment and restart behavior.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Message-bus partition pre-allocation\",\n      \"activity_description\": \"Design and implement coordinator-managed partition assignments between stream-container nodes, propagate assignments during deployment, prevent unnecessary rebalancing, and handle node crash and redeployment scenarios with recovery tests.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Reactor-stream processor module\",\n      \"activity_description\": \"Create the reactor-stream module, define its configuration and lifecycle, implement field extraction, time-window grouping, min/average and related aggregation operations, connect it to existing XD sources and sinks, and add representative examples and tests.\",\n      \"most_likely_effort\": 96\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Microbatching capability\",\n      \"activity_description\": \"Add configurable interval-based batching to the stream processing path, implement flush and downstream delivery behavior, address ordering and shutdown/partial-batch handling, expose module configuration, and test throughput-oriented and failure cases.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Spark investigation and proof of concept\",\n      \"activity_description\": \"Evaluate Spark Streaming integration options, create a minimal proof of concept using XD data flow concepts, compare integration and deployment alternatives, identify limitations and operational concerns, and document the recommended design and follow-on implementation plan.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Performance-testing infrastructure\",\n      \"activity_description\": \"Provision and configure the Rackspace-based performance environment, install or deploy Kafka and Spring XD components, create repeatable baseline and XD benchmark scripts, capture metrics, and document environment operation and test procedures.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and wiki publication\",\n      \"activity_description\": \"Document new source, sink, and processor modules; offset and partition-allocation configuration; microbatching and reactor-stream examples; operational recovery behavior; Spark findings; and performance-test setup and usage in the project wiki.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Integration, system, and regression testing\",\n      \"activity_description\": \"Build end-to-end test scenarios covering deployment, Kafka replay, crash recovery, source and bus partition ownership, reactor windows, microbatching, compatibility with existing modules, and regression execution across supported configurations.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Packaging, CI, and release preparation\",\n      \"activity_description\": \"Update packaging and configuration templates, add automated build and test jobs for the new modules and deployment features, prepare migration or compatibility notes, and assemble release artifacts.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Final validation and defect correction\",\n      \"activity_description\": \"Perform a complete increment review, run acceptance checks against U1-U8, correct integration defects found during final validation, and verify that documentation and delivered artifacts are consistent.\",\n      \"most_likely_effort\": 16\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 720\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1326,
+    "completion_tokens": 2222,
+    "total_tokens": 3548,
+    "cost": 0.00299775,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1323,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00299775,
+      "upstream_inference_prompt_cost": 0.00033135,
+      "upstream_inference_completions_cost": 0.0026664
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 361,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement Kafka starting-offset control as a deployment-time property; when supplied, it overrides the consumer group's initial position for that deployment, while normal consumer-group offsets continue to provide crash recovery.",
+      "Use Kafka consumer partition assignment APIs for explicit source partition allocation at stream deployment, rather than relying on automatic consumer-group rebalancing.",
+      "Represent source partition ownership in the stream deployment metadata so assignments can be recreated after container failure or redeployment.",
+      "Implement message-bus partition allocation through a coordinator-managed assignment plan with deterministic node-to-partition mapping and reassignment only when required by node membership changes.",
+      "Use the existing Spring XD module configuration and message-bus abstractions rather than introducing a new module lifecycle or transport protocol.",
+      "Implement reactor-stream as a processor module supporting configurable time windows, field extraction, and aggregation expressions such as min and average.",
+      "Implement microbatching as a configurable batching stage that groups messages by elapsed interval and flushes batches downstream while preserving ordering within a batch.",
+      "Treat Spark work as a technical investigation and proof of concept, producing a documented recommendation and a minimal integration prototype rather than a production-ready Spark subsystem.",
+      "Use automated unit, integration, failure-recovery, and end-to-end tests, with Kafka and the message bus exercised using containerized or locally provisioned test services.",
+      "Publish user-facing configuration, deployment, operational, and example documentation in the project wiki."
+    ],
+    "assumptions": [
+      "The existing Spring XD codebase, module framework, Kafka source, message bus, build system, and test conventions are available and can be extended without a major platform migration.",
+      "Java 17 compatibility is required, and existing project dependencies can be upgraded or adjusted as needed within the increment.",
+      "Kafka supports the required explicit partition assignment and offset-seeking behavior, and the target Kafka client exposes those capabilities.",
+      "The intended semantics for redeployment with an explicit starting offset are that the supplied offset is honored again; redeployment without an explicit offset resumes from committed progress.",
+      "Progress made by running modules must be committed using the existing or an extended checkpoint/consumer-offset mechanism before or during normal processing, with at-least-once delivery preferred over data loss.",
+      "Pre-allocation is required for a single stream deployment and does not need to solve arbitrary multi-tenant scheduling optimization.",
+      "The message bus has a partitioned transport or routing abstraction that can be extended to accept an explicit assignment plan.",
+      "The reactor-stream processor initially supports the documented time-window use cases and a small fixed set of aggregations, not a general-purpose expression language.",
+      "Microbatching is interval-based as shown in the example; message-count thresholds, transactions, and cross-node batch coordination are out of scope unless already supported by the platform.",
+      "The Spark investigation includes a representative proof of concept and design recommendation, but production hardening, broad Spark-version compatibility, and full operational integration are out of scope.",
+      "Rackspace access, credentials, networking, and sufficient virtual-machine quota will be provided; the performance environment will use existing Kafka and Spring XD deployment tooling where possible.",
+      "One developer performs implementation, testing, documentation, environment setup, and review preparation; estimates include normal debugging and integration effort but exclude extended external review delays."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and increment design",
+        "activity_description": "Analyze U1-U8, resolve implied behavior where the specification is incomplete, define deployment-time offset semantics, partition ownership, failure recovery, reactor-stream APIs, microbatching behavior, Spark POC scope, and performance-test success criteria.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Repository and build baseline preparation",
+        "activity_description": "Set up the development branch, inspect existing module and transport implementations, verify Java and dependency compatibility, establish local Kafka/message-bus test execution, and add or update build configuration needed for the increment.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Kafka starting-offset control",
+        "activity_description": "Add stream deployment configuration and runtime handling for explicit starting offsets, including partition-level offset seeking, validation, default behavior, deployment lifecycle integration, and compatibility with normal consumer-group operation.",
+        "most_likely_effort": 56
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Offset persistence and crash-recovery behavior",
+        "activity_description": "Ensure processing progress survives module crashes, integrate or extend offset/checkpoint commits, handle restart and redeployment paths, and implement tests for explicit offsets, committed offsets, duplicate delivery, and failure recovery.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Kafka source partition pre-allocation",
+        "activity_description": "Implement deployment-time discovery and deterministic allocation of Kafka partitions across source module instances, configure consumers with assigned partitions, handle insufficient or changing module capacity, and test deployment and restart behavior.",
+        "most_likely_effort": 64
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Message-bus partition pre-allocation",
+        "activity_description": "Design and implement coordinator-managed partition assignments between stream-container nodes, propagate assignments during deployment, prevent unnecessary rebalancing, and handle node crash and redeployment scenarios with recovery tests.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Reactor-stream processor module",
+        "activity_description": "Create the reactor-stream module, define its configuration and lifecycle, implement field extraction, time-window grouping, min/average and related aggregation operations, connect it to existing XD sources and sinks, and add representative examples and tests.",
+        "most_likely_effort": 96
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Microbatching capability",
+        "activity_description": "Add configurable interval-based batching to the stream processing path, implement flush and downstream delivery behavior, address ordering and shutdown/partial-batch handling, expose module configuration, and test throughput-oriented and failure cases.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Spark investigation and proof of concept",
+        "activity_description": "Evaluate Spark Streaming integration options, create a minimal proof of concept using XD data flow concepts, compare integration and deployment alternatives, identify limitations and operational concerns, and document the recommended design and follow-on implementation plan.",
+        "most_likely_effort": 80
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Performance-testing infrastructure",
+        "activity_description": "Provision and configure the Rackspace-based performance environment, install or deploy Kafka and Spring XD components, create repeatable baseline and XD benchmark scripts, capture metrics, and document environment operation and test procedures.",
+        "most_likely_effort": 64
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation and wiki publication",
+        "activity_description": "Document new source, sink, and processor modules; offset and partition-allocation configuration; microbatching and reactor-stream examples; operational recovery behavior; Spark findings; and performance-test setup and usage in the project wiki.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Integration, system, and regression testing",
+        "activity_description": "Build end-to-end test scenarios covering deployment, Kafka replay, crash recovery, source and bus partition ownership, reactor windows, microbatching, compatibility with existing modules, and regression execution across supported configurations.",
+        "most_likely_effort": 64
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "Packaging, CI, and release preparation",
+        "activity_description": "Update packaging and configuration templates, add automated build and test jobs for the new modules and deployment features, prepare migration or compatibility notes, and assemble release artifacts.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "Final validation and defect correction",
+        "activity_description": "Perform a complete increment review, run acceptance checks against U1-U8, correct integration defects found during final validation, and verify that documentation and delivered artifacts are consistent.",
+        "most_likely_effort": 16
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 720
+    }
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "spring-xd-001",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788410443-CmDeu4r6I7ZOlzuRfN9F",
+    "object": "chat.completion",
+    "created": 1788410443,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement U1 as an explicitly opt-in `stream destroy --clean` capability. Cleanup is performed by the deployment/container side, where the target messaging connection and cluster are known, rather than by the admin server alone.\",\n    \"Use RabbitMQ management functionality, preferably Spring AMQP `RabbitManagementTemplate` when available, with a narrowly scoped REST client fallback. Cleanup will inspect consumers and bindings before deleting queues, topics/exchanges, and related resources.\",\n    \"Do not delete resources that still have active consumers. Resources containing messages are deleted only when `--clean` is explicitly supplied, with the behavior documented and covered by tests.\",\n    \"Implement U2 using Spring Integration error channels and framework conventions, exposing module and stream context in error messages and routing failures to the appropriate channel.\",\n    \"Treat U3 as a security research and design spike rather than a complete security rollout. Evaluate Spring Security and Spring Boot defaults, define REST protection and credential configuration, and document implications for the shell and Admin UI.\",\n    \"Implement U5 as a separate MVC-aware HTTP source module with embedded Tomcat, Spring MVC integration, configurable content-type handling, and complete request-header mapping. Reuse existing HTTP source infrastructure where practical.\",\n    \"Implement U6 with a reusable client-side polling component for stream, job, and deployment status. Add a server-side event abstraction and basic event publication where existing extension points permit it, while retaining polling as the reliable fallback.\",\n    \"Implement U7 using Spring Integration SFTP adapters with configurable host, port, credentials, remote directory, polling, file filters, and transfer behavior. Credentials are supplied through existing secure configuration mechanisms.\",\n    \"Implement U8 as a native Elasticsearch sink using the supported Elasticsearch client or Spring Data/Spring Integration integration available in the target codebase, with configurable cluster endpoint, index, document mapping, and failure handling.\",\n    \"Use the repository's existing build system, Java version, test conventions, module packaging, configuration style, and command-line parsing framework rather than introducing a new platform abstraction.\",\n    \"Provide unit, integration, and representative end-to-end tests for all implemented behavior, using embedded or containerized RabbitMQ, Elasticsearch, SFTP, and HTTP infrastructure where feasible.\"\n  ],\n  \"assumptions\": [\n    \"The increment covers all eight user stories, with U3 limited to the explicitly stated research, design, and developer-experience spike.\",\n    \"The existing Spring XD codebase and its admin, container, stream, job, module, shell, and UI extension points are available and buildable.\",\n    \"Existing authentication, authorization, configuration, module deployment, and messaging abstractions can be extended without a major platform rewrite.\",\n    \"RabbitMQ is the target broker for U1, and the deployment environment provides either RabbitMQ management API access or an equivalent Spring AMQP management client.\",\n    \"The cleanup command will remove only resources associated with the selected stream and will preserve shared broker resources unless ownership can be established unambiguously.\",\n    \"The HTTP MVC module requires standard request/response handling and embedded Tomcat, but does not require a new graphical administration experience.\",\n    \"For U6, real-time push notifications to every connected UI client are not assumed to replace polling; polling remains the supported minimum behavior.\",\n    \"For U7 and U8, external service availability, credentials, certificates, and test infrastructure are provided or can be represented with local containers; provisioning production infrastructure is excluded.\",\n    \"Backward compatibility with existing modules and command syntax is required except for the new optional flags, configuration properties, and module types.\",\n    \"Effort includes implementation, code review preparation, automated tests, documentation, and local integration validation by one developer, but excludes elapsed waiting time and production rollout.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository analysis and increment design\",\n      \"activity_description\": \"Inspect the existing architecture, build, module lifecycle, command-line shell, REST APIs, messaging abstractions, configuration model, testing conventions, and extension points. Produce an implementation plan and identify compatibility constraints across U1-U8.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Optional RabbitMQ queue/topic cleanup\",\n      \"activity_description\": \"Add the optional stream-destroy cleanup option, identify stream-owned queues, bindings, and exchanges, inspect consumer and message state, invoke RabbitMQ management operations, handle active consumers and producer/data edge cases, and report cleanup results and failures.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Module exception notification and error channels\",\n      \"activity_description\": \"Define module and stream error-channel behavior, integrate exception handling with Spring Integration, preserve useful module metadata, expose the channels through the existing runtime model, and add configuration and failure-path handling.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"REST security research and design spike\",\n      \"activity_description\": \"Research Spring Security and Spring Boot built-in support, assess protection of all listed REST resources, design authentication and authorization configuration, evaluate shell and Admin UI behavior, document developer and operator experience, and produce a recommended XD implementation approach.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Document available stream, job, and container keys\",\n      \"activity_description\": \"Inventory the supported expression and property keys, including stream and job names and applicable container values, verify them against runtime behavior, and update user and developer documentation with examples and limitations.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"MVC-aware HTTP source module\",\n      \"activity_description\": \"Create and package the MVC-aware HTTP source with embedded Tomcat, configure Spring MVC integration, support richer content types, implement full request-header mapping, expose module properties, integrate with deployment and lifecycle handling, and provide representative MVC and security extension examples.\",\n      \"most_likely_effort\": 96\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Status polling and runtime event propagation\",\n      \"activity_description\": \"Implement a reusable client polling strategy for stream, job, and deployment status changes, define polling intervals and error/backoff behavior, integrate it with shell or client consumers, and add a server-side event abstraction with basic propagation through existing admin/container extension points.\",\n      \"most_likely_effort\": 88\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"SFTP source module\",\n      \"activity_description\": \"Implement the SFTP source using Spring Integration SFTP, including connection and authentication properties, remote-directory polling, file filtering, transfer and deletion behavior, reconnect handling, module metadata, packaging, and local SFTP integration tests.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Native Elasticsearch sink module\",\n      \"activity_description\": \"Implement the Elasticsearch sink with configurable connection, index and document settings, payload mapping, batching or individual writes as supported by the existing framework, retry and error-channel behavior, module packaging, and local Elasticsearch integration tests.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature automated and integration testing\",\n      \"activity_description\": \"Add unit and integration coverage for command parsing, resource cleanup, error routing, HTTP behavior, status transitions, SFTP transfers, Elasticsearch writes, configuration validation, compatibility scenarios, and failure conditions using embedded or containerized dependencies.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"User, operator, and developer documentation\",\n      \"activity_description\": \"Document new commands, module configuration, cleanup safety behavior, error channels, security spike findings, polling behavior, SFTP setup, Elasticsearch setup, operational prerequisites, examples, and known limitations.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Build validation, regression fixing, and release preparation\",\n      \"activity_description\": \"Run the complete build and test suite, resolve integration and compatibility defects, verify module artifacts and metadata, perform final manual smoke tests, and prepare release notes or change summaries.\",\n      \"most_likely_effort\": 24\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 656\n  }\n}",
+          "refusal": null,
+          "reasoning": "**Estimating development tasks**\n\nI need to estimate hours for tasks U1 to U8 based on activities like planning, design, implementation, and testing. It’s important to avoid double counting and provide a coherent sum of hours. \n\nI’ll lay out the activities, like the baseline repo analysis and several development tasks with their estimated hours. After that, I’ll ensure to describe these activities clearly and mention any necessary technical decisions. My total estimate comes to 656 hours after breaking down each task.**Estimating development tasks**\n\nI'm considering using Rabbit REST, possibly with the RabbitManagementTemplate, but I need to set up an account. For U3, I’m thinking about a security spike rather than complete hardening. For U6, I need to establish common polling for client-server events, focusing on design and maybe implementation, without going all-in on an event bus. \n\nFor U8, I’m looking at a native Elasticsearch sink, possibly using Spring Integration with a configurable endpoint. I’ll include relevant assumptions and dependencies in JSON format, ensuring it’s valid. I’ll summarize everything into work-hours too.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.summary",
+              "summary": "**Estimating development tasks**\n\nI need to estimate hours for tasks U1 to U8 based on activities like planning, design, implementation, and testing. It’s important to avoid double counting and provide a coherent sum of hours. \n\nI’ll lay out the activities, like the baseline repo analysis and several development tasks with their estimated hours. After that, I’ll ensure to describe these activities clearly and mention any necessary technical decisions. My total estimate comes to 656 hours after breaking down each task.**Estimating development tasks**\n\nI'm considering using Rabbit REST, possibly with the RabbitManagementTemplate, but I need to set up an account. For U3, I’m thinking about a security spike rather than complete hardening. For U6, I need to establish common polling for client-server events, focusing on design and maybe implementation, without going all-in on an event bus. \n\nFor U8, I’m looking at a native Elasticsearch sink, possibly using Spring Integration with a configurable endpoint. I’ll include relevant assumptions and dependencies in JSON format, ensuring it’s valid. I’ll summarize everything into work-hours too.",
+              "format": "openai-responses-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmPpTuJcm5b4XtHoXrNi2kCg3Vbi8rHONVYk-k1B7SOqGufKk9gyuZWNzcUNgpircMoD6yVWrR0SDJb7j6QwJ00u6nd_myM5cjV5pFurWgSLYm7qwYkntkWt3hEC2biZ7dth78KDXQ_5tl2PgFyvG9ndOsJQvhXIeFDyY8vo9irpEUNlpAxw0JomZWEJ_NfUMzfzhO0XvbPPcikgkJcMzvvCUcHl1ybvjEJyeXs5iWrx0nRFQnXqWG54z9frY_9M9FYoSLD_GSEZia42lttRv0jAru2-8_d_Cs_ydt7XnuFTZpwWIwKxjXMqpdX5neW-frhEXLxn_nh7aDDxXof5OdsR45hLoAqk2yGk1YEK5iU2AQTga_aksFnyEfch9aKmykyBvYGcuqg1y6RTzp1E5AZqFP57sjzW0x78NLkoQ9CSMW4YAs_M_AGblXuV1R7a840tKXgmJgbWziIcA_BQ2Gx_OqqpZDKAFcXaX60EwltKOCtD75Tf3RupcnscTPSeeT-eIGKEOaY3CFcNGNmBshpz2EceKqODkiBPI8jPMzAOIkdJzZ41GNlDJRRT_OUitBI5n59s2YPEE3Rqqo7tJ1Ffsf_hl_9dLSuvAICwE6ExSZa0MOvqSvAIHDw-UDIvBkmHsTYBq0fI6m-wpUQnq-ruckHfy1aDgFDkKDlKtMp2Pj0IQQAaAbdniGlbDKT-8jLxraZTAKc3wksIGDZuOaV2rwH8M8sQTaCLLzH7nrcp15CNdqqFDO1gzJQFZS3vdrgu1CtwXKuHnEeuxFIu8FBXJcPpJYEUzAvGKx2N2TGrmvGzey1eqreNSG8b82xNP_mWyzPTmvSiIz_XnXQy83JqAwk2Vlewn6SDfpCSzMkXw7mbWLZ2VaPSUHQef-WQuSJ-tc_6iswvokFJXHYp15teSd0FzE7F0--l891WcpQWNk7STrlal2KMKSFU8mD-fSpOfR9HEbc8VopAYQuvIzwGYP8LdHDej2__vJMkBZ7Dgk1sO50DQaImKVqfkP8s604a_g35uT4a1me4CfFzFyuRYH9A82fptK-YksTpuMHpK3E5MTqoPyU-POu5HsVNMd0gYcYPg5mknCHKMc6tSMLIPhBJtFXlEsXkG4h50H5yQEMHmgiZ-qI7EkABynqbswEdTZHFF7tBGEWhCNY21kiOJXUEg1KCyCgSv6biYODvB4751aIVNnNAlH5k_Urgu2mFq4koCimvu05LwbGgUhoUUD_Ji1ilkclbUw7yE0TxmG2xpnxTJx1USnPLrS6uiOW6h680sCrNbdjzIhtuZ8FS_cPangJ9EwMTrmiyiwWak2HMXr_HWXD_E1s10rJhgr-NFOgsTwTN0bUoI_Q8F4s9TwQQw6YDl9MmLtO5wMeAFFSgPd5ZXQLr-4xJVCUtgu2Xh0IQGpblrqI7_VoIS7VfkIwltOPMhFkRb-Xx_Wb5Lhd2x9rpdQyZ8A3SgyN87LsRVFBPPFQ6nQMuenK5UGJQX7o2JG-OHhervZ89JKv7dBlqPv8uL-FAn6wLd2dSsj7pg2Kn2dU2Qy291ymeR2L4eeta-oeTJHsEh-iA0J9F2PGc7dYcohURbQ3YGn5dpf8AHYldMojfX9HkKrZ9q-8MJKcOjhLWXagIQJ6NUXhRSQS6z4bgaRTW-rRfyb5lAuskCu-Tw2iyK4gpn6tgzG9VzHhzWnjdYbsuN5f95hsVreop8PFRFG2c0Izu_vKibuMlc9OcZuoXsK3P81KoD8A5RmVWaZw0snbMFhAF0tSnP6tztthTHtSIQOzRJ5iq6GTMFWQzxiCORJfJHrAFMY8rAtIIpOvcitBtBYUeyp9kDmaGkuWFORdu1a-qdgMtT0RdDQWq6qvItxU33DGy0Jyp-0IxaJs5s64pLu0G97EjAS7aNMwVm8joL95LBMZPFhZUC--eQr0dMOF6Z7rPYeYD4zGWFQ4SFFgIHkZ2Nwx1fk71PbMjch5vv3-uPR4UrYqyCZsMWoF3DgFuBtDdsmzajq1_CATcydrceS6yKA8gYh5qY3lWiqtwQfJwarrzQEQUeN4q_V6szDOxoH8_7F_POrnUbwiDg84RsLOF8ofgQgdeBLic-lv3YDisMih5WFbIstE54bSTRXg_lLMj25w0ulgyDHhgH1rOfGrsitWQSMRrBa7Ta-AaKy8Qb1dbMCwKN59RS42xCsAUvUmLjrP-i2OzVVwb8ACFZo0awGwTDKeGiP9c2u-OJrLEmamnsWhJGbfQpuM_hXkKODtgPTpuNNgY5GBdtJdc9m5y18BFLril3d-QFi27_JVlEHqhhCkPVh4M6RbGLYaNX6tL2lWFJQHKSe2ChId_5EIX_iVMNgQoS98uXvDmvnvmi-F0r-E1sSCJtjxr9MZvKeXAdlk5YBdrOow7-oCAGdZ9ws-chZ9es2P08OTZy-R-vUB8y7XI-XRNeyEO3LFeOUZOzF8ihA6panisQ6qOzDTvHzMKRfrprh6Uf_Hvx2fWt-11EozqbsfXezuepm3-pM-6tJmoOBWi8oX-SoDm1wMGR-DdDURDghGrAlY9ChrO0f1K-pyQ7HNactrVuYEDUvAghyJp3jP3mtDVYPjecAVzEughc6H8JWxVtWh9pvgLRKWFUhdmmN2xaUXnv1uOZrL8BoRqZVVAi_iHbYWB4hVJkGeE28GYORLsNy5kqulJ582vmBqY9_tyrnaUtQ8lr2WSW2b1WRKdc1XNfdesVKVrRYbssrXYOS120LA8h7o2SdkNOHisP21VLvvzh8EnYe5pylkvTsFRUGv6sV8FYR21_0MSyOSECe0jEJb0DTS3a3G39llO8qV3jj50DwQTNy7-uIxxRmV15JUngkKNp_1wVtGA-MQNcX8-hhYWyI0OiJx_YhAee3t0Wusp92gg2vSWHk4UrmpqVKiWHdyrrPg4up603MOc_XdGHfkgg0Dm_vmwwwWTX3qslOfOMrkBnt8Eevp87oLetOLpDmtJdeIoM1wLtvCPQHrhRMLLBVxDqcZnplJLxPybcLJ4aB_VQketHpOwcdkgo29hmpkDGDJp9a0lJU1B5ITDvH3H7PKWl_E8JmhU1G3Wy7kkwJsZ6POKOAtQZCjj6KNzcPkEBywe51DXzC_5jJGMERzpgvUNTZbDZ926-iW8ZCriyBhRWmwzHKzd-fEkpZYUqJkrX9_trgIS5mWiaCJ7QO-OPMczLxGeupZ4r4oPsGh-grOH6OccsBWfvgQFToC6biaz-BVHyoIET-X7mb-vBSk7tyVi1PNkVjinyl1wnIOl39Mc1pMVc1qkFplEpkFg53Cxc4rLDY_yk443ceJPglQEAB-gKUIWNOaydYv9kDYIzD8XX-q5uD2Agr4g13JiiMlPIwMJ2jQ3FBIzsAsisHA8olzx1OyXP9RtDoutZx0aZHjVkAlcdnIypbQMCcCzxdU8_QZDBDAoVGVZKR3YKSMrLiFFsJmg-A42fDRn6yeXXJjWrSzWiL9KxwaTClQ2dvovfqyjVekMbB-SYstu7nNpGEgW3J8OlaicvmMV2A1SS5EMXO7MScNTIwaO0qOWjCwVbtNh4QSIWG-YMqO-teXMkmVSaj-PspEPBGmbPdtquQPdGG0M4CiooSEUSdjnL8NlR6U9XGc4VwHcMsW4eLJOmEBDuclGMHE5GLgevEb-bEFlxsaZOJRwjkPiixiPIm1puJ2HhO8sG3FDHlD0f2pXzRXzhm9uBCagAeOICb1zGdj3Vq5kVYZkWj-VhG0_VAp0fcydVDNA0o-NJ20l7ZduNFo8GyyldI4KaeVZ_5w6OL3JHdde1IiijZweB8P8MkK7tuIW9M73K8BmmJ71l1JmlHnt3cV2mlO_9rX14IKmVc5t1Em74fQSghpndFWRQ8NRICr9cuJGyoKojiHuxhWq6rM0aqnsIhIHfjG9y2APtmXrZjT97IkJqLZ1LfPXNq4xz13951hgXccXz7Ko20_-ozdmisNvInm956wjhauKiLLwTGjG2Eq0hjw==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_0aecce28f4892b8c016a98fa4c17cc87d188fff4fd412e3388",
+              "index": 1
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1731,
+      "completion_tokens": 2255,
+      "total_tokens": 3986,
+      "cost": 0.0031386,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1728,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0031386,
+        "upstream_inference_prompt_cost": 0.0004326,
+        "upstream_inference_completions_cost": 0.002706
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 421,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement U1 as an explicitly opt-in `stream destroy --clean` capability. Cleanup is performed by the deployment/container side, where the target messaging connection and cluster are known, rather than by the admin server alone.\",\n    \"Use RabbitMQ management functionality, preferably Spring AMQP `RabbitManagementTemplate` when available, with a narrowly scoped REST client fallback. Cleanup will inspect consumers and bindings before deleting queues, topics/exchanges, and related resources.\",\n    \"Do not delete resources that still have active consumers. Resources containing messages are deleted only when `--clean` is explicitly supplied, with the behavior documented and covered by tests.\",\n    \"Implement U2 using Spring Integration error channels and framework conventions, exposing module and stream context in error messages and routing failures to the appropriate channel.\",\n    \"Treat U3 as a security research and design spike rather than a complete security rollout. Evaluate Spring Security and Spring Boot defaults, define REST protection and credential configuration, and document implications for the shell and Admin UI.\",\n    \"Implement U5 as a separate MVC-aware HTTP source module with embedded Tomcat, Spring MVC integration, configurable content-type handling, and complete request-header mapping. Reuse existing HTTP source infrastructure where practical.\",\n    \"Implement U6 with a reusable client-side polling component for stream, job, and deployment status. Add a server-side event abstraction and basic event publication where existing extension points permit it, while retaining polling as the reliable fallback.\",\n    \"Implement U7 using Spring Integration SFTP adapters with configurable host, port, credentials, remote directory, polling, file filters, and transfer behavior. Credentials are supplied through existing secure configuration mechanisms.\",\n    \"Implement U8 as a native Elasticsearch sink using the supported Elasticsearch client or Spring Data/Spring Integration integration available in the target codebase, with configurable cluster endpoint, index, document mapping, and failure handling.\",\n    \"Use the repository's existing build system, Java version, test conventions, module packaging, configuration style, and command-line parsing framework rather than introducing a new platform abstraction.\",\n    \"Provide unit, integration, and representative end-to-end tests for all implemented behavior, using embedded or containerized RabbitMQ, Elasticsearch, SFTP, and HTTP infrastructure where feasible.\"\n  ],\n  \"assumptions\": [\n    \"The increment covers all eight user stories, with U3 limited to the explicitly stated research, design, and developer-experience spike.\",\n    \"The existing Spring XD codebase and its admin, container, stream, job, module, shell, and UI extension points are available and buildable.\",\n    \"Existing authentication, authorization, configuration, module deployment, and messaging abstractions can be extended without a major platform rewrite.\",\n    \"RabbitMQ is the target broker for U1, and the deployment environment provides either RabbitMQ management API access or an equivalent Spring AMQP management client.\",\n    \"The cleanup command will remove only resources associated with the selected stream and will preserve shared broker resources unless ownership can be established unambiguously.\",\n    \"The HTTP MVC module requires standard request/response handling and embedded Tomcat, but does not require a new graphical administration experience.\",\n    \"For U6, real-time push notifications to every connected UI client are not assumed to replace polling; polling remains the supported minimum behavior.\",\n    \"For U7 and U8, external service availability, credentials, certificates, and test infrastructure are provided or can be represented with local containers; provisioning production infrastructure is excluded.\",\n    \"Backward compatibility with existing modules and command syntax is required except for the new optional flags, configuration properties, and module types.\",\n    \"Effort includes implementation, code review preparation, automated tests, documentation, and local integration validation by one developer, but excludes elapsed waiting time and production rollout.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository analysis and increment design\",\n      \"activity_description\": \"Inspect the existing architecture, build, module lifecycle, command-line shell, REST APIs, messaging abstractions, configuration model, testing conventions, and extension points. Produce an implementation plan and identify compatibility constraints across U1-U8.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Optional RabbitMQ queue/topic cleanup\",\n      \"activity_description\": \"Add the optional stream-destroy cleanup option, identify stream-owned queues, bindings, and exchanges, inspect consumer and message state, invoke RabbitMQ management operations, handle active consumers and producer/data edge cases, and report cleanup results and failures.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Module exception notification and error channels\",\n      \"activity_description\": \"Define module and stream error-channel behavior, integrate exception handling with Spring Integration, preserve useful module metadata, expose the channels through the existing runtime model, and add configuration and failure-path handling.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"REST security research and design spike\",\n      \"activity_description\": \"Research Spring Security and Spring Boot built-in support, assess protection of all listed REST resources, design authentication and authorization configuration, evaluate shell and Admin UI behavior, document developer and operator experience, and produce a recommended XD implementation approach.\",\n      \"most_likely_effort\": 56\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Document available stream, job, and container keys\",\n      \"activity_description\": \"Inventory the supported expression and property keys, including stream and job names and applicable container values, verify them against runtime behavior, and update user and developer documentation with examples and limitations.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"MVC-aware HTTP source module\",\n      \"activity_description\": \"Create and package the MVC-aware HTTP source with embedded Tomcat, configure Spring MVC integration, support richer content types, implement full request-header mapping, expose module properties, integrate with deployment and lifecycle handling, and provide representative MVC and security extension examples.\",\n      \"most_likely_effort\": 96\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Status polling and runtime event propagation\",\n      \"activity_description\": \"Implement a reusable client polling strategy for stream, job, and deployment status changes, define polling intervals and error/backoff behavior, integrate it with shell or client consumers, and add a server-side event abstraction with basic propagation through existing admin/container extension points.\",\n      \"most_likely_effort\": 88\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"SFTP source module\",\n      \"activity_description\": \"Implement the SFTP source using Spring Integration SFTP, including connection and authentication properties, remote-directory polling, file filtering, transfer and deletion behavior, reconnect handling, module metadata, packaging, and local SFTP integration tests.\",\n      \"most_likely_effort\": 72\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Native Elasticsearch sink module\",\n      \"activity_description\": \"Implement the Elasticsearch sink with configurable connection, index and document settings, payload mapping, batching or individual writes as supported by the existing framework, retry and error-channel behavior, module packaging, and local Elasticsearch integration tests.\",\n      \"most_likely_effort\": 80\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature automated and integration testing\",\n      \"activity_description\": \"Add unit and integration coverage for command parsing, resource cleanup, error routing, HTTP behavior, status transitions, SFTP transfers, Elasticsearch writes, configuration validation, compatibility scenarios, and failure conditions using embedded or containerized dependencies.\",\n      \"most_likely_effort\": 64\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"User, operator, and developer documentation\",\n      \"activity_description\": \"Document new commands, module configuration, cleanup safety behavior, error channels, security spike findings, polling behavior, SFTP setup, Elasticsearch setup, operational prerequisites, examples, and known limitations.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Build validation, regression fixing, and release preparation\",\n      \"activity_description\": \"Run the complete build and test suite, resolve integration and compatibility defects, verify module artifacts and metadata, perform final manual smoke tests, and prepare release notes or change summaries.\",\n      \"most_likely_effort\": 24\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 656\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1731,
+    "completion_tokens": 2255,
+    "total_tokens": 3986,
+    "cost": 0.0031386,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1728,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0031386,
+      "upstream_inference_prompt_cost": 0.0004326,
+      "upstream_inference_completions_cost": 0.002706
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 421,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement U1 as an explicitly opt-in `stream destroy --clean` capability. Cleanup is performed by the deployment/container side, where the target messaging connection and cluster are known, rather than by the admin server alone.",
+      "Use RabbitMQ management functionality, preferably Spring AMQP `RabbitManagementTemplate` when available, with a narrowly scoped REST client fallback. Cleanup will inspect consumers and bindings before deleting queues, topics/exchanges, and related resources.",
+      "Do not delete resources that still have active consumers. Resources containing messages are deleted only when `--clean` is explicitly supplied, with the behavior documented and covered by tests.",
+      "Implement U2 using Spring Integration error channels and framework conventions, exposing module and stream context in error messages and routing failures to the appropriate channel.",
+      "Treat U3 as a security research and design spike rather than a complete security rollout. Evaluate Spring Security and Spring Boot defaults, define REST protection and credential configuration, and document implications for the shell and Admin UI.",
+      "Implement U5 as a separate MVC-aware HTTP source module with embedded Tomcat, Spring MVC integration, configurable content-type handling, and complete request-header mapping. Reuse existing HTTP source infrastructure where practical.",
+      "Implement U6 with a reusable client-side polling component for stream, job, and deployment status. Add a server-side event abstraction and basic event publication where existing extension points permit it, while retaining polling as the reliable fallback.",
+      "Implement U7 using Spring Integration SFTP adapters with configurable host, port, credentials, remote directory, polling, file filters, and transfer behavior. Credentials are supplied through existing secure configuration mechanisms.",
+      "Implement U8 as a native Elasticsearch sink using the supported Elasticsearch client or Spring Data/Spring Integration integration available in the target codebase, with configurable cluster endpoint, index, document mapping, and failure handling.",
+      "Use the repository's existing build system, Java version, test conventions, module packaging, configuration style, and command-line parsing framework rather than introducing a new platform abstraction.",
+      "Provide unit, integration, and representative end-to-end tests for all implemented behavior, using embedded or containerized RabbitMQ, Elasticsearch, SFTP, and HTTP infrastructure where feasible."
+    ],
+    "assumptions": [
+      "The increment covers all eight user stories, with U3 limited to the explicitly stated research, design, and developer-experience spike.",
+      "The existing Spring XD codebase and its admin, container, stream, job, module, shell, and UI extension points are available and buildable.",
+      "Existing authentication, authorization, configuration, module deployment, and messaging abstractions can be extended without a major platform rewrite.",
+      "RabbitMQ is the target broker for U1, and the deployment environment provides either RabbitMQ management API access or an equivalent Spring AMQP management client.",
+      "The cleanup command will remove only resources associated with the selected stream and will preserve shared broker resources unless ownership can be established unambiguously.",
+      "The HTTP MVC module requires standard request/response handling and embedded Tomcat, but does not require a new graphical administration experience.",
+      "For U6, real-time push notifications to every connected UI client are not assumed to replace polling; polling remains the supported minimum behavior.",
+      "For U7 and U8, external service availability, credentials, certificates, and test infrastructure are provided or can be represented with local containers; provisioning production infrastructure is excluded.",
+      "Backward compatibility with existing modules and command syntax is required except for the new optional flags, configuration properties, and module types.",
+      "Effort includes implementation, code review preparation, automated tests, documentation, and local integration validation by one developer, but excludes elapsed waiting time and production rollout."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Repository analysis and increment design",
+        "activity_description": "Inspect the existing architecture, build, module lifecycle, command-line shell, REST APIs, messaging abstractions, configuration model, testing conventions, and extension points. Produce an implementation plan and identify compatibility constraints across U1-U8.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Optional RabbitMQ queue/topic cleanup",
+        "activity_description": "Add the optional stream-destroy cleanup option, identify stream-owned queues, bindings, and exchanges, inspect consumer and message state, invoke RabbitMQ management operations, handle active consumers and producer/data edge cases, and report cleanup results and failures.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Module exception notification and error channels",
+        "activity_description": "Define module and stream error-channel behavior, integrate exception handling with Spring Integration, preserve useful module metadata, expose the channels through the existing runtime model, and add configuration and failure-path handling.",
+        "most_likely_effort": 48
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "REST security research and design spike",
+        "activity_description": "Research Spring Security and Spring Boot built-in support, assess protection of all listed REST resources, design authentication and authorization configuration, evaluate shell and Admin UI behavior, document developer and operator experience, and produce a recommended XD implementation approach.",
+        "most_likely_effort": 56
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Document available stream, job, and container keys",
+        "activity_description": "Inventory the supported expression and property keys, including stream and job names and applicable container values, verify them against runtime behavior, and update user and developer documentation with examples and limitations.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "MVC-aware HTTP source module",
+        "activity_description": "Create and package the MVC-aware HTTP source with embedded Tomcat, configure Spring MVC integration, support richer content types, implement full request-header mapping, expose module properties, integrate with deployment and lifecycle handling, and provide representative MVC and security extension examples.",
+        "most_likely_effort": 96
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Status polling and runtime event propagation",
+        "activity_description": "Implement a reusable client polling strategy for stream, job, and deployment status changes, define polling intervals and error/backoff behavior, integrate it with shell or client consumers, and add a server-side event abstraction with basic propagation through existing admin/container extension points.",
+        "most_likely_effort": 88
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "SFTP source module",
+        "activity_description": "Implement the SFTP source using Spring Integration SFTP, including connection and authentication properties, remote-directory polling, file filtering, transfer and deletion behavior, reconnect handling, module metadata, packaging, and local SFTP integration tests.",
+        "most_likely_effort": 72
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Native Elasticsearch sink module",
+        "activity_description": "Implement the Elasticsearch sink with configurable connection, index and document settings, payload mapping, batching or individual writes as supported by the existing framework, retry and error-channel behavior, module packaging, and local Elasticsearch integration tests.",
+        "most_likely_effort": 80
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature automated and integration testing",
+        "activity_description": "Add unit and integration coverage for command parsing, resource cleanup, error routing, HTTP behavior, status transitions, SFTP transfers, Elasticsearch writes, configuration validation, compatibility scenarios, and failure conditions using embedded or containerized dependencies.",
+        "most_likely_effort": 64
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "User, operator, and developer documentation",
+        "activity_description": "Document new commands, module configuration, cleanup safety behavior, error channels, security spike findings, polling behavior, SFTP setup, Elasticsearch setup, operational prerequisites, examples, and known limitations.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Build validation, regression fixing, and release preparation",
+        "activity_description": "Run the complete build and test suite, resolve integration and compatibility defects, verify module artifacts and metadata, perform final manual smoke tests, and prepare release notes or change summaries.",
+        "most_likely_effort": 24
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 656
+    }
+  }
+}

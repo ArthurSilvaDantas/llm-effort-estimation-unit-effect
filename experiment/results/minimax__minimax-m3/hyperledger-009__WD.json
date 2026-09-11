@@ -1,0 +1,285 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-009",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788416432-1aOApIujULeXY0TyJ1fV",
+    "object": "chat.completion",
+    "created": 1788416432,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The library is implemented in Go, consistent with the Hyperledger Fabric codebase and its existing config package.\",\n    \"Reuse the existing fabric-protos generated types (common.Config, common.ConfigUpdate, msp.FabricMSPConfig, etc.) rather than redefining structures.\",\n    \"Follow the established patterns of the existing config package (e.g., UpdateChannelConfiguration, AddOrg) to ensure a consistent API surface.\",\n    \"Anchor peer add/remove operations are implemented by computing a ConfigUpdate via the standard 'headers' + 'config' (desired) + 'write_set' (empty) pattern, leaving signing to a separate workflow.\",\n    \"Certificate validation for U4 uses the standard library crypto/x509 package to parse and inspect the KeyUsage and BasicConstraints CA fields; no additional PKI infrastructure is introduced.\",\n    \"U3 modifies only the revocation_list field of FabricMSPConfig via the standard config update mechanism, avoiding changes to other MSP fields.\",\n    \"Helper functions for U7/U8 return the strongly-typed protos (e.g., config.AnchorPeers, config.Orderer) so callers can mutate them before passing back to update functions.\",\n    \"Documentation examples (U5, U6) are provided as Go example tests (Example* functions in *_test.go files) so they are executable, validated by `go test`, and rendered in GoDoc.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Go developer with working knowledge of Hyperledger Fabric performs all work; no onboarding time is included.\",\n    \"The existing config package already exposes primitives such as ConfigUpdateFromConfigBlock, SignConfigUpdate, and an Orderer update function; this work extends them rather than rewriting them.\",\n    \"Test fixtures (sample config blocks, MSP configs, and certificates) can be generated or reused from existing Fabric test data without creating a full Fabric test network.\",\n    \"Code review is performed by the same developer as a self-review and refactor pass before submission; no external reviewer cycles are scheduled.\",\n    \"All efforts are expressed in ideal developer workdays of focused, uninterrupted implementation time.\",\n    \"No CI/CD, release, or governance (Hyperledger Fabric LF process) work is included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Exploration, design and project setup\",\n      \"activity_description\": \"Read the existing config package and protos, confirm signatures, sketch the public API surface, set up branch and skeleton files.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement add anchor peer\",\n      \"activity_description\": \"Add a function that takes an existing Config block and an anchor peer (host:port) plus org, and returns a ConfigUpdate that adds it to the channel's anchor peer set.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Implement remove anchor peer\",\n      \"activity_description\": \"Add a function that takes an existing Config block, an org and an anchor peer, and returns a ConfigUpdate that removes the matching entry from the anchor peer set.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Implement MSP certificate revocation\",\n      \"activity_description\": \"Add a function that, given a Config block and a certificate identifier (or serial), produces a ConfigUpdate that appends/removes the entry in the FabricMSPConfig revocation_list of the relevant MSP.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Implement add root CA cert with validation\",\n      \"activity_description\": \"Add a function that validates a candidate CA certificate (reject those missing KeyUsageCertSign or CA=true in BasicConstraints) and returns a ConfigUpdate that appends it to the MSP's tls/intermediate/root cert list as appropriate.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U7 - Implement get anchor peers helper\",\n      \"activity_description\": \"Add a helper that, given a Config block and an org MSP ID, returns the current anchor peer set for that org without manual proto walking.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U8 - Implement get orderer configuration helper\",\n      \"activity_description\": \"Add a helper that returns the current config.Orderer structure from a Config block so callers can mutate and pass it back to UpdateOrdererConfiguration.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U5 - GoDoc example for config update\",\n      \"activity_description\": \"Write an Example* test demonstrating idiomatic usage of the package to build and sign a channel config update with multiple changes.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U6 - GoDoc example for channel creation\",\n      \"activity_description\": \"Write an Example* test demonstrating idiomatic usage of the package to build and sign a new channel creation transaction.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Unit tests for new functions\",\n      \"activity_description\": \"Table-driven unit tests for A2-A7 covering happy paths, missing fields, invalid input and idempotency on well-formed Config blocks.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration and end-to-end tests\",\n      \"activity_description\": \"Tests that apply the produced ConfigUpdates against a live config block and verify the resulting read_set/write_set, and update existing example_test.go to cover the new helpers.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Self-review, refactor and documentation polish\",\n      \"activity_description\": \"Refactor duplicated code, ensure godoc comments on all exported identifiers, run gofmt/vet/lint and finalize the change set for submission.\"\n    }\n  ],\n  \"activities_with_effort\": [\n    {\"activity_id\": \"A1\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A2\", \"most_likely_effort\": 1.5},\n    {\"activity_id\": \"A3\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A4\", \"most_likely_effort\": 2.0},\n    {\"activity_id\": \"A5\", \"most_likely_effort\": 2.5},\n    {\"activity_id\": \"A6\", \"most_likely_effort\": 0.5},\n    {\"activity_id\": \"A7\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A8\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A9\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A10\", \"most_likely_effort\": 2.0},\n    {\"activity_id\": \"A11\", \"most_likely_effort\": 1.5},\n    {\"activity_id\": \"A12\", \"most_likely_effort\": 1.5}\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 16.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the software specification carefully. This is about Hyperledger Fabric, and we need to implement a library for channel configuration updates. Let me break down the user stories:\n\nU1: Add an anchor peer to channel config\nU2: Remove an anchor peer from channel config\nU3: Revoke a certificate from MSP's revocation list\nU4: Add a new root CA certificate to MSP config (with validation)\nU5: Example for updating channel transactions in GoDoc\nU6: Example for creating channel transactions in GoDoc\nU7: Helper function to retrieve existing anchor peers\nU8: Helper function to retrieve orderer configuration\n\nLet me think about the activities needed:\n\n1. Design/Architecture - understanding the existing Fabric config library structure\n2. Implementation of U1 - Add anchor peer\n3. Implementation of U2 - Remove anchor peer\n4. Implementation of U3 - Revoke certificate (modifying revocation_list of FabricMSPConfig)\n5. Implementation of U4 - Add root CA certificate with validation\n6. Implementation of U7 - Helper to retrieve anchor peers\n7. Implementation of U8 - Helper to retrieve orderer configuration\n8. Documentation/Examples for U5\n9. Documentation/Examples for U6\n10. Unit tests for all functions\n11. Integration tests\n12. Code review and integration\n\nLet me think about effort estimates for each. This is a focused library in Go for Hyperledger Fabric. The functions are fairly specific - they manipulate channel configuration structures.\n\nFor a Go developer familiar with Hyperledger Fabric:\n- Design/Setup: 1-2 days\n- U1 implementation: 1-2 days\n- U2 implementation: 1-2 days (similar to U1)\n- U3 implementation: 2-3 days (more complex - MSP config with revocation list)\n- U4 implementation: 2-3 days (includes certificate parsing/validation)\n- U7 implementation: 1 day (read-only function)\n- U8 implementation: 1-2 days (read-only function)\n- U5 example/doc: 1-2 days\n- U6 example/doc: 1-2 days\n- Unit tests: 2-3 days\n- Integration tests: 2-3 days\n- Code review, refactoring, integration: 2 days\n\nLet me think more carefully. The Hyperledger Fabric codebase is well-known. Looking at the actual PRs that addressed these issues, they were relatively focused. The work is mostly extending an existing config package.\n\nLet me refine my estimates:\n\nA1: Setup, code exploration, design decisions - 1 day\nA2: U1 - Add anchor peer function - 1.5 days\nA3: U2 - Remove anchor peer function - 1.5 days\nA4: U3 - Revoke certificate function (MSP revocation list) - 2 days\nA5: U4 - Add root CA cert function (with validation) - 2 days\nA6: U7 - Get anchor peers helper - 0.5 days\nA7: U8 - Get orderer config helper - 1 day\nA8: U5 - GoDoc example for config update - 1 day\nA9: U6 - GoDoc example for create channel - 1 day\nA10: Unit tests for all new functions - 2 days\nA11: Integration tests / example test updates - 1.5 days\nA12: Code review, refactoring, documentation polish - 1.5 days\n\nTotal: ~16.5 days\n\nLet me round and reconsider. These are most likely estimates for a single developer doing all the work.\n\nActually, let me reconsider the scope. U3 (revoke cert) requires understanding the MSP config structure well, and U4 requires certificate parsing/validation. These are not trivial.\n\nLet me also think about technical decisions:\n- The library will be in Go (Hyperledger Fabric is Go-based)\n- The library will follow the existing config package patterns\n- Use existing Fabric protos for ConfigBlock, ConfigUpdate, etc.\n- Certificate validation will use standard library crypto/x509\n- Examples will be in the form of Go example tests in _test.go files with Example functions\n\nLet me finalize:\n\nA1: Design/Exploration - 1\nA2: U1 Add anchor peer - 1\nA3: U2 Remove anchor peer - 1\nA4: U3 Revoke cert - 2\nA5: U4 Add root CA - 2\nA6: U7 Get anchor peers - 0.5\nA7: U8 Get orderer config - 1\nA8: U5 GoDoc example update - 1\nA9: U6 GoDoc example create - 1\nA10: Unit tests - 2\nA11: Integration tests - 1\nA12: Code review/refactor - 1\n\nTotal: 13.5\n\nLet me think about this more carefully. This is for an experienced Go developer familiar with Hyperledger Fabric. The work involves:\n- Reading existing code (channel config, MSP config)\n- Writing new helper functions\n- Writing tests\n- Writing examples\n\nI'll be a bit more generous with estimates since the developer needs to learn the existing code structure too. But since the spec says \"personally perform all the required development work\" and they're a \"software developer responsible for implementing,\" I'll assume they have reasonable familiarity.\n\nFinal estimates:\nA1: Project setup, code exploration, design - 1 day\nA2: U1 - Add anchor peer - 1.5 days\nA3: U2 - Remove anchor peer - 1 day\nA4: U3 - Revoke certificate - 2 days\nA5: U4 - Add root CA cert with validation - 2.5 days\nA6: U7 - Get anchor peers - 0.5 days\nA7: U8 - Get orderer config - 1 day\nA8: U5 - Example for updating config - 1 day\nA9: U6 - Example for creating channel - 1 day\nA10: Unit tests - 2 days\nA11: Integration/end-to-end tests - 1.5 days\nA12: Code review, polish, integration - 1.5 days\n\nTotal: 16.5 days\n\nLet me structure this into the JSON format.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the software specification carefully. This is about Hyperledger Fabric, and we need to implement a library for channel configuration updates. Let me break down the user stories:\n\nU1: Add an anchor peer to channel config\nU2: Remove an anchor peer from channel config\nU3: Revoke a certificate from MSP's revocation list\nU4: Add a new root CA certificate to MSP config (with validation)\nU5: Example for updating channel transactions in GoDoc\nU6: Example for creating channel transactions in GoDoc\nU7: Helper function to retrieve existing anchor peers\nU8: Helper function to retrieve orderer configuration\n\nLet me think about the activities needed:\n\n1. Design/Architecture - understanding the existing Fabric config library structure\n2. Implementation of U1 - Add anchor peer\n3. Implementation of U2 - Remove anchor peer\n4. Implementation of U3 - Revoke certificate (modifying revocation_list of FabricMSPConfig)\n5. Implementation of U4 - Add root CA certificate with validation\n6. Implementation of U7 - Helper to retrieve anchor peers\n7. Implementation of U8 - Helper to retrieve orderer configuration\n8. Documentation/Examples for U5\n9. Documentation/Examples for U6\n10. Unit tests for all functions\n11. Integration tests\n12. Code review and integration\n\nLet me think about effort estimates for each. This is a focused library in Go for Hyperledger Fabric. The functions are fairly specific - they manipulate channel configuration structures.\n\nFor a Go developer familiar with Hyperledger Fabric:\n- Design/Setup: 1-2 days\n- U1 implementation: 1-2 days\n- U2 implementation: 1-2 days (similar to U1)\n- U3 implementation: 2-3 days (more complex - MSP config with revocation list)\n- U4 implementation: 2-3 days (includes certificate parsing/validation)\n- U7 implementation: 1 day (read-only function)\n- U8 implementation: 1-2 days (read-only function)\n- U5 example/doc: 1-2 days\n- U6 example/doc: 1-2 days\n- Unit tests: 2-3 days\n- Integration tests: 2-3 days\n- Code review, refactoring, integration: 2 days\n\nLet me think more carefully. The Hyperledger Fabric codebase is well-known. Looking at the actual PRs that addressed these issues, they were relatively focused. The work is mostly extending an existing config package.\n\nLet me refine my estimates:\n\nA1: Setup, code exploration, design decisions - 1 day\nA2: U1 - Add anchor peer function - 1.5 days\nA3: U2 - Remove anchor peer function - 1.5 days\nA4: U3 - Revoke certificate function (MSP revocation list) - 2 days\nA5: U4 - Add root CA cert function (with validation) - 2 days\nA6: U7 - Get anchor peers helper - 0.5 days\nA7: U8 - Get orderer config helper - 1 day\nA8: U5 - GoDoc example for config update - 1 day\nA9: U6 - GoDoc example for create channel - 1 day\nA10: Unit tests for all new functions - 2 days\nA11: Integration tests / example test updates - 1.5 days\nA12: Code review, refactoring, documentation polish - 1.5 days\n\nTotal: ~16.5 days\n\nLet me round and reconsider. These are most likely estimates for a single developer doing all the work.\n\nActually, let me reconsider the scope. U3 (revoke cert) requires understanding the MSP config structure well, and U4 requires certificate parsing/validation. These are not trivial.\n\nLet me also think about technical decisions:\n- The library will be in Go (Hyperledger Fabric is Go-based)\n- The library will follow the existing config package patterns\n- Use existing Fabric protos for ConfigBlock, ConfigUpdate, etc.\n- Certificate validation will use standard library crypto/x509\n- Examples will be in the form of Go example tests in _test.go files with Example functions\n\nLet me finalize:\n\nA1: Design/Exploration - 1\nA2: U1 Add anchor peer - 1\nA3: U2 Remove anchor peer - 1\nA4: U3 Revoke cert - 2\nA5: U4 Add root CA - 2\nA6: U7 Get anchor peers - 0.5\nA7: U8 Get orderer config - 1\nA8: U5 GoDoc example update - 1\nA9: U6 GoDoc example create - 1\nA10: Unit tests - 2\nA11: Integration tests - 1\nA12: Code review/refactor - 1\n\nTotal: 13.5\n\nLet me think about this more carefully. This is for an experienced Go developer familiar with Hyperledger Fabric. The work involves:\n- Reading existing code (channel config, MSP config)\n- Writing new helper functions\n- Writing tests\n- Writing examples\n\nI'll be a bit more generous with estimates since the developer needs to learn the existing code structure too. But since the spec says \"personally perform all the required development work\" and they're a \"software developer responsible for implementing,\" I'll assume they have reasonable familiarity.\n\nFinal estimates:\nA1: Project setup, code exploration, design - 1 day\nA2: U1 - Add anchor peer - 1.5 days\nA3: U2 - Remove anchor peer - 1 day\nA4: U3 - Revoke certificate - 2 days\nA5: U4 - Add root CA cert with validation - 2.5 days\nA6: U7 - Get anchor peers - 0.5 days\nA7: U8 - Get orderer config - 1 day\nA8: U5 - Example for updating config - 1 day\nA9: U6 - Example for creating channel - 1 day\nA10: Unit tests - 2 days\nA11: Integration/end-to-end tests - 1.5 days\nA12: Code review, polish, integration - 1.5 days\n\nTotal: 16.5 days\n\nLet me structure this into the JSON format.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1543,
+      "completion_tokens": 2898,
+      "total_tokens": 4441,
+      "cost": 0.00390306,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00390306,
+        "upstream_inference_prompt_cost": 0.00042546,
+        "upstream_inference_completions_cost": 0.0034776
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1332,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The library is implemented in Go, consistent with the Hyperledger Fabric codebase and its existing config package.\",\n    \"Reuse the existing fabric-protos generated types (common.Config, common.ConfigUpdate, msp.FabricMSPConfig, etc.) rather than redefining structures.\",\n    \"Follow the established patterns of the existing config package (e.g., UpdateChannelConfiguration, AddOrg) to ensure a consistent API surface.\",\n    \"Anchor peer add/remove operations are implemented by computing a ConfigUpdate via the standard 'headers' + 'config' (desired) + 'write_set' (empty) pattern, leaving signing to a separate workflow.\",\n    \"Certificate validation for U4 uses the standard library crypto/x509 package to parse and inspect the KeyUsage and BasicConstraints CA fields; no additional PKI infrastructure is introduced.\",\n    \"U3 modifies only the revocation_list field of FabricMSPConfig via the standard config update mechanism, avoiding changes to other MSP fields.\",\n    \"Helper functions for U7/U8 return the strongly-typed protos (e.g., config.AnchorPeers, config.Orderer) so callers can mutate them before passing back to update functions.\",\n    \"Documentation examples (U5, U6) are provided as Go example tests (Example* functions in *_test.go files) so they are executable, validated by `go test`, and rendered in GoDoc.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Go developer with working knowledge of Hyperledger Fabric performs all work; no onboarding time is included.\",\n    \"The existing config package already exposes primitives such as ConfigUpdateFromConfigBlock, SignConfigUpdate, and an Orderer update function; this work extends them rather than rewriting them.\",\n    \"Test fixtures (sample config blocks, MSP configs, and certificates) can be generated or reused from existing Fabric test data without creating a full Fabric test network.\",\n    \"Code review is performed by the same developer as a self-review and refactor pass before submission; no external reviewer cycles are scheduled.\",\n    \"All efforts are expressed in ideal developer workdays of focused, uninterrupted implementation time.\",\n    \"No CI/CD, release, or governance (Hyperledger Fabric LF process) work is included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Exploration, design and project setup\",\n      \"activity_description\": \"Read the existing config package and protos, confirm signatures, sketch the public API surface, set up branch and skeleton files.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement add anchor peer\",\n      \"activity_description\": \"Add a function that takes an existing Config block and an anchor peer (host:port) plus org, and returns a ConfigUpdate that adds it to the channel's anchor peer set.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Implement remove anchor peer\",\n      \"activity_description\": \"Add a function that takes an existing Config block, an org and an anchor peer, and returns a ConfigUpdate that removes the matching entry from the anchor peer set.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Implement MSP certificate revocation\",\n      \"activity_description\": \"Add a function that, given a Config block and a certificate identifier (or serial), produces a ConfigUpdate that appends/removes the entry in the FabricMSPConfig revocation_list of the relevant MSP.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Implement add root CA cert with validation\",\n      \"activity_description\": \"Add a function that validates a candidate CA certificate (reject those missing KeyUsageCertSign or CA=true in BasicConstraints) and returns a ConfigUpdate that appends it to the MSP's tls/intermediate/root cert list as appropriate.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U7 - Implement get anchor peers helper\",\n      \"activity_description\": \"Add a helper that, given a Config block and an org MSP ID, returns the current anchor peer set for that org without manual proto walking.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U8 - Implement get orderer configuration helper\",\n      \"activity_description\": \"Add a helper that returns the current config.Orderer structure from a Config block so callers can mutate and pass it back to UpdateOrdererConfiguration.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U5 - GoDoc example for config update\",\n      \"activity_description\": \"Write an Example* test demonstrating idiomatic usage of the package to build and sign a channel config update with multiple changes.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U6 - GoDoc example for channel creation\",\n      \"activity_description\": \"Write an Example* test demonstrating idiomatic usage of the package to build and sign a new channel creation transaction.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Unit tests for new functions\",\n      \"activity_description\": \"Table-driven unit tests for A2-A7 covering happy paths, missing fields, invalid input and idempotency on well-formed Config blocks.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration and end-to-end tests\",\n      \"activity_description\": \"Tests that apply the produced ConfigUpdates against a live config block and verify the resulting read_set/write_set, and update existing example_test.go to cover the new helpers.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Self-review, refactor and documentation polish\",\n      \"activity_description\": \"Refactor duplicated code, ensure godoc comments on all exported identifiers, run gofmt/vet/lint and finalize the change set for submission.\"\n    }\n  ],\n  \"activities_with_effort\": [\n    {\"activity_id\": \"A1\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A2\", \"most_likely_effort\": 1.5},\n    {\"activity_id\": \"A3\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A4\", \"most_likely_effort\": 2.0},\n    {\"activity_id\": \"A5\", \"most_likely_effort\": 2.5},\n    {\"activity_id\": \"A6\", \"most_likely_effort\": 0.5},\n    {\"activity_id\": \"A7\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A8\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A9\", \"most_likely_effort\": 1.0},\n    {\"activity_id\": \"A10\", \"most_likely_effort\": 2.0},\n    {\"activity_id\": \"A11\", \"most_likely_effort\": 1.5},\n    {\"activity_id\": \"A12\", \"most_likely_effort\": 1.5}\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 16.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1543,
+    "completion_tokens": 2898,
+    "total_tokens": 4441,
+    "cost": 0.00390306,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00390306,
+      "upstream_inference_prompt_cost": 0.00042546,
+      "upstream_inference_completions_cost": 0.0034776
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1332,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788416457-y9xu1j4mpIrDwMcFuhy2",
+    "object": "chat.completion",
+    "created": 1788416457,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3236,
+      "completion_tokens": 19,
+      "total_tokens": 3255,
+      "cost": 0.00062688,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1528,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00062688,
+        "upstream_inference_prompt_cost": 0.00060408,
+        "upstream_inference_completions_cost": 2.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "The library is implemented in Go, consistent with the Hyperledger Fabric codebase and its existing config package.",
+      "Reuse the existing fabric-protos generated types (common.Config, common.ConfigUpdate, msp.FabricMSPConfig, etc.) rather than redefining structures.",
+      "Follow the established patterns of the existing config package (e.g., UpdateChannelConfiguration, AddOrg) to ensure a consistent API surface.",
+      "Anchor peer add/remove operations are implemented by computing a ConfigUpdate via the standard 'headers' + 'config' (desired) + 'write_set' (empty) pattern, leaving signing to a separate workflow.",
+      "Certificate validation for U4 uses the standard library crypto/x509 package to parse and inspect the KeyUsage and BasicConstraints CA fields; no additional PKI infrastructure is introduced.",
+      "U3 modifies only the revocation_list field of FabricMSPConfig via the standard config update mechanism, avoiding changes to other MSP fields.",
+      "Helper functions for U7/U8 return the strongly-typed protos (e.g., config.AnchorPeers, config.Orderer) so callers can mutate them before passing back to update functions.",
+      "Documentation examples (U5, U6) are provided as Go example tests (Example* functions in *_test.go files) so they are executable, validated by `go test`, and rendered in GoDoc."
+    ],
+    "assumptions": [
+      "A single experienced Go developer with working knowledge of Hyperledger Fabric performs all work; no onboarding time is included.",
+      "The existing config package already exposes primitives such as ConfigUpdateFromConfigBlock, SignConfigUpdate, and an Orderer update function; this work extends them rather than rewriting them.",
+      "Test fixtures (sample config blocks, MSP configs, and certificates) can be generated or reused from existing Fabric test data without creating a full Fabric test network.",
+      "Code review is performed by the same developer as a self-review and refactor pass before submission; no external reviewer cycles are scheduled.",
+      "All efforts are expressed in ideal developer workdays of focused, uninterrupted implementation time.",
+      "No CI/CD, release, or governance (Hyperledger Fabric LF process) work is included."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Exploration, design and project setup",
+        "activity_description": "Read the existing config package and protos, confirm signatures, sketch the public API surface, set up branch and skeleton files."
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Implement add anchor peer",
+        "activity_description": "Add a function that takes an existing Config block and an anchor peer (host:port) plus org, and returns a ConfigUpdate that adds it to the channel's anchor peer set."
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Implement remove anchor peer",
+        "activity_description": "Add a function that takes an existing Config block, an org and an anchor peer, and returns a ConfigUpdate that removes the matching entry from the anchor peer set."
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - Implement MSP certificate revocation",
+        "activity_description": "Add a function that, given a Config block and a certificate identifier (or serial), produces a ConfigUpdate that appends/removes the entry in the FabricMSPConfig revocation_list of the relevant MSP."
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Implement add root CA cert with validation",
+        "activity_description": "Add a function that validates a candidate CA certificate (reject those missing KeyUsageCertSign or CA=true in BasicConstraints) and returns a ConfigUpdate that appends it to the MSP's tls/intermediate/root cert list as appropriate."
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U7 - Implement get anchor peers helper",
+        "activity_description": "Add a helper that, given a Config block and an org MSP ID, returns the current anchor peer set for that org without manual proto walking."
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U8 - Implement get orderer configuration helper",
+        "activity_description": "Add a helper that returns the current config.Orderer structure from a Config block so callers can mutate and pass it back to UpdateOrdererConfiguration."
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U5 - GoDoc example for config update",
+        "activity_description": "Write an Example* test demonstrating idiomatic usage of the package to build and sign a channel config update with multiple changes."
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U6 - GoDoc example for channel creation",
+        "activity_description": "Write an Example* test demonstrating idiomatic usage of the package to build and sign a new channel creation transaction."
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Unit tests for new functions",
+        "activity_description": "Table-driven unit tests for A2-A7 covering happy paths, missing fields, invalid input and idempotency on well-formed Config blocks."
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Integration and end-to-end tests",
+        "activity_description": "Tests that apply the produced ConfigUpdates against a live config block and verify the resulting read_set/write_set, and update existing example_test.go to cover the new helpers."
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Self-review, refactor and documentation polish",
+        "activity_description": "Refactor duplicated code, ensure godoc comments on all exported identifiers, run gofmt/vet/lint and finalize the change set for submission."
+      }
+    ],
+    "activities_with_effort": [
+      {
+        "activity_id": "A1",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A2",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A3",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A4",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A5",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A6",
+        "most_likely_effort": 0.5
+      },
+      {
+        "activity_id": "A7",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A8",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A9",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A10",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A11",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A12",
+        "most_likely_effort": 1.5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 16.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

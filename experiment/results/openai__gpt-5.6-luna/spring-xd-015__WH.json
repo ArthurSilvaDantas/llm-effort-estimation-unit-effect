@@ -1,0 +1,199 @@
+{
+  "model_id": "openai/gpt-5.6-luna",
+  "spec_id": "spring-xd-015",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788413543-sp5POjVfBpCDlVOI501X",
+    "object": "chat.completion",
+    "created": 1788413543,
+    "model": "openai/gpt-5.6-luna",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement Kafka functionality through the existing Spring-based messaging abstraction rather than exposing Kafka-specific behavior throughout application code.\",\n    \"Use Java 17-compatible Spring and Kafka client APIs, with Kafka configuration represented as typed properties and validated at startup.\",\n    \"Treat global Kafka settings as defaults and allow deployment-level configuration to override concurrency, compression, acknowledgement, batching, and related options.\",\n    \"Use Kafka producer acknowledgements and consumer acknowledgement callbacks or futures to expose explicit message success and failure outcomes.\",\n    \"Implement requestor/replier communication with correlation identifiers, reply topics, configurable timeouts, and asynchronous completion.\",\n    \"Implement batching using configurable batch size and/or flush interval, while preserving error handling and acknowledgement behavior for the batch.\",\n    \"Use Testcontainers or an equivalent disposable Kafka broker for repeatable acceptance and integration tests in CI.\",\n    \"Manage Sqoop execution as a controllable process or job handle, retaining the process identifier and lifecycle state so that stop operations are idempotent.\",\n    \"Capture Sqoop standard output and standard error through streaming readers and forward them to the application's logging abstraction with job context.\",\n    \"Implement incremental Sqoop loads using a configurable check-column or equivalent Sqoop incremental-import mode, with persisted last-successful state and safe state updates after successful completion.\"\n  ],\n  \"assumptions\": [\n    \"An existing Spring application or integration module, build pipeline, configuration mechanism, logging abstraction, and extension points for Kafka and Sqoop are available; the estimate does not include creating a new framework or product from scratch.\",\n    \"The increment covers implementation, unit tests, integration tests, CI acceptance coverage, documentation, and local verification by one developer.\",\n    \"Kafka broker connectivity, authentication, topic creation, schema registry integration, and production cluster provisioning are outside the increment unless required by existing abstractions.\",\n    \"Kafka request/reply uses topics and correlation identifiers rather than a separate RPC protocol.\",\n    \"Message acknowledgement means that producers can observe broker delivery success and consumers can explicitly acknowledge successful processing, with failures propagated through the existing error mechanism.\",\n    \"Batching applies to message production and/or consumption through the existing messaging API; no new storage system or transactional outbox is required.\",\n    \"Sqoop is invoked through an existing command-line or job-execution integration, and the required Sqoop binaries, JDBC drivers, and database connectivity are available in test or deployment environments.\",\n    \"Sqoop log streaming is limited to process output and error streams; parsing every vendor-specific log format is not required.\",\n    \"Incremental-load state can be stored using an existing configuration or state repository. A new highly available state service is not required.\",\n    \"No substantial backward-incompatible migration is required for existing deployments, and normal code review and release activities are included within the stated implementation and test effort.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture review and detailed design\",\n      \"activity_description\": \"Inspect the existing Spring messaging and Sqoop integration points, define configuration models, lifecycle behavior, compatibility constraints, error semantics, and implementation interfaces for all eight user stories.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Kafka acceptance-test infrastructure\",\n      \"activity_description\": \"Add a repeatable Kafka broker setup for CI, including topic and client configuration, test lifecycle management, readiness checks, cleanup, and baseline producer/consumer acceptance scenarios.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Kafka defaults, overrides, concurrency, and compression\",\n      \"activity_description\": \"Implement typed global Kafka defaults with per-deployment overrides, configure producer compression, configure consumer or listener concurrency, validate values, and integrate the settings with the existing binding lifecycle.\",\n      \"most_likely_effort\": 36\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Kafka acknowledgement support\",\n      \"activity_description\": \"Add configurable producer delivery acknowledgement handling and consumer acknowledgement APIs or callbacks, including success, timeout, retry or failure propagation, resource cleanup, and unit and integration coverage.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Asynchronous requestor and replier bindings\",\n      \"activity_description\": \"Implement bindRequestor and bindReplier support with request and reply topics, correlation identifiers, asynchronous reply completion, timeout handling, concurrent in-flight requests, error replies, and lifecycle cleanup.\",\n      \"most_likely_effort\": 44\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Kafka batching support\",\n      \"activity_description\": \"Implement configurable batch size and flush interval behavior, batch payload handling, partial or whole-batch error semantics, acknowledgement integration, backpressure considerations, and test coverage for normal and boundary cases.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Sqoop job stop and cleanup\",\n      \"activity_description\": \"Track Sqoop job handles and lifecycle state, expose an idempotent stop operation, terminate the underlying job safely, handle already-completed or missing jobs, and release associated resources.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Sqoop log capture and streaming\",\n      \"activity_description\": \"Capture standard output and standard error from Sqoop jobs, stream records to the existing logging mechanism with job context and severity mapping, handle reader shutdown, and test normal and failing jobs.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Sqoop incremental data loading\",\n      \"activity_description\": \"Add configuration for incremental import mode and check columns, load and persist the previous successful watermark, update state only after successful completion, and cover restart, empty-result, and failure scenarios.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and regression testing\",\n      \"activity_description\": \"Run end-to-end tests combining Kafka configuration, acknowledgements, request/reply, batching, concurrency, compression, and Sqoop lifecycle features; fix integration defects and verify backward compatibility.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and configuration examples\",\n      \"activity_description\": \"Document new properties, defaults and overrides, Kafka binding APIs, acknowledgement and batching semantics, request/reply usage, Sqoop stop/log/incremental-load behavior, and representative deployment examples.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"CI integration, packaging, and final verification\",\n      \"activity_description\": \"Update build and CI jobs, add required dependencies and test profiles, verify artifacts and configuration compatibility, perform final static checks, and prepare the increment for release.\",\n      \"most_likely_effort\": 12\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 340\n  }\n}",
+          "refusal": null,
+          "reasoning": null,
+          "reasoning_details": [
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqmQZtLJ_xs30rpQZAUjxhp4Nd_N0OHJvO8FSTsgW6uCQgkkI3HpCxAkQhkuYXS61va71qm5LnN-9Xbwk_4G85xj84C7gM5NSZFB4p1tkTokrm4VUwQiuWHzNio_eNvEv4l9gH4uy4oxk9BUnCtWmNvyZbxAjrIhJk5yp-DTKEWhvG0f5MLAf21XOvgOK90bp9WC2Dy3qM-Lb1sn3-NPGrWwlFRttNkI4Ox0mRNY9uMsZSoIf5Zr5WXoaWtGNDCN8eNRCKC3VmXW-GTUA4qtvOhpzLTXAN4i7SYE8dvYLrTU0mO_G3QsAfpOQY2F-wXzxsSk61Oz6jjS-Rn-26qLBJfWMSepc2vQdmWzD11He16zMc9BuAAC7y-qTjhbFsKpuBeUVCUT5O7HtrMeXB4zqA0MOINhz0P4CqWl6KXjEEnUSI4x3we0l7HLvpto_jsVg2SADkMT0RHdSZo1sbfhzfBp-PiHkcoZVFW2f_gryiOHrQDua-se-jDB0JL5O54YjlMQquFw7PIylBz1b2tF7Gyv9oW30uyQHQvvI9QG8piZtiorrIfRewHAqRYeEuuVge5jUz6ZL7EGelDF9GkQzWKSUzWbpoanj5pxAfsaWmK4fARa9G3COF2p2S8lMsmgks32fm2xA5gDK-eZASrtoUDDBraG2rnH7yi2GQhxmtb1XCFTdv21iY6VvRCuqOodc8RQaUGfoFQl3aXVIOfRKj4djf4rYbKhQ7XKBAu6-u6m_UAAYdv9Nacv3_glhc9e7Vp0wNtiM1ljLOf7Qyp42NQs3aHtHT7qCPe_TZ3LXP0dNB3UORXGY6jGugaa0_Ah1JshqchWta9eEqpi6kM7ZgehiyFi8TD-QCkXcMeAfwwlgGj-KAZ5yQtVgXJcOwhIlUM98qPSZYB-UskUlliA9gt5LwF8bUfNPML45b79nxfF8WxSBfcKefIiE7sAHZqOCSdUUb2MPrAqvTX7bxb_CkIpcO63c67dctBlk-Dl4durysZHg2Dnn1lg_SGa8MBWgfjOOAaIj2TSG7t0M-gZeh_c5SXlvG_jUxFXh0siV2TozTWRbkvCcWaYBKup92KeQKn38haVTe5LG7u83uRKuobn54BDIbVnioq_77EJNnqLc0FVCUDysF8sXUCV0wb4dF-lOXYCT1jf1g7dfuWSTpm5trMBthqhFqxdmE7AEg8vZ2mdKGcYTEgoFRgNfnaeVqxQ4aPFX9cqhNj9bHlSUh6nNlg1vzewrh43fygqFlRDKUsqFKlrDzVNp5-sOgdnSNQqwp-3H9WsAC7rNAk-5O9gmzWBp8TkEp0u16gwd9GyPYmxZ8-9Neb_146mUj77PArgQVVaovV1ATqbpodcpS5XcvzEinVe8qH9utvvEmrtOSIUAqIdupC4oBLTtvvLQ-XxkOso775cyIeGGNorQ3HBdWLehV7IIB4H8upo7_Myj6wEtVKYLCL0IwRg_z_UQ8jjRDsJewmflgWh0cox2YyeYYmk26wF6n6VV_j7yPgABO-5aADsmFrHh9jMBDc6FJibjrGriiqRrJS09zUskR46g9E-wY-OLqyRax8aFZeLJTfnezvlDX6BA2ehcgQEHbsB5rRta0nABUgJdvAhOQAVW2xW0a6pjXWaS2-LPUd3rPchCtA6S8G4SylH63yTECaTiszZBYhmhg8_w8okvL_3w1EQbrqYgkPQWdyPdfK6zFpB3tdEIx1XuzrJfNTPUJ7aTh3bcC2sITKHNwHKzJG8B2I8JssyzBTZalv_XYOcjp9O5tbMnM_WxDfnqZXZpK9yVZySDYjQDJ3zmpN6PkDZ4Sz01INCwmXXc0k87HgzyFZhWmz7i8GYt3LdT0_eLddRNcKAHOVW9uYdop_dNATdP2jmSlvlxafrHZjj3x6b8vfP2rAwxE57kfGkoLAIL-iw8h5QgV5pPFRFA7mjldMKl0-bHUYgAqjgk--LPCwGTKpjmEucSAdfqq8dEtGSVk37XDUhS_wKlI2jjTZXfo0lvr4rq8IGuSUcmtylEGpbV1uQeXyqarR3bdINHkq5xyr4MXgKjJf1mFBMoyTfG5BsEklWpXMgSyJiGVsgVdN3K0U1uDuj2bf00gfOf3fvDXuVmmrK02u6H2qCpmFv4uWt-OXh3SAli5uDxHy99TislBHp0oEXNk9eeM3R6-15vMDJAPi2sxY5uDyM_bFRP2TRxbc1wFlz8o-DPL3UCIeZ2HFczuM8LC9gPIOTrLFWUf6goK0_N4pff_OZyiGl3hmviIg-ay_u9CY3GUGay4iCmLGX5IaW3NnYiifKRi93x5et8Roi0jeM-HwRwK3N2fQJqdNq9AL0uMklebp7MMwu-b_DLXte_ur8Vd7PRY21ERD7dem4UQFwt4gNGpZmz0msoUWjm77uzrDkMc3hQhZYFWLcp4LOtcUTdbGHGN39L6kt75f8iSF17NaSSPx-qbnTcuXMBuux1NCkT02EUtdKT0NpszkLSUw6GRxdKE9QCNZtvv_pnXCOJsPSAZ414yjqLZEpOVkNbRqtD0yEUhboRRvn9hDTRLFi6tJIGOfv7CaUCigIU7uiwJQwXiwT8JWcvJDfmWM449bOmcX8zzc-5soC-mqqtrGfD7HLqUEeXxE16sm-FTkNhqaW8yktyd1g2XRpCKd_kfKj7-hl51LuMf8VyGecaR-OVMWeNKCG22IxikQgmKr78Z85jXWj1a9zwBFVlpXXdWzXDMYxK7hp3ezpgMGyvwILxYFXz5AYhtdRys2CZ5xakLKK5IAViB2kOFZwDMV2wNjTUmtUYwwGta7Awk6Aso89rcN4eCGxamlRVbACrwvvX45Fstk_mij0vxYTUiQqu4JcbEyBe0e-l0CGIL-BzBvqdSYmU26WI0RlMa1yIGl5JTMWzsAN-h7-cFg1NxM6I38R0PjdVriNK3HGnrDUy5NxvexoPJx71WaWtSn2mNiBMRo4RA66ZHZ4RL0odsXYGGRk9Ya2F7Oq9RkgGu60DjVydXGBgxBXBvuXThqvvdJDMD2ehDDbQ_CrZ6uKM_-TjB1PD4FE2JPLOjEFmEmwW293OLrBCJvsKR5WH-_4KJLK9YKALfSBInI81M5B-X8loF_ASGDerXQS9z0EugEiphJEtMBtsxf6EpxDLVMd6wrORm-0S5NfF2fqJ-vVVL30znEc08agFHPuBXDD2R0LWAzgwZ_G9FLXPeOy3k1YaLzX2elc8w2RSfqWpoMCLxFVbSnfQZr2dU5dG7rfoGeOT5kEEu3Z8LwbyFZFfPMzFe63RXr_5b6lvlU7j7UnPaUKJRETvbH30n7s4MLRc0k_ADyEX_4JX9gajsRTU4VLRzlSfOwYvck9dB66LkzqnyTifsmDIvKX-L3y_I7o818IErSHU4LRYsi5Q0QgbnBQnSMYevCRw3keEGBJSLj5EgZ2NaH_Jf24_Vzjoohmf6fJ0NZ3wng-q3hOiU1hTISIMsdulq1kBaS6QNJWGo7-4tXlDLaC88-ef-YFpqvGCODpnGHhgFzkGPGD_U7cQoXWqxxjz8oXvWi4Tv-usMSfo_XdZKpPfVA3c0Vx76RDo5ZDGSwq5f5zthyf_jAhA8M8XYQ-FWwWdYnDUZCnR-0qX06RphmXbvpw8x6b_65Pj3Vk09SNBIlybeC7m_NK9TrrpA1mxyaiBYEYrWwYNvWP1Xni-oYAigWMJso0L092T5HInMIzLhBt5se9AJUAcKRiBa0l6fu8SMUB_B6xKVR6_3Qe5Z331sGhan6uFp1I5uIp5MLhh6DfgynKFtCjQ-fcQ_Jj64uaEtT55RkckYApBsJCb43QadVLTOCrt14x0=.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtbHVuYS0yMDI2MDcwOXxvcGVuYWkifQ",
+              "format": "openai-responses-v1",
+              "id": "rs_00f079dfecb06bd3016a990667e37487d1bd91c7c18dade885",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1204,
+      "completion_tokens": 1945,
+      "total_tokens": 3149,
+      "cost": 0.00263485,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 1201,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00263485,
+        "upstream_inference_prompt_cost": 0.00030085,
+        "upstream_inference_completions_cost": 0.002334
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 399,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement Kafka functionality through the existing Spring-based messaging abstraction rather than exposing Kafka-specific behavior throughout application code.\",\n    \"Use Java 17-compatible Spring and Kafka client APIs, with Kafka configuration represented as typed properties and validated at startup.\",\n    \"Treat global Kafka settings as defaults and allow deployment-level configuration to override concurrency, compression, acknowledgement, batching, and related options.\",\n    \"Use Kafka producer acknowledgements and consumer acknowledgement callbacks or futures to expose explicit message success and failure outcomes.\",\n    \"Implement requestor/replier communication with correlation identifiers, reply topics, configurable timeouts, and asynchronous completion.\",\n    \"Implement batching using configurable batch size and/or flush interval, while preserving error handling and acknowledgement behavior for the batch.\",\n    \"Use Testcontainers or an equivalent disposable Kafka broker for repeatable acceptance and integration tests in CI.\",\n    \"Manage Sqoop execution as a controllable process or job handle, retaining the process identifier and lifecycle state so that stop operations are idempotent.\",\n    \"Capture Sqoop standard output and standard error through streaming readers and forward them to the application's logging abstraction with job context.\",\n    \"Implement incremental Sqoop loads using a configurable check-column or equivalent Sqoop incremental-import mode, with persisted last-successful state and safe state updates after successful completion.\"\n  ],\n  \"assumptions\": [\n    \"An existing Spring application or integration module, build pipeline, configuration mechanism, logging abstraction, and extension points for Kafka and Sqoop are available; the estimate does not include creating a new framework or product from scratch.\",\n    \"The increment covers implementation, unit tests, integration tests, CI acceptance coverage, documentation, and local verification by one developer.\",\n    \"Kafka broker connectivity, authentication, topic creation, schema registry integration, and production cluster provisioning are outside the increment unless required by existing abstractions.\",\n    \"Kafka request/reply uses topics and correlation identifiers rather than a separate RPC protocol.\",\n    \"Message acknowledgement means that producers can observe broker delivery success and consumers can explicitly acknowledge successful processing, with failures propagated through the existing error mechanism.\",\n    \"Batching applies to message production and/or consumption through the existing messaging API; no new storage system or transactional outbox is required.\",\n    \"Sqoop is invoked through an existing command-line or job-execution integration, and the required Sqoop binaries, JDBC drivers, and database connectivity are available in test or deployment environments.\",\n    \"Sqoop log streaming is limited to process output and error streams; parsing every vendor-specific log format is not required.\",\n    \"Incremental-load state can be stored using an existing configuration or state repository. A new highly available state service is not required.\",\n    \"No substantial backward-incompatible migration is required for existing deployments, and normal code review and release activities are included within the stated implementation and test effort.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture review and detailed design\",\n      \"activity_description\": \"Inspect the existing Spring messaging and Sqoop integration points, define configuration models, lifecycle behavior, compatibility constraints, error semantics, and implementation interfaces for all eight user stories.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Kafka acceptance-test infrastructure\",\n      \"activity_description\": \"Add a repeatable Kafka broker setup for CI, including topic and client configuration, test lifecycle management, readiness checks, cleanup, and baseline producer/consumer acceptance scenarios.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Kafka defaults, overrides, concurrency, and compression\",\n      \"activity_description\": \"Implement typed global Kafka defaults with per-deployment overrides, configure producer compression, configure consumer or listener concurrency, validate values, and integrate the settings with the existing binding lifecycle.\",\n      \"most_likely_effort\": 36\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Kafka acknowledgement support\",\n      \"activity_description\": \"Add configurable producer delivery acknowledgement handling and consumer acknowledgement APIs or callbacks, including success, timeout, retry or failure propagation, resource cleanup, and unit and integration coverage.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Asynchronous requestor and replier bindings\",\n      \"activity_description\": \"Implement bindRequestor and bindReplier support with request and reply topics, correlation identifiers, asynchronous reply completion, timeout handling, concurrent in-flight requests, error replies, and lifecycle cleanup.\",\n      \"most_likely_effort\": 44\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Kafka batching support\",\n      \"activity_description\": \"Implement configurable batch size and flush interval behavior, batch payload handling, partial or whole-batch error semantics, acknowledgement integration, backpressure considerations, and test coverage for normal and boundary cases.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Sqoop job stop and cleanup\",\n      \"activity_description\": \"Track Sqoop job handles and lifecycle state, expose an idempotent stop operation, terminate the underlying job safely, handle already-completed or missing jobs, and release associated resources.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Sqoop log capture and streaming\",\n      \"activity_description\": \"Capture standard output and standard error from Sqoop jobs, stream records to the existing logging mechanism with job context and severity mapping, handle reader shutdown, and test normal and failing jobs.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Sqoop incremental data loading\",\n      \"activity_description\": \"Add configuration for incremental import mode and check columns, load and persist the previous successful watermark, update state only after successful completion, and cover restart, empty-result, and failure scenarios.\",\n      \"most_likely_effort\": 32\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration and regression testing\",\n      \"activity_description\": \"Run end-to-end tests combining Kafka configuration, acknowledgements, request/reply, batching, concurrency, compression, and Sqoop lifecycle features; fix integration defects and verify backward compatibility.\",\n      \"most_likely_effort\": 40\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and configuration examples\",\n      \"activity_description\": \"Document new properties, defaults and overrides, Kafka binding APIs, acknowledgement and batching semantics, request/reply usage, Sqoop stop/log/incremental-load behavior, and representative deployment examples.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"CI integration, packaging, and final verification\",\n      \"activity_description\": \"Update build and CI jobs, add required dependencies and test profiles, verify artifacts and configuration compatibility, perform final static checks, and prepare the increment for release.\",\n      \"most_likely_effort\": 12\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 340\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1204,
+    "completion_tokens": 1945,
+    "total_tokens": 3149,
+    "cost": 0.00263485,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 1201,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00263485,
+      "upstream_inference_prompt_cost": 0.00030085,
+      "upstream_inference_completions_cost": 0.002334
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 399,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "openai/gpt-5.6-luna",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement Kafka functionality through the existing Spring-based messaging abstraction rather than exposing Kafka-specific behavior throughout application code.",
+      "Use Java 17-compatible Spring and Kafka client APIs, with Kafka configuration represented as typed properties and validated at startup.",
+      "Treat global Kafka settings as defaults and allow deployment-level configuration to override concurrency, compression, acknowledgement, batching, and related options.",
+      "Use Kafka producer acknowledgements and consumer acknowledgement callbacks or futures to expose explicit message success and failure outcomes.",
+      "Implement requestor/replier communication with correlation identifiers, reply topics, configurable timeouts, and asynchronous completion.",
+      "Implement batching using configurable batch size and/or flush interval, while preserving error handling and acknowledgement behavior for the batch.",
+      "Use Testcontainers or an equivalent disposable Kafka broker for repeatable acceptance and integration tests in CI.",
+      "Manage Sqoop execution as a controllable process or job handle, retaining the process identifier and lifecycle state so that stop operations are idempotent.",
+      "Capture Sqoop standard output and standard error through streaming readers and forward them to the application's logging abstraction with job context.",
+      "Implement incremental Sqoop loads using a configurable check-column or equivalent Sqoop incremental-import mode, with persisted last-successful state and safe state updates after successful completion."
+    ],
+    "assumptions": [
+      "An existing Spring application or integration module, build pipeline, configuration mechanism, logging abstraction, and extension points for Kafka and Sqoop are available; the estimate does not include creating a new framework or product from scratch.",
+      "The increment covers implementation, unit tests, integration tests, CI acceptance coverage, documentation, and local verification by one developer.",
+      "Kafka broker connectivity, authentication, topic creation, schema registry integration, and production cluster provisioning are outside the increment unless required by existing abstractions.",
+      "Kafka request/reply uses topics and correlation identifiers rather than a separate RPC protocol.",
+      "Message acknowledgement means that producers can observe broker delivery success and consumers can explicitly acknowledge successful processing, with failures propagated through the existing error mechanism.",
+      "Batching applies to message production and/or consumption through the existing messaging API; no new storage system or transactional outbox is required.",
+      "Sqoop is invoked through an existing command-line or job-execution integration, and the required Sqoop binaries, JDBC drivers, and database connectivity are available in test or deployment environments.",
+      "Sqoop log streaming is limited to process output and error streams; parsing every vendor-specific log format is not required.",
+      "Incremental-load state can be stored using an existing configuration or state repository. A new highly available state service is not required.",
+      "No substantial backward-incompatible migration is required for existing deployments, and normal code review and release activities are included within the stated implementation and test effort."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Architecture review and detailed design",
+        "activity_description": "Inspect the existing Spring messaging and Sqoop integration points, define configuration models, lifecycle behavior, compatibility constraints, error semantics, and implementation interfaces for all eight user stories.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Kafka acceptance-test infrastructure",
+        "activity_description": "Add a repeatable Kafka broker setup for CI, including topic and client configuration, test lifecycle management, readiness checks, cleanup, and baseline producer/consumer acceptance scenarios.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Kafka defaults, overrides, concurrency, and compression",
+        "activity_description": "Implement typed global Kafka defaults with per-deployment overrides, configure producer compression, configure consumer or listener concurrency, validate values, and integrate the settings with the existing binding lifecycle.",
+        "most_likely_effort": 36
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Kafka acknowledgement support",
+        "activity_description": "Add configurable producer delivery acknowledgement handling and consumer acknowledgement APIs or callbacks, including success, timeout, retry or failure propagation, resource cleanup, and unit and integration coverage.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Asynchronous requestor and replier bindings",
+        "activity_description": "Implement bindRequestor and bindReplier support with request and reply topics, correlation identifiers, asynchronous reply completion, timeout handling, concurrent in-flight requests, error replies, and lifecycle cleanup.",
+        "most_likely_effort": 44
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Kafka batching support",
+        "activity_description": "Implement configurable batch size and flush interval behavior, batch payload handling, partial or whole-batch error semantics, acknowledgement integration, backpressure considerations, and test coverage for normal and boundary cases.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Sqoop job stop and cleanup",
+        "activity_description": "Track Sqoop job handles and lifecycle state, expose an idempotent stop operation, terminate the underlying job safely, handle already-completed or missing jobs, and release associated resources.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Sqoop log capture and streaming",
+        "activity_description": "Capture standard output and standard error from Sqoop jobs, stream records to the existing logging mechanism with job context and severity mapping, handle reader shutdown, and test normal and failing jobs.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Sqoop incremental data loading",
+        "activity_description": "Add configuration for incremental import mode and check columns, load and persist the previous successful watermark, update state only after successful completion, and cover restart, empty-result, and failure scenarios.",
+        "most_likely_effort": 32
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature integration and regression testing",
+        "activity_description": "Run end-to-end tests combining Kafka configuration, acknowledgements, request/reply, batching, concurrency, compression, and Sqoop lifecycle features; fix integration defects and verify backward compatibility.",
+        "most_likely_effort": 40
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation and configuration examples",
+        "activity_description": "Document new properties, defaults and overrides, Kafka binding APIs, acknowledgement and batching semantics, request/reply usage, Sqoop stop/log/incremental-load behavior, and representative deployment examples.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "CI integration, packaging, and final verification",
+        "activity_description": "Update build and CI jobs, add required dependencies and test profiles, verify artifacts and configuration compatibility, perform final static checks, and prepare the increment for release.",
+        "most_likely_effort": 12
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 340
+    }
+  }
+}

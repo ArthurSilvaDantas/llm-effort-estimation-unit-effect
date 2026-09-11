@@ -1,0 +1,263 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-003",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788415964-pdQ9CRJtad7FmGXSCcYK",
+    "object": "chat.completion",
+    "created": 1788415964,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Spring Boot 3.x as the application foundation with embedded server on port 9393.\",\n    \"Use Spring Security as the unified security framework, with profile-based switching between file-based (U1) and LDAP (U2) authentication providers.\",\n    \"Implement role-based access control (U3) using Spring Security's HttpSecurity and method-level @PreAuthorize annotations with ADMIN and VIEWER authorities.\",\n    \"Implement the HDFS (U4), HBase (U6), and File Roll (U7) sinks as Spring Integration channel adapters following the existing source/sink pattern.\",\n    \"For U4 (Kerberized HDFS), use Hadoop's UserGroupInformation with Kerberos keytab and krb5.conf provided via externalized configuration.\",\n    \"For U6 (HBase), use the standard HBase Java client (ConnectionFactory) wrapped in a Spring Integration MessageHandler.\",\n    \"For U7 (File Roll), use Spring Integration's built-in FileRollingMessageHandler with size- and time-based rolling triggers.\",\n    \"For U8 (JMX source), use Spring Integration's JMX support (NotificationPublishingMessageHandler / NotificationListeningMessageSource) to publish notifications to a channel.\",\n    \"U5 is a spike/scoping activity per its acceptance criteria — deliverable is a design document only, no production code.\",\n    \"Use Maven multi-module structure if needed; single module assumed for this estimate.\",\n    \"Externalize all endpoint, security, sink, and source configuration in application.yml with profile-specific overrides.\"\n  ],\n  \"assumptions\": [\n    \"A working Spring Boot base project skeleton already exists (or can be created quickly); no greenfield project bootstrap from scratch.\",\n    \"Developer is experienced with Spring Boot, Spring Security, and Spring Integration.\",\n    \"Java 17+ toolchain is available and matches Spring Framework 6.x requirements.\",\n    \"Test infrastructure for HDFS (with Kerberos), HBase, LDAP, and JMX beans is available or can be stood up via Testcontainers / embedded servers.\",\n    \"Kerberos keytabs and krb5.conf files for U4 will be supplied by operations/QA; the developer only writes the integration code.\",\n    \"U1 and U2 are mutually exclusive authentication providers toggled via Spring profiles, not both active simultaneously.\",\n    \"U3 builds on top of whichever authentication mechanism (U1 or U2) is active, using role/authority mapping.\",\n    \"For U5, the spike covers research, design, and documentation only — implementation is out of scope for this increment.\",\n    \"Existing endpoint surface (the listed endpoints on port 9393) is already implemented; this increment only adds security and source/sink modules around it.\",\n    \"Unit tests, integration tests, and minimal user-facing documentation are included in each activity's effort.\",\n    \"No production deployment, performance tuning, or large-scale QA is included in this estimate.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project Setup and Base Infrastructure\",\n      \"activity_description\": \"Configure Spring Boot application, Maven build, dependencies (Spring Boot, Spring Security, Spring Integration, Hadoop, HBase client), externalized configuration structure, and base application bootstrapping on port 9393.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Common Security Framework\",\n      \"activity_description\": \"Set up the shared Spring Security configuration infrastructure: SecurityFilterChain, AuthenticationManager, password encoding, profile-driven provider selection, and base URL protection pattern applied to all listed endpoints.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - File-based Security Configuration\",\n      \"activity_description\": \"Implement file-based user authentication using Spring Security's user-details-service backed by an externalized properties/YAML file. Include sample users with roles, password encoding, and integration tests.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U2 - LDAP-based Security Configuration\",\n      \"activity_description\": \"Implement LDAP authentication using Spring Security's LdapAuthenticationProvider, configurable LDAP URL, user search base, user search filter, and group/authority mapping. Include integration tests using an embedded LDAP server (UnboundID/ApacheDS).\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U3 - Role-based Access Control (Admin/Viewer)\",\n      \"activity_description\": \"Define ADMIN and VIEWER roles, configure authorization rules in HttpSecurity (URL-level) and @PreAuthorize (method-level where applicable), map LDAP groups/file users to these roles, and add tests covering both roles.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U4 - Kerberized HDFS Sink\",\n      \"activity_description\": \"Build a Spring Integration channel adapter sink that writes payload data to HDFS using the Hadoop FileSystem API, with Kerberos authentication via UserGroupInformation.loginUserFromKeytab. Externalize Kerberos principal, keytab path, krb5.conf path, NameNode URI, and target path. Include unit tests and an integration test using a Kerberized mini-HDFS cluster (e.g., MiniDFSCluster with Kerberos).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U5 - Mass Database Ingestion Spike\",\n      \"activity_description\": \"Research existing options for mass data ingestion from heterogeneous databases (Debezium, JDBC batching, database-specific CDC, Spring Cloud Stream + DB sources), collaborate with the team to determine the target design, and produce a written design specification document covering integration options, trade-offs, and recommendations. No production code is delivered.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U6 - HBase Sink\",\n      \"activity_description\": \"Build a Spring Integration MessageHandler sink that writes payload data to HBase tables using the HBase Java client (Connection, Table, Put). Externalize ZooKeeper quorum, ZNode parent, table name, column family, and row-key strategy. Include unit tests and integration tests against an embedded or containerized HBase instance.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U7 - File Roll Sink\",\n      \"activity_description\": \"Build a Spring Integration FileRollingMessageHandler-based sink that writes events to the local file system with rolling triggered by file size and/or time. Externalize directory, file name pattern, max file size, and rotation interval. Include unit and integration tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U8 - JMX Source Module\",\n      \"activity_description\": \"Build a Spring Integration JMX source that subscribes to JMX notifications from one or more MBeans and publishes them as messages to a channel, using NotificationListeningMessageSource (or equivalent). Externalize MBean ObjectNames, notification filters, and output channel. Include unit and integration tests with a sample MBean.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration and End-to-End Testing\",\n      \"activity_description\": \"Wire all modules together, run end-to-end test scenarios covering security (file and LDAP), role enforcement, and each sink/source module. Fix integration defects uncovered across module boundaries.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and Configuration Examples\",\n      \"activity_description\": \"Produce README updates, per-module configuration reference, security setup guide (file-based and LDAP), and example properties snippets for HDFS (Kerberos), HBase, File Roll, and JMX source modules.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 29.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully. The specification describes a Spring-based application that needs to implement several user stories (U1-U8). Let me break this down:\n\n1. **U1**: File-based security configuration for endpoints (port 9393)\n2. **U2**: LDAP-based security configuration for endpoints\n3. **U3**: Default access control with Admin/Viewer roles\n4. **U4**: Kerberized HDFS sink for Hadoop\n5. **U5**: Mass data ingestion from various databases (spike/research)\n6. **U6**: HBase sink for Big Data\n7. **U7**: File Roll sink for local file system\n8. **U8**: JMX source module\n\nThis appears to be a data ingestion/streaming application built on Spring Integration, similar to Spring Cloud Data Flow or a custom data pipeline application.\n\nLet me think about the activities needed:\n\n**Project setup and shared infrastructure:**\n- Project setup, dependency management, build configuration\n- Shared base configuration for endpoints (port 9393)\n\n**Security-related (U1, U2, U3):**\n- U1: File-based security configuration (Spring Security in-memory or file-based users)\n- U2: LDAP-based security configuration\n- U3: Role-based access control (Admin/Viewer)\n- These can share a common security framework setup\n\n**Sink-related (U4, U6, U7):**\n- U4: Kerberized HDFS sink\n- U6: HBase sink\n- U7: File Roll sink\n\n**Source-related (U8):**\n- U8: JMX source module\n\n**Research/Spike (U5):**\n- U5: Database ingestion spike - mostly research and design documentation\n\nLet me also consider:\n- Integration testing\n- Unit testing\n- Documentation\n- Configuration management\n\nLet me estimate the workdays for each activity:\n\n1. **Project Setup & Base Configuration** (shared for all): 2 days\n   - Maven/Gradle setup, Spring Boot, base application\n\n2. **U1 - File-based Security Configuration**: 2 days\n   - Spring Security configuration with file-based user details\n   - Security filter chain for endpoints on port 9393\n   - Test configurations\n\n3. **U2 - LDAP-based Security Configuration**: 3 days\n   - Spring Security LDAP configuration\n   - LDAP authentication provider setup\n   - Connection management and testing\n\n4. **U3 - Role-based Access Control**: 2 days\n   - Method-level security\n   - Role-based authorization (Admin/Viewer)\n   - Test with both security mechanisms\n\n5. **U4 - Kerberized HDFS Sink**: 4 days\n   - Hadoop HDFS integration\n   - Kerberos authentication setup\n   - Sink module for writing to HDFS\n   - Testing (may need kerberos infrastructure)\n\n6. **U5 - Database Mass Ingestion Spike**: 3 days\n   - Research existing options (Debezium, etc.)\n   - Design document\n   - Collaboration meetings\n\n7. **U6 - HBase Sink**: 3 days\n   - HBase client integration\n   - Spring Integration channel adapter\n   - Testing\n\n8. **U7 - File Roll Sink**: 2 days\n   - File rolling logic (size/time-based)\n   - Spring Integration file adapter\n   - Testing\n\n9. **U8 - JMX Source Module**: 3 days\n   - JMX notification listener\n   - Spring Integration JMX adapter\n   - Publishing to channels\n\n10. **Integration Testing & Documentation**: 3 days\n    - End-to-end testing\n    - User documentation\n    - Configuration examples\n\nLet me total: 2 + 2 + 3 + 2 + 4 + 3 + 3 + 2 + 3 + 3 = 27 days\n\nLet me reconsider and think more carefully. This is a data ingestion/streaming application (likely Spring Cloud Data Flow or similar). The endpoints on port 9393 suggest this is a management/monitoring REST API.\n\nLet me re-estimate more carefully:\n\n**Activities:**\n\n1. **A1: Project Setup & Base Infrastructure** - Set up Spring Boot project, dependencies, build configuration, base application class, port 9393 server configuration\n   - Estimate: 2 days\n\n2. **A2: Common Security Framework Setup** - Set up Spring Security infrastructure, abstract security configuration, security filter chain base\n   - Estimate: 2 days\n\n3. **A3: U1 - File-based Security Implementation** - In-memory/file-based user authentication, integration with security framework\n   - Estimate: 1.5 days\n\n4. **A4: U2 - LDAP Security Implementation** - LDAP authentication provider, user search base configuration, group authorities\n   - Estimate: 2.5 days\n\n5. **A5: U3 - Role-based Access Control** - Admin/Viewer roles, @PreAuthorize or HttpSecurity role matchers\n   - Estimate: 1.5 days\n\n6. **A6: U4 - Kerberized HDFS Sink** - Hadoop dependencies, Kerberos config (krb5.conf, keytabs), HDFS writer module\n   - Estimate: 4 days\n\n7. **A7: U5 - Database Ingestion Spike** - Research, design, documentation (no actual code per spec)\n   - Estimate: 3 days\n\n8. **A8: U6 - HBase Sink** - HBase client, Spring Integration HBase channel adapter\n   - Estimate: 3 days\n\n9. **A9: U7 - File Roll Sink** - File rolling sink with size/time-based triggers\n   - Estimate: 2 days\n\n10. **A10: U8 - JMX Source Module** - JMX notification subscription, channel adapter\n    - Estimate: 3 days\n\n11. **A11: Integration Testing** - Test all components together\n    - Estimate: 3 days\n\n12. **A12: Documentation & Configuration Examples** - User docs, configuration samples\n    - Estimate: 2 days\n\nTotal: 2 + 2 + 1.5 + 2.5 + 1.5 + 4 + 3 + 3 + 2 + 3 + 3 + 2 = 29.5 days\n\nLet me round and finalize. I'll go with whole or half days.\n\nActually, let me reconsider the technical decisions:\n\n**Technical decisions:**\n- Use Spring Boot as the foundation\n- Use Spring Security for authentication/authorization\n- Use Spring Integration for the source/sink modules\n- Use Spring Data or direct clients for HDFS, HBase\n- Use Spring Boot's built-in LDAP support via Spring Security\n- JMX integration via Spring Integration JMX adapter\n- File-based auth using Spring Security's user details service backed by properties file\n\n**Assumptions:**\n- Development environment has access to HDFS, HBase, LDAP servers (or test instances)\n- Developer has prior experience with Spring ecosystem\n- Existing project structure/parent project to extend\n- Java 17+ available\n- The spike (U5) results in design docs only, not implementation\n- Kerberos keytabs and krb5.conf provided/configured\n- The application is a single Spring Boot app serving all endpoints\n- Default profile uses file-based security, other profiles can switch to LDAP\n\nLet me finalize my estimates with cleaner numbers:\n\n1. A1: Project Setup & Base Infrastructure - 2 days\n2. A2: Common Security Framework - 2 days\n3. A3: U1 File-based Security - 1.5 days\n4. A4: U2 LDAP Security - 2.5 days\n5. A5: U3 Role-based Access Control - 1.5 days\n6. A6: U4 Kerberized HDFS Sink - 4 days\n7. A7: U5 Database Ingestion Spike - 3 days\n8. A8: U6 HBase Sink - 3 days\n9. A9: U7 File Roll Sink - 2 days\n10. A10: U8 JMX Source Module - 3 days\n11. A11: Integration Testing - 3 days\n12. A12: Documentation - 2 days\n\nTotal: 29.5 days\n\nLet me double-check the WBS approach. The activities should be discrete and necessary to deliver the software increment. Let me restructure:\n\nActually, I think a slightly better breakdown is:\n\n1. Project Setup & Shared Infrastructure (2)\n2. Common Security Configuration (2)\n3. U1: File-based Security (1.5)\n4. U2: LDAP Security (2.5)\n5. U3: Role-based Access Control (1.5)\n6. U4: Kerberized HDFS Sink (4)\n7. U5: Mass Ingestion Spike (3)\n8. U6: HBase Sink (3)\n9. U7: File Roll Sink (2)\n10. U8: JMX Source (3)\n11. Integration Testing (3)\n12. Documentation (2)\n\nTotal = 29.5 days\n\nI'll go with this. Let me format the JSON response.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully. The specification describes a Spring-based application that needs to implement several user stories (U1-U8). Let me break this down:\n\n1. **U1**: File-based security configuration for endpoints (port 9393)\n2. **U2**: LDAP-based security configuration for endpoints\n3. **U3**: Default access control with Admin/Viewer roles\n4. **U4**: Kerberized HDFS sink for Hadoop\n5. **U5**: Mass data ingestion from various databases (spike/research)\n6. **U6**: HBase sink for Big Data\n7. **U7**: File Roll sink for local file system\n8. **U8**: JMX source module\n\nThis appears to be a data ingestion/streaming application built on Spring Integration, similar to Spring Cloud Data Flow or a custom data pipeline application.\n\nLet me think about the activities needed:\n\n**Project setup and shared infrastructure:**\n- Project setup, dependency management, build configuration\n- Shared base configuration for endpoints (port 9393)\n\n**Security-related (U1, U2, U3):**\n- U1: File-based security configuration (Spring Security in-memory or file-based users)\n- U2: LDAP-based security configuration\n- U3: Role-based access control (Admin/Viewer)\n- These can share a common security framework setup\n\n**Sink-related (U4, U6, U7):**\n- U4: Kerberized HDFS sink\n- U6: HBase sink\n- U7: File Roll sink\n\n**Source-related (U8):**\n- U8: JMX source module\n\n**Research/Spike (U5):**\n- U5: Database ingestion spike - mostly research and design documentation\n\nLet me also consider:\n- Integration testing\n- Unit testing\n- Documentation\n- Configuration management\n\nLet me estimate the workdays for each activity:\n\n1. **Project Setup & Base Configuration** (shared for all): 2 days\n   - Maven/Gradle setup, Spring Boot, base application\n\n2. **U1 - File-based Security Configuration**: 2 days\n   - Spring Security configuration with file-based user details\n   - Security filter chain for endpoints on port 9393\n   - Test configurations\n\n3. **U2 - LDAP-based Security Configuration**: 3 days\n   - Spring Security LDAP configuration\n   - LDAP authentication provider setup\n   - Connection management and testing\n\n4. **U3 - Role-based Access Control**: 2 days\n   - Method-level security\n   - Role-based authorization (Admin/Viewer)\n   - Test with both security mechanisms\n\n5. **U4 - Kerberized HDFS Sink**: 4 days\n   - Hadoop HDFS integration\n   - Kerberos authentication setup\n   - Sink module for writing to HDFS\n   - Testing (may need kerberos infrastructure)\n\n6. **U5 - Database Mass Ingestion Spike**: 3 days\n   - Research existing options (Debezium, etc.)\n   - Design document\n   - Collaboration meetings\n\n7. **U6 - HBase Sink**: 3 days\n   - HBase client integration\n   - Spring Integration channel adapter\n   - Testing\n\n8. **U7 - File Roll Sink**: 2 days\n   - File rolling logic (size/time-based)\n   - Spring Integration file adapter\n   - Testing\n\n9. **U8 - JMX Source Module**: 3 days\n   - JMX notification listener\n   - Spring Integration JMX adapter\n   - Publishing to channels\n\n10. **Integration Testing & Documentation**: 3 days\n    - End-to-end testing\n    - User documentation\n    - Configuration examples\n\nLet me total: 2 + 2 + 3 + 2 + 4 + 3 + 3 + 2 + 3 + 3 = 27 days\n\nLet me reconsider and think more carefully. This is a data ingestion/streaming application (likely Spring Cloud Data Flow or similar). The endpoints on port 9393 suggest this is a management/monitoring REST API.\n\nLet me re-estimate more carefully:\n\n**Activities:**\n\n1. **A1: Project Setup & Base Infrastructure** - Set up Spring Boot project, dependencies, build configuration, base application class, port 9393 server configuration\n   - Estimate: 2 days\n\n2. **A2: Common Security Framework Setup** - Set up Spring Security infrastructure, abstract security configuration, security filter chain base\n   - Estimate: 2 days\n\n3. **A3: U1 - File-based Security Implementation** - In-memory/file-based user authentication, integration with security framework\n   - Estimate: 1.5 days\n\n4. **A4: U2 - LDAP Security Implementation** - LDAP authentication provider, user search base configuration, group authorities\n   - Estimate: 2.5 days\n\n5. **A5: U3 - Role-based Access Control** - Admin/Viewer roles, @PreAuthorize or HttpSecurity role matchers\n   - Estimate: 1.5 days\n\n6. **A6: U4 - Kerberized HDFS Sink** - Hadoop dependencies, Kerberos config (krb5.conf, keytabs), HDFS writer module\n   - Estimate: 4 days\n\n7. **A7: U5 - Database Ingestion Spike** - Research, design, documentation (no actual code per spec)\n   - Estimate: 3 days\n\n8. **A8: U6 - HBase Sink** - HBase client, Spring Integration HBase channel adapter\n   - Estimate: 3 days\n\n9. **A9: U7 - File Roll Sink** - File rolling sink with size/time-based triggers\n   - Estimate: 2 days\n\n10. **A10: U8 - JMX Source Module** - JMX notification subscription, channel adapter\n    - Estimate: 3 days\n\n11. **A11: Integration Testing** - Test all components together\n    - Estimate: 3 days\n\n12. **A12: Documentation & Configuration Examples** - User docs, configuration samples\n    - Estimate: 2 days\n\nTotal: 2 + 2 + 1.5 + 2.5 + 1.5 + 4 + 3 + 3 + 2 + 3 + 3 + 2 = 29.5 days\n\nLet me round and finalize. I'll go with whole or half days.\n\nActually, let me reconsider the technical decisions:\n\n**Technical decisions:**\n- Use Spring Boot as the foundation\n- Use Spring Security for authentication/authorization\n- Use Spring Integration for the source/sink modules\n- Use Spring Data or direct clients for HDFS, HBase\n- Use Spring Boot's built-in LDAP support via Spring Security\n- JMX integration via Spring Integration JMX adapter\n- File-based auth using Spring Security's user details service backed by properties file\n\n**Assumptions:**\n- Development environment has access to HDFS, HBase, LDAP servers (or test instances)\n- Developer has prior experience with Spring ecosystem\n- Existing project structure/parent project to extend\n- Java 17+ available\n- The spike (U5) results in design docs only, not implementation\n- Kerberos keytabs and krb5.conf provided/configured\n- The application is a single Spring Boot app serving all endpoints\n- Default profile uses file-based security, other profiles can switch to LDAP\n\nLet me finalize my estimates with cleaner numbers:\n\n1. A1: Project Setup & Base Infrastructure - 2 days\n2. A2: Common Security Framework - 2 days\n3. A3: U1 File-based Security - 1.5 days\n4. A4: U2 LDAP Security - 2.5 days\n5. A5: U3 Role-based Access Control - 1.5 days\n6. A6: U4 Kerberized HDFS Sink - 4 days\n7. A7: U5 Database Ingestion Spike - 3 days\n8. A8: U6 HBase Sink - 3 days\n9. A9: U7 File Roll Sink - 2 days\n10. A10: U8 JMX Source Module - 3 days\n11. A11: Integration Testing - 3 days\n12. A12: Documentation - 2 days\n\nTotal: 29.5 days\n\nLet me double-check the WBS approach. The activities should be discrete and necessary to deliver the software increment. Let me restructure:\n\nActually, I think a slightly better breakdown is:\n\n1. Project Setup & Shared Infrastructure (2)\n2. Common Security Configuration (2)\n3. U1: File-based Security (1.5)\n4. U2: LDAP Security (2.5)\n5. U3: Role-based Access Control (1.5)\n6. U4: Kerberized HDFS Sink (4)\n7. U5: Mass Ingestion Spike (3)\n8. U6: HBase Sink (3)\n9. U7: File Roll Sink (2)\n10. U8: JMX Source (3)\n11. Integration Testing (3)\n12. Documentation (2)\n\nTotal = 29.5 days\n\nI'll go with this. Let me format the JSON response.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1485,
+      "completion_tokens": 3720,
+      "total_tokens": 5205,
+      "cost": 0.00487206,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00487206,
+        "upstream_inference_prompt_cost": 0.00040806,
+        "upstream_inference_completions_cost": 0.004464
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1920,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Spring Boot 3.x as the application foundation with embedded server on port 9393.\",\n    \"Use Spring Security as the unified security framework, with profile-based switching between file-based (U1) and LDAP (U2) authentication providers.\",\n    \"Implement role-based access control (U3) using Spring Security's HttpSecurity and method-level @PreAuthorize annotations with ADMIN and VIEWER authorities.\",\n    \"Implement the HDFS (U4), HBase (U6), and File Roll (U7) sinks as Spring Integration channel adapters following the existing source/sink pattern.\",\n    \"For U4 (Kerberized HDFS), use Hadoop's UserGroupInformation with Kerberos keytab and krb5.conf provided via externalized configuration.\",\n    \"For U6 (HBase), use the standard HBase Java client (ConnectionFactory) wrapped in a Spring Integration MessageHandler.\",\n    \"For U7 (File Roll), use Spring Integration's built-in FileRollingMessageHandler with size- and time-based rolling triggers.\",\n    \"For U8 (JMX source), use Spring Integration's JMX support (NotificationPublishingMessageHandler / NotificationListeningMessageSource) to publish notifications to a channel.\",\n    \"U5 is a spike/scoping activity per its acceptance criteria — deliverable is a design document only, no production code.\",\n    \"Use Maven multi-module structure if needed; single module assumed for this estimate.\",\n    \"Externalize all endpoint, security, sink, and source configuration in application.yml with profile-specific overrides.\"\n  ],\n  \"assumptions\": [\n    \"A working Spring Boot base project skeleton already exists (or can be created quickly); no greenfield project bootstrap from scratch.\",\n    \"Developer is experienced with Spring Boot, Spring Security, and Spring Integration.\",\n    \"Java 17+ toolchain is available and matches Spring Framework 6.x requirements.\",\n    \"Test infrastructure for HDFS (with Kerberos), HBase, LDAP, and JMX beans is available or can be stood up via Testcontainers / embedded servers.\",\n    \"Kerberos keytabs and krb5.conf files for U4 will be supplied by operations/QA; the developer only writes the integration code.\",\n    \"U1 and U2 are mutually exclusive authentication providers toggled via Spring profiles, not both active simultaneously.\",\n    \"U3 builds on top of whichever authentication mechanism (U1 or U2) is active, using role/authority mapping.\",\n    \"For U5, the spike covers research, design, and documentation only — implementation is out of scope for this increment.\",\n    \"Existing endpoint surface (the listed endpoints on port 9393) is already implemented; this increment only adds security and source/sink modules around it.\",\n    \"Unit tests, integration tests, and minimal user-facing documentation are included in each activity's effort.\",\n    \"No production deployment, performance tuning, or large-scale QA is included in this estimate.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project Setup and Base Infrastructure\",\n      \"activity_description\": \"Configure Spring Boot application, Maven build, dependencies (Spring Boot, Spring Security, Spring Integration, Hadoop, HBase client), externalized configuration structure, and base application bootstrapping on port 9393.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Common Security Framework\",\n      \"activity_description\": \"Set up the shared Spring Security configuration infrastructure: SecurityFilterChain, AuthenticationManager, password encoding, profile-driven provider selection, and base URL protection pattern applied to all listed endpoints.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - File-based Security Configuration\",\n      \"activity_description\": \"Implement file-based user authentication using Spring Security's user-details-service backed by an externalized properties/YAML file. Include sample users with roles, password encoding, and integration tests.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U2 - LDAP-based Security Configuration\",\n      \"activity_description\": \"Implement LDAP authentication using Spring Security's LdapAuthenticationProvider, configurable LDAP URL, user search base, user search filter, and group/authority mapping. Include integration tests using an embedded LDAP server (UnboundID/ApacheDS).\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U3 - Role-based Access Control (Admin/Viewer)\",\n      \"activity_description\": \"Define ADMIN and VIEWER roles, configure authorization rules in HttpSecurity (URL-level) and @PreAuthorize (method-level where applicable), map LDAP groups/file users to these roles, and add tests covering both roles.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U4 - Kerberized HDFS Sink\",\n      \"activity_description\": \"Build a Spring Integration channel adapter sink that writes payload data to HDFS using the Hadoop FileSystem API, with Kerberos authentication via UserGroupInformation.loginUserFromKeytab. Externalize Kerberos principal, keytab path, krb5.conf path, NameNode URI, and target path. Include unit tests and an integration test using a Kerberized mini-HDFS cluster (e.g., MiniDFSCluster with Kerberos).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U5 - Mass Database Ingestion Spike\",\n      \"activity_description\": \"Research existing options for mass data ingestion from heterogeneous databases (Debezium, JDBC batching, database-specific CDC, Spring Cloud Stream + DB sources), collaborate with the team to determine the target design, and produce a written design specification document covering integration options, trade-offs, and recommendations. No production code is delivered.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U6 - HBase Sink\",\n      \"activity_description\": \"Build a Spring Integration MessageHandler sink that writes payload data to HBase tables using the HBase Java client (Connection, Table, Put). Externalize ZooKeeper quorum, ZNode parent, table name, column family, and row-key strategy. Include unit tests and integration tests against an embedded or containerized HBase instance.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U7 - File Roll Sink\",\n      \"activity_description\": \"Build a Spring Integration FileRollingMessageHandler-based sink that writes events to the local file system with rolling triggered by file size and/or time. Externalize directory, file name pattern, max file size, and rotation interval. Include unit and integration tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U8 - JMX Source Module\",\n      \"activity_description\": \"Build a Spring Integration JMX source that subscribes to JMX notifications from one or more MBeans and publishes them as messages to a channel, using NotificationListeningMessageSource (or equivalent). Externalize MBean ObjectNames, notification filters, and output channel. Include unit and integration tests with a sample MBean.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration and End-to-End Testing\",\n      \"activity_description\": \"Wire all modules together, run end-to-end test scenarios covering security (file and LDAP), role enforcement, and each sink/source module. Fix integration defects uncovered across module boundaries.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and Configuration Examples\",\n      \"activity_description\": \"Produce README updates, per-module configuration reference, security setup guide (file-based and LDAP), and example properties snippets for HDFS (Kerberos), HBase, File Roll, and JMX source modules.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 29.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1485,
+    "completion_tokens": 3720,
+    "total_tokens": 5205,
+    "cost": 0.00487206,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00487206,
+      "upstream_inference_prompt_cost": 0.00040806,
+      "upstream_inference_completions_cost": 0.004464
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1920,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788415996-LfSQcxvZ4UrQgVgYLNNp",
+    "object": "chat.completion",
+    "created": 1788415996,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking what I consider to be the number of work-hours equivalent to one estimated workday. This is a standard assumption question for software development effort estimation.\n\nCommon conventions are 8 hours per workday, though sometimes 6 or 7 hours are used to account for meetings, emails, breaks, etc.\n\nI'll go with the standard 8 hours per workday as it's the most common convention.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking what I consider to be the number of work-hours equivalent to one estimated workday. This is a standard assumption question for software development effort estimation.\n\nCommon conventions are 8 hours per workday, though sometimes 6 or 7 hours are used to account for meetings, emails, breaks, etc.\n\nI'll go with the standard 8 hours per workday as it's the most common convention.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3412,
+      "completion_tokens": 99,
+      "total_tokens": 3511,
+      "cost": 0.0007896,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1470,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0007896,
+        "upstream_inference_prompt_cost": 0.0006708,
+        "upstream_inference_completions_cost": 0.0001188
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 81,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Use Spring Boot 3.x as the application foundation with embedded server on port 9393.",
+      "Use Spring Security as the unified security framework, with profile-based switching between file-based (U1) and LDAP (U2) authentication providers.",
+      "Implement role-based access control (U3) using Spring Security's HttpSecurity and method-level @PreAuthorize annotations with ADMIN and VIEWER authorities.",
+      "Implement the HDFS (U4), HBase (U6), and File Roll (U7) sinks as Spring Integration channel adapters following the existing source/sink pattern.",
+      "For U4 (Kerberized HDFS), use Hadoop's UserGroupInformation with Kerberos keytab and krb5.conf provided via externalized configuration.",
+      "For U6 (HBase), use the standard HBase Java client (ConnectionFactory) wrapped in a Spring Integration MessageHandler.",
+      "For U7 (File Roll), use Spring Integration's built-in FileRollingMessageHandler with size- and time-based rolling triggers.",
+      "For U8 (JMX source), use Spring Integration's JMX support (NotificationPublishingMessageHandler / NotificationListeningMessageSource) to publish notifications to a channel.",
+      "U5 is a spike/scoping activity per its acceptance criteria — deliverable is a design document only, no production code.",
+      "Use Maven multi-module structure if needed; single module assumed for this estimate.",
+      "Externalize all endpoint, security, sink, and source configuration in application.yml with profile-specific overrides."
+    ],
+    "assumptions": [
+      "A working Spring Boot base project skeleton already exists (or can be created quickly); no greenfield project bootstrap from scratch.",
+      "Developer is experienced with Spring Boot, Spring Security, and Spring Integration.",
+      "Java 17+ toolchain is available and matches Spring Framework 6.x requirements.",
+      "Test infrastructure for HDFS (with Kerberos), HBase, LDAP, and JMX beans is available or can be stood up via Testcontainers / embedded servers.",
+      "Kerberos keytabs and krb5.conf files for U4 will be supplied by operations/QA; the developer only writes the integration code.",
+      "U1 and U2 are mutually exclusive authentication providers toggled via Spring profiles, not both active simultaneously.",
+      "U3 builds on top of whichever authentication mechanism (U1 or U2) is active, using role/authority mapping.",
+      "For U5, the spike covers research, design, and documentation only — implementation is out of scope for this increment.",
+      "Existing endpoint surface (the listed endpoints on port 9393) is already implemented; this increment only adds security and source/sink modules around it.",
+      "Unit tests, integration tests, and minimal user-facing documentation are included in each activity's effort.",
+      "No production deployment, performance tuning, or large-scale QA is included in this estimate."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Project Setup and Base Infrastructure",
+        "activity_description": "Configure Spring Boot application, Maven build, dependencies (Spring Boot, Spring Security, Spring Integration, Hadoop, HBase client), externalized configuration structure, and base application bootstrapping on port 9393.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Common Security Framework",
+        "activity_description": "Set up the shared Spring Security configuration infrastructure: SecurityFilterChain, AuthenticationManager, password encoding, profile-driven provider selection, and base URL protection pattern applied to all listed endpoints.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U1 - File-based Security Configuration",
+        "activity_description": "Implement file-based user authentication using Spring Security's user-details-service backed by an externalized properties/YAML file. Include sample users with roles, password encoding, and integration tests.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U2 - LDAP-based Security Configuration",
+        "activity_description": "Implement LDAP authentication using Spring Security's LdapAuthenticationProvider, configurable LDAP URL, user search base, user search filter, and group/authority mapping. Include integration tests using an embedded LDAP server (UnboundID/ApacheDS).",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U3 - Role-based Access Control (Admin/Viewer)",
+        "activity_description": "Define ADMIN and VIEWER roles, configure authorization rules in HttpSecurity (URL-level) and @PreAuthorize (method-level where applicable), map LDAP groups/file users to these roles, and add tests covering both roles.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U4 - Kerberized HDFS Sink",
+        "activity_description": "Build a Spring Integration channel adapter sink that writes payload data to HDFS using the Hadoop FileSystem API, with Kerberos authentication via UserGroupInformation.loginUserFromKeytab. Externalize Kerberos principal, keytab path, krb5.conf path, NameNode URI, and target path. Include unit tests and an integration test using a Kerberized mini-HDFS cluster (e.g., MiniDFSCluster with Kerberos).",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U5 - Mass Database Ingestion Spike",
+        "activity_description": "Research existing options for mass data ingestion from heterogeneous databases (Debezium, JDBC batching, database-specific CDC, Spring Cloud Stream + DB sources), collaborate with the team to determine the target design, and produce a written design specification document covering integration options, trade-offs, and recommendations. No production code is delivered.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U6 - HBase Sink",
+        "activity_description": "Build a Spring Integration MessageHandler sink that writes payload data to HBase tables using the HBase Java client (Connection, Table, Put). Externalize ZooKeeper quorum, ZNode parent, table name, column family, and row-key strategy. Include unit tests and integration tests against an embedded or containerized HBase instance.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U7 - File Roll Sink",
+        "activity_description": "Build a Spring Integration FileRollingMessageHandler-based sink that writes events to the local file system with rolling triggered by file size and/or time. Externalize directory, file name pattern, max file size, and rotation interval. Include unit and integration tests.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "U8 - JMX Source Module",
+        "activity_description": "Build a Spring Integration JMX source that subscribes to JMX notifications from one or more MBeans and publishes them as messages to a channel, using NotificationListeningMessageSource (or equivalent). Externalize MBean ObjectNames, notification filters, and output channel. Include unit and integration tests with a sample MBean.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Integration and End-to-End Testing",
+        "activity_description": "Wire all modules together, run end-to-end test scenarios covering security (file and LDAP), role enforcement, and each sink/source module. Fix integration defects uncovered across module boundaries.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation and Configuration Examples",
+        "activity_description": "Produce README updates, per-module configuration reference, security setup guide (file-based and LDAP), and example properties snippets for HDFS (Kerberos), HBase, File Roll, and JMX source modules.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 29.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

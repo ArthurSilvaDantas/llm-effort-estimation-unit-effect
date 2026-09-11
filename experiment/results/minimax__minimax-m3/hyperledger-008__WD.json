@@ -1,0 +1,253 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "hyperledger-008",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788416229-D6nCqEbJkdtGXxq9b3qM",
+    "object": "chat.completion",
+    "created": 1788416229,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Go (the language of Hyperledger Fabric) for the new library package.\",\n    \"Create a standalone Go package (e.g., internal/pkg/genesis or similar) that does not import fabric's viper/yaml-driven genesisconfig package; instead, copy and adapt the required structures (Profile, Application, Orderer, Consortium, Policy, Capabilities, etc.) into the new package.\",\n    \"Reuse existing Fabric protobuf-generated types (common/common, common/configtx, msp, etc.) so that generated protos remain wire-compatible with the rest of Fabric.\",\n    \"Library functions are pure (no network access, no filesystem assumptions beyond the caller supplying key material or inputs) so they can be tested deterministically.\",\n    \"For U1: modify the chaincode shim/protobuf read set schema to include values alongside keys and versions, propagate these through the endorsement response, and have the committer/VSCC compare the values against the local world state to invalidate a tampered transaction.\",\n    \"For U2-U8: the new package mirrors the conceptual surface area of configtxgen/configtxlator, but exposes it as a library API rather than a CLI.\",\n    \"Use protobuf equality (proto.Equal) and protolator-style JSON encoding/decoding for cross-checking against the existing tools during acceptance.\",\n    \"All detached signature operations use Fabric's existing SigningIdentity / bccsp interfaces rather than implementing a new signing stack.\",\n    \"Detached signatures and assembled transactions are validated against existing peer tooling (e.g., the `signtx` peer command) per the acceptance criteria.\",\n    \"Estimate scope is the implementation of the increment including unit tests; CI/release engineering and Fabric core PR review cycles are out of scope.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Go developer who is familiar with Hyperledger Fabric internals (endorser, committer, gossip, configtx) performs all the work.\",\n    \"A work day is 8 productive hours (no meetings, reviews, or interruptions included separately).\",\n    \"The prototypical configtx.yaml from the Fabric integration test suite and a reference msp folder are available and stable for use as the acceptance test fixtures.\",\n    \"Existing Fabric protos (common, msp, peer, etc.) can be imported by the new package without requiring a vendoring/forking effort.\",\n    \"U1 is treated as in-scope: the change touches the chaincode shim readset proto, endorsement, and validation; it is the most invasive story and the dominant driver of U1's effort.\",\n    \"The acceptance criteria requiring `proto.Equal` results imply deep proto round-trip tests will be authored, but these are folded into the activity estimates rather than listed as a separate line.\",\n    \"No new consensus, gossip, or membership service plug-ins are required beyond what already exists in Fabric.\",\n    \"Documentation effort is limited to GoDoc comments and a short README; full user-facing documentation is out of scope.\",\n    \"The developer is allowed to copy small relevant portions of fabric source code into the new package where the existing types are not exposed as a public API.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup, requirements analysis, and high-level design\",\n      \"activity_description\": \"Create the new Go package skeleton, define its public API surface, decide which Fabric protos to import, agree on test fixtures, and produce a short internal design note covering U1-U8.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Copy and adapt genesisconfig structures into the new package\",\n      \"activity_description\": \"Lift and adapt the Profile, Application, Orderer, Consortium, Consortiums, Capabilities, Policies, OrdererOrgs, ApplicationOrgs, AnchorPeers, etc. structures from fabric's genesisconfig into the new package, replacing viper with plain Go data and adding the Option/options extensibility pattern requested in U2.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement CreateChannelTx (U2)\",\n      \"activity_description\": \"Implement CreateChannelTx(channelSpec ChannelConfig, options ...Option) (*cb.Block, error) that produces a proto-encoded genesis block equivalent to configtxgen -channelID -profile. Includes building the Orderer, Application, Consortiums, and Policies config groups and the implicit meta policies.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement detached-signature helper for ChannelUpdate (U3)\",\n      \"activity_description\": \"Implement a function that, given a serialized ChannelUpdate and a SigningIdentity (key material as input parameter), produces a detached config signature byte slice compatible with the fabric config envelope format.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement config-update assembly from detached signatures (U4)\",\n      \"activity_description\": \"Implement a function that takes a ConfigUpdate and a collection of detached signatures and produces a fully signed Envelope that the orderer/peers can validate, equivalent to building signatures incrementally with the peer `signtx` command.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Implement max_message_count batch-size channel update (U5)\",\n      \"activity_description\": \"Implement a library function that returns an unsigned config update transaction that modifies only the orderer batch size / max_message_count parameter, equivalent to manually transforming and generating the update with existing tools.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement Organization ConfigGroup generator (U6)\",\n      \"activity_description\": \"Implement a function that, given cryptographic material directly (not filesystem-derived MSP), produces a ConfigGroup proto semantically equivalent to `cryptogen` + `configtxgen -printOrg` output.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Implement ConfigUpdate computation from base/modified configs (U7)\",\n      \"activity_description\": \"Implement a function equivalent to `configtxlator compute_update` that, given only the base and modified config envelopes, computes the ConfigUpdate proto capturing the difference between them, including handling of the read/write set encoding rules.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Implement add-org-to-consortium channel update (U8)\",\n      \"activity_description\": \"Implement a function that adds an organization definition to a named consortium in the system channel configuration, producing an unsigned channel update transaction that semantically matches the manual configtxgen + protolator + configtxgen pipeline.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Implement tampered-readset detection (U1)\",\n      \"activity_description\": \"Extend the chaincode readset proto to include values alongside keys/versions, ensure endorsement responses propagate the values, and update the committer/VSCC (or equivalent validation path) so that peers compare the received values against their own world state and invalidate a transaction if they differ. Includes adjusting the endorsement flow and any related state-based-validation logic.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Unit and proto-equality tests\",\n      \"activity_description\": \"Write unit tests for every new library function, including proto.Equal-based golden tests that compare the library output against the reference output produced by configtxgen / configtxlator / signtx using the prototypical configtx.yaml and msp folder from the integration test suite.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Integration and end-to-end testing\",\n      \"activity_description\": \"Build a small integration harness that exercises the new library against a real (or test) Fabric network for U1 (tampered endorsing peer) and U2-U8 (channel creation, updates, org addition), and fix any issues uncovered.\"\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Documentation and cleanup\",\n      \"activity_description\": \"Write GoDoc comments, a package README with usage examples, and tidy up code, error messages, and tests in preparation for review.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 37.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "The user wants me to estimate software development effort for a software increment described in the specification. The specification covers 8 user stories (U1-U8) related to Hyperledger Fabric.\n\nLet me analyze each user story:\n\nU1: Read set validation with values - needs to modify endorsement/commit logic to include values in read set, and add validation. This is a core fabric change.\n\nU2: CreateChannelTx library function - Generate channel creation transaction (genesis block) from config structures. Need to copy/adapt genesisconfig structures, implement CreateChannelTx function.\n\nU3: Sign ChannelUpdate transaction with detached signature - Library function that takes a ChannelUpdate and key material to produce a detached signature.\n\nU4: Assemble complete signed channel config update from ConfigUpdate and detached signatures.\n\nU5: Generate channel update transaction for max_message_count batch size.\n\nU6: Generate ConfigGroup for Organization from crypto material.\n\nU7: Calculate ConfigUpdate from base and modified configs (like configtxlator compute_update).\n\nU8: Add org definition to consortium in system channel.\n\nThese are mostly focused on U2-U8 which are about a \"fit-for-purpose library\" - this looks like the fabsdk/pkg/genesis or similar work.\n\nLet me do a WBS-based estimation.\n\nActivities:\n1. Requirements analysis & design (shared)\n2. U1: Read set tampering detection\n3. U2: CreateChannelTx implementation\n4. U3: Detached signature generation\n5. U4: Config update assembly\n6. U5: max_message_count config update\n7. U6: Org ConfigGroup generation\n8. U7: ConfigUpdate computation\n9. U8: Add org to consortium\n10. Shared library setup (package structure, types)\n11. Testing/integration\n12. Documentation\n\nLet me estimate each:\n\nTechnical/design decisions:\n- Use Go (fabric's language)\n- Create a new Go package (separate from fabric core where appropriate)\n- Copy genesisconfig structures rather than import them\n- No external network access; pure library functions\n- Reuse existing protos from fabric (cb, common, msp, etc.)\n- For U1, modify endorser/committer logic to include values in readset\n\nAssumptions:\n- Developer is experienced with Go and Hyperledger Fabric internals\n- Existing fabric protos can be imported\n- Test infrastructure available (configtx.yaml from integration test suite)\n- The library is meant to be a standalone package\n\nEstimates in workdays (1 workday = 8 hours, a \"day\" for a single developer):\n\nLet me think about realistic estimates for a skilled developer:\n\n1. Requirements analysis, design, package scaffolding: 2-3 days\n2. Copy/adapt genesisconfig structures (Profile, Application, Orderer, etc.): 2 days\n3. U2 - CreateChannelTx implementation: 4-5 days (significant proto work)\n4. U3 - Sign function with detached signature: 1-2 days\n5. U4 - Assemble config update with signatures: 1-2 days\n6. U5 - max_message_count update: 1 day (just a specific config update)\n7. U6 - Org ConfigGroup generation: 2-3 days\n8. U7 - ConfigUpdate computation (configtxlator-like): 4-5 days (complex proto manipulation)\n9. U8 - Add org to consortium: 2-3 days\n10. U1 - Read set tampering: 5-7 days (deep fabric changes, needs modifications to endorsement flow, Vssc validation in commit, etc.)\n11. Unit tests for all: 3-4 days\n12. Integration tests: 2-3 days\n13. Documentation: 1-2 days\n\nLet me total:\n- Design/scaffolding: 3\n- U1: 6\n- U2: 5\n- U3: 2\n- U4: 2\n- U5: 1\n- U6: 3\n- U7: 5\n- U8: 3\n- Testing: 5\n- Documentation: 2\n\nTotal: 37 days\n\nLet me refine. The stories U2-U8 are all related to a config transaction library. U1 is separate. Let me think more carefully.\n\nActually, looking at it more, U1 is quite complex - it requires changes to:\n- Chaincode shim to include values in readset\n- Endorsement protocol to propagate values\n- VSCC/committer validation\n- This affects multiple components\n\nFor U2, the CreateChannelTx is complex - building a complete genesis block from a profile involves many proto structures (Orderer, Application, Consortiums, Policies, Capabilities, etc.). This is probably 5+ days.\n\nU7 (configtxlator compute_update equivalent) is also very complex - computing the diff between two configs and creating an update proto. Maybe 4-5 days.\n\nLet me settle on:\n\nA1: Project setup, requirements analysis, design: 2\nA2: Copy and adapt genesisconfig structures: 2\nA3: U2 - CreateChannelTx implementation: 5\nA4: U3 - Detached signature function: 1.5\nA5: U4 - Config update assembly: 1.5\nA6: U5 - max_message_count update: 1\nA7: U6 - Org ConfigGroup generation: 2.5\nA8: U7 - ConfigUpdate computation: 4\nA9: U8 - Add org to consortium: 2\nA10: U1 - Read set with values: 7\nA11: Unit testing: 4\nA12: Integration testing: 3\nA13: Documentation: 2\n\nTotal: 37.5 workdays\n\nLet me round to reasonable values:\n2 + 2 + 5 + 1.5 + 1.5 + 1 + 2.5 + 4 + 2 + 7 + 4 + 3 + 2 = 37.5\n\nI'll provide these estimates.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user wants me to estimate software development effort for a software increment described in the specification. The specification covers 8 user stories (U1-U8) related to Hyperledger Fabric.\n\nLet me analyze each user story:\n\nU1: Read set validation with values - needs to modify endorsement/commit logic to include values in read set, and add validation. This is a core fabric change.\n\nU2: CreateChannelTx library function - Generate channel creation transaction (genesis block) from config structures. Need to copy/adapt genesisconfig structures, implement CreateChannelTx function.\n\nU3: Sign ChannelUpdate transaction with detached signature - Library function that takes a ChannelUpdate and key material to produce a detached signature.\n\nU4: Assemble complete signed channel config update from ConfigUpdate and detached signatures.\n\nU5: Generate channel update transaction for max_message_count batch size.\n\nU6: Generate ConfigGroup for Organization from crypto material.\n\nU7: Calculate ConfigUpdate from base and modified configs (like configtxlator compute_update).\n\nU8: Add org definition to consortium in system channel.\n\nThese are mostly focused on U2-U8 which are about a \"fit-for-purpose library\" - this looks like the fabsdk/pkg/genesis or similar work.\n\nLet me do a WBS-based estimation.\n\nActivities:\n1. Requirements analysis & design (shared)\n2. U1: Read set tampering detection\n3. U2: CreateChannelTx implementation\n4. U3: Detached signature generation\n5. U4: Config update assembly\n6. U5: max_message_count config update\n7. U6: Org ConfigGroup generation\n8. U7: ConfigUpdate computation\n9. U8: Add org to consortium\n10. Shared library setup (package structure, types)\n11. Testing/integration\n12. Documentation\n\nLet me estimate each:\n\nTechnical/design decisions:\n- Use Go (fabric's language)\n- Create a new Go package (separate from fabric core where appropriate)\n- Copy genesisconfig structures rather than import them\n- No external network access; pure library functions\n- Reuse existing protos from fabric (cb, common, msp, etc.)\n- For U1, modify endorser/committer logic to include values in readset\n\nAssumptions:\n- Developer is experienced with Go and Hyperledger Fabric internals\n- Existing fabric protos can be imported\n- Test infrastructure available (configtx.yaml from integration test suite)\n- The library is meant to be a standalone package\n\nEstimates in workdays (1 workday = 8 hours, a \"day\" for a single developer):\n\nLet me think about realistic estimates for a skilled developer:\n\n1. Requirements analysis, design, package scaffolding: 2-3 days\n2. Copy/adapt genesisconfig structures (Profile, Application, Orderer, etc.): 2 days\n3. U2 - CreateChannelTx implementation: 4-5 days (significant proto work)\n4. U3 - Sign function with detached signature: 1-2 days\n5. U4 - Assemble config update with signatures: 1-2 days\n6. U5 - max_message_count update: 1 day (just a specific config update)\n7. U6 - Org ConfigGroup generation: 2-3 days\n8. U7 - ConfigUpdate computation (configtxlator-like): 4-5 days (complex proto manipulation)\n9. U8 - Add org to consortium: 2-3 days\n10. U1 - Read set tampering: 5-7 days (deep fabric changes, needs modifications to endorsement flow, Vssc validation in commit, etc.)\n11. Unit tests for all: 3-4 days\n12. Integration tests: 2-3 days\n13. Documentation: 1-2 days\n\nLet me total:\n- Design/scaffolding: 3\n- U1: 6\n- U2: 5\n- U3: 2\n- U4: 2\n- U5: 1\n- U6: 3\n- U7: 5\n- U8: 3\n- Testing: 5\n- Documentation: 2\n\nTotal: 37 days\n\nLet me refine. The stories U2-U8 are all related to a config transaction library. U1 is separate. Let me think more carefully.\n\nActually, looking at it more, U1 is quite complex - it requires changes to:\n- Chaincode shim to include values in readset\n- Endorsement protocol to propagate values\n- VSCC/committer validation\n- This affects multiple components\n\nFor U2, the CreateChannelTx is complex - building a complete genesis block from a profile involves many proto structures (Orderer, Application, Consortiums, Policies, Capabilities, etc.). This is probably 5+ days.\n\nU7 (configtxlator compute_update equivalent) is also very complex - computing the diff between two configs and creating an update proto. Maybe 4-5 days.\n\nLet me settle on:\n\nA1: Project setup, requirements analysis, design: 2\nA2: Copy and adapt genesisconfig structures: 2\nA3: U2 - CreateChannelTx implementation: 5\nA4: U3 - Detached signature function: 1.5\nA5: U4 - Config update assembly: 1.5\nA6: U5 - max_message_count update: 1\nA7: U6 - Org ConfigGroup generation: 2.5\nA8: U7 - ConfigUpdate computation: 4\nA9: U8 - Add org to consortium: 2\nA10: U1 - Read set with values: 7\nA11: Unit testing: 4\nA12: Integration testing: 3\nA13: Documentation: 2\n\nTotal: 37.5 workdays\n\nLet me round to reasonable values:\n2 + 2 + 5 + 1.5 + 1.5 + 1 + 2.5 + 4 + 2 + 7 + 4 + 3 + 2 = 37.5\n\nI'll provide these estimates.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1851,
+      "completion_tokens": 3008,
+      "total_tokens": 4859,
+      "cost": 0.00412746,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00412746,
+        "upstream_inference_prompt_cost": 0.00051786,
+        "upstream_inference_completions_cost": 0.0036096
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1268,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Go (the language of Hyperledger Fabric) for the new library package.\",\n    \"Create a standalone Go package (e.g., internal/pkg/genesis or similar) that does not import fabric's viper/yaml-driven genesisconfig package; instead, copy and adapt the required structures (Profile, Application, Orderer, Consortium, Policy, Capabilities, etc.) into the new package.\",\n    \"Reuse existing Fabric protobuf-generated types (common/common, common/configtx, msp, etc.) so that generated protos remain wire-compatible with the rest of Fabric.\",\n    \"Library functions are pure (no network access, no filesystem assumptions beyond the caller supplying key material or inputs) so they can be tested deterministically.\",\n    \"For U1: modify the chaincode shim/protobuf read set schema to include values alongside keys and versions, propagate these through the endorsement response, and have the committer/VSCC compare the values against the local world state to invalidate a tampered transaction.\",\n    \"For U2-U8: the new package mirrors the conceptual surface area of configtxgen/configtxlator, but exposes it as a library API rather than a CLI.\",\n    \"Use protobuf equality (proto.Equal) and protolator-style JSON encoding/decoding for cross-checking against the existing tools during acceptance.\",\n    \"All detached signature operations use Fabric's existing SigningIdentity / bccsp interfaces rather than implementing a new signing stack.\",\n    \"Detached signatures and assembled transactions are validated against existing peer tooling (e.g., the `signtx` peer command) per the acceptance criteria.\",\n    \"Estimate scope is the implementation of the increment including unit tests; CI/release engineering and Fabric core PR review cycles are out of scope.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Go developer who is familiar with Hyperledger Fabric internals (endorser, committer, gossip, configtx) performs all the work.\",\n    \"A work day is 8 productive hours (no meetings, reviews, or interruptions included separately).\",\n    \"The prototypical configtx.yaml from the Fabric integration test suite and a reference msp folder are available and stable for use as the acceptance test fixtures.\",\n    \"Existing Fabric protos (common, msp, peer, etc.) can be imported by the new package without requiring a vendoring/forking effort.\",\n    \"U1 is treated as in-scope: the change touches the chaincode shim readset proto, endorsement, and validation; it is the most invasive story and the dominant driver of U1's effort.\",\n    \"The acceptance criteria requiring `proto.Equal` results imply deep proto round-trip tests will be authored, but these are folded into the activity estimates rather than listed as a separate line.\",\n    \"No new consensus, gossip, or membership service plug-ins are required beyond what already exists in Fabric.\",\n    \"Documentation effort is limited to GoDoc comments and a short README; full user-facing documentation is out of scope.\",\n    \"The developer is allowed to copy small relevant portions of fabric source code into the new package where the existing types are not exposed as a public API.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup, requirements analysis, and high-level design\",\n      \"activity_description\": \"Create the new Go package skeleton, define its public API surface, decide which Fabric protos to import, agree on test fixtures, and produce a short internal design note covering U1-U8.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Copy and adapt genesisconfig structures into the new package\",\n      \"activity_description\": \"Lift and adapt the Profile, Application, Orderer, Consortium, Consortiums, Capabilities, Policies, OrdererOrgs, ApplicationOrgs, AnchorPeers, etc. structures from fabric's genesisconfig into the new package, replacing viper with plain Go data and adding the Option/options extensibility pattern requested in U2.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement CreateChannelTx (U2)\",\n      \"activity_description\": \"Implement CreateChannelTx(channelSpec ChannelConfig, options ...Option) (*cb.Block, error) that produces a proto-encoded genesis block equivalent to configtxgen -channelID -profile. Includes building the Orderer, Application, Consortiums, and Policies config groups and the implicit meta policies.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement detached-signature helper for ChannelUpdate (U3)\",\n      \"activity_description\": \"Implement a function that, given a serialized ChannelUpdate and a SigningIdentity (key material as input parameter), produces a detached config signature byte slice compatible with the fabric config envelope format.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement config-update assembly from detached signatures (U4)\",\n      \"activity_description\": \"Implement a function that takes a ConfigUpdate and a collection of detached signatures and produces a fully signed Envelope that the orderer/peers can validate, equivalent to building signatures incrementally with the peer `signtx` command.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Implement max_message_count batch-size channel update (U5)\",\n      \"activity_description\": \"Implement a library function that returns an unsigned config update transaction that modifies only the orderer batch size / max_message_count parameter, equivalent to manually transforming and generating the update with existing tools.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement Organization ConfigGroup generator (U6)\",\n      \"activity_description\": \"Implement a function that, given cryptographic material directly (not filesystem-derived MSP), produces a ConfigGroup proto semantically equivalent to `cryptogen` + `configtxgen -printOrg` output.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Implement ConfigUpdate computation from base/modified configs (U7)\",\n      \"activity_description\": \"Implement a function equivalent to `configtxlator compute_update` that, given only the base and modified config envelopes, computes the ConfigUpdate proto capturing the difference between them, including handling of the read/write set encoding rules.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Implement add-org-to-consortium channel update (U8)\",\n      \"activity_description\": \"Implement a function that adds an organization definition to a named consortium in the system channel configuration, producing an unsigned channel update transaction that semantically matches the manual configtxgen + protolator + configtxgen pipeline.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Implement tampered-readset detection (U1)\",\n      \"activity_description\": \"Extend the chaincode readset proto to include values alongside keys/versions, ensure endorsement responses propagate the values, and update the committer/VSCC (or equivalent validation path) so that peers compare the received values against their own world state and invalidate a transaction if they differ. Includes adjusting the endorsement flow and any related state-based-validation logic.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Unit and proto-equality tests\",\n      \"activity_description\": \"Write unit tests for every new library function, including proto.Equal-based golden tests that compare the library output against the reference output produced by configtxgen / configtxlator / signtx using the prototypical configtx.yaml and msp folder from the integration test suite.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Integration and end-to-end testing\",\n      \"activity_description\": \"Build a small integration harness that exercises the new library against a real (or test) Fabric network for U1 (tampered endorsing peer) and U2-U8 (channel creation, updates, org addition), and fix any issues uncovered.\"\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Documentation and cleanup\",\n      \"activity_description\": \"Write GoDoc comments, a package README with usage examples, and tidy up code, error messages, and tests in preparation for review.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 37.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1851,
+    "completion_tokens": 3008,
+    "total_tokens": 4859,
+    "cost": 0.00412746,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00412746,
+      "upstream_inference_prompt_cost": 0.00051786,
+      "upstream_inference_completions_cost": 0.0036096
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1268,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788416261-HpwNxjSnNPMhiCrbG28l",
+    "object": "chat.completion",
+    "created": 1788416261,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking a simple clarification question: how many work-hours do I consider equivalent to one estimated workday. I should not revise the effort estimate. I just need to provide the number of work hours per workday.\n\nIn my previous estimate, I assumed 8 productive hours per workday (this was stated in the assumptions). I should just confirm this value.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple clarification question: how many work-hours do I consider equivalent to one estimated workday. I should not revise the effort estimate. I just need to provide the number of work hours per workday.\n\nIn my previous estimate, I assumed 8 productive hours per workday (this was stated in the assumptions). I should just confirm this value.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3718,
+      "completion_tokens": 91,
+      "total_tokens": 3809,
+      "cost": 0.00078396,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1836,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00078396,
+        "upstream_inference_prompt_cost": 0.00067476,
+        "upstream_inference_completions_cost": 0.0001092
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 73,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Use Go (the language of Hyperledger Fabric) for the new library package.",
+      "Create a standalone Go package (e.g., internal/pkg/genesis or similar) that does not import fabric's viper/yaml-driven genesisconfig package; instead, copy and adapt the required structures (Profile, Application, Orderer, Consortium, Policy, Capabilities, etc.) into the new package.",
+      "Reuse existing Fabric protobuf-generated types (common/common, common/configtx, msp, etc.) so that generated protos remain wire-compatible with the rest of Fabric.",
+      "Library functions are pure (no network access, no filesystem assumptions beyond the caller supplying key material or inputs) so they can be tested deterministically.",
+      "For U1: modify the chaincode shim/protobuf read set schema to include values alongside keys and versions, propagate these through the endorsement response, and have the committer/VSCC compare the values against the local world state to invalidate a tampered transaction.",
+      "For U2-U8: the new package mirrors the conceptual surface area of configtxgen/configtxlator, but exposes it as a library API rather than a CLI.",
+      "Use protobuf equality (proto.Equal) and protolator-style JSON encoding/decoding for cross-checking against the existing tools during acceptance.",
+      "All detached signature operations use Fabric's existing SigningIdentity / bccsp interfaces rather than implementing a new signing stack.",
+      "Detached signatures and assembled transactions are validated against existing peer tooling (e.g., the `signtx` peer command) per the acceptance criteria.",
+      "Estimate scope is the implementation of the increment including unit tests; CI/release engineering and Fabric core PR review cycles are out of scope."
+    ],
+    "assumptions": [
+      "A single experienced Go developer who is familiar with Hyperledger Fabric internals (endorser, committer, gossip, configtx) performs all the work.",
+      "A work day is 8 productive hours (no meetings, reviews, or interruptions included separately).",
+      "The prototypical configtx.yaml from the Fabric integration test suite and a reference msp folder are available and stable for use as the acceptance test fixtures.",
+      "Existing Fabric protos (common, msp, peer, etc.) can be imported by the new package without requiring a vendoring/forking effort.",
+      "U1 is treated as in-scope: the change touches the chaincode shim readset proto, endorsement, and validation; it is the most invasive story and the dominant driver of U1's effort.",
+      "The acceptance criteria requiring `proto.Equal` results imply deep proto round-trip tests will be authored, but these are folded into the activity estimates rather than listed as a separate line.",
+      "No new consensus, gossip, or membership service plug-ins are required beyond what already exists in Fabric.",
+      "Documentation effort is limited to GoDoc comments and a short README; full user-facing documentation is out of scope.",
+      "The developer is allowed to copy small relevant portions of fabric source code into the new package where the existing types are not exposed as a public API."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Project setup, requirements analysis, and high-level design",
+        "activity_description": "Create the new Go package skeleton, define its public API surface, decide which Fabric protos to import, agree on test fixtures, and produce a short internal design note covering U1-U8."
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Copy and adapt genesisconfig structures into the new package",
+        "activity_description": "Lift and adapt the Profile, Application, Orderer, Consortium, Consortiums, Capabilities, Policies, OrdererOrgs, ApplicationOrgs, AnchorPeers, etc. structures from fabric's genesisconfig into the new package, replacing viper with plain Go data and adding the Option/options extensibility pattern requested in U2."
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Implement CreateChannelTx (U2)",
+        "activity_description": "Implement CreateChannelTx(channelSpec ChannelConfig, options ...Option) (*cb.Block, error) that produces a proto-encoded genesis block equivalent to configtxgen -channelID -profile. Includes building the Orderer, Application, Consortiums, and Policies config groups and the implicit meta policies."
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Implement detached-signature helper for ChannelUpdate (U3)",
+        "activity_description": "Implement a function that, given a serialized ChannelUpdate and a SigningIdentity (key material as input parameter), produces a detached config signature byte slice compatible with the fabric config envelope format."
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Implement config-update assembly from detached signatures (U4)",
+        "activity_description": "Implement a function that takes a ConfigUpdate and a collection of detached signatures and produces a fully signed Envelope that the orderer/peers can validate, equivalent to building signatures incrementally with the peer `signtx` command."
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Implement max_message_count batch-size channel update (U5)",
+        "activity_description": "Implement a library function that returns an unsigned config update transaction that modifies only the orderer batch size / max_message_count parameter, equivalent to manually transforming and generating the update with existing tools."
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Implement Organization ConfigGroup generator (U6)",
+        "activity_description": "Implement a function that, given cryptographic material directly (not filesystem-derived MSP), produces a ConfigGroup proto semantically equivalent to `cryptogen` + `configtxgen -printOrg` output."
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Implement ConfigUpdate computation from base/modified configs (U7)",
+        "activity_description": "Implement a function equivalent to `configtxlator compute_update` that, given only the base and modified config envelopes, computes the ConfigUpdate proto capturing the difference between them, including handling of the read/write set encoding rules."
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Implement add-org-to-consortium channel update (U8)",
+        "activity_description": "Implement a function that adds an organization definition to a named consortium in the system channel configuration, producing an unsigned channel update transaction that semantically matches the manual configtxgen + protolator + configtxgen pipeline."
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Implement tampered-readset detection (U1)",
+        "activity_description": "Extend the chaincode readset proto to include values alongside keys/versions, ensure endorsement responses propagate the values, and update the committer/VSCC (or equivalent validation path) so that peers compare the received values against their own world state and invalidate a transaction if they differ. Includes adjusting the endorsement flow and any related state-based-validation logic."
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Unit and proto-equality tests",
+        "activity_description": "Write unit tests for every new library function, including proto.Equal-based golden tests that compare the library output against the reference output produced by configtxgen / configtxlator / signtx using the prototypical configtx.yaml and msp folder from the integration test suite."
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Integration and end-to-end testing",
+        "activity_description": "Build a small integration harness that exercises the new library against a real (or test) Fabric network for U1 (tampered endorsing peer) and U2-U8 (channel creation, updates, org addition), and fix any issues uncovered."
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "Documentation and cleanup",
+        "activity_description": "Write GoDoc comments, a package README with usage examples, and tidy up code, error messages, and tests in preparation for review."
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 37.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

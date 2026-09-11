@@ -1,0 +1,173 @@
+{
+  "model_id": "xiaomi/mimo-v2.5",
+  "spec_id": "hyperledger-005",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1787839148-iaDD6ESUCZDc0U2KeSyJ",
+    "object": "chat.completion",
+    "created": 1787839148,
+    "model": "xiaomi/mimo-v2.5",
+    "provider": "Xiaomi",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n    \"technical_and_design_decisions\": [\n        \"U1 (Transaction Context): For Node.js, the context object (stub, etc.) is naturally the first parameter. For Java, to ensure thread-safety, a new transaction context object will be instantiated and scoped to each chaincode invocation, which is the recommended pattern in Hyperledger Fabric Java Chaincode.\",\n        \"U2/U3 (Package Cleanup): The refactoring will involve physically moving the 'protos/utils' directory to a new 'protoutils' package location. This requires updating all internal imports and any documented public API paths. The approach will be a careful rename-and-update to avoid breaking the core.\",\n        \"U4 (Kafka Health Checks): This feature is specified as being already on the 'master' branch. The primary technical task is to backport/merge the existing, tested commit(s) into the specified release (1.4 LTS) branch, ensuring compatibility and running regression tests.\",\n        \"U5 (Reader Invoke for Query): The design decision is to implement access control based on the actual chaincode operations performed. A new `InvokeChaincode` policy will be introduced that evaluates the set of operations (e.g., `GetState`, `PutState`) in the transaction proposal. A `chaincode` performing only read (`Get`) operations will be allowed with Reader permission. This requires changes to the core transaction validation logic.\",\n        \"U6 (Service Discovery Endpoint): A new peer configuration option, e.g., `CORE_PEER_SERVICE_DISCOVERY_EXTERNAL_ENDPOINT`, will be added. If set, this value will be used in Service Discovery advertisements instead of the gossip external endpoint. This provides a clean separation for development environments.\",\n        \"U7 (Operations Service Version): A new REST endpoint, e.g., `/version`, will be added to the existing operations service (which typically uses HTTP/gRPC on a separate port). The endpoint will return the peer or orderer's build version.\",\n        \"U8 (Go Sample Rewrite): The existing sample chaincode (likely simplekey-value) will be analyzed and rewritten to be idiomatic Go, utilizing goroutines for concurrency where appropriate, proper error handling with `fmt.Errorf`, and clear struct definitions.\"\n    ],\n    \"assumptions\": [\n        \"U2 and U3 are identical user stories. I will treat them as a single requirement to avoid duplicate effort.\",\n        \"The Kafka health checks from the 'master' branch (U4) are already implemented and tested. The effort is for merge/backport and validation, not new feature development.\",\n        \"I have full access to the Hyperledger Fabric codebase (Go, Node.js, Java SDKs, core fabric code) and its build/test infrastructure.\",\n        \"The effort estimates account for time required to write unit and integration tests for the changes.\",\n        \"For U5, I am assuming the necessary internal APIs for operation-level introspection in the chaincode shim are available or will be developed as part of this task.\",\n        \"The operations service (U7) already has a framework for serving metadata; adding a new endpoint is a well-understood extension.\"\n    ],\n    \"activities\": [\n        {\n            \"activity_id\": \"A1\",\n            \"activity_name\": \"Overall Design & Task Planning\",\n            \"activity_description\": \"Analyze all user stories (U1-U8). Review affected components, identify interdependencies, create a detailed technical plan, and set up task tracking.\",\n            \"most_likely_effort\": 16\n        },\n        {\n            \"activity_id\": \"A2\",\n            \"activity_name\": \"U1: Implement Transaction Context Access\",\n            \"activity_description\": \"For Java: Modify the chaincode shim to instantiate a new transaction context per invocation for thread-safety. For Node.js: Ensure the documentation clarifies the context is the first parameter. Write unit tests.\",\n            \"most_likely_effort\": 12\n        },\n        {\n            \"activity_id\": \"A3\",\n            \"activity_name\": \"U2/U3: Refactor Proto Package Structure\",\n            \"activity_description\": \"Physically move 'protos/utils' to a new 'protoutils' top-level package. Update all internal imports across the Fabric codebase and tooling. Update public documentation. Perform a clean build and test.\",\n            \"most_likely_effort\": 20\n        },\n        {\n            \"activity_id\": \"A4\",\n            \"activity_name\": \"U4: Backport Kafka Health Checks\",\n            \"activity_description\": \"Identify the relevant commit(s) from master. Merge or cherry-pick into the release-1.4 branch. Resolve any conflicts. Run the integration test suite for ordering service with Kafka.\",\n            \"most_likely_effort\": 8\n        },\n        {\n            \"activity_id\": \"A5\",\n            \"activity_name\": \"U5: Implement Read-Permission Invoke for Queries\",\n            \"activity_description\": \"Modify the transaction validation logic to inspect chaincode operations. Implement policy that allows `Get`-only transactions with Reader permission. Add a `ReadOnlyInvoke` path if operation-level inspection is too complex. Develop comprehensive tests for both permission cases.\",\n            \"most_likely_effort\": 16\n        },\n        {\n            \"activity_id\": \"A6\",\n            \"activity_name\": \"U6: Add Service Discovery External Endpoint Config\",\n            \"activity_description\": \"Introduce the new peer configuration parameter. Modify the Service Discovery module to read and use this parameter when advertising peer endpoints. Write unit tests for the configuration logic and integration tests with a mock discovery service.\",\n            \"most_likely_effort\": 12\n        },\n        {\n            \"activity_id\": \"A7\",\n            \"activity_name\": \"U7: Expose Version via Operations Service\",\n            \"activity_description\": \"Add a `/version` endpoint to the operations service for both peer and orderer. Implement the handler to read and return the node's version. Write unit tests for the new endpoint.\",\n            \"most_likely_effort\": 8\n        },\n        {\n            \"activity_id\": \"A8\",\n            \"activity_name\": \"U8: Rewrite Go Sample to Idiomatic Go\",\n            \"activity_description\": \"Analyze existing sample chaincode. Rewrite it following Go best practices, including proper error handling, use of structs, and comments explaining Go-specific constructs. Update related documentation.\",\n            \"most_likely_effort\": 12\n        },\n        {\n            \"activity_id\": \"A9\",\n            \"activity_name\": \"Code Review, Integration & Final Testing\",\n            \"activity_description\": \"Perform peer code review for all changes. Integrate all components, run the full system test suite (including the new tests), and address any integration issues.\",\n            \"most_likely_effort\": 16\n        }\n    ],\n    \"reported_total\": {\n        \"most_likely_effort\": 120\n    }\n}\n```",
+          "refusal": null,
+          "reasoning": "好的，用户需要我作为软件开发者来估算Hyperledger Fabric这个软件增量的开发工作量。用户要求用WBS方法，先分解活动，再做出技术和设计决策，记录假设，然后对每个活动给出最可能的努力估算，最后加总得到总量。\n\n我需要仔细看看这些用户故事，理解每个需求背后要做什么。\n\nU1是关于获取交易上下文的，这涉及链码执行上下文的设计。U2和U3看起来是重复的，都是关于包重构的，我得注意避免重复工作。U4是关于Kafka健康检查的，需要确认是否已经存在。U5涉及权限控制的改进，可能需要区分读写操作。U6是关于服务发现中节点外部端点配置的。U7是操作服务添加版本查询功能。U8则是改进示例代码。\n\n在技术决策方面，我考虑Node.js传递上下文的方式很自然，而Java需要线程安全设计。包重构要确保API向后兼容。Kafka健康检查可能需要利用现有功能。权限控制可以基于链码操作来检查，这样更合理。服务发现端点需要新的配置参数。操作服务版本查询可以复用现有信息。示例代码改进需要考虑云原生风格。\n\n在假设方面，我假设U2和U3是同一个需求，只处理一次。Kafka健康检查功能应该已经实现了，只需要确认。现有代码有足够的测试覆盖。操作服务有获取信息的机制。我会假设需要修改的文件范围是明确的。\n\n现在来分解具体活动。首先，我需要做整体的设计和计划，理解所有用户故事的影响范围。然后针对U1，设计交易上下文的获取方式，在链码基础框架中实现上下文传递。对于U2/U3，进行包重构，把utils移到新包并更新所有引用。U4只是验证功能是否存在。U5要修改权限控制逻辑，区分读写操作，并添加测试。U6需要设计并实现新的配置参数。U7要修改操作服务来暴露版本信息。U8要重写示例代码。最后还要做代码审查和集成测试。\n\n对于努力估算，设计和规划需要16小时。U1的框架修改需要12小时。包重构涉及多个文件，需要20小时。验证Kafka健康检查需要8小时。权限控制改进需要16小时。服务发现配置需要12小时。操作服务修改需要8小时。示例代码重写需要12小时。代码审查和集成测试需要16小时。这样加起来总共是120小时。\n\n我需要确保所有估算都是合理的，基于对Hyperledger Fabric代码库复杂度的理解。还要注意U2和U3确实是重复的，所以只处理一次。这样应该能满足用户的要求，给出完整的工作量估算。",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "好的，用户需要我作为软件开发者来估算Hyperledger Fabric这个软件增量的开发工作量。用户要求用WBS方法，先分解活动，再做出技术和设计决策，记录假设，然后对每个活动给出最可能的努力估算，最后加总得到总量。\n\n我需要仔细看看这些用户故事，理解每个需求背后要做什么。\n\nU1是关于获取交易上下文的，这涉及链码执行上下文的设计。U2和U3看起来是重复的，都是关于包重构的，我得注意避免重复工作。U4是关于Kafka健康检查的，需要确认是否已经存在。U5涉及权限控制的改进，可能需要区分读写操作。U6是关于服务发现中节点外部端点配置的。U7是操作服务添加版本查询功能。U8则是改进示例代码。\n\n在技术决策方面，我考虑Node.js传递上下文的方式很自然，而Java需要线程安全设计。包重构要确保API向后兼容。Kafka健康检查可能需要利用现有功能。权限控制可以基于链码操作来检查，这样更合理。服务发现端点需要新的配置参数。操作服务版本查询可以复用现有信息。示例代码改进需要考虑云原生风格。\n\n在假设方面，我假设U2和U3是同一个需求，只处理一次。Kafka健康检查功能应该已经实现了，只需要确认。现有代码有足够的测试覆盖。操作服务有获取信息的机制。我会假设需要修改的文件范围是明确的。\n\n现在来分解具体活动。首先，我需要做整体的设计和计划，理解所有用户故事的影响范围。然后针对U1，设计交易上下文的获取方式，在链码基础框架中实现上下文传递。对于U2/U3，进行包重构，把utils移到新包并更新所有引用。U4只是验证功能是否存在。U5要修改权限控制逻辑，区分读写操作，并添加测试。U6需要设计并实现新的配置参数。U7要修改操作服务来暴露版本信息。U8要重写示例代码。最后还要做代码审查和集成测试。\n\n对于努力估算，设计和规划需要16小时。U1的框架修改需要12小时。包重构涉及多个文件，需要20小时。验证Kafka健康检查需要8小时。权限控制改进需要16小时。服务发现配置需要12小时。操作服务修改需要8小时。示例代码重写需要12小时。代码审查和集成测试需要16小时。这样加起来总共是120小时。\n\n我需要确保所有估算都是合理的，基于对Hyperledger Fabric代码库复杂度的理解。还要注意U2和U3确实是重复的，所以只处理一次。这样应该能满足用户的要求，给出完整的工作量估算。",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1552,
+      "completion_tokens": 2026,
+      "total_tokens": 3578,
+      "cost": 0.0007582176,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 192,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0007582176,
+        "upstream_inference_prompt_cost": 0.0001909376,
+        "upstream_inference_completions_cost": 0.00056728
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n    \"technical_and_design_decisions\": [\n        \"U1 (Transaction Context): For Node.js, the context object (stub, etc.) is naturally the first parameter. For Java, to ensure thread-safety, a new transaction context object will be instantiated and scoped to each chaincode invocation, which is the recommended pattern in Hyperledger Fabric Java Chaincode.\",\n        \"U2/U3 (Package Cleanup): The refactoring will involve physically moving the 'protos/utils' directory to a new 'protoutils' package location. This requires updating all internal imports and any documented public API paths. The approach will be a careful rename-and-update to avoid breaking the core.\",\n        \"U4 (Kafka Health Checks): This feature is specified as being already on the 'master' branch. The primary technical task is to backport/merge the existing, tested commit(s) into the specified release (1.4 LTS) branch, ensuring compatibility and running regression tests.\",\n        \"U5 (Reader Invoke for Query): The design decision is to implement access control based on the actual chaincode operations performed. A new `InvokeChaincode` policy will be introduced that evaluates the set of operations (e.g., `GetState`, `PutState`) in the transaction proposal. A `chaincode` performing only read (`Get`) operations will be allowed with Reader permission. This requires changes to the core transaction validation logic.\",\n        \"U6 (Service Discovery Endpoint): A new peer configuration option, e.g., `CORE_PEER_SERVICE_DISCOVERY_EXTERNAL_ENDPOINT`, will be added. If set, this value will be used in Service Discovery advertisements instead of the gossip external endpoint. This provides a clean separation for development environments.\",\n        \"U7 (Operations Service Version): A new REST endpoint, e.g., `/version`, will be added to the existing operations service (which typically uses HTTP/gRPC on a separate port). The endpoint will return the peer or orderer's build version.\",\n        \"U8 (Go Sample Rewrite): The existing sample chaincode (likely simplekey-value) will be analyzed and rewritten to be idiomatic Go, utilizing goroutines for concurrency where appropriate, proper error handling with `fmt.Errorf`, and clear struct definitions.\"\n    ],\n    \"assumptions\": [\n        \"U2 and U3 are identical user stories. I will treat them as a single requirement to avoid duplicate effort.\",\n        \"The Kafka health checks from the 'master' branch (U4) are already implemented and tested. The effort is for merge/backport and validation, not new feature development.\",\n        \"I have full access to the Hyperledger Fabric codebase (Go, Node.js, Java SDKs, core fabric code) and its build/test infrastructure.\",\n        \"The effort estimates account for time required to write unit and integration tests for the changes.\",\n        \"For U5, I am assuming the necessary internal APIs for operation-level introspection in the chaincode shim are available or will be developed as part of this task.\",\n        \"The operations service (U7) already has a framework for serving metadata; adding a new endpoint is a well-understood extension.\"\n    ],\n    \"activities\": [\n        {\n            \"activity_id\": \"A1\",\n            \"activity_name\": \"Overall Design & Task Planning\",\n            \"activity_description\": \"Analyze all user stories (U1-U8). Review affected components, identify interdependencies, create a detailed technical plan, and set up task tracking.\",\n            \"most_likely_effort\": 16\n        },\n        {\n            \"activity_id\": \"A2\",\n            \"activity_name\": \"U1: Implement Transaction Context Access\",\n            \"activity_description\": \"For Java: Modify the chaincode shim to instantiate a new transaction context per invocation for thread-safety. For Node.js: Ensure the documentation clarifies the context is the first parameter. Write unit tests.\",\n            \"most_likely_effort\": 12\n        },\n        {\n            \"activity_id\": \"A3\",\n            \"activity_name\": \"U2/U3: Refactor Proto Package Structure\",\n            \"activity_description\": \"Physically move 'protos/utils' to a new 'protoutils' top-level package. Update all internal imports across the Fabric codebase and tooling. Update public documentation. Perform a clean build and test.\",\n            \"most_likely_effort\": 20\n        },\n        {\n            \"activity_id\": \"A4\",\n            \"activity_name\": \"U4: Backport Kafka Health Checks\",\n            \"activity_description\": \"Identify the relevant commit(s) from master. Merge or cherry-pick into the release-1.4 branch. Resolve any conflicts. Run the integration test suite for ordering service with Kafka.\",\n            \"most_likely_effort\": 8\n        },\n        {\n            \"activity_id\": \"A5\",\n            \"activity_name\": \"U5: Implement Read-Permission Invoke for Queries\",\n            \"activity_description\": \"Modify the transaction validation logic to inspect chaincode operations. Implement policy that allows `Get`-only transactions with Reader permission. Add a `ReadOnlyInvoke` path if operation-level inspection is too complex. Develop comprehensive tests for both permission cases.\",\n            \"most_likely_effort\": 16\n        },\n        {\n            \"activity_id\": \"A6\",\n            \"activity_name\": \"U6: Add Service Discovery External Endpoint Config\",\n            \"activity_description\": \"Introduce the new peer configuration parameter. Modify the Service Discovery module to read and use this parameter when advertising peer endpoints. Write unit tests for the configuration logic and integration tests with a mock discovery service.\",\n            \"most_likely_effort\": 12\n        },\n        {\n            \"activity_id\": \"A7\",\n            \"activity_name\": \"U7: Expose Version via Operations Service\",\n            \"activity_description\": \"Add a `/version` endpoint to the operations service for both peer and orderer. Implement the handler to read and return the node's version. Write unit tests for the new endpoint.\",\n            \"most_likely_effort\": 8\n        },\n        {\n            \"activity_id\": \"A8\",\n            \"activity_name\": \"U8: Rewrite Go Sample to Idiomatic Go\",\n            \"activity_description\": \"Analyze existing sample chaincode. Rewrite it following Go best practices, including proper error handling, use of structs, and comments explaining Go-specific constructs. Update related documentation.\",\n            \"most_likely_effort\": 12\n        },\n        {\n            \"activity_id\": \"A9\",\n            \"activity_name\": \"Code Review, Integration & Final Testing\",\n            \"activity_description\": \"Perform peer code review for all changes. Integrate all components, run the full system test suite (including the new tests), and address any integration issues.\",\n            \"most_likely_effort\": 16\n        }\n    ],\n    \"reported_total\": {\n        \"most_likely_effort\": 120\n    }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1552,
+    "completion_tokens": 2026,
+    "total_tokens": 3578,
+    "cost": 0.0007582176,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 192,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0007582176,
+      "upstream_inference_prompt_cost": 0.0001909376,
+      "upstream_inference_completions_cost": 0.00056728
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "xiaomi/mimo-v2.5",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "U1 (Transaction Context): For Node.js, the context object (stub, etc.) is naturally the first parameter. For Java, to ensure thread-safety, a new transaction context object will be instantiated and scoped to each chaincode invocation, which is the recommended pattern in Hyperledger Fabric Java Chaincode.",
+      "U2/U3 (Package Cleanup): The refactoring will involve physically moving the 'protos/utils' directory to a new 'protoutils' package location. This requires updating all internal imports and any documented public API paths. The approach will be a careful rename-and-update to avoid breaking the core.",
+      "U4 (Kafka Health Checks): This feature is specified as being already on the 'master' branch. The primary technical task is to backport/merge the existing, tested commit(s) into the specified release (1.4 LTS) branch, ensuring compatibility and running regression tests.",
+      "U5 (Reader Invoke for Query): The design decision is to implement access control based on the actual chaincode operations performed. A new `InvokeChaincode` policy will be introduced that evaluates the set of operations (e.g., `GetState`, `PutState`) in the transaction proposal. A `chaincode` performing only read (`Get`) operations will be allowed with Reader permission. This requires changes to the core transaction validation logic.",
+      "U6 (Service Discovery Endpoint): A new peer configuration option, e.g., `CORE_PEER_SERVICE_DISCOVERY_EXTERNAL_ENDPOINT`, will be added. If set, this value will be used in Service Discovery advertisements instead of the gossip external endpoint. This provides a clean separation for development environments.",
+      "U7 (Operations Service Version): A new REST endpoint, e.g., `/version`, will be added to the existing operations service (which typically uses HTTP/gRPC on a separate port). The endpoint will return the peer or orderer's build version.",
+      "U8 (Go Sample Rewrite): The existing sample chaincode (likely simplekey-value) will be analyzed and rewritten to be idiomatic Go, utilizing goroutines for concurrency where appropriate, proper error handling with `fmt.Errorf`, and clear struct definitions."
+    ],
+    "assumptions": [
+      "U2 and U3 are identical user stories. I will treat them as a single requirement to avoid duplicate effort.",
+      "The Kafka health checks from the 'master' branch (U4) are already implemented and tested. The effort is for merge/backport and validation, not new feature development.",
+      "I have full access to the Hyperledger Fabric codebase (Go, Node.js, Java SDKs, core fabric code) and its build/test infrastructure.",
+      "The effort estimates account for time required to write unit and integration tests for the changes.",
+      "For U5, I am assuming the necessary internal APIs for operation-level introspection in the chaincode shim are available or will be developed as part of this task.",
+      "The operations service (U7) already has a framework for serving metadata; adding a new endpoint is a well-understood extension."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Overall Design & Task Planning",
+        "activity_description": "Analyze all user stories (U1-U8). Review affected components, identify interdependencies, create a detailed technical plan, and set up task tracking.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1: Implement Transaction Context Access",
+        "activity_description": "For Java: Modify the chaincode shim to instantiate a new transaction context per invocation for thread-safety. For Node.js: Ensure the documentation clarifies the context is the first parameter. Write unit tests.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2/U3: Refactor Proto Package Structure",
+        "activity_description": "Physically move 'protos/utils' to a new 'protoutils' top-level package. Update all internal imports across the Fabric codebase and tooling. Update public documentation. Perform a clean build and test.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U4: Backport Kafka Health Checks",
+        "activity_description": "Identify the relevant commit(s) from master. Merge or cherry-pick into the release-1.4 branch. Resolve any conflicts. Run the integration test suite for ordering service with Kafka.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U5: Implement Read-Permission Invoke for Queries",
+        "activity_description": "Modify the transaction validation logic to inspect chaincode operations. Implement policy that allows `Get`-only transactions with Reader permission. Add a `ReadOnlyInvoke` path if operation-level inspection is too complex. Develop comprehensive tests for both permission cases.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U6: Add Service Discovery External Endpoint Config",
+        "activity_description": "Introduce the new peer configuration parameter. Modify the Service Discovery module to read and use this parameter when advertising peer endpoints. Write unit tests for the configuration logic and integration tests with a mock discovery service.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7: Expose Version via Operations Service",
+        "activity_description": "Add a `/version` endpoint to the operations service for both peer and orderer. Implement the handler to read and return the node's version. Write unit tests for the new endpoint.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8: Rewrite Go Sample to Idiomatic Go",
+        "activity_description": "Analyze existing sample chaincode. Rewrite it following Go best practices, including proper error handling, use of structs, and comments explaining Go-specific constructs. Update related documentation.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Code Review, Integration & Final Testing",
+        "activity_description": "Perform peer code review for all changes. Integrate all components, run the full system test suite (including the new tests), and address any integration issues.",
+        "most_likely_effort": 16
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 120
+    }
+  }
+}

@@ -1,0 +1,260 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-033",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788420512-I9xeaHnEHwSJmJf6JMAy",
+    "object": "chat.completion",
+    "created": 1788420512,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Treat the specification as an incremental enhancement to Spring Batch (referenced indirectly via Spring Framework) since the user stories (CodeGen, Merge Options, Megastore, RowMapper, Job timeout, FlatFile/CSV escaping, MessageBus) match Spring Batch concepts.\",\n    \"Use Spring Expression Language (SpEL) for U6 dynamic naming to avoid introducing a new expression engine.\",\n    \"For U3 (job timeout), reuse the existing JobLauncher / TaskExecutor timeout mechanism rather than implementing a new scheduler.\",\n    \"For U4, introduce a new SqlScriptProcessor / SqlScriptJobStatement abstraction that wraps JdbcTemplate and supports both statements and scripts.\",\n    \"For U5, expose an ItemReaderFactory hook (or a new factory bean) so users can supply their own RowMapper<Tuple> without subclassing NameColumnJdbcItemReader.\",\n    \"For U7, add an 'escape' / 'quote' / 'escapeChar' property to the FlatFileItemWriter separator/delimiter configuration to support Hive/HAWQ-compatible CSV output.\",\n    \"For U2, parameterize MergeOptions via a builder + config object, and integrate the Megastore delta consumer as a pluggable ItemReader/ItemWriter.\",\n    \"For U8, refactor MessageBus Message transformation to a streaming/chain-of-transformers design that reduces intermediate object allocation and improves throughput.\",\n    \"Adopt a configuration-builder style (Fluent API) for parameterization stories (U1, U2) to maintain backward compatibility.\",\n    \"Reuse the existing test infrastructure (unit + integration) and follow the framework's existing coding and packaging conventions.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Java/Spring developer is performing all the work.\",\n    \"A workday equals 8 hours of focused development effort (calendar duration is not estimated).\",\n    \"The codebase, build system, CI, and dependency management for Spring Batch are already in place and need no setup.\",\n    \"Megastore client libraries are available on the classpath and a working integration point already exists in the codebase.\",\n    \"All eight user stories are of roughly similar complexity and are sequenced serially.\",\n    \"No database migration, deployment pipeline change, or production rollout work is included.\",\n    \"Documentation effort covers only Javadoc and a short release-notes entry per feature; no separate user guide rewrite.\",\n    \"Effort for design and code review is bundled into each activity's estimate, with a small dedicated buffer at the end.\",\n    \"No major architectural refactor is required beyond what is implied by U8.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Review the eight user stories, explore the relevant Spring Batch modules, and produce a short technical design note covering configuration parameterization, SQL processor, RowMapper factory, expression naming, delimiter escaping, and MessageBus refactor approach.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Parameterize CodeGen Options\",\n      \"activity_description\": \"Refactor CodeGen options into a configuration object/builder so they can be supplied at runtime; update default factories and add unit tests covering common code-generation scenarios.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Parameterize Merge Options and Megastore delta consumption\",\n      \"activity_description\": \"Introduce a MergeOptions configuration object, expose it via the job/builder API, and wire the Megastore-based incremental delta consumer into the job flow with unit and integration tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Add job timeout option\",\n      \"activity_description\": \"Add a 'timeout' property to job/job-launcher configuration that interrupts or aborts a hung job, using existing Future-based launching; add tests for timeout firing and for jobs completing within the timeout.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - SQL Statement/Script Processor and Job statement\",\n      \"activity_description\": \"Implement a new SqlScriptProcessor and SqlScriptJobStatement that execute a single SQL statement or a script file via JdbcTemplate; support parameter binding and add unit tests for both batch and non-batch invocations.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Custom RowMapper<Tuple> factory support\",\n      \"activity_description\": \"Introduce an ItemReaderFactory extension point so users can supply their own RowMapper<Tuple> without overriding afterPropertySet; add a default factory and tests demonstrating custom field enrichment.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Expression-based dynamic file/directory naming\",\n      \"activity_description\": \"Allow resource names for output files and directories to be SpEL expressions evaluated against the current ExecutionContext / item; update the relevant ResourceFactory/NameProvider classes and add tests with timestamp-based and context-based expressions.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - CSV delimiter escaping\",\n      \"activity_description\": \"Add escape-character / quoting support to FlatFileItemWriter so delimiters inside field values are properly escaped for Hive/HAWQ compatibility; add unit tests covering embedded delimiters, quotes, and the new escape character.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Refactor MessageBus message transformation for throughput\",\n      \"activity_description\": \"Refactor the MessageBus transformation pipeline to a streaming/chain-of-responsibilities design, reduce intermediate allocations, keep public API backward compatible, and add micro-benchmark and regression tests for throughput.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration testing\",\n      \"activity_description\": \"Run an end-to-end job that exercises parameterization (U1/U2), timeout (U3), SQL processing (U4), enriched JDBC reads (U5), dynamic naming (U6), escaped CSV output (U7) and the refactored MessageBus (U8) together; fix integration issues found.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and release notes\",\n      \"activity_description\": \"Update Javadoc for the new public APIs and write concise release-notes entries describing each user story's feature and configuration usage.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Code review, polish and bug fixing\",\n      \"activity_description\": \"Self-review, address style/convention feedback, fix minor issues surfaced by tests and integration runs, and perform a final smoke build.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 35\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully. It appears to be about Spring Framework, but the user stories (U1-U8) are actually from Spring Batch or a similar batch processing framework, not the core Spring Framework. The user stories reference:\n\n- U1: CodeGen Options parameterization\n- U2: Merge Options parameterization with megastore\n- U3: Timeout option for jobs\n- U4: SQL Statement/Script execution via Processor or Job\n- U5: Custom RowMapper<Tuple> for JDBC\n- U6: Expressions for dynamic file/directory naming\n- U7: Escaping delimiter characters for CSV (Hive/HAWQ compatibility)\n- U8: Refactoring MessageBus Message transformation for throughput\n\nThese are clearly Spring Batch features. Let me work through a WBS for this increment.\n\nFirst, let me think about what activities would be needed:\n\n1. **Requirements Analysis & Design**\n   - Analyze each user story\n   - Define design approach for each\n   - Create technical design document\n\n2. **U1: CodeGen Options Parameterization**\n   - Design parameter mechanism\n   - Implement code generation option handling\n   - Add tests\n\n3. **U2: Merge Options Parameterization**\n   - Design merge option parameterization\n   - Implement Megastore integration for delta consumption\n   - Add tests\n\n4. **U3: Job Timeout Option**\n   - Design timeout mechanism\n   - Implement timeout at job level\n   - Add tests\n\n5. **U4: SQL Statement/Script Execution**\n   - Design SQL processor/job statement\n   - Implement SQL execution\n   - Add tests\n\n6. **U5: Custom RowMapper Support**\n   - Design custom RowMapper extension\n   - Implement factory pattern\n   - Add tests\n\n7. **U6: Expression-based Naming**\n   - Design expression evaluation\n   - Implement dynamic naming\n   - Add tests\n\n8. **U7: Delimiter Escaping**\n   - Design escape mechanism\n   - Implement delimiter escaping\n   - Add tests\n\n9. **U8: MessageBus Refactoring**\n   - Analyze current implementation\n   - Design refactored architecture\n   - Implement transformation refactor\n   - Add performance tests\n\n10. **Integration & Testing**\n    - Integration testing\n    - Documentation\n    - Bug fixes\n\nLet me estimate each in workdays. A workday is typically 8 hours. I'll assume a single experienced developer.\n\nLet me think about reasonable effort estimates:\n\n1. Requirements Analysis & Design: 2 days\n2. U1 CodeGen Options: 3 days\n3. U2 Merge Options: 4 days (megastore is complex)\n4. U3 Job Timeout: 2 days\n5. U4 SQL Statement Processor: 3 days\n6. U5 Custom RowMapper: 2 days\n7. U6 Expression-based naming: 3 days\n8. U7 Delimiter Escaping: 2 days\n9. U8 MessageBus Refactoring: 5 days (refactoring for performance is risky)\n10. Integration Testing: 3 days\n11. Documentation: 1 day\n\nTotal: ~30 days\n\nLet me think more carefully. Spring Batch is a complex framework. Each feature requires understanding the existing code, designing the change, implementing, testing, and documenting.\n\nLet me refine:\n\n1. **Requirements & Design** (overarching): 3 days\n2. **U1 CodeGen parameterization**: 3 days\n3. **U2 Merge Options/Megastore**: 5 days (Megastore integration is complex)\n4. **U3 Job timeout**: 2 days\n5. **U4 SQL Statement/Script Processor/Job**: 4 days\n6. **U5 Custom RowMapper factory**: 2 days\n7. **U6 Expression-based dynamic naming**: 3 days\n8. **U7 Delimiter escaping**: 2 days\n9. **U8 MessageBus transformation refactor**: 5 days\n10. **Integration testing across all features**: 3 days\n11. **Documentation**: 2 days\n12. **Code review & bug fixes**: 2 days\n\nTotal: ~36 days\n\nLet me be a bit more conservative and realistic. Spring Batch features often take 2-5 days each when working in a complex codebase. Let me settle on:\n\n1. Requirements Analysis & Technical Design: 2 days\n2. U1 CodeGen Options parameterization: 3 days\n3. U2 Merge Options parameterization with Megastore: 5 days\n4. U3 Job timeout option: 2 days\n5. U4 SQL Statement/Script Processor: 4 days\n6. U5 Custom RowMapper factory support: 2 days\n7. U6 Expression-based file/directory naming: 3 days\n8. U7 CSV delimiter escaping: 2 days\n9. U8 MessageBus transformation refactor: 5 days\n10. Integration testing: 3 days\n11. Documentation: 1 day\n12. Code review and bug fixes: 2 days\n\nTotal: 34 days\n\nI'll go with this. Let me write up the technical decisions and assumptions:\n\nTechnical and Design Decisions:\n- Use Spring Expression Language (SpEL) for expression evaluation (U6)\n- Implement timeout using existing job executor mechanisms (U3)\n- Add Builder pattern improvements for parameterization (U1, U2)\n- Create a new SqlScriptProcessor for SQL execution (U4)\n- Use Factory pattern for ItemReaderFactory (U5)\n- Add escape character support to FlatFileItemWriter (U7)\n- Refactor MessageBus to use streaming/pipelined transformation (U8)\n- Megastore integration via existing delta module (U2)\n\nAssumptions:\n- Single experienced Java/Spring developer\n- Standard 8-hour workday\n- Existing test infrastructure can be reused\n- Megastore API is available\n- No major architectural changes needed beyond each user story\n- The features are independent enough to be developed in parallel conceptually but sequentially here\n\nLet me finalize the JSON output.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully. It appears to be about Spring Framework, but the user stories (U1-U8) are actually from Spring Batch or a similar batch processing framework, not the core Spring Framework. The user stories reference:\n\n- U1: CodeGen Options parameterization\n- U2: Merge Options parameterization with megastore\n- U3: Timeout option for jobs\n- U4: SQL Statement/Script execution via Processor or Job\n- U5: Custom RowMapper<Tuple> for JDBC\n- U6: Expressions for dynamic file/directory naming\n- U7: Escaping delimiter characters for CSV (Hive/HAWQ compatibility)\n- U8: Refactoring MessageBus Message transformation for throughput\n\nThese are clearly Spring Batch features. Let me work through a WBS for this increment.\n\nFirst, let me think about what activities would be needed:\n\n1. **Requirements Analysis & Design**\n   - Analyze each user story\n   - Define design approach for each\n   - Create technical design document\n\n2. **U1: CodeGen Options Parameterization**\n   - Design parameter mechanism\n   - Implement code generation option handling\n   - Add tests\n\n3. **U2: Merge Options Parameterization**\n   - Design merge option parameterization\n   - Implement Megastore integration for delta consumption\n   - Add tests\n\n4. **U3: Job Timeout Option**\n   - Design timeout mechanism\n   - Implement timeout at job level\n   - Add tests\n\n5. **U4: SQL Statement/Script Execution**\n   - Design SQL processor/job statement\n   - Implement SQL execution\n   - Add tests\n\n6. **U5: Custom RowMapper Support**\n   - Design custom RowMapper extension\n   - Implement factory pattern\n   - Add tests\n\n7. **U6: Expression-based Naming**\n   - Design expression evaluation\n   - Implement dynamic naming\n   - Add tests\n\n8. **U7: Delimiter Escaping**\n   - Design escape mechanism\n   - Implement delimiter escaping\n   - Add tests\n\n9. **U8: MessageBus Refactoring**\n   - Analyze current implementation\n   - Design refactored architecture\n   - Implement transformation refactor\n   - Add performance tests\n\n10. **Integration & Testing**\n    - Integration testing\n    - Documentation\n    - Bug fixes\n\nLet me estimate each in workdays. A workday is typically 8 hours. I'll assume a single experienced developer.\n\nLet me think about reasonable effort estimates:\n\n1. Requirements Analysis & Design: 2 days\n2. U1 CodeGen Options: 3 days\n3. U2 Merge Options: 4 days (megastore is complex)\n4. U3 Job Timeout: 2 days\n5. U4 SQL Statement Processor: 3 days\n6. U5 Custom RowMapper: 2 days\n7. U6 Expression-based naming: 3 days\n8. U7 Delimiter Escaping: 2 days\n9. U8 MessageBus Refactoring: 5 days (refactoring for performance is risky)\n10. Integration Testing: 3 days\n11. Documentation: 1 day\n\nTotal: ~30 days\n\nLet me think more carefully. Spring Batch is a complex framework. Each feature requires understanding the existing code, designing the change, implementing, testing, and documenting.\n\nLet me refine:\n\n1. **Requirements & Design** (overarching): 3 days\n2. **U1 CodeGen parameterization**: 3 days\n3. **U2 Merge Options/Megastore**: 5 days (Megastore integration is complex)\n4. **U3 Job timeout**: 2 days\n5. **U4 SQL Statement/Script Processor/Job**: 4 days\n6. **U5 Custom RowMapper factory**: 2 days\n7. **U6 Expression-based dynamic naming**: 3 days\n8. **U7 Delimiter escaping**: 2 days\n9. **U8 MessageBus transformation refactor**: 5 days\n10. **Integration testing across all features**: 3 days\n11. **Documentation**: 2 days\n12. **Code review & bug fixes**: 2 days\n\nTotal: ~36 days\n\nLet me be a bit more conservative and realistic. Spring Batch features often take 2-5 days each when working in a complex codebase. Let me settle on:\n\n1. Requirements Analysis & Technical Design: 2 days\n2. U1 CodeGen Options parameterization: 3 days\n3. U2 Merge Options parameterization with Megastore: 5 days\n4. U3 Job timeout option: 2 days\n5. U4 SQL Statement/Script Processor: 4 days\n6. U5 Custom RowMapper factory support: 2 days\n7. U6 Expression-based file/directory naming: 3 days\n8. U7 CSV delimiter escaping: 2 days\n9. U8 MessageBus transformation refactor: 5 days\n10. Integration testing: 3 days\n11. Documentation: 1 day\n12. Code review and bug fixes: 2 days\n\nTotal: 34 days\n\nI'll go with this. Let me write up the technical decisions and assumptions:\n\nTechnical and Design Decisions:\n- Use Spring Expression Language (SpEL) for expression evaluation (U6)\n- Implement timeout using existing job executor mechanisms (U3)\n- Add Builder pattern improvements for parameterization (U1, U2)\n- Create a new SqlScriptProcessor for SQL execution (U4)\n- Use Factory pattern for ItemReaderFactory (U5)\n- Add escape character support to FlatFileItemWriter (U7)\n- Refactor MessageBus to use streaming/pipelined transformation (U8)\n- Megastore integration via existing delta module (U2)\n\nAssumptions:\n- Single experienced Java/Spring developer\n- Standard 8-hour workday\n- Existing test infrastructure can be reused\n- Megastore API is available\n- No major architectural changes needed beyond each user story\n- The features are independent enough to be developed in parallel conceptually but sequentially here\n\nLet me finalize the JSON output.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1421,
+      "completion_tokens": 2853,
+      "total_tokens": 4274,
+      "cost": 0.00381246,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00381246,
+        "upstream_inference_prompt_cost": 0.00038886,
+        "upstream_inference_completions_cost": 0.0034236
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1253,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Treat the specification as an incremental enhancement to Spring Batch (referenced indirectly via Spring Framework) since the user stories (CodeGen, Merge Options, Megastore, RowMapper, Job timeout, FlatFile/CSV escaping, MessageBus) match Spring Batch concepts.\",\n    \"Use Spring Expression Language (SpEL) for U6 dynamic naming to avoid introducing a new expression engine.\",\n    \"For U3 (job timeout), reuse the existing JobLauncher / TaskExecutor timeout mechanism rather than implementing a new scheduler.\",\n    \"For U4, introduce a new SqlScriptProcessor / SqlScriptJobStatement abstraction that wraps JdbcTemplate and supports both statements and scripts.\",\n    \"For U5, expose an ItemReaderFactory hook (or a new factory bean) so users can supply their own RowMapper<Tuple> without subclassing NameColumnJdbcItemReader.\",\n    \"For U7, add an 'escape' / 'quote' / 'escapeChar' property to the FlatFileItemWriter separator/delimiter configuration to support Hive/HAWQ-compatible CSV output.\",\n    \"For U2, parameterize MergeOptions via a builder + config object, and integrate the Megastore delta consumer as a pluggable ItemReader/ItemWriter.\",\n    \"For U8, refactor MessageBus Message transformation to a streaming/chain-of-transformers design that reduces intermediate object allocation and improves throughput.\",\n    \"Adopt a configuration-builder style (Fluent API) for parameterization stories (U1, U2) to maintain backward compatibility.\",\n    \"Reuse the existing test infrastructure (unit + integration) and follow the framework's existing coding and packaging conventions.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Java/Spring developer is performing all the work.\",\n    \"A workday equals 8 hours of focused development effort (calendar duration is not estimated).\",\n    \"The codebase, build system, CI, and dependency management for Spring Batch are already in place and need no setup.\",\n    \"Megastore client libraries are available on the classpath and a working integration point already exists in the codebase.\",\n    \"All eight user stories are of roughly similar complexity and are sequenced serially.\",\n    \"No database migration, deployment pipeline change, or production rollout work is included.\",\n    \"Documentation effort covers only Javadoc and a short release-notes entry per feature; no separate user guide rewrite.\",\n    \"Effort for design and code review is bundled into each activity's estimate, with a small dedicated buffer at the end.\",\n    \"No major architectural refactor is required beyond what is implied by U8.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Requirements analysis and technical design\",\n      \"activity_description\": \"Review the eight user stories, explore the relevant Spring Batch modules, and produce a short technical design note covering configuration parameterization, SQL processor, RowMapper factory, expression naming, delimiter escaping, and MessageBus refactor approach.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Parameterize CodeGen Options\",\n      \"activity_description\": \"Refactor CodeGen options into a configuration object/builder so they can be supplied at runtime; update default factories and add unit tests covering common code-generation scenarios.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Parameterize Merge Options and Megastore delta consumption\",\n      \"activity_description\": \"Introduce a MergeOptions configuration object, expose it via the job/builder API, and wire the Megastore-based incremental delta consumer into the job flow with unit and integration tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Add job timeout option\",\n      \"activity_description\": \"Add a 'timeout' property to job/job-launcher configuration that interrupts or aborts a hung job, using existing Future-based launching; add tests for timeout firing and for jobs completing within the timeout.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - SQL Statement/Script Processor and Job statement\",\n      \"activity_description\": \"Implement a new SqlScriptProcessor and SqlScriptJobStatement that execute a single SQL statement or a script file via JdbcTemplate; support parameter binding and add unit tests for both batch and non-batch invocations.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Custom RowMapper<Tuple> factory support\",\n      \"activity_description\": \"Introduce an ItemReaderFactory extension point so users can supply their own RowMapper<Tuple> without overriding afterPropertySet; add a default factory and tests demonstrating custom field enrichment.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Expression-based dynamic file/directory naming\",\n      \"activity_description\": \"Allow resource names for output files and directories to be SpEL expressions evaluated against the current ExecutionContext / item; update the relevant ResourceFactory/NameProvider classes and add tests with timestamp-based and context-based expressions.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7 - CSV delimiter escaping\",\n      \"activity_description\": \"Add escape-character / quoting support to FlatFileItemWriter so delimiters inside field values are properly escaped for Hive/HAWQ compatibility; add unit tests covering embedded delimiters, quotes, and the new escape character.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8 - Refactor MessageBus message transformation for throughput\",\n      \"activity_description\": \"Refactor the MessageBus transformation pipeline to a streaming/chain-of-responsibilities design, reduce intermediate allocations, keep public API backward compatible, and add micro-benchmark and regression tests for throughput.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-feature integration testing\",\n      \"activity_description\": \"Run an end-to-end job that exercises parameterization (U1/U2), timeout (U3), SQL processing (U4), enriched JDBC reads (U5), dynamic naming (U6), escaped CSV output (U7) and the refactored MessageBus (U8) together; fix integration issues found.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation and release notes\",\n      \"activity_description\": \"Update Javadoc for the new public APIs and write concise release-notes entries describing each user story's feature and configuration usage.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Code review, polish and bug fixing\",\n      \"activity_description\": \"Self-review, address style/convention feedback, fix minor issues surfaced by tests and integration runs, and perform a final smoke build.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 35\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1421,
+    "completion_tokens": 2853,
+    "total_tokens": 4274,
+    "cost": 0.00381246,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00381246,
+      "upstream_inference_prompt_cost": 0.00038886,
+      "upstream_inference_completions_cost": 0.0034236
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1253,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788420536-y4LMUUFPJjkSA5ruEE3t",
+    "object": "chat.completion",
+    "created": 1788420536,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one estimated workday. This is a simple conversion factor question. I already stated in my assumptions that \"A workday equals 8 hours of focused development effort.\" I should not revise or restate the effort estimate, just provide the conversion factor.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one estimated workday. This is a simple conversion factor question. I already stated in my assumptions that \"A workday equals 8 hours of focused development effort.\" I should not revise or restate the effort estimate, just provide the conversion factor.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3148,
+      "completion_tokens": 80,
+      "total_tokens": 3228,
+      "cost": 0.00070296,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1406,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00070296,
+        "upstream_inference_prompt_cost": 0.00060696,
+        "upstream_inference_completions_cost": 9.6e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 62,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Treat the specification as an incremental enhancement to Spring Batch (referenced indirectly via Spring Framework) since the user stories (CodeGen, Merge Options, Megastore, RowMapper, Job timeout, FlatFile/CSV escaping, MessageBus) match Spring Batch concepts.",
+      "Use Spring Expression Language (SpEL) for U6 dynamic naming to avoid introducing a new expression engine.",
+      "For U3 (job timeout), reuse the existing JobLauncher / TaskExecutor timeout mechanism rather than implementing a new scheduler.",
+      "For U4, introduce a new SqlScriptProcessor / SqlScriptJobStatement abstraction that wraps JdbcTemplate and supports both statements and scripts.",
+      "For U5, expose an ItemReaderFactory hook (or a new factory bean) so users can supply their own RowMapper<Tuple> without subclassing NameColumnJdbcItemReader.",
+      "For U7, add an 'escape' / 'quote' / 'escapeChar' property to the FlatFileItemWriter separator/delimiter configuration to support Hive/HAWQ-compatible CSV output.",
+      "For U2, parameterize MergeOptions via a builder + config object, and integrate the Megastore delta consumer as a pluggable ItemReader/ItemWriter.",
+      "For U8, refactor MessageBus Message transformation to a streaming/chain-of-transformers design that reduces intermediate object allocation and improves throughput.",
+      "Adopt a configuration-builder style (Fluent API) for parameterization stories (U1, U2) to maintain backward compatibility.",
+      "Reuse the existing test infrastructure (unit + integration) and follow the framework's existing coding and packaging conventions."
+    ],
+    "assumptions": [
+      "A single experienced Java/Spring developer is performing all the work.",
+      "A workday equals 8 hours of focused development effort (calendar duration is not estimated).",
+      "The codebase, build system, CI, and dependency management for Spring Batch are already in place and need no setup.",
+      "Megastore client libraries are available on the classpath and a working integration point already exists in the codebase.",
+      "All eight user stories are of roughly similar complexity and are sequenced serially.",
+      "No database migration, deployment pipeline change, or production rollout work is included.",
+      "Documentation effort covers only Javadoc and a short release-notes entry per feature; no separate user guide rewrite.",
+      "Effort for design and code review is bundled into each activity's estimate, with a small dedicated buffer at the end.",
+      "No major architectural refactor is required beyond what is implied by U8."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Requirements analysis and technical design",
+        "activity_description": "Review the eight user stories, explore the relevant Spring Batch modules, and produce a short technical design note covering configuration parameterization, SQL processor, RowMapper factory, expression naming, delimiter escaping, and MessageBus refactor approach.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Parameterize CodeGen Options",
+        "activity_description": "Refactor CodeGen options into a configuration object/builder so they can be supplied at runtime; update default factories and add unit tests covering common code-generation scenarios.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Parameterize Merge Options and Megastore delta consumption",
+        "activity_description": "Introduce a MergeOptions configuration object, expose it via the job/builder API, and wire the Megastore-based incremental delta consumer into the job flow with unit and integration tests.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - Add job timeout option",
+        "activity_description": "Add a 'timeout' property to job/job-launcher configuration that interrupts or aborts a hung job, using existing Future-based launching; add tests for timeout firing and for jobs completing within the timeout.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - SQL Statement/Script Processor and Job statement",
+        "activity_description": "Implement a new SqlScriptProcessor and SqlScriptJobStatement that execute a single SQL statement or a script file via JdbcTemplate; support parameter binding and add unit tests for both batch and non-batch invocations.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - Custom RowMapper<Tuple> factory support",
+        "activity_description": "Introduce an ItemReaderFactory extension point so users can supply their own RowMapper<Tuple> without overriding afterPropertySet; add a default factory and tests demonstrating custom field enrichment.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - Expression-based dynamic file/directory naming",
+        "activity_description": "Allow resource names for output files and directories to be SpEL expressions evaluated against the current ExecutionContext / item; update the relevant ResourceFactory/NameProvider classes and add tests with timestamp-based and context-based expressions.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7 - CSV delimiter escaping",
+        "activity_description": "Add escape-character / quoting support to FlatFileItemWriter so delimiters inside field values are properly escaped for Hive/HAWQ compatibility; add unit tests covering embedded delimiters, quotes, and the new escape character.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8 - Refactor MessageBus message transformation for throughput",
+        "activity_description": "Refactor the MessageBus transformation pipeline to a streaming/chain-of-responsibilities design, reduce intermediate allocations, keep public API backward compatible, and add micro-benchmark and regression tests for throughput.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-feature integration testing",
+        "activity_description": "Run an end-to-end job that exercises parameterization (U1/U2), timeout (U3), SQL processing (U4), enriched JDBC reads (U5), dynamic naming (U6), escaped CSV output (U7) and the refactored MessageBus (U8) together; fix integration issues found.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation and release notes",
+        "activity_description": "Update Javadoc for the new public APIs and write concise release-notes entries describing each user story's feature and configuration usage.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Code review, polish and bug fixing",
+        "activity_description": "Self-review, address style/convention feedback, fix minor issues surfaced by tests and integration runs, and perform a final smoke build.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 35
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

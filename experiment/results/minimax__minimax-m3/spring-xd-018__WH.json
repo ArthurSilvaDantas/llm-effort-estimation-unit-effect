@@ -1,0 +1,179 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-018",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788417295-TNOPC2ie24ffUKuHE6jT",
+    "object": "chat.completion",
+    "created": 1788417295,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Treat U4 and U5 as a single user story since they are exact duplicates; the implementation effort is shared.\",\n    \"U2 is explicitly scoped as a 'Spike' (investigation, design, and documentation only) — no production code is to be delivered for it in this increment.\",\n    \"U3 is a performance investigation activity (profiling, bottleneck identification, documentation) — not a code change request.\",\n    \"U6 and U7 are functionally parallel (override of two different external locations) and will share the configuration-property plumbing design.\",\n    \"Use Spring XD's existing module SPI (Stream/Job processors) for the RxJava module to avoid creating a parallel module system.\",\n    \"Reuse the existing distributed-resource-loader pattern in Spring XD for HDFS-backed module storage, extending it rather than introducing a new storage layer.\",\n    \"Add an administrative endpoint (admin server) and a SparkLauncher control hook for the U8 'stop job' capability, instead of inventing a new control plane.\",\n    \"Single-developer delivery: the work is performed end-to-end by one engineer, so no handoff or coordination overhead is included.\",\n    \"All efforts are in work-hours (focused, productive development time) rather than elapsed calendar duration.\"\n  ],\n  \"assumptions\": [\n    \"The runtime in question is Spring XD (eXtreme Data), as indicated by terms like 'admin and container servers', 'module uber-jar', 'XD runtime', and 'Spark job'.\",\n    \"The target environment is Java 17+ as per the Spring Framework 6.0 baseline stated in the specification preamble.\",\n    \"A reusable HDFS client (Hadoop FileSystem API) is already available on the classpath via existing XD/YARN integration; no new Hadoop dependency is required.\",\n    \"Cloud Foundry (CF) configuration overrides for U6/U7 will be implemented as Spring `@PropertySource` / environment variable bindings rather than via a CF-specific service binding.\",\n    \"Performance tooling (YourKit / JFR / async-profiler) is available and licensed for the developer performing U3.\",\n    \"Unit and integration tests are scoped to the new functionality only; existing test suites are not regenerated.\",\n    \"The 'flexible RxJava module' (U1) means an XD processor module wrapping an RxJava `Flowable`/`Observable` — not a full reactive rewrite of XD internals.\",\n    \"U8's 'clean-up resources' means releasing the Spark application context, cancelling running SparkContexts, and unregistering the module entry — full resource reclamation is assumed to be handled by the underlying Spark framework.\",\n    \"No new UI/DSL is built for U2 in this increment; the spike only documents the future scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture, design, and project setup\",\n      \"activity_description\": \"Set up the development environment, review existing XD module SPI and admin/container server code paths, produce a high-level design covering HDFS storage, RxJava processor, Spark stop, and CF/YARN overrides.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 — RxJava processor module\",\n      \"activity_description\": \"Implement a Spring XD processor module that wraps an RxJava Flowable/Observable, including message conversion, back-pressure handling, error channels, and module metadata/registration.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 — ACL spike (investigation, design, documentation)\",\n      \"activity_description\": \"Review customer use cases for per-user resource ACLs, identify the approach that best fits the XD runtime, scope the DSL and UI work, and document next steps and phases. No production implementation.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 — High CPU startup time investigation\",\n      \"activity_description\": \"Profile admin and container server startup, identify the bottlenecks (classpath scanning, module registration, bean wiring, etc.), document the root causes, and provide a pros/cons list of remediation options.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4/U5 — HDFS storage for custom module uber-jar\",\n      \"activity_description\": \"Extend the module registration/distribution mechanism so the custom module uber-jar is written to and read from HDFS, supporting reliable re-install under HA failure scenarios (idempotent publish, atomic rename, retries).\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 — Override HDFS location (Cloud Foundry)\",\n      \"activity_description\": \"Add a configurable property (env var / Spring property) to override the HDFS location used for storing and retrieving the custom module uber-jar, including CF deployment documentation.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 — Override YARN config location\",\n      \"activity_description\": \"Add a configurable property to override the YARN configuration location used for module storage and retrieval, with the same override pattern as U6.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 — Stop existing Spark job and clean up resources\",\n      \"activity_description\": \"Implement a stop-Job operation on the admin REST API and CLI that signals the running Spark driver, cancels the SparkContext, and triggers module/resource cleanup at completion.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Unit testing\",\n      \"activity_description\": \"Write JUnit/Mockito unit tests for the new RxJava module, HDFS storage logic, config-override wiring, Spark stop command, and supporting services.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing\",\n      \"activity_description\": \"Build end-to-end integration tests covering: deploying an RxJava module, publishing a module to HDFS, overriding the HDFS/YARN locations, and stopping a Spark job mid-flight with resource cleanup.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Update the XD reference guide: RxJava processor usage, HDFS uber-jar storage, configuration override properties, stop-job API, and the U2 spike design notes.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 168\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully. The specification is about the Spring Framework, but the user stories (U1-U8) are not actually about Spring Framework. They appear to be about:\n\n- U1: RxJava module (processor for XD runtime - Spring XD)\n- U2: ACLs for resources in XD runtime\n- U3: Performance investigation for admin and container servers (XD)\n- U4: HDFS storage for custom module uber-jar\n- U5: Duplicate of U4 (HDFS storage for custom module uber-jar)\n- U6: Override HDFS location (CF = Cloud Foundry)\n- U7: Override YARN config location\n- U8: Stop existing Spark job and clean-up resources\n\nThese look like Spring XD (eXtreme Data) features. Let me break this down into development activities.\n\nLet me think about each user story:\n\nU1: Flexible RxJava module as a processor\n- Need to design RxJava processor module\n- Implement the module\n- Test it\n- Documentation\n\nU2: ACL implementation\n- This is marked as \"Spike Scope\" - mostly investigation/design\n- Review customer use cases\n- Design specs\n- Identify approach\n- Identify DSL/UI scope\n- Document next steps and phases\n\nU3: Performance investigation for CPU startup time\n- Profiling\n- Identify bottlenecks\n- Document reasons\n- List pros/cons\n\nU4: HDFS storage for custom module uber-jar\n- This is mostly the same as U5 (duplicate)\n- Implement HDFS storage option\n\nU5: Duplicate of U4\n\nU6: Override HDFS location (Cloud Foundry)\n\nU7: Override YARN config location\n\nU8: Stop existing Spark job\n- Implement stop functionality\n- Resource cleanup\n\nLet me create a WBS and estimates:\n\nActivities:\n1. Project setup/architecture design\n2. U1: RxJava processor module implementation\n3. U2: ACL design spike (investigation, design docs, next steps)\n4. U3: CPU startup time performance investigation\n5. U4/U5 (combined since duplicate): HDFS storage for custom module uber-jar\n6. U6: HDFS location override capability (Cloud Foundry)\n7. U7: YARN config location override capability\n8. U8: Stop Spark job and cleanup\n9. Unit testing for all features\n10. Integration testing\n11. Documentation\n\nLet me think about effort estimates. Since this is a single developer (me) implementing this:\n\n- Project setup and architecture: 8 hours\n- U1 RxJava module: 24 hours\n- U2 ACL spike (investigation, design, docs): 16 hours (it's a spike, not full implementation)\n- U3 Performance investigation: 12 hours\n- U4/U5 HDFS storage: 20 hours\n- U6 HDFS override (CF): 8 hours\n- U7 YARN config override: 8 hours\n- U8 Stop Spark job: 16 hours\n- Unit testing: 16 hours\n- Integration testing: 12 hours\n- Documentation: 8 hours\n\nTotal: 148 hours\n\nLet me reconsider. Some of these are similar so there might be synergies. U4 and U5 are duplicates. U6 and U7 are similar (just config location override).\n\nLet me refine my estimates with more thought:\n\nFor Spring XD (which this seems to be):\n- U1 RxJava: RxJava module needs to be a Stream/Job processor. Need integration with XD's module system. ~20-24 hours\n- U2 ACL Spike: This is explicitly a SPIKE. Should be 12-20 hours of investigation and documentation, no code.\n- U3 CPU investigation: Profiling, analysis, documentation. ~12-16 hours\n- U4/U5 HDFS: Need to modify module registration to store uber-jar in HDFS. This is a significant feature. ~24-32 hours\n- U6 HDFS override: Configuration property to override HDFS location. ~8-12 hours\n- U7 YARN override: Configuration property to override YARN config. ~8-12 hours\n- U8 Stop Spark job: Need to add stop endpoint/command. ~16-20 hours\n\nActivities breakdown:\n1. Architecture design and setup: 8h\n2. U1 - RxJava processor module: 24h\n3. U2 - ACL spike (investigation & design): 16h\n4. U3 - CPU startup investigation: 16h\n5. U4/U5 - HDFS storage for uber-jar: 24h\n6. U6 - HDFS location override (CF): 8h\n7. U7 - YARN config location override: 8h\n8. U8 - Stop Spark job with cleanup: 20h\n9. Unit tests: 20h\n10. Integration tests: 16h\n11. Documentation: 8h\n\nTotal: 168 hours\n\nActually, let me think more carefully. The user is asking about \"software development effort\" not calendar time. Let me be a bit more careful and think about what each activity really requires.\n\nLet me make this cleaner. I'll do a more structured WBS.\n\nI'll go with my estimates. Let me finalize.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully. The specification is about the Spring Framework, but the user stories (U1-U8) are not actually about Spring Framework. They appear to be about:\n\n- U1: RxJava module (processor for XD runtime - Spring XD)\n- U2: ACLs for resources in XD runtime\n- U3: Performance investigation for admin and container servers (XD)\n- U4: HDFS storage for custom module uber-jar\n- U5: Duplicate of U4 (HDFS storage for custom module uber-jar)\n- U6: Override HDFS location (CF = Cloud Foundry)\n- U7: Override YARN config location\n- U8: Stop existing Spark job and clean-up resources\n\nThese look like Spring XD (eXtreme Data) features. Let me break this down into development activities.\n\nLet me think about each user story:\n\nU1: Flexible RxJava module as a processor\n- Need to design RxJava processor module\n- Implement the module\n- Test it\n- Documentation\n\nU2: ACL implementation\n- This is marked as \"Spike Scope\" - mostly investigation/design\n- Review customer use cases\n- Design specs\n- Identify approach\n- Identify DSL/UI scope\n- Document next steps and phases\n\nU3: Performance investigation for CPU startup time\n- Profiling\n- Identify bottlenecks\n- Document reasons\n- List pros/cons\n\nU4: HDFS storage for custom module uber-jar\n- This is mostly the same as U5 (duplicate)\n- Implement HDFS storage option\n\nU5: Duplicate of U4\n\nU6: Override HDFS location (Cloud Foundry)\n\nU7: Override YARN config location\n\nU8: Stop existing Spark job\n- Implement stop functionality\n- Resource cleanup\n\nLet me create a WBS and estimates:\n\nActivities:\n1. Project setup/architecture design\n2. U1: RxJava processor module implementation\n3. U2: ACL design spike (investigation, design docs, next steps)\n4. U3: CPU startup time performance investigation\n5. U4/U5 (combined since duplicate): HDFS storage for custom module uber-jar\n6. U6: HDFS location override capability (Cloud Foundry)\n7. U7: YARN config location override capability\n8. U8: Stop Spark job and cleanup\n9. Unit testing for all features\n10. Integration testing\n11. Documentation\n\nLet me think about effort estimates. Since this is a single developer (me) implementing this:\n\n- Project setup and architecture: 8 hours\n- U1 RxJava module: 24 hours\n- U2 ACL spike (investigation, design, docs): 16 hours (it's a spike, not full implementation)\n- U3 Performance investigation: 12 hours\n- U4/U5 HDFS storage: 20 hours\n- U6 HDFS override (CF): 8 hours\n- U7 YARN config override: 8 hours\n- U8 Stop Spark job: 16 hours\n- Unit testing: 16 hours\n- Integration testing: 12 hours\n- Documentation: 8 hours\n\nTotal: 148 hours\n\nLet me reconsider. Some of these are similar so there might be synergies. U4 and U5 are duplicates. U6 and U7 are similar (just config location override).\n\nLet me refine my estimates with more thought:\n\nFor Spring XD (which this seems to be):\n- U1 RxJava: RxJava module needs to be a Stream/Job processor. Need integration with XD's module system. ~20-24 hours\n- U2 ACL Spike: This is explicitly a SPIKE. Should be 12-20 hours of investigation and documentation, no code.\n- U3 CPU investigation: Profiling, analysis, documentation. ~12-16 hours\n- U4/U5 HDFS: Need to modify module registration to store uber-jar in HDFS. This is a significant feature. ~24-32 hours\n- U6 HDFS override: Configuration property to override HDFS location. ~8-12 hours\n- U7 YARN override: Configuration property to override YARN config. ~8-12 hours\n- U8 Stop Spark job: Need to add stop endpoint/command. ~16-20 hours\n\nActivities breakdown:\n1. Architecture design and setup: 8h\n2. U1 - RxJava processor module: 24h\n3. U2 - ACL spike (investigation & design): 16h\n4. U3 - CPU startup investigation: 16h\n5. U4/U5 - HDFS storage for uber-jar: 24h\n6. U6 - HDFS location override (CF): 8h\n7. U7 - YARN config location override: 8h\n8. U8 - Stop Spark job with cleanup: 20h\n9. Unit tests: 20h\n10. Integration tests: 16h\n11. Documentation: 8h\n\nTotal: 168 hours\n\nActually, let me think more carefully. The user is asking about \"software development effort\" not calendar time. Let me be a bit more careful and think about what each activity really requires.\n\nLet me make this cleaner. I'll do a more structured WBS.\n\nI'll go with my estimates. Let me finalize.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1406,
+      "completion_tokens": 2471,
+      "total_tokens": 3877,
+      "cost": 0.00322764,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 664,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00322764,
+        "upstream_inference_prompt_cost": 0.00026244,
+        "upstream_inference_completions_cost": 0.0029652
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1103,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Treat U4 and U5 as a single user story since they are exact duplicates; the implementation effort is shared.\",\n    \"U2 is explicitly scoped as a 'Spike' (investigation, design, and documentation only) — no production code is to be delivered for it in this increment.\",\n    \"U3 is a performance investigation activity (profiling, bottleneck identification, documentation) — not a code change request.\",\n    \"U6 and U7 are functionally parallel (override of two different external locations) and will share the configuration-property plumbing design.\",\n    \"Use Spring XD's existing module SPI (Stream/Job processors) for the RxJava module to avoid creating a parallel module system.\",\n    \"Reuse the existing distributed-resource-loader pattern in Spring XD for HDFS-backed module storage, extending it rather than introducing a new storage layer.\",\n    \"Add an administrative endpoint (admin server) and a SparkLauncher control hook for the U8 'stop job' capability, instead of inventing a new control plane.\",\n    \"Single-developer delivery: the work is performed end-to-end by one engineer, so no handoff or coordination overhead is included.\",\n    \"All efforts are in work-hours (focused, productive development time) rather than elapsed calendar duration.\"\n  ],\n  \"assumptions\": [\n    \"The runtime in question is Spring XD (eXtreme Data), as indicated by terms like 'admin and container servers', 'module uber-jar', 'XD runtime', and 'Spark job'.\",\n    \"The target environment is Java 17+ as per the Spring Framework 6.0 baseline stated in the specification preamble.\",\n    \"A reusable HDFS client (Hadoop FileSystem API) is already available on the classpath via existing XD/YARN integration; no new Hadoop dependency is required.\",\n    \"Cloud Foundry (CF) configuration overrides for U6/U7 will be implemented as Spring `@PropertySource` / environment variable bindings rather than via a CF-specific service binding.\",\n    \"Performance tooling (YourKit / JFR / async-profiler) is available and licensed for the developer performing U3.\",\n    \"Unit and integration tests are scoped to the new functionality only; existing test suites are not regenerated.\",\n    \"The 'flexible RxJava module' (U1) means an XD processor module wrapping an RxJava `Flowable`/`Observable` — not a full reactive rewrite of XD internals.\",\n    \"U8's 'clean-up resources' means releasing the Spark application context, cancelling running SparkContexts, and unregistering the module entry — full resource reclamation is assumed to be handled by the underlying Spark framework.\",\n    \"No new UI/DSL is built for U2 in this increment; the spike only documents the future scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Architecture, design, and project setup\",\n      \"activity_description\": \"Set up the development environment, review existing XD module SPI and admin/container server code paths, produce a high-level design covering HDFS storage, RxJava processor, Spark stop, and CF/YARN overrides.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 — RxJava processor module\",\n      \"activity_description\": \"Implement a Spring XD processor module that wraps an RxJava Flowable/Observable, including message conversion, back-pressure handling, error channels, and module metadata/registration.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 — ACL spike (investigation, design, documentation)\",\n      \"activity_description\": \"Review customer use cases for per-user resource ACLs, identify the approach that best fits the XD runtime, scope the DSL and UI work, and document next steps and phases. No production implementation.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 — High CPU startup time investigation\",\n      \"activity_description\": \"Profile admin and container server startup, identify the bottlenecks (classpath scanning, module registration, bean wiring, etc.), document the root causes, and provide a pros/cons list of remediation options.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4/U5 — HDFS storage for custom module uber-jar\",\n      \"activity_description\": \"Extend the module registration/distribution mechanism so the custom module uber-jar is written to and read from HDFS, supporting reliable re-install under HA failure scenarios (idempotent publish, atomic rename, retries).\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 — Override HDFS location (Cloud Foundry)\",\n      \"activity_description\": \"Add a configurable property (env var / Spring property) to override the HDFS location used for storing and retrieving the custom module uber-jar, including CF deployment documentation.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 — Override YARN config location\",\n      \"activity_description\": \"Add a configurable property to override the YARN configuration location used for module storage and retrieval, with the same override pattern as U6.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 — Stop existing Spark job and clean up resources\",\n      \"activity_description\": \"Implement a stop-Job operation on the admin REST API and CLI that signals the running Spark driver, cancels the SparkContext, and triggers module/resource cleanup at completion.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Unit testing\",\n      \"activity_description\": \"Write JUnit/Mockito unit tests for the new RxJava module, HDFS storage logic, config-override wiring, Spark stop command, and supporting services.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration testing\",\n      \"activity_description\": \"Build end-to-end integration tests covering: deploying an RxJava module, publishing a module to HDFS, overriding the HDFS/YARN locations, and stopping a Spark job mid-flight with resource cleanup.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Update the XD reference guide: RxJava processor usage, HDFS uber-jar storage, configuration override properties, stop-job API, and the U2 spike design notes.\"\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 168\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1406,
+    "completion_tokens": 2471,
+    "total_tokens": 3877,
+    "cost": 0.00322764,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 664,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00322764,
+      "upstream_inference_prompt_cost": 0.00026244,
+      "upstream_inference_completions_cost": 0.0029652
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1103,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Treat U4 and U5 as a single user story since they are exact duplicates; the implementation effort is shared.",
+      "U2 is explicitly scoped as a 'Spike' (investigation, design, and documentation only) — no production code is to be delivered for it in this increment.",
+      "U3 is a performance investigation activity (profiling, bottleneck identification, documentation) — not a code change request.",
+      "U6 and U7 are functionally parallel (override of two different external locations) and will share the configuration-property plumbing design.",
+      "Use Spring XD's existing module SPI (Stream/Job processors) for the RxJava module to avoid creating a parallel module system.",
+      "Reuse the existing distributed-resource-loader pattern in Spring XD for HDFS-backed module storage, extending it rather than introducing a new storage layer.",
+      "Add an administrative endpoint (admin server) and a SparkLauncher control hook for the U8 'stop job' capability, instead of inventing a new control plane.",
+      "Single-developer delivery: the work is performed end-to-end by one engineer, so no handoff or coordination overhead is included.",
+      "All efforts are in work-hours (focused, productive development time) rather than elapsed calendar duration."
+    ],
+    "assumptions": [
+      "The runtime in question is Spring XD (eXtreme Data), as indicated by terms like 'admin and container servers', 'module uber-jar', 'XD runtime', and 'Spark job'.",
+      "The target environment is Java 17+ as per the Spring Framework 6.0 baseline stated in the specification preamble.",
+      "A reusable HDFS client (Hadoop FileSystem API) is already available on the classpath via existing XD/YARN integration; no new Hadoop dependency is required.",
+      "Cloud Foundry (CF) configuration overrides for U6/U7 will be implemented as Spring `@PropertySource` / environment variable bindings rather than via a CF-specific service binding.",
+      "Performance tooling (YourKit / JFR / async-profiler) is available and licensed for the developer performing U3.",
+      "Unit and integration tests are scoped to the new functionality only; existing test suites are not regenerated.",
+      "The 'flexible RxJava module' (U1) means an XD processor module wrapping an RxJava `Flowable`/`Observable` — not a full reactive rewrite of XD internals.",
+      "U8's 'clean-up resources' means releasing the Spark application context, cancelling running SparkContexts, and unregistering the module entry — full resource reclamation is assumed to be handled by the underlying Spark framework.",
+      "No new UI/DSL is built for U2 in this increment; the spike only documents the future scope."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Architecture, design, and project setup",
+        "activity_description": "Set up the development environment, review existing XD module SPI and admin/container server code paths, produce a high-level design covering HDFS storage, RxJava processor, Spark stop, and CF/YARN overrides."
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 — RxJava processor module",
+        "activity_description": "Implement a Spring XD processor module that wraps an RxJava Flowable/Observable, including message conversion, back-pressure handling, error channels, and module metadata/registration."
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 — ACL spike (investigation, design, documentation)",
+        "activity_description": "Review customer use cases for per-user resource ACLs, identify the approach that best fits the XD runtime, scope the DSL and UI work, and document next steps and phases. No production implementation."
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 — High CPU startup time investigation",
+        "activity_description": "Profile admin and container server startup, identify the bottlenecks (classpath scanning, module registration, bean wiring, etc.), document the root causes, and provide a pros/cons list of remediation options."
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4/U5 — HDFS storage for custom module uber-jar",
+        "activity_description": "Extend the module registration/distribution mechanism so the custom module uber-jar is written to and read from HDFS, supporting reliable re-install under HA failure scenarios (idempotent publish, atomic rename, retries)."
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U6 — Override HDFS location (Cloud Foundry)",
+        "activity_description": "Add a configurable property (env var / Spring property) to override the HDFS location used for storing and retrieving the custom module uber-jar, including CF deployment documentation."
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7 — Override YARN config location",
+        "activity_description": "Add a configurable property to override the YARN configuration location used for module storage and retrieval, with the same override pattern as U6."
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8 — Stop existing Spark job and clean up resources",
+        "activity_description": "Implement a stop-Job operation on the admin REST API and CLI that signals the running Spark driver, cancels the SparkContext, and triggers module/resource cleanup at completion."
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Unit testing",
+        "activity_description": "Write JUnit/Mockito unit tests for the new RxJava module, HDFS storage logic, config-override wiring, Spark stop command, and supporting services."
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Integration testing",
+        "activity_description": "Build end-to-end integration tests covering: deploying an RxJava module, publishing a module to HDFS, overriding the HDFS/YARN locations, and stopping a Spark job mid-flight with resource cleanup."
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation",
+        "activity_description": "Update the XD reference guide: RxJava processor usage, HDFS uber-jar storage, configuration override properties, stop-job API, and the U2 spike design notes."
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 168
+    }
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "spec_id": "hyperledger-009",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1787838046-x9sGXOCXumNdGccFEpwq",
+    "object": "chat.completion",
+    "created": 1787838046,
+    "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "provider": "Nvidia",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implementation language: Go (Golang) as implied by GoDoc references and Hyperledger Fabric ecosystem.\",\n    \"Target Hyperledger Fabric version: v1.4 (per linked documentation), using fabric-protos-go for protobuf definitions.\",\n    \"Library will provide a high-level API over raw configtx protobuf manipulation, encapsulating ConfigUpdate envelope creation.\",\n    \"Dependencies: github.com/hyperledger/fabric-protos-go, github.com/golang/protobuf, and standard library only.\",\n    \"Config update computation follows the standard Fabric pattern: decode current config, apply modifications, encode updated config, compute ConfigUpdate via configtxlator-like logic (using protobuf diff).\",\n    \"Anchor peer operations (U1, U2, U7) target the Application group's AnchorPeers field per organization.\",\n    \"Certificate revocation (U3) modifies the MSPConfig's RevocationList (CRL) field in the appropriate MSP configuration.\",\n    \"Root CA certificate addition (U4) validates KeyUsageCertSign and BasicConstraints CA:true via x509 parsing before adding to MSPConfig's RootCerts.\",\n    \"Orderer configuration retrieval (U8) returns a config.Orderer struct (protobuf message) for the Orderer group; update function replaces the entire Orderer group configuration.\",\n    \"Examples (U5, U6) will be provided as Go example functions (_test.go files) and/or standalone example files in an 'examples' directory, demonstrating idiomatic usage including signing with a local MSP identity.\",\n    \"Unit tests will use table-driven tests with mocked config blocks; integration-style tests will use real sample config blocks.\",\n    \"No CLI tool is required; the deliverable is a reusable Go library package.\"\n  ],\n  \"assumptions\": [\n    \"Developer has working knowledge of Hyperledger Fabric channel configuration structure (configtx, MSP, anchor peers).\",\n    \"Existing codebase (if any) follows standard Go project layout; this increment adds new functions to an existing package (e.g., 'configtx' or 'channelconfig').\",\n    \"No need to implement signature collection workflow; library only produces ConfigUpdateEnvelope ready for external signing.\",\n    \"Certificate validation in U4 is limited to KeyUsage and BasicConstraints; no chain validation or expiration checks.\",\n    \"Anchor peer host/port are provided as strings; no network reachability validation.\",\n    \"Revocation list update (U3) expects a PEM-encoded CRL; parsing uses standard crypto/x509.\",\n    \"Orderer configuration retrieval returns the entire Orderer group config; caller modifies fields and passes back to update function.\",\n    \"Examples will be placed in the package's GoDoc (ExampleXxx functions) and optionally in an 'examples' folder for discoverability.\",\n    \"Testing uses the Fabric test network or generated config blocks; no live network required for unit tests.\",\n    \"Effort estimates assume a single developer with Fabric experience; no ramp-up time included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup and dependency management\",\n      \"activity_description\": \"Initialize Go module, add required dependencies (fabric-protos-go, protobuf), configure CI (GitHub Actions), and verify build.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"API design and data model definition\",\n      \"activity_description\": \"Define public Go interfaces/structs for all new functions (AddAnchorPeer, RemoveAnchorPeer, RevokeCertificate, AddRootCACert, GetAnchorPeers, GetOrdererConfig, UpdateOrdererConfig). Document function signatures and error types.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement AddAnchorPeer (U1)\",\n      \"activity_description\": \"Implement function to add an anchor peer to an organization in the Application group. Handle config decoding, modification, and ConfigUpdate computation. Include input validation.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement RemoveAnchorPeer (U2)\",\n      \"activity_description\": \"Implement function to remove an anchor peer from an organization. Mirror AddAnchorPeer logic with removal semantics.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement RevokeCertificate (U3)\",\n      \"activity_description\": \"Implement function to add a certificate to the MSP's RevocationList (CRL). Parse PEM CRL, update MSPConfig, compute ConfigUpdate.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Implement AddRootCACert (U4)\",\n      \"activity_description\": \"Implement function to add a root CA certificate to MSPConfig.RootCerts. Validate KeyUsageCertSign and CA:true via x509 parsing. Reject invalid certs.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement GetAnchorPeers (U7)\",\n      \"activity_description\": \"Implement helper to retrieve existing anchor peers for a given organization from a config block/transaction. Return slice of AnchorPeer structs.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Implement GetOrdererConfig and UpdateOrdererConfig (U8)\",\n      \"activity_description\": \"Implement retrieval of Orderer group configuration as config.Orderer protobuf message. Implement update function that replaces Orderer group config and computes ConfigUpdate.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Unit tests for all new functions\",\n      \"activity_description\": \"Write table-driven unit tests covering success cases, error cases (invalid input, missing org, etc.), and edge cases. Use sample config blocks for decoding/encoding round-trips.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration-style tests and example updates (U5, U6, U7, U8)\",\n      \"activity_description\": \"Create Example functions in *_test.go for U5 (update channel config with multiple changes and sign) and U6 (create channel transaction and sign). Update existing example tests to demonstrate GetAnchorPeers and GetOrdererConfig usage.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation (GoDoc comments and README)\",\n      \"activity_description\": \"Write comprehensive GoDoc comments for all public APIs. Update package README with overview and links to examples. Ensure examples are runnable and appear in pkg.go.dev.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Code review, refactoring, and final polishing\",\n      \"activity_description\": \"Self-review, address linter issues (golangci-lint), ensure consistent error handling, verify test coverage >80%, and prepare final commit.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 124\n  }\n}",
+          "refusal": null,
+          "reasoning": "We are given a specification with 8 user stories (U1 to U8) for a Hyperledger Fabric channel configuration library.\n We need to break down the development into activities, state technical/design decisions and assumptions, estimate effort for each activity in work-hours, and sum them up.\n\n Steps:\n 1. Analyze the user stories and identify the required features.\n 2. Break down into activities (design, implementation, testing, documentation, etc.).\n 3. Make technical decisions and assumptions.\n 4. Estimate each activity.\n 5. Sum the estimates.\n\n Let's first understand the user stories:\n\n U1: Add anchor peer to channel config.\n U2: Remove anchor peer from channel config.\n U3: Revoke a certificate (update revocation list in MSP config).\n U4: Add a new root CA certificate to MSP config (with minimal validation).\n U5: Documentation example for updating channel transactions and signing.\n U6: Documentation example for creating new channel create transactions and signing.\n U7: Retrieve existing anchor peers for an org (helper function).\n U8: Retrieve existing orderer configuration (helper function) and update orderer config.\n\n The library is in Go (since GoDoc is mentioned). We are building a library for Fabric channel configuration manipulation.\n\n Technical and design decisions:\n - We'll use Go as the programming language.\n - We'll depend on the Hyperledger Fabric Go SDK or the fabric-protos-go for protobuf definitions.\n - The library will provide functions to manipulate config blocks/transactions (protobuf messages) and compute config updates.\n - We'll follow the existing patterns in Fabric for config updates (e.g., using configtxlator or similar logic).\n - We'll write unit tests for each function and integration tests for the examples.\n - Documentation will be in GoDoc format (comments in code) and possibly a separate README.\n\n Assumptions:\n - The developer is familiar with Hyperledger Fabric architecture and channel configuration.\n - The library will be a Go module, possibly hosted on GitHub.\n - We assume the existence of a development environment with Go, and necessary dependencies.\n - We assume that the library will be used with Fabric v1.4 (as per the links) but we might target a newer version? The spec says release-1.4. We'll assume we are building for Fabric v1.4.\n - We assume that the library will not include the signature workflow itself, but will produce a config update ready for signing (as per acceptance criteria).\n - We assume that the examples (U5, U6) will be in the form of Go test files or example files in the package.\n - We assume that the helper functions (U7, U8) will be added to the same library.\n\n Now, break down into activities:\n\n We can group by feature and then by task type (design, implementation, test, doc).\n\n Let's list activities:\n\n 1. Project setup and environment configuration (Go module, dependencies, CI).\n 2. Design the API for the library (functions for U1-U4, U7, U8).\n 3. Implement U1: Add anchor peer.\n 4. Implement U2: Remove anchor peer.\n 5. Implement U3: Revoke certificate (update revocation list).\n 6. Implement U4: Add root CA certificate to MSP config.\n 7. Implement U7: Retrieve anchor peers.\n 8. Implement U8: Retrieve orderer configuration and update orderer config.\n 9. Write unit tests for U1-U4, U7, U8.\n 10. Write integration tests / example tests for U5 and U6 (examples in GoDoc).\n 11. Write documentation (GoDoc comments) for all public functions.\n 12. Create example files for U5 and U6 (maybe as _test.go files with Example functions).\n 13. Update existing example tests to demonstrate U7 and U8 (as per acceptance).\n 14. Code review and refactoring.\n 15. Final testing and packaging.\n\n However, note that the specification says \"example test should also be updated\" for U7 and U8. So we have existing example tests? We assume there is an existing test suite that we need to update.\n\n Let's adjust: We assume there is an existing codebase for the library? The spec doesn't say. It says \"fit-for-purpose library\". It might be a new library or an existing one. Since U5 and U6 ask for examples in the library documentation, and U7 and U8 ask to update example tests, it implies there is already a library with some tests. But we are implementing the increment. We'll assume we are adding these features to an existing library. However, for estimation, we'll consider the effort to implement the new features and update the examples.\n\n Let's define activities with IDs and estimates.\n\n We'll estimate in work-hours. We'll use a single developer.\n\n Estimates (rough):\n\n 1. Project setup: 4 hours (if new, but if existing, less). Since it's an increment, maybe the project is already set up. We'll assume minimal setup: 2 hours.\n 2. API design: 4 hours.\n 3. Implement U1: 8 hours (parsing config, adding anchor peer, computing update).\n 4. Implement U2: 6 hours (similar to U1 but removal).\n 5. Implement U3: 8 hours (revocation list manipulation).\n 6. Implement U4: 8 hours (add CA cert with validation).\n 7. Implement U7: 4 hours (helper to retrieve anchor peers).\n 8. Implement U8: 6 hours (retrieve orderer config and update function).\n 9. Unit tests for U1-U4, U7, U8: 16 hours (2 hours per feature? but some are complex). Let's say 20 hours.\n 10. Integration tests / examples for U5 and U6: 8 hours (writing example functions that show idiomatic usage and signing).\n 11. Documentation (GoDoc comments): 8 hours.\n 12. Update existing example tests for U7 and U8: 4 hours.\n 13. Code review and refactoring: 8 hours.\n 14. Final testing and packaging: 4 hours.\n\n Total: 2+4+8+6+8+8+4+6+20+8+8+4+8+4 = 98 hours.\n\n But we should also consider that some activities might be done in parallel? The estimation is for total effort, not calendar time. So we sum.\n\n Let's list them in a structured way.\n\n We'll create an array of activities with IDs like \"A1\", \"A2\", etc.\n\n We'll also include technical decisions and assumptions.\n\n Now, produce the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We are given a specification with 8 user stories (U1 to U8) for a Hyperledger Fabric channel configuration library.\n We need to break down the development into activities, state technical/design decisions and assumptions, estimate effort for each activity in work-hours, and sum them up.\n\n Steps:\n 1. Analyze the user stories and identify the required features.\n 2. Break down into activities (design, implementation, testing, documentation, etc.).\n 3. Make technical decisions and assumptions.\n 4. Estimate each activity.\n 5. Sum the estimates.\n\n Let's first understand the user stories:\n\n U1: Add anchor peer to channel config.\n U2: Remove anchor peer from channel config.\n U3: Revoke a certificate (update revocation list in MSP config).\n U4: Add a new root CA certificate to MSP config (with minimal validation).\n U5: Documentation example for updating channel transactions and signing.\n U6: Documentation example for creating new channel create transactions and signing.\n U7: Retrieve existing anchor peers for an org (helper function).\n U8: Retrieve existing orderer configuration (helper function) and update orderer config.\n\n The library is in Go (since GoDoc is mentioned). We are building a library for Fabric channel configuration manipulation.\n\n Technical and design decisions:\n - We'll use Go as the programming language.\n - We'll depend on the Hyperledger Fabric Go SDK or the fabric-protos-go for protobuf definitions.\n - The library will provide functions to manipulate config blocks/transactions (protobuf messages) and compute config updates.\n - We'll follow the existing patterns in Fabric for config updates (e.g., using configtxlator or similar logic).\n - We'll write unit tests for each function and integration tests for the examples.\n - Documentation will be in GoDoc format (comments in code) and possibly a separate README.\n\n Assumptions:\n - The developer is familiar with Hyperledger Fabric architecture and channel configuration.\n - The library will be a Go module, possibly hosted on GitHub.\n - We assume the existence of a development environment with Go, and necessary dependencies.\n - We assume that the library will be used with Fabric v1.4 (as per the links) but we might target a newer version? The spec says release-1.4. We'll assume we are building for Fabric v1.4.\n - We assume that the library will not include the signature workflow itself, but will produce a config update ready for signing (as per acceptance criteria).\n - We assume that the examples (U5, U6) will be in the form of Go test files or example files in the package.\n - We assume that the helper functions (U7, U8) will be added to the same library.\n\n Now, break down into activities:\n\n We can group by feature and then by task type (design, implementation, test, doc).\n\n Let's list activities:\n\n 1. Project setup and environment configuration (Go module, dependencies, CI).\n 2. Design the API for the library (functions for U1-U4, U7, U8).\n 3. Implement U1: Add anchor peer.\n 4. Implement U2: Remove anchor peer.\n 5. Implement U3: Revoke certificate (update revocation list).\n 6. Implement U4: Add root CA certificate to MSP config.\n 7. Implement U7: Retrieve anchor peers.\n 8. Implement U8: Retrieve orderer configuration and update orderer config.\n 9. Write unit tests for U1-U4, U7, U8.\n 10. Write integration tests / example tests for U5 and U6 (examples in GoDoc).\n 11. Write documentation (GoDoc comments) for all public functions.\n 12. Create example files for U5 and U6 (maybe as _test.go files with Example functions).\n 13. Update existing example tests to demonstrate U7 and U8 (as per acceptance).\n 14. Code review and refactoring.\n 15. Final testing and packaging.\n\n However, note that the specification says \"example test should also be updated\" for U7 and U8. So we have existing example tests? We assume there is an existing test suite that we need to update.\n\n Let's adjust: We assume there is an existing codebase for the library? The spec doesn't say. It says \"fit-for-purpose library\". It might be a new library or an existing one. Since U5 and U6 ask for examples in the library documentation, and U7 and U8 ask to update example tests, it implies there is already a library with some tests. But we are implementing the increment. We'll assume we are adding these features to an existing library. However, for estimation, we'll consider the effort to implement the new features and update the examples.\n\n Let's define activities with IDs and estimates.\n\n We'll estimate in work-hours. We'll use a single developer.\n\n Estimates (rough):\n\n 1. Project setup: 4 hours (if new, but if existing, less). Since it's an increment, maybe the project is already set up. We'll assume minimal setup: 2 hours.\n 2. API design: 4 hours.\n 3. Implement U1: 8 hours (parsing config, adding anchor peer, computing update).\n 4. Implement U2: 6 hours (similar to U1 but removal).\n 5. Implement U3: 8 hours (revocation list manipulation).\n 6. Implement U4: 8 hours (add CA cert with validation).\n 7. Implement U7: 4 hours (helper to retrieve anchor peers).\n 8. Implement U8: 6 hours (retrieve orderer config and update function).\n 9. Unit tests for U1-U4, U7, U8: 16 hours (2 hours per feature? but some are complex). Let's say 20 hours.\n 10. Integration tests / examples for U5 and U6: 8 hours (writing example functions that show idiomatic usage and signing).\n 11. Documentation (GoDoc comments): 8 hours.\n 12. Update existing example tests for U7 and U8: 4 hours.\n 13. Code review and refactoring: 8 hours.\n 14. Final testing and packaging: 4 hours.\n\n Total: 2+4+8+6+8+8+4+6+20+8+8+4+8+4 = 98 hours.\n\n But we should also consider that some activities might be done in parallel? The estimation is for total effort, not calendar time. So we sum.\n\n Let's list them in a structured way.\n\n We'll create an array of activities with IDs like \"A1\", \"A2\", etc.\n\n We'll also include technical decisions and assumptions.\n\n Now, produce the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1435,
+      "completion_tokens": 3095,
+      "total_tokens": 4530,
+      "cost": 0,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0,
+        "upstream_inference_prompt_cost": 0,
+        "upstream_inference_completions_cost": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1510,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implementation language: Go (Golang) as implied by GoDoc references and Hyperledger Fabric ecosystem.\",\n    \"Target Hyperledger Fabric version: v1.4 (per linked documentation), using fabric-protos-go for protobuf definitions.\",\n    \"Library will provide a high-level API over raw configtx protobuf manipulation, encapsulating ConfigUpdate envelope creation.\",\n    \"Dependencies: github.com/hyperledger/fabric-protos-go, github.com/golang/protobuf, and standard library only.\",\n    \"Config update computation follows the standard Fabric pattern: decode current config, apply modifications, encode updated config, compute ConfigUpdate via configtxlator-like logic (using protobuf diff).\",\n    \"Anchor peer operations (U1, U2, U7) target the Application group's AnchorPeers field per organization.\",\n    \"Certificate revocation (U3) modifies the MSPConfig's RevocationList (CRL) field in the appropriate MSP configuration.\",\n    \"Root CA certificate addition (U4) validates KeyUsageCertSign and BasicConstraints CA:true via x509 parsing before adding to MSPConfig's RootCerts.\",\n    \"Orderer configuration retrieval (U8) returns a config.Orderer struct (protobuf message) for the Orderer group; update function replaces the entire Orderer group configuration.\",\n    \"Examples (U5, U6) will be provided as Go example functions (_test.go files) and/or standalone example files in an 'examples' directory, demonstrating idiomatic usage including signing with a local MSP identity.\",\n    \"Unit tests will use table-driven tests with mocked config blocks; integration-style tests will use real sample config blocks.\",\n    \"No CLI tool is required; the deliverable is a reusable Go library package.\"\n  ],\n  \"assumptions\": [\n    \"Developer has working knowledge of Hyperledger Fabric channel configuration structure (configtx, MSP, anchor peers).\",\n    \"Existing codebase (if any) follows standard Go project layout; this increment adds new functions to an existing package (e.g., 'configtx' or 'channelconfig').\",\n    \"No need to implement signature collection workflow; library only produces ConfigUpdateEnvelope ready for external signing.\",\n    \"Certificate validation in U4 is limited to KeyUsage and BasicConstraints; no chain validation or expiration checks.\",\n    \"Anchor peer host/port are provided as strings; no network reachability validation.\",\n    \"Revocation list update (U3) expects a PEM-encoded CRL; parsing uses standard crypto/x509.\",\n    \"Orderer configuration retrieval returns the entire Orderer group config; caller modifies fields and passes back to update function.\",\n    \"Examples will be placed in the package's GoDoc (ExampleXxx functions) and optionally in an 'examples' folder for discoverability.\",\n    \"Testing uses the Fabric test network or generated config blocks; no live network required for unit tests.\",\n    \"Effort estimates assume a single developer with Fabric experience; no ramp-up time included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup and dependency management\",\n      \"activity_description\": \"Initialize Go module, add required dependencies (fabric-protos-go, protobuf), configure CI (GitHub Actions), and verify build.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"API design and data model definition\",\n      \"activity_description\": \"Define public Go interfaces/structs for all new functions (AddAnchorPeer, RemoveAnchorPeer, RevokeCertificate, AddRootCACert, GetAnchorPeers, GetOrdererConfig, UpdateOrdererConfig). Document function signatures and error types.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement AddAnchorPeer (U1)\",\n      \"activity_description\": \"Implement function to add an anchor peer to an organization in the Application group. Handle config decoding, modification, and ConfigUpdate computation. Include input validation.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement RemoveAnchorPeer (U2)\",\n      \"activity_description\": \"Implement function to remove an anchor peer from an organization. Mirror AddAnchorPeer logic with removal semantics.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement RevokeCertificate (U3)\",\n      \"activity_description\": \"Implement function to add a certificate to the MSP's RevocationList (CRL). Parse PEM CRL, update MSPConfig, compute ConfigUpdate.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Implement AddRootCACert (U4)\",\n      \"activity_description\": \"Implement function to add a root CA certificate to MSPConfig.RootCerts. Validate KeyUsageCertSign and CA:true via x509 parsing. Reject invalid certs.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Implement GetAnchorPeers (U7)\",\n      \"activity_description\": \"Implement helper to retrieve existing anchor peers for a given organization from a config block/transaction. Return slice of AnchorPeer structs.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Implement GetOrdererConfig and UpdateOrdererConfig (U8)\",\n      \"activity_description\": \"Implement retrieval of Orderer group configuration as config.Orderer protobuf message. Implement update function that replaces Orderer group config and computes ConfigUpdate.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Unit tests for all new functions\",\n      \"activity_description\": \"Write table-driven unit tests covering success cases, error cases (invalid input, missing org, etc.), and edge cases. Use sample config blocks for decoding/encoding round-trips.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration-style tests and example updates (U5, U6, U7, U8)\",\n      \"activity_description\": \"Create Example functions in *_test.go for U5 (update channel config with multiple changes and sign) and U6 (create channel transaction and sign). Update existing example tests to demonstrate GetAnchorPeers and GetOrdererConfig usage.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Documentation (GoDoc comments and README)\",\n      \"activity_description\": \"Write comprehensive GoDoc comments for all public APIs. Update package README with overview and links to examples. Ensure examples are runnable and appear in pkg.go.dev.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Code review, refactoring, and final polishing\",\n      \"activity_description\": \"Self-review, address linter issues (golangci-lint), ensure consistent error handling, verify test coverage >80%, and prepare final commit.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 124\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1435,
+    "completion_tokens": 3095,
+    "total_tokens": 4530,
+    "cost": 0,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0,
+      "upstream_inference_prompt_cost": 0,
+      "upstream_inference_completions_cost": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1510,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implementation language: Go (Golang) as implied by GoDoc references and Hyperledger Fabric ecosystem.",
+      "Target Hyperledger Fabric version: v1.4 (per linked documentation), using fabric-protos-go for protobuf definitions.",
+      "Library will provide a high-level API over raw configtx protobuf manipulation, encapsulating ConfigUpdate envelope creation.",
+      "Dependencies: github.com/hyperledger/fabric-protos-go, github.com/golang/protobuf, and standard library only.",
+      "Config update computation follows the standard Fabric pattern: decode current config, apply modifications, encode updated config, compute ConfigUpdate via configtxlator-like logic (using protobuf diff).",
+      "Anchor peer operations (U1, U2, U7) target the Application group's AnchorPeers field per organization.",
+      "Certificate revocation (U3) modifies the MSPConfig's RevocationList (CRL) field in the appropriate MSP configuration.",
+      "Root CA certificate addition (U4) validates KeyUsageCertSign and BasicConstraints CA:true via x509 parsing before adding to MSPConfig's RootCerts.",
+      "Orderer configuration retrieval (U8) returns a config.Orderer struct (protobuf message) for the Orderer group; update function replaces the entire Orderer group configuration.",
+      "Examples (U5, U6) will be provided as Go example functions (_test.go files) and/or standalone example files in an 'examples' directory, demonstrating idiomatic usage including signing with a local MSP identity.",
+      "Unit tests will use table-driven tests with mocked config blocks; integration-style tests will use real sample config blocks.",
+      "No CLI tool is required; the deliverable is a reusable Go library package."
+    ],
+    "assumptions": [
+      "Developer has working knowledge of Hyperledger Fabric channel configuration structure (configtx, MSP, anchor peers).",
+      "Existing codebase (if any) follows standard Go project layout; this increment adds new functions to an existing package (e.g., 'configtx' or 'channelconfig').",
+      "No need to implement signature collection workflow; library only produces ConfigUpdateEnvelope ready for external signing.",
+      "Certificate validation in U4 is limited to KeyUsage and BasicConstraints; no chain validation or expiration checks.",
+      "Anchor peer host/port are provided as strings; no network reachability validation.",
+      "Revocation list update (U3) expects a PEM-encoded CRL; parsing uses standard crypto/x509.",
+      "Orderer configuration retrieval returns the entire Orderer group config; caller modifies fields and passes back to update function.",
+      "Examples will be placed in the package's GoDoc (ExampleXxx functions) and optionally in an 'examples' folder for discoverability.",
+      "Testing uses the Fabric test network or generated config blocks; no live network required for unit tests.",
+      "Effort estimates assume a single developer with Fabric experience; no ramp-up time included."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Project setup and dependency management",
+        "activity_description": "Initialize Go module, add required dependencies (fabric-protos-go, protobuf), configure CI (GitHub Actions), and verify build.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "API design and data model definition",
+        "activity_description": "Define public Go interfaces/structs for all new functions (AddAnchorPeer, RemoveAnchorPeer, RevokeCertificate, AddRootCACert, GetAnchorPeers, GetOrdererConfig, UpdateOrdererConfig). Document function signatures and error types.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Implement AddAnchorPeer (U1)",
+        "activity_description": "Implement function to add an anchor peer to an organization in the Application group. Handle config decoding, modification, and ConfigUpdate computation. Include input validation.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Implement RemoveAnchorPeer (U2)",
+        "activity_description": "Implement function to remove an anchor peer from an organization. Mirror AddAnchorPeer logic with removal semantics.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Implement RevokeCertificate (U3)",
+        "activity_description": "Implement function to add a certificate to the MSP's RevocationList (CRL). Parse PEM CRL, update MSPConfig, compute ConfigUpdate.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Implement AddRootCACert (U4)",
+        "activity_description": "Implement function to add a root CA certificate to MSPConfig.RootCerts. Validate KeyUsageCertSign and CA:true via x509 parsing. Reject invalid certs.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Implement GetAnchorPeers (U7)",
+        "activity_description": "Implement helper to retrieve existing anchor peers for a given organization from a config block/transaction. Return slice of AnchorPeer structs.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Implement GetOrdererConfig and UpdateOrdererConfig (U8)",
+        "activity_description": "Implement retrieval of Orderer group configuration as config.Orderer protobuf message. Implement update function that replaces Orderer group config and computes ConfigUpdate.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Unit tests for all new functions",
+        "activity_description": "Write table-driven unit tests covering success cases, error cases (invalid input, missing org, etc.), and edge cases. Use sample config blocks for decoding/encoding round-trips.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Integration-style tests and example updates (U5, U6, U7, U8)",
+        "activity_description": "Create Example functions in *_test.go for U5 (update channel config with multiple changes and sign) and U6 (create channel transaction and sign). Update existing example tests to demonstrate GetAnchorPeers and GetOrdererConfig usage.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Documentation (GoDoc comments and README)",
+        "activity_description": "Write comprehensive GoDoc comments for all public APIs. Update package README with overview and links to examples. Ensure examples are runnable and appear in pkg.go.dev.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Code review, refactoring, and final polishing",
+        "activity_description": "Self-review, address linter issues (golangci-lint), ensure consistent error handling, verify test coverage >80%, and prepare final commit.",
+        "most_likely_effort": 8
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 124
+    }
+  }
+}

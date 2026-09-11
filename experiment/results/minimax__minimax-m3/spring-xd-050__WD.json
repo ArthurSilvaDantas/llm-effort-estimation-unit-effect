@@ -1,0 +1,243 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-050",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788416494-SssO7YlwHJYheNcOyb33",
+    "object": "chat.completion",
+    "created": 1788416494,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Spring Shell as the foundation for the CLI/shell interface to expose stream commands.\",\n    \"Communicate with Spring Cloud Data Flow's REST API via a dedicated client layer (RestTemplate/WebClient wrapper), not direct repository access.\",\n    \"Derive module metadata by introspecting @ConfigurationProperties-annotated fields on each module class, exposing them through a metadata service consumed by the shell.\",\n    \"Port each Spring XD module to a Spring Cloud Stream application using the @EnableBinding pattern (or function-based equivalent), preserving the original module's behavior and options.\",\n    \"Treat the Twitter modules (twitterstream, twittersearch) as using Twitter API v1.1, requiring OAuth1 credential configuration translated from XD's original configuration.\",\n    \"Reuse the existing Spring XD module test fixtures and adapt them to a Spring Cloud Stream test binder where possible to minimize test rewrites.\",\n    \"Provide Java 17 compatibility consistent with Spring Framework 6 baseline.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Spring developer performs all the work (8-hour workdays).\",\n    \"Build, CI, dependency, and repository infrastructure already exist; only project-level additions are needed.\",\n    \"Original Spring XD source code is available and can be referenced for behavioral parity.\",\n    \"Unit and integration tests are part of every porting activity; the effort covers writing them.\",\n    \"The Twitter API v1.1 contract has not fundamentally changed, but option names and authentication wiring require remapping (U5, U6).\",\n    \"No production-grade localization, advanced error recovery, or autosuggest features are required for the shell — a basic command set is sufficient.\",\n    \"Stream commands scope is limited to: list, create, deploy, undeploy, destroy, info, history, and rollback (per typical U1 scope).\",\n    \"Cross-module shared concerns (e.g., common configuration metadata bean) are handled inside the U2 activity and reused by U3–U8 without re-billing.\",\n    \"No new Spring Cloud Data Flow server-side changes are required — shell consumes existing REST endpoints.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup and infrastructure\",\n      \"activity_description\": \"Create the new s-c-s shell module project, configure Maven/Gradle build, Java 17 toolchain, Spring Shell dependency, and base package structure.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Shell interface for stream commands (U1)\",\n      \"activity_description\": \"Implement Spring Shell command classes wrapping the s-c-d REST API for stream lifecycle operations: list, create, deploy, undeploy, destroy, info, history, rollback. Includes client layer and command-level tests.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Module metadata strategy and module info command (U2)\",\n      \"activity_description\": \"Design and implement a metadata service that derives module option metadata from @ConfigurationProperties-annotated classes, expose it through REST/shell, and implement the 'module info' shell command to list module properties.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Port http source module (U3)\",\n      \"activity_description\": \"Port the Spring XD http source module to a Spring Cloud Stream source, map XD options to @ConfigurationProperties, preserve polling/http-invoker semantics, and provide unit + integration tests.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Port tcp source module (U4)\",\n      \"activity_description\": \"Port the Spring XD tcp source module (server/client modes, decoders, charset, buffer options) to a Spring Cloud Stream source with @ConfigurationProperties-driven configuration and tests.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Port twitterstream source module (U5)\",\n      \"activity_description\": \"Port the Spring XD twitterstream source to Spring Cloud Stream, including Twitter API v1.1 OAuth1 wiring, language/filter option mapping, and stream-disconnect handling. Includes tests with mocked Twitter client.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Port twittersearch source module (U6)\",\n      \"activity_description\": \"Port the Spring XD twittersearch source to Spring Cloud Stream, including search query, geocode, language, count, and OAuth1 credential configuration. Includes tests with mocked Twitter client.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Port filter processor module (U7)\",\n      \"activity_description\": \"Port the Spring XD filter processor (SpEL expression-based payload filtering) to a Spring Cloud Stream processor with @ConfigurationProperties and unit tests for include/exclude expressions.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Port transform processor module (U8)\",\n      \"activity_description\": \"Port the Spring XD transform processor (SpEL/JSON/header transformations) to a Spring Cloud Stream processor with @ConfigurationProperties and unit tests covering representative transformation scenarios.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Update README/Asciidoctor docs: describe shell commands, usage examples, and each ported module's options and configuration properties.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration testing and stabilization\",\n      \"activity_description\": \"End-to-end testing of shell + ported modules against a live s-c-d server, bug fixing, edge-case handling, and final code cleanup across all stories.\",\n      \"most_likely_effort\": 3.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 41.0\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully.\n\nThe specification is for the Spring Cloud Data Flow (s-c-d) and Spring Cloud Stream (s-c-s) project. There are 8 user stories:\n\n1. U1: Shell interface to the spring-cloud-data REST API (limited to stream commands)\n2. U2: Derive a strategy for module metadata via @ConfigurationProperties for module info command\n3. U3: Port http module from XD to s-c-s (as source)\n4. U4: Port tcp module from XD to s-c-s (as source)\n5. U5: Move twitterstream module from XD to s-c-s (as source)\n6. U6: Move twittersearch module from XD to s-c-s (as source)\n7. U7: Port filter module from XD to s-c-s (as processor)\n8. U8: Port transform module from XD to s-c-s (as processor)\n\nLet me break this down into activities and estimate effort.\n\nKey technical decisions:\n- Use Spring Shell for the CLI interface\n- Use REST API integration (likely RestTemplate or WebClient)\n- Module metadata via @ConfigurationProperties\n- Module porting from Spring XD to Spring Cloud Stream\n- Each module needs conversion of XD's module system to SCS source/processor pattern\n\nAssumptions:\n- Developer is experienced with Spring Framework, Spring Cloud, Spring XD\n- Standard 8-hour workday\n- Twitter API changes since XD era might require additional work\n- Testing infrastructure exists\n- Each module port includes unit tests and integration tests\n- Code review time is included in the effort estimates\n\nLet me think about the activities:\n\nFor U1 (Shell interface):\n- Set up Spring Shell project structure\n- Implement command infrastructure\n- Implement stream commands (list, create, deploy, destroy, etc.)\n- Integration with REST API\n- Testing\n\nFor U2 (Module metadata):\n- Design @ConfigurationProperties strategy\n- Implement metadata extraction\n- Implement module info shell command\n- Testing\n\nFor U3-U8 (Module ports):\n- Understand original XD module\n- Adapt to SCS source/processor pattern\n- Configuration via @ConfigurationProperties\n- Unit tests\n- Integration tests\n\nLet me estimate effort for each activity:\n\nProject setup and infrastructure (1 day)\nU1: Shell interface implementation\n  - Set up Spring Shell project: 1 day\n  - Implement stream commands (list, create, deploy, destroy, undeploy): 3 days\n  - Integration testing: 1 day\n  - Total: 5 days\n\nU2: Module metadata strategy\n  - Design @ConfigurationProperties approach: 1 day\n  - Implement metadata derivation: 2 days\n  - Implement module info command: 1 day\n  - Testing: 1 day\n  - Total: 5 days\n\nU3: Port http module\n  - Analyze XD http source: 0.5 day\n  - Port to SCS source: 2 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4.5 days\n\nU4: Port tcp module\n  - Analyze XD tcp source: 0.5 day\n  - Port to SCS source: 2 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4.5 days\n\nU5: twitterstream module\n  - Twitter API may have changed significantly\n  - Analyze XD twitterstream source: 0.5 day\n  - Port to SCS source: 2 days\n  - Handle Twitter API changes: 1 day\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 5.5 days\n\nU6: twittersearch module\n  - Similar to twitterstream\n  - Analyze XD twittersearch source: 0.5 day\n  - Port to SCS source: 2 days\n  - Handle Twitter API changes: 1 day\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 5.5 days\n\nU7: Port filter module\n  - Analyze XD filter processor: 0.5 day\n  - Port to SCS processor: 1.5 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4 days\n\nU8: Port transform module\n  - Analyze XD transform processor: 0.5 day\n  - Port to SCS processor: 1.5 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4 days\n\nAdditional activities:\n- Documentation: 2 days\n- Code review and integration: 2 days\n- Bug fixing and final testing: 2 days\n\nLet me also add:\n- Initial setup and project structure\n- Continuous integration setup\n\nLet me restructure the WBS more carefully:\n\n1. Project setup and environment (1 day)\n2. U1 - Shell interface for stream commands (5 days)\n3. U2 - Module metadata via @ConfigurationProperties (5 days)\n4. U3 - Port http source module (4.5 days)\n5. U4 - Port tcp source module (4.5 days)\n6. U5 - Port twitterstream source module (5.5 days)\n7. U6 - Port twittersearch source module (5.5 days)\n8. U7 - Port filter processor module (4 days)\n9. U8 - Port transform processor module (4 days)\n10. Documentation (2 days)\n11. Integration testing and bug fixing (3 days)\n\nTotal: 1 + 5 + 5 + 4.5 + 4.5 + 5.5 + 5.5 + 4 + 4 + 2 + 3 = 44 days\n\nLet me reconsider - this seems like a reasonable estimate for a single experienced developer. Let me refine my thinking.\n\nActually, since U1 and U2 are related (the shell uses the module info), there might be some overlap. U2 builds the strategy for U1 to use. So they should be sequential.\n\nAlso, the module porting (U3-U8) can mostly be done in parallel after U2, but the question is about effort (not duration), so this doesn't matter for the total.\n\nLet me finalize the estimates. The values seem reasonable for a senior developer.\n\nActually, let me reconsider some assumptions:\n- Twitter modules (U5, U6) - since this is based on the older Twitter API v1.1, there might be additional work for authentication, rate limiting handling, etc. But the porting effort should be similar to other modules plus some additional work for Twitter-specific concerns.\n\n- For shell commands, the standard set might be: stream list, stream create, stream deploy, stream undeploy, stream destroy, stream info, stream history, stream rollback\n\n- The integration with REST API requires understanding the existing REST endpoints\n\nI'll keep my estimates roughly the same but add a small amount for cross-cutting concerns.\n\nFinal activity list:\n1. A1: Project setup, environment, dependency configuration (1 day)\n2. A2: Shell command framework setup (Spring Shell integration) (1 day)\n3. A3: Implement stream commands (list, create, deploy, destroy, history, rollback) (3 days)\n4. A4: Shell-REST API integration and testing (1.5 days)\n5. A5: Design @ConfigurationProperties metadata strategy (1 day)\n6. A6: Implement metadata extraction framework (2 days)\n7. A7: Implement module info shell command (1.5 days)\n8. A8: Port http source module (4 days)\n9. A9: Port tcp source module (4 days)\n10. A10: Port twitterstream source module (5 days)\n11. A11: Port twittersearch source module (5 days)\n12. A12: Port filter processor module (3.5 days)\n13. A13: Port transform processor module (3.5 days)\n14. A14: Documentation (2 days)\n15. A15: Integration testing and bug fixing (3 days)\n\nTotal: 1 + 1 + 3 + 1.5 + 1 + 2 + 1.5 + 4 + 4 + 5 + 5 + 3.5 + 3.5 + 2 + 3 = 41 days\n\nLet me finalize this.\n\nActually, looking at this more carefully, I think I should:\n- Be more concise about the WBS\n- Group some related activities together\n- Use round numbers where possible\n\nLet me restructure:\n\n1. A1: Project setup and infrastructure (1 day)\n2. A2: Shell interface for stream commands (U1) (5 days)\n3. A3: Module metadata strategy and module info command (U2) (5 days)\n4. A4: Port http source module (U3) (4 days)\n5. A5: Port tcp source module (U4) (4 days)\n6. A6: Port twitterstream source module (U5) (5 days)\n7. A7: Port twittersearch source module (U6) (5 days)\n8. A8: Port filter processor module (U7) (3.5 days)\n9. A9: Port transform processor module (U8) (3.5 days)\n10. A10: Documentation (2 days)\n11. A11: Integration testing and final polish (3 days)\n\nTotal: 1 + 5 + 5 + 4 + 4 + 5 + 5 + 3.5 + 3.5 + 2 + 3 = 41 days\n\nThis looks reasonable. Let me format the final JSON response.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully.\n\nThe specification is for the Spring Cloud Data Flow (s-c-d) and Spring Cloud Stream (s-c-s) project. There are 8 user stories:\n\n1. U1: Shell interface to the spring-cloud-data REST API (limited to stream commands)\n2. U2: Derive a strategy for module metadata via @ConfigurationProperties for module info command\n3. U3: Port http module from XD to s-c-s (as source)\n4. U4: Port tcp module from XD to s-c-s (as source)\n5. U5: Move twitterstream module from XD to s-c-s (as source)\n6. U6: Move twittersearch module from XD to s-c-s (as source)\n7. U7: Port filter module from XD to s-c-s (as processor)\n8. U8: Port transform module from XD to s-c-s (as processor)\n\nLet me break this down into activities and estimate effort.\n\nKey technical decisions:\n- Use Spring Shell for the CLI interface\n- Use REST API integration (likely RestTemplate or WebClient)\n- Module metadata via @ConfigurationProperties\n- Module porting from Spring XD to Spring Cloud Stream\n- Each module needs conversion of XD's module system to SCS source/processor pattern\n\nAssumptions:\n- Developer is experienced with Spring Framework, Spring Cloud, Spring XD\n- Standard 8-hour workday\n- Twitter API changes since XD era might require additional work\n- Testing infrastructure exists\n- Each module port includes unit tests and integration tests\n- Code review time is included in the effort estimates\n\nLet me think about the activities:\n\nFor U1 (Shell interface):\n- Set up Spring Shell project structure\n- Implement command infrastructure\n- Implement stream commands (list, create, deploy, destroy, etc.)\n- Integration with REST API\n- Testing\n\nFor U2 (Module metadata):\n- Design @ConfigurationProperties strategy\n- Implement metadata extraction\n- Implement module info shell command\n- Testing\n\nFor U3-U8 (Module ports):\n- Understand original XD module\n- Adapt to SCS source/processor pattern\n- Configuration via @ConfigurationProperties\n- Unit tests\n- Integration tests\n\nLet me estimate effort for each activity:\n\nProject setup and infrastructure (1 day)\nU1: Shell interface implementation\n  - Set up Spring Shell project: 1 day\n  - Implement stream commands (list, create, deploy, destroy, undeploy): 3 days\n  - Integration testing: 1 day\n  - Total: 5 days\n\nU2: Module metadata strategy\n  - Design @ConfigurationProperties approach: 1 day\n  - Implement metadata derivation: 2 days\n  - Implement module info command: 1 day\n  - Testing: 1 day\n  - Total: 5 days\n\nU3: Port http module\n  - Analyze XD http source: 0.5 day\n  - Port to SCS source: 2 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4.5 days\n\nU4: Port tcp module\n  - Analyze XD tcp source: 0.5 day\n  - Port to SCS source: 2 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4.5 days\n\nU5: twitterstream module\n  - Twitter API may have changed significantly\n  - Analyze XD twitterstream source: 0.5 day\n  - Port to SCS source: 2 days\n  - Handle Twitter API changes: 1 day\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 5.5 days\n\nU6: twittersearch module\n  - Similar to twitterstream\n  - Analyze XD twittersearch source: 0.5 day\n  - Port to SCS source: 2 days\n  - Handle Twitter API changes: 1 day\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 5.5 days\n\nU7: Port filter module\n  - Analyze XD filter processor: 0.5 day\n  - Port to SCS processor: 1.5 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4 days\n\nU8: Port transform module\n  - Analyze XD transform processor: 0.5 day\n  - Port to SCS processor: 1.5 days\n  - Configuration properties: 1 day\n  - Testing: 1 day\n  - Total: 4 days\n\nAdditional activities:\n- Documentation: 2 days\n- Code review and integration: 2 days\n- Bug fixing and final testing: 2 days\n\nLet me also add:\n- Initial setup and project structure\n- Continuous integration setup\n\nLet me restructure the WBS more carefully:\n\n1. Project setup and environment (1 day)\n2. U1 - Shell interface for stream commands (5 days)\n3. U2 - Module metadata via @ConfigurationProperties (5 days)\n4. U3 - Port http source module (4.5 days)\n5. U4 - Port tcp source module (4.5 days)\n6. U5 - Port twitterstream source module (5.5 days)\n7. U6 - Port twittersearch source module (5.5 days)\n8. U7 - Port filter processor module (4 days)\n9. U8 - Port transform processor module (4 days)\n10. Documentation (2 days)\n11. Integration testing and bug fixing (3 days)\n\nTotal: 1 + 5 + 5 + 4.5 + 4.5 + 5.5 + 5.5 + 4 + 4 + 2 + 3 = 44 days\n\nLet me reconsider - this seems like a reasonable estimate for a single experienced developer. Let me refine my thinking.\n\nActually, since U1 and U2 are related (the shell uses the module info), there might be some overlap. U2 builds the strategy for U1 to use. So they should be sequential.\n\nAlso, the module porting (U3-U8) can mostly be done in parallel after U2, but the question is about effort (not duration), so this doesn't matter for the total.\n\nLet me finalize the estimates. The values seem reasonable for a senior developer.\n\nActually, let me reconsider some assumptions:\n- Twitter modules (U5, U6) - since this is based on the older Twitter API v1.1, there might be additional work for authentication, rate limiting handling, etc. But the porting effort should be similar to other modules plus some additional work for Twitter-specific concerns.\n\n- For shell commands, the standard set might be: stream list, stream create, stream deploy, stream undeploy, stream destroy, stream info, stream history, stream rollback\n\n- The integration with REST API requires understanding the existing REST endpoints\n\nI'll keep my estimates roughly the same but add a small amount for cross-cutting concerns.\n\nFinal activity list:\n1. A1: Project setup, environment, dependency configuration (1 day)\n2. A2: Shell command framework setup (Spring Shell integration) (1 day)\n3. A3: Implement stream commands (list, create, deploy, destroy, history, rollback) (3 days)\n4. A4: Shell-REST API integration and testing (1.5 days)\n5. A5: Design @ConfigurationProperties metadata strategy (1 day)\n6. A6: Implement metadata extraction framework (2 days)\n7. A7: Implement module info shell command (1.5 days)\n8. A8: Port http source module (4 days)\n9. A9: Port tcp source module (4 days)\n10. A10: Port twitterstream source module (5 days)\n11. A11: Port twittersearch source module (5 days)\n12. A12: Port filter processor module (3.5 days)\n13. A13: Port transform processor module (3.5 days)\n14. A14: Documentation (2 days)\n15. A15: Integration testing and bug fixing (3 days)\n\nTotal: 1 + 1 + 3 + 1.5 + 1 + 2 + 1.5 + 4 + 4 + 5 + 5 + 3.5 + 3.5 + 2 + 3 = 41 days\n\nLet me finalize this.\n\nActually, looking at this more carefully, I think I should:\n- Be more concise about the WBS\n- Group some related activities together\n- Use round numbers where possible\n\nLet me restructure:\n\n1. A1: Project setup and infrastructure (1 day)\n2. A2: Shell interface for stream commands (U1) (5 days)\n3. A3: Module metadata strategy and module info command (U2) (5 days)\n4. A4: Port http source module (U3) (4 days)\n5. A5: Port tcp source module (U4) (4 days)\n6. A6: Port twitterstream source module (U5) (5 days)\n7. A7: Port twittersearch source module (U6) (5 days)\n8. A8: Port filter processor module (U7) (3.5 days)\n9. A9: Port transform processor module (U8) (3.5 days)\n10. A10: Documentation (2 days)\n11. A11: Integration testing and final polish (3 days)\n\nTotal: 1 + 5 + 5 + 4 + 4 + 5 + 5 + 3.5 + 3.5 + 2 + 3 = 41 days\n\nThis looks reasonable. Let me format the final JSON response.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1362,
+      "completion_tokens": 3434,
+      "total_tokens": 4796,
+      "cost": 0.00449196,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00449196,
+        "upstream_inference_prompt_cost": 0.00037116,
+        "upstream_inference_completions_cost": 0.0041208
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2047,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Use Spring Shell as the foundation for the CLI/shell interface to expose stream commands.\",\n    \"Communicate with Spring Cloud Data Flow's REST API via a dedicated client layer (RestTemplate/WebClient wrapper), not direct repository access.\",\n    \"Derive module metadata by introspecting @ConfigurationProperties-annotated fields on each module class, exposing them through a metadata service consumed by the shell.\",\n    \"Port each Spring XD module to a Spring Cloud Stream application using the @EnableBinding pattern (or function-based equivalent), preserving the original module's behavior and options.\",\n    \"Treat the Twitter modules (twitterstream, twittersearch) as using Twitter API v1.1, requiring OAuth1 credential configuration translated from XD's original configuration.\",\n    \"Reuse the existing Spring XD module test fixtures and adapt them to a Spring Cloud Stream test binder where possible to minimize test rewrites.\",\n    \"Provide Java 17 compatibility consistent with Spring Framework 6 baseline.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Spring developer performs all the work (8-hour workdays).\",\n    \"Build, CI, dependency, and repository infrastructure already exist; only project-level additions are needed.\",\n    \"Original Spring XD source code is available and can be referenced for behavioral parity.\",\n    \"Unit and integration tests are part of every porting activity; the effort covers writing them.\",\n    \"The Twitter API v1.1 contract has not fundamentally changed, but option names and authentication wiring require remapping (U5, U6).\",\n    \"No production-grade localization, advanced error recovery, or autosuggest features are required for the shell — a basic command set is sufficient.\",\n    \"Stream commands scope is limited to: list, create, deploy, undeploy, destroy, info, history, and rollback (per typical U1 scope).\",\n    \"Cross-module shared concerns (e.g., common configuration metadata bean) are handled inside the U2 activity and reused by U3–U8 without re-billing.\",\n    \"No new Spring Cloud Data Flow server-side changes are required — shell consumes existing REST endpoints.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Project setup and infrastructure\",\n      \"activity_description\": \"Create the new s-c-s shell module project, configure Maven/Gradle build, Java 17 toolchain, Spring Shell dependency, and base package structure.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Shell interface for stream commands (U1)\",\n      \"activity_description\": \"Implement Spring Shell command classes wrapping the s-c-d REST API for stream lifecycle operations: list, create, deploy, undeploy, destroy, info, history, rollback. Includes client layer and command-level tests.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Module metadata strategy and module info command (U2)\",\n      \"activity_description\": \"Design and implement a metadata service that derives module option metadata from @ConfigurationProperties-annotated classes, expose it through REST/shell, and implement the 'module info' shell command to list module properties.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Port http source module (U3)\",\n      \"activity_description\": \"Port the Spring XD http source module to a Spring Cloud Stream source, map XD options to @ConfigurationProperties, preserve polling/http-invoker semantics, and provide unit + integration tests.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Port tcp source module (U4)\",\n      \"activity_description\": \"Port the Spring XD tcp source module (server/client modes, decoders, charset, buffer options) to a Spring Cloud Stream source with @ConfigurationProperties-driven configuration and tests.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Port twitterstream source module (U5)\",\n      \"activity_description\": \"Port the Spring XD twitterstream source to Spring Cloud Stream, including Twitter API v1.1 OAuth1 wiring, language/filter option mapping, and stream-disconnect handling. Includes tests with mocked Twitter client.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Port twittersearch source module (U6)\",\n      \"activity_description\": \"Port the Spring XD twittersearch source to Spring Cloud Stream, including search query, geocode, language, count, and OAuth1 credential configuration. Includes tests with mocked Twitter client.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Port filter processor module (U7)\",\n      \"activity_description\": \"Port the Spring XD filter processor (SpEL expression-based payload filtering) to a Spring Cloud Stream processor with @ConfigurationProperties and unit tests for include/exclude expressions.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Port transform processor module (U8)\",\n      \"activity_description\": \"Port the Spring XD transform processor (SpEL/JSON/header transformations) to a Spring Cloud Stream processor with @ConfigurationProperties and unit tests covering representative transformation scenarios.\",\n      \"most_likely_effort\": 3.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Update README/Asciidoctor docs: describe shell commands, usage examples, and each ported module's options and configuration properties.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration testing and stabilization\",\n      \"activity_description\": \"End-to-end testing of shell + ported modules against a live s-c-d server, bug fixing, edge-case handling, and final code cleanup across all stories.\",\n      \"most_likely_effort\": 3.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 41.0\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1362,
+    "completion_tokens": 3434,
+    "total_tokens": 4796,
+    "cost": 0.00449196,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00449196,
+      "upstream_inference_prompt_cost": 0.00037116,
+      "upstream_inference_completions_cost": 0.0041208
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2047,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788416528-jAPpWzOFxfpq6nuTAaAP",
+    "object": "chat.completion",
+    "created": 1788416528,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8.0\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2876,
+      "completion_tokens": 21,
+      "total_tokens": 2897,
+      "cost": 0.00085056,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00085056,
+        "upstream_inference_prompt_cost": 0.00082536,
+        "upstream_inference_completions_cost": 2.52e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8.0\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Use Spring Shell as the foundation for the CLI/shell interface to expose stream commands.",
+      "Communicate with Spring Cloud Data Flow's REST API via a dedicated client layer (RestTemplate/WebClient wrapper), not direct repository access.",
+      "Derive module metadata by introspecting @ConfigurationProperties-annotated fields on each module class, exposing them through a metadata service consumed by the shell.",
+      "Port each Spring XD module to a Spring Cloud Stream application using the @EnableBinding pattern (or function-based equivalent), preserving the original module's behavior and options.",
+      "Treat the Twitter modules (twitterstream, twittersearch) as using Twitter API v1.1, requiring OAuth1 credential configuration translated from XD's original configuration.",
+      "Reuse the existing Spring XD module test fixtures and adapt them to a Spring Cloud Stream test binder where possible to minimize test rewrites.",
+      "Provide Java 17 compatibility consistent with Spring Framework 6 baseline."
+    ],
+    "assumptions": [
+      "A single experienced Spring developer performs all the work (8-hour workdays).",
+      "Build, CI, dependency, and repository infrastructure already exist; only project-level additions are needed.",
+      "Original Spring XD source code is available and can be referenced for behavioral parity.",
+      "Unit and integration tests are part of every porting activity; the effort covers writing them.",
+      "The Twitter API v1.1 contract has not fundamentally changed, but option names and authentication wiring require remapping (U5, U6).",
+      "No production-grade localization, advanced error recovery, or autosuggest features are required for the shell — a basic command set is sufficient.",
+      "Stream commands scope is limited to: list, create, deploy, undeploy, destroy, info, history, and rollback (per typical U1 scope).",
+      "Cross-module shared concerns (e.g., common configuration metadata bean) are handled inside the U2 activity and reused by U3–U8 without re-billing.",
+      "No new Spring Cloud Data Flow server-side changes are required — shell consumes existing REST endpoints."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Project setup and infrastructure",
+        "activity_description": "Create the new s-c-s shell module project, configure Maven/Gradle build, Java 17 toolchain, Spring Shell dependency, and base package structure.",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Shell interface for stream commands (U1)",
+        "activity_description": "Implement Spring Shell command classes wrapping the s-c-d REST API for stream lifecycle operations: list, create, deploy, undeploy, destroy, info, history, rollback. Includes client layer and command-level tests.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Module metadata strategy and module info command (U2)",
+        "activity_description": "Design and implement a metadata service that derives module option metadata from @ConfigurationProperties-annotated classes, expose it through REST/shell, and implement the 'module info' shell command to list module properties.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Port http source module (U3)",
+        "activity_description": "Port the Spring XD http source module to a Spring Cloud Stream source, map XD options to @ConfigurationProperties, preserve polling/http-invoker semantics, and provide unit + integration tests.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Port tcp source module (U4)",
+        "activity_description": "Port the Spring XD tcp source module (server/client modes, decoders, charset, buffer options) to a Spring Cloud Stream source with @ConfigurationProperties-driven configuration and tests.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Port twitterstream source module (U5)",
+        "activity_description": "Port the Spring XD twitterstream source to Spring Cloud Stream, including Twitter API v1.1 OAuth1 wiring, language/filter option mapping, and stream-disconnect handling. Includes tests with mocked Twitter client.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Port twittersearch source module (U6)",
+        "activity_description": "Port the Spring XD twittersearch source to Spring Cloud Stream, including search query, geocode, language, count, and OAuth1 credential configuration. Includes tests with mocked Twitter client.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Port filter processor module (U7)",
+        "activity_description": "Port the Spring XD filter processor (SpEL expression-based payload filtering) to a Spring Cloud Stream processor with @ConfigurationProperties and unit tests for include/exclude expressions.",
+        "most_likely_effort": 3.5
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Port transform processor module (U8)",
+        "activity_description": "Port the Spring XD transform processor (SpEL/JSON/header transformations) to a Spring Cloud Stream processor with @ConfigurationProperties and unit tests covering representative transformation scenarios.",
+        "most_likely_effort": 3.5
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Documentation",
+        "activity_description": "Update README/Asciidoctor docs: describe shell commands, usage examples, and each ported module's options and configuration properties.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Integration testing and stabilization",
+        "activity_description": "End-to-end testing of shell + ported modules against a live s-c-d server, bug fixing, edge-case handling, and final code cleanup across all stories.",
+        "most_likely_effort": 3.0
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 41.0
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8.0
+  }
+}

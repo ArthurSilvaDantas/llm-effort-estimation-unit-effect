@@ -1,0 +1,285 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-061",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788415172-nh3xPpEiZ5zS0RBgEb9y",
+    "object": "chat.completion",
+    "created": 1788415172,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Treat each user story as an independent module migration; modules are not refactored beyond what is needed to fit the s-c-s contract.\",\n    \"Reuse existing Spring XD module code where possible; rewrite only the binding/adaptation layer to match the spring-cloud-stream Source/Sink contracts.\",\n    \"Adopt the spring-cloud-stream convention of a single 'spring-cloud-stream-modules/<module-name>' Maven module per user story.\",\n    \"Keep XD-specific configuration property names where feasible, and add deprecation comments where breaking changes are required.\",\n    \"Tests are adapted from the existing XD module test suites; new end-to-end pipeline tests are added only to verify the source/sink binding.\",\n    \"Shared/common code (e.g., codec helpers for TCP, mail session handling) is factored into a small 'spring-cloud-stream-modules-common' utility module to avoid duplication across the 8 modules.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs the entire increment; no parallelization across modules.\",\n    \"Spring XD source is available and the modules are stable, so no bug-fixing of original logic is required beyond API adaptation.\",\n    \"Java 17+ is used (consistent with Spring Framework 6.0 baseline mentioned in the specification).\",\n    \"spring-cloud-stream binder (e.g., Kafka or Rabbit) is provided by the runtime; this work only delivers the application-level modules.\",\n    \"An 8-hour workday is used as the unit of effort.\",\n    \"No production deployment automation, release notes, or backports to earlier Spring versions are in scope.\",\n    \"Module complexity ranking (used to scale per-module effort): simple=2d, medium=3d, complex=4d.\",\n    \"The mongo and mail modules are reused between source and sink stories; the sink/source variants share ~70% of the code, so the second occurrence is lighter.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository and build setup\",\n      \"activity_description\": \"Create the spring-cloud-stream-modules parent module, configure the Maven build, CI hooks, code style and license headers used across the 8 new modules.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Common adapter framework\",\n      \"activity_description\": \"Implement shared utilities (codec helpers, polling/thread abstractions, common test fixtures) reused by the migrated modules to keep each module's footprint small.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Migrate syslog module (source) [U1]\",\n      \"activity_description\": \"Port the Spring XD syslog source (UDP/TCP listener) to a spring-cloud-stream Source module, including property mapping, unit tests and a basic integration test.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Migrate mail module (source) [U2]\",\n      \"activity_description\": \"Port the Spring XD IMAP/POP3 mail source (polling mailbox) to a spring-cloud-stream Source module with adapted configuration and tests.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Migrate tcp module (source) [U3]\",\n      \"activity_description\": \"Port the Spring XD TCP server source to a spring-cloud-stream Source module, including the reusable codec/decoder layer.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Migrate tcp-client module (source) [U4]\",\n      \"activity_description\": \"Port the Spring XD TCP client source (outbound connection per message) to a spring-cloud-stream Source module, reusing the TCP codec utilities from A5.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Migrate gpfdist module (sink) [U5]\",\n      \"activity_description\": \"Port the Spring XD gpfdist sink (Greenplum external table protocol) to a spring-cloud-stream Sink module. Higher complexity due to the bespoke gpfdist wire protocol.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Migrate hdfs-dataset module (sink) [U6]\",\n      \"activity_description\": \"Port the Spring XD hdfs-dataset sink (file rollover, partitioning, HDFS writer) to a spring-cloud-stream Sink module.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Migrate mail module (sink) [U7]\",\n      \"activity_description\": \"Port the Spring XD SMTP mail sink to a spring-cloud-stream Sink module, sharing most of the mail-session utilities with A4.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Migrate mongo module (sink) [U8]\",\n      \"activity_description\": \"Port the Spring XD MongoDB sink (write to collection) to a spring-cloud-stream Sink module using the Mongo Java driver.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"End-to-end pipeline integration testing\",\n      \"activity_description\": \"Build sample spring-cloud-stream pipelines combining the migrated sources and sinks against a local binder to verify they work together as a complete streaming pipeline.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and module metadata\",\n      \"activity_description\": \"Write/update each module's README, configuration property reference and a top-level migration guide documenting how XD users can switch to s-c-s.\"\n    }\n  ],\n  \"activities_with_effort\": [\n    { \"activity_id\": \"A1\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A2\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A3\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A4\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A5\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A6\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A7\",  \"most_likely_effort\": 4 },\n    { \"activity_id\": \"A8\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A9\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A10\", \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A11\", \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A12\", \"most_likely_effort\": 2 }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 32\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this software specification carefully.\n\nThe specification describes the Spring Framework and then lists 8 user stories, all about moving modules from Spring XD to the spring-cloud-stream (s-c-s) repo. The modules are:\n- U1: syslog (source)\n- U2: mail (source)\n- U3: tcp (source)\n- U4: tcp-client (source)\n- U5: gpfdist (sink)\n- U6: hdfs-dataset (sink)\n- U7: mail (sink)\n- U8: mongo (sink)\n\nSo we need to estimate the effort to migrate these 8 modules from Spring XD to spring-cloud-stream repository.\n\nLet me think about the activities needed:\n\n1. **Project setup and analysis**\n   - Set up the s-c-s project structure for new modules\n   - Analyze existing Spring XD modules to understand their current implementation\n   - Understand the spring-cloud-stream framework conventions\n\n2. **Module migration activities** - For each module, we need to:\n   - Extract the module code from XD\n   - Adapt it to the spring-cloud-stream conventions\n   - Update dependencies\n   - Reconfigure the module to work as a source or sink in s-c-s\n   - Update tests\n\n3. **Testing and validation**\n   - Unit tests\n   - Integration tests\n   - End-to-end pipeline tests\n\n4. **Documentation**\n   - Update README files\n   - Update configuration documentation\n\nLet me estimate the effort for each module. Since these are well-defined migrations and the modules already exist in XD, the main work is adaptation. The Spring XD modules are likely already well-tested, so the focus is on the migration/adapter layer.\n\nLet me think about each module:\n- syslog: Relatively simple UDP/TCP listener - 2 days\n- mail (source): IMAP/POP3 polling - 3 days\n- tcp: TCP server - 3 days\n- tcp-client: TCP client - 2 days\n- gpfdist: Specialized protocol (Greenplum) - 4 days\n- hdfs-dataset: HDFS integration - 3 days\n- mail (sink): SMTP sending - 2 days\n- mongo: MongoDB integration - 3 days\n\nTotal module work: ~22 days\n\nPlus common activities:\n- Repository setup, CI/CD: 2 days\n- Common adapter framework: 3 days\n- Integration testing: 3 days\n- Documentation: 2 days\n\nLet me structure this more carefully:\n\n1. **A1: Project Setup and Analysis** (2 days)\n   - Set up module structure in s-c-s repo\n   - Analyze Spring XD module architecture\n   - Define migration patterns\n\n2. **A2: Common Adapter Framework** (3 days)\n   - Create common patterns for source/sink adapters\n   - Set up shared test infrastructure\n   - Document conventions\n\n3. **A3: Migrate syslog module (source)** (2 days)\n   - Port syslog source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n4. **A4: Migrate mail module (source)** (3 days)\n   - Port mail source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n5. **A5: Migrate tcp module (source)** (3 days)\n   - Port tcp source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n6. **A6: Migrate tcp-client module (source)** (2 days)\n   - Port tcp-client source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n7. **A7: Migrate gpfdist module (sink)** (4 days)\n   - Port gpfdist sink from XD\n   - Adapt to s-c-s sink contract\n   - Write/update tests\n\n8. **A8: Migrate hdfs-dataset module (sink)** (3 days)\n   - Port hdfs-dataset sink from XD\n   - Adapt to s-c-s sink contract\n   - Write/update tests\n\n9. **A9: Migrate mail module (sink)** (2 days)\n   - Port mail sink from XD\n   - Adapt to s-c-s sink contract\n   - Write/update tests\n\n10. **A10: Migrate mongo module (sink)** (3 days)\n    - Port mongo sink from XD\n    - Adapt to s-c-s sink contract\n    - Write/update tests\n\n11. **A11: Integration Testing** (3 days)\n    - Build sample streaming pipelines\n    - Test module interactions\n\n12. **A12: Documentation** (2 days)\n    - README updates\n    - Migration guide\n    - Configuration reference\n\nTotal: 2 + 3 + 2 + 3 + 3 + 2 + 4 + 3 + 2 + 3 + 3 + 2 = 32 days\n\nLet me reconsider these estimates. The user stories are pretty clear and the work is mostly mechanical migration with adaptation. Some modules are more complex (gpfdist with Greenplum protocol, hdfs-dataset with HDFS).\n\nActually, let me think about this more carefully. The user is moving modules from XD to s-c-s. This involves:\n- Understanding the existing code\n- Adapting the API to match s-c-s conventions\n- Updating dependencies (XD-specific to s-c-s)\n- Writing tests\n- Documentation\n\nFor a developer who is familiar with both Spring XD and spring-cloud-stream, the migration of a simple module like syslog would take maybe 1-2 days. A complex one like gpfdist or hdfs-dataset could take 3-5 days.\n\nI think my estimates are reasonable. Let me finalize:\n\n- syslog: 2 days\n- mail (source): 2 days (it's a polling source, but already exists in XD)\n- tcp: 3 days\n- tcp-client: 2 days\n- gpfdist: 4 days (specialized)\n- hdfs-dataset: 3 days\n- mail (sink): 2 days\n- mongo: 3 days\n\nTotal module work: 21 days\nCommon work: ~10 days\nGrand total: ~31 days\n\nLet me adjust slightly to be more realistic. I'll keep it at around 30-32 days.\n\nNow I need to format this as JSON matching the schema. Let me write it out.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this software specification carefully.\n\nThe specification describes the Spring Framework and then lists 8 user stories, all about moving modules from Spring XD to the spring-cloud-stream (s-c-s) repo. The modules are:\n- U1: syslog (source)\n- U2: mail (source)\n- U3: tcp (source)\n- U4: tcp-client (source)\n- U5: gpfdist (sink)\n- U6: hdfs-dataset (sink)\n- U7: mail (sink)\n- U8: mongo (sink)\n\nSo we need to estimate the effort to migrate these 8 modules from Spring XD to spring-cloud-stream repository.\n\nLet me think about the activities needed:\n\n1. **Project setup and analysis**\n   - Set up the s-c-s project structure for new modules\n   - Analyze existing Spring XD modules to understand their current implementation\n   - Understand the spring-cloud-stream framework conventions\n\n2. **Module migration activities** - For each module, we need to:\n   - Extract the module code from XD\n   - Adapt it to the spring-cloud-stream conventions\n   - Update dependencies\n   - Reconfigure the module to work as a source or sink in s-c-s\n   - Update tests\n\n3. **Testing and validation**\n   - Unit tests\n   - Integration tests\n   - End-to-end pipeline tests\n\n4. **Documentation**\n   - Update README files\n   - Update configuration documentation\n\nLet me estimate the effort for each module. Since these are well-defined migrations and the modules already exist in XD, the main work is adaptation. The Spring XD modules are likely already well-tested, so the focus is on the migration/adapter layer.\n\nLet me think about each module:\n- syslog: Relatively simple UDP/TCP listener - 2 days\n- mail (source): IMAP/POP3 polling - 3 days\n- tcp: TCP server - 3 days\n- tcp-client: TCP client - 2 days\n- gpfdist: Specialized protocol (Greenplum) - 4 days\n- hdfs-dataset: HDFS integration - 3 days\n- mail (sink): SMTP sending - 2 days\n- mongo: MongoDB integration - 3 days\n\nTotal module work: ~22 days\n\nPlus common activities:\n- Repository setup, CI/CD: 2 days\n- Common adapter framework: 3 days\n- Integration testing: 3 days\n- Documentation: 2 days\n\nLet me structure this more carefully:\n\n1. **A1: Project Setup and Analysis** (2 days)\n   - Set up module structure in s-c-s repo\n   - Analyze Spring XD module architecture\n   - Define migration patterns\n\n2. **A2: Common Adapter Framework** (3 days)\n   - Create common patterns for source/sink adapters\n   - Set up shared test infrastructure\n   - Document conventions\n\n3. **A3: Migrate syslog module (source)** (2 days)\n   - Port syslog source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n4. **A4: Migrate mail module (source)** (3 days)\n   - Port mail source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n5. **A5: Migrate tcp module (source)** (3 days)\n   - Port tcp source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n6. **A6: Migrate tcp-client module (source)** (2 days)\n   - Port tcp-client source from XD\n   - Adapt to s-c-s source contract\n   - Write/update tests\n\n7. **A7: Migrate gpfdist module (sink)** (4 days)\n   - Port gpfdist sink from XD\n   - Adapt to s-c-s sink contract\n   - Write/update tests\n\n8. **A8: Migrate hdfs-dataset module (sink)** (3 days)\n   - Port hdfs-dataset sink from XD\n   - Adapt to s-c-s sink contract\n   - Write/update tests\n\n9. **A9: Migrate mail module (sink)** (2 days)\n   - Port mail sink from XD\n   - Adapt to s-c-s sink contract\n   - Write/update tests\n\n10. **A10: Migrate mongo module (sink)** (3 days)\n    - Port mongo sink from XD\n    - Adapt to s-c-s sink contract\n    - Write/update tests\n\n11. **A11: Integration Testing** (3 days)\n    - Build sample streaming pipelines\n    - Test module interactions\n\n12. **A12: Documentation** (2 days)\n    - README updates\n    - Migration guide\n    - Configuration reference\n\nTotal: 2 + 3 + 2 + 3 + 3 + 2 + 4 + 3 + 2 + 3 + 3 + 2 = 32 days\n\nLet me reconsider these estimates. The user stories are pretty clear and the work is mostly mechanical migration with adaptation. Some modules are more complex (gpfdist with Greenplum protocol, hdfs-dataset with HDFS).\n\nActually, let me think about this more carefully. The user is moving modules from XD to s-c-s. This involves:\n- Understanding the existing code\n- Adapting the API to match s-c-s conventions\n- Updating dependencies (XD-specific to s-c-s)\n- Writing tests\n- Documentation\n\nFor a developer who is familiar with both Spring XD and spring-cloud-stream, the migration of a simple module like syslog would take maybe 1-2 days. A complex one like gpfdist or hdfs-dataset could take 3-5 days.\n\nI think my estimates are reasonable. Let me finalize:\n\n- syslog: 2 days\n- mail (source): 2 days (it's a polling source, but already exists in XD)\n- tcp: 3 days\n- tcp-client: 2 days\n- gpfdist: 4 days (specialized)\n- hdfs-dataset: 3 days\n- mail (sink): 2 days\n- mongo: 3 days\n\nTotal module work: 21 days\nCommon work: ~10 days\nGrand total: ~31 days\n\nLet me adjust slightly to be more realistic. I'll keep it at around 30-32 days.\n\nNow I need to format this as JSON matching the schema. Let me write it out.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1351,
+      "completion_tokens": 2817,
+      "total_tokens": 4168,
+      "cost": 0.00374826,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00374826,
+        "upstream_inference_prompt_cost": 0.00036786,
+        "upstream_inference_completions_cost": 0.0033804
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1345,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Treat each user story as an independent module migration; modules are not refactored beyond what is needed to fit the s-c-s contract.\",\n    \"Reuse existing Spring XD module code where possible; rewrite only the binding/adaptation layer to match the spring-cloud-stream Source/Sink contracts.\",\n    \"Adopt the spring-cloud-stream convention of a single 'spring-cloud-stream-modules/<module-name>' Maven module per user story.\",\n    \"Keep XD-specific configuration property names where feasible, and add deprecation comments where breaking changes are required.\",\n    \"Tests are adapted from the existing XD module test suites; new end-to-end pipeline tests are added only to verify the source/sink binding.\",\n    \"Shared/common code (e.g., codec helpers for TCP, mail session handling) is factored into a small 'spring-cloud-stream-modules-common' utility module to avoid duplication across the 8 modules.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs the entire increment; no parallelization across modules.\",\n    \"Spring XD source is available and the modules are stable, so no bug-fixing of original logic is required beyond API adaptation.\",\n    \"Java 17+ is used (consistent with Spring Framework 6.0 baseline mentioned in the specification).\",\n    \"spring-cloud-stream binder (e.g., Kafka or Rabbit) is provided by the runtime; this work only delivers the application-level modules.\",\n    \"An 8-hour workday is used as the unit of effort.\",\n    \"No production deployment automation, release notes, or backports to earlier Spring versions are in scope.\",\n    \"Module complexity ranking (used to scale per-module effort): simple=2d, medium=3d, complex=4d.\",\n    \"The mongo and mail modules are reused between source and sink stories; the sink/source variants share ~70% of the code, so the second occurrence is lighter.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository and build setup\",\n      \"activity_description\": \"Create the spring-cloud-stream-modules parent module, configure the Maven build, CI hooks, code style and license headers used across the 8 new modules.\"\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Common adapter framework\",\n      \"activity_description\": \"Implement shared utilities (codec helpers, polling/thread abstractions, common test fixtures) reused by the migrated modules to keep each module's footprint small.\"\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Migrate syslog module (source) [U1]\",\n      \"activity_description\": \"Port the Spring XD syslog source (UDP/TCP listener) to a spring-cloud-stream Source module, including property mapping, unit tests and a basic integration test.\"\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Migrate mail module (source) [U2]\",\n      \"activity_description\": \"Port the Spring XD IMAP/POP3 mail source (polling mailbox) to a spring-cloud-stream Source module with adapted configuration and tests.\"\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Migrate tcp module (source) [U3]\",\n      \"activity_description\": \"Port the Spring XD TCP server source to a spring-cloud-stream Source module, including the reusable codec/decoder layer.\"\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Migrate tcp-client module (source) [U4]\",\n      \"activity_description\": \"Port the Spring XD TCP client source (outbound connection per message) to a spring-cloud-stream Source module, reusing the TCP codec utilities from A5.\"\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Migrate gpfdist module (sink) [U5]\",\n      \"activity_description\": \"Port the Spring XD gpfdist sink (Greenplum external table protocol) to a spring-cloud-stream Sink module. Higher complexity due to the bespoke gpfdist wire protocol.\"\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Migrate hdfs-dataset module (sink) [U6]\",\n      \"activity_description\": \"Port the Spring XD hdfs-dataset sink (file rollover, partitioning, HDFS writer) to a spring-cloud-stream Sink module.\"\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Migrate mail module (sink) [U7]\",\n      \"activity_description\": \"Port the Spring XD SMTP mail sink to a spring-cloud-stream Sink module, sharing most of the mail-session utilities with A4.\"\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Migrate mongo module (sink) [U8]\",\n      \"activity_description\": \"Port the Spring XD MongoDB sink (write to collection) to a spring-cloud-stream Sink module using the Mongo Java driver.\"\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"End-to-end pipeline integration testing\",\n      \"activity_description\": \"Build sample spring-cloud-stream pipelines combining the migrated sources and sinks against a local binder to verify they work together as a complete streaming pipeline.\"\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and module metadata\",\n      \"activity_description\": \"Write/update each module's README, configuration property reference and a top-level migration guide documenting how XD users can switch to s-c-s.\"\n    }\n  ],\n  \"activities_with_effort\": [\n    { \"activity_id\": \"A1\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A2\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A3\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A4\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A5\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A6\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A7\",  \"most_likely_effort\": 4 },\n    { \"activity_id\": \"A8\",  \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A9\",  \"most_likely_effort\": 2 },\n    { \"activity_id\": \"A10\", \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A11\", \"most_likely_effort\": 3 },\n    { \"activity_id\": \"A12\", \"most_likely_effort\": 2 }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 32\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1351,
+    "completion_tokens": 2817,
+    "total_tokens": 4168,
+    "cost": 0.00374826,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00374826,
+      "upstream_inference_prompt_cost": 0.00036786,
+      "upstream_inference_completions_cost": 0.0033804
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1345,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788415195-5FzmR6tnFqrw5y7C9Tnh",
+    "object": "chat.completion",
+    "created": 1788415195,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2950,
+      "completion_tokens": 19,
+      "total_tokens": 2969,
+      "cost": 0.00058716,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1336,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00058716,
+        "upstream_inference_prompt_cost": 0.00056436,
+        "upstream_inference_completions_cost": 2.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Treat each user story as an independent module migration; modules are not refactored beyond what is needed to fit the s-c-s contract.",
+      "Reuse existing Spring XD module code where possible; rewrite only the binding/adaptation layer to match the spring-cloud-stream Source/Sink contracts.",
+      "Adopt the spring-cloud-stream convention of a single 'spring-cloud-stream-modules/<module-name>' Maven module per user story.",
+      "Keep XD-specific configuration property names where feasible, and add deprecation comments where breaking changes are required.",
+      "Tests are adapted from the existing XD module test suites; new end-to-end pipeline tests are added only to verify the source/sink binding.",
+      "Shared/common code (e.g., codec helpers for TCP, mail session handling) is factored into a small 'spring-cloud-stream-modules-common' utility module to avoid duplication across the 8 modules."
+    ],
+    "assumptions": [
+      "A single developer performs the entire increment; no parallelization across modules.",
+      "Spring XD source is available and the modules are stable, so no bug-fixing of original logic is required beyond API adaptation.",
+      "Java 17+ is used (consistent with Spring Framework 6.0 baseline mentioned in the specification).",
+      "spring-cloud-stream binder (e.g., Kafka or Rabbit) is provided by the runtime; this work only delivers the application-level modules.",
+      "An 8-hour workday is used as the unit of effort.",
+      "No production deployment automation, release notes, or backports to earlier Spring versions are in scope.",
+      "Module complexity ranking (used to scale per-module effort): simple=2d, medium=3d, complex=4d.",
+      "The mongo and mail modules are reused between source and sink stories; the sink/source variants share ~70% of the code, so the second occurrence is lighter."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Repository and build setup",
+        "activity_description": "Create the spring-cloud-stream-modules parent module, configure the Maven build, CI hooks, code style and license headers used across the 8 new modules."
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Common adapter framework",
+        "activity_description": "Implement shared utilities (codec helpers, polling/thread abstractions, common test fixtures) reused by the migrated modules to keep each module's footprint small."
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Migrate syslog module (source) [U1]",
+        "activity_description": "Port the Spring XD syslog source (UDP/TCP listener) to a spring-cloud-stream Source module, including property mapping, unit tests and a basic integration test."
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Migrate mail module (source) [U2]",
+        "activity_description": "Port the Spring XD IMAP/POP3 mail source (polling mailbox) to a spring-cloud-stream Source module with adapted configuration and tests."
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Migrate tcp module (source) [U3]",
+        "activity_description": "Port the Spring XD TCP server source to a spring-cloud-stream Source module, including the reusable codec/decoder layer."
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Migrate tcp-client module (source) [U4]",
+        "activity_description": "Port the Spring XD TCP client source (outbound connection per message) to a spring-cloud-stream Source module, reusing the TCP codec utilities from A5."
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Migrate gpfdist module (sink) [U5]",
+        "activity_description": "Port the Spring XD gpfdist sink (Greenplum external table protocol) to a spring-cloud-stream Sink module. Higher complexity due to the bespoke gpfdist wire protocol."
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Migrate hdfs-dataset module (sink) [U6]",
+        "activity_description": "Port the Spring XD hdfs-dataset sink (file rollover, partitioning, HDFS writer) to a spring-cloud-stream Sink module."
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Migrate mail module (sink) [U7]",
+        "activity_description": "Port the Spring XD SMTP mail sink to a spring-cloud-stream Sink module, sharing most of the mail-session utilities with A4."
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Migrate mongo module (sink) [U8]",
+        "activity_description": "Port the Spring XD MongoDB sink (write to collection) to a spring-cloud-stream Sink module using the Mongo Java driver."
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "End-to-end pipeline integration testing",
+        "activity_description": "Build sample spring-cloud-stream pipelines combining the migrated sources and sinks against a local binder to verify they work together as a complete streaming pipeline."
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation and module metadata",
+        "activity_description": "Write/update each module's README, configuration property reference and a top-level migration guide documenting how XD users can switch to s-c-s."
+      }
+    ],
+    "activities_with_effort": [
+      {
+        "activity_id": "A1",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A3",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A4",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A5",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A6",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A7",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A8",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A9",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A11",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A12",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 32
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "model_id": "xiaomi/mimo-v2.5",
+  "spec_id": "spring-xd-045",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1787840991-VvvN6M2h9ElfcUrhJllI",
+    "object": "chat.completion",
+    "created": 1787840991,
+    "model": "xiaomi/mimo-v2.5",
+    "provider": "Xiaomi",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"We will use Spring Boot and Spring Cloud for the implementation to align with the existing Spring ecosystem.\",\n    \"The module registry abstraction will be defined as a Java interface with method signatures as specified in the user stories.\",\n    \"We will use Spring profiles (e.g., 'receptor', 'cloudcontroller') to conditionally load the appropriate Admin SPI implementation.\",\n    \"Eureka client integration will use Spring Cloud Netflix for self-registration and metadata storage.\",\n    \"We assume the existing Spring XD codebase is modular and allows extension without major refactoring.\"\n  ],\n  \"assumptions\": [\n    \"The development environment is set up with Java 17+, Maven/Gradle, and necessary Spring dependencies.\",\n    \"The developer is familiar with Spring XD internals, Eureka, and the target deployment environments (CF, Receptor, LTC).\",\n    \"Existing test infrastructure and CI/CD pipelines are in place and can be reused.\",\n    \"Third-party libraries (e.g., Spring Cloud Eureka) are already approved and available.\",\n    \"No additional infrastructure setup (e.g., Eureka server) is required beyond development/testing.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Design and set up common repository for SPI implementations\",\n      \"activity_description\": \"Create a new Maven/Gradle module or package structure for shared SPI interfaces and implementations. Define the base Admin SPI interface and module registry abstraction (U3, U4).\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Implement module registry abstraction foundation\",\n      \"activity_description\": \"Develop the core interfaces and abstract classes for the module registry, including method signatures for getStatus, listModules, and the map operation (U4).\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement Receptor Admin SPI\",\n      \"activity_description\": \"Create a concrete implementation of the Admin SPI for Receptor, including integration with Receptor APIs for module deployment and status queries (U1).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement CloudController Admin SPI\",\n      \"activity_description\": \"Create a concrete implementation of the Admin SPI for Cloud Foundry, using the CloudController client library for module operations (U2).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Make SPI implementations profile-aware\",\n      \"activity_description\": \"Configure Spring profiles to conditionally load the Receptor or CloudController implementation based on deployment context (U5).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Implement Eureka self-registration for modules\",\n      \"activity_description\": \"Integrate Spring Cloud Eureka client to automatically register modules with Eureka upon installation (U6).\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Add module search by name\",\n      \"activity_description\": \"Extend the module registry or Eureka client to support searching modules by name in addition to default Spring application name (U7).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Store module metadata in Eureka\",\n      \"activity_description\": \"Design and implement a mechanism to persist module-specific metadata in Eureka instance registration (U8).\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 26\n  }\n}",
+          "refusal": null,
+          "reasoning": "We are given a specification for a software increment related to Spring XD and Eureka. The specification includes8 user stories (U1 to U8).\n\nWe are to estimate the total software development effort in workdays using a WBS-based process.\n\nStep 1: Break down the development into necessary activities.\n\nLet's analyze the user stories:\n\nU1: Implement a Receptor implementation of Admin SPI for module deployment, with APIs: getStatus, listModules, and a map of module keys to status.\nU2: Implement a CloudController implementation of Admin SPI for module deployment, with the same APIs.\nU3: Create a permanent location (common repo) for SPI implementations to facilitate contribution and test coverage.\nU4: Create an initial version of the new module registry abstraction (foundation for the SPI implementations).\nU5: Make the SPI implementation profile aware so that the correct implementation is wired in based on the deployment environment (java -jar, cf push, ltc create).\nU6: Implement self-registration of modules with Eureka when they are installed.\nU7: Allow searching modules by name (in addition to the default Spring application name).\nU8: Store module metadata in Eureka.\n\nFrom these, we can derive the following activities:\n\n1. Design and set up the common repository for the SPI implementations (U3).\n2. Design and implement the module registry abstraction (U4) which will be used by both Receptor and CloudController implementations.\n3. Implement the Receptor implementation of Admin SPI (U1).\n4. Implement the CloudController implementation of Admin SPI (U2).\n5. Make the SPI implementation profile aware (U5) so that the correct implementation is selected.\n6. Implement module self-registration with Eureka (U6).\n7. Implement module search by name (U7).\n8. Implement storage of module metadata in Eureka (U8).\n\nWe also note that there might be some overlapping concerns, but we'll keep them as separate activities for clarity.\n\nStep 2: State the main technical and design decisions and any additional assumptions.\n\nTechnical and design decisions:\n- We will use Spring Boot for building the applications, as it is a common framework for Spring-based applications.\n- We will use Eureka for service discovery and storing module metadata.\n- The module registry abstraction will be designed as an interface with two implementations: one for Receptor and one for CloudController.\n- We will use Spring profiles to select the appropriate implementation.\n- We will assume that the existing Spring XD codebase is available and we are extending it with these new features.\n- We will assume that the development environment is set up and we are familiar with the Spring XD codebase.\n\nAssumptions:\n- We are working in a team of one (as per the problem statement: \"you will personally perform all the required development work\").\n- The specification does not provide detailed design, so we assume that the design will be done as part of the development activities.\n- We assume that the development will be done in Java, as per the Spring Framework requirement (Java 17+).\n- We assume that the existing codebase has some infrastructure for module deployment and administration, so we are building on top of that.\n- We assume that the Eureka server is already set up and available for use.\n\nStep 3: For each activity, provide a single most likely effort estimate.\n\nWe need to estimate the effort in workdays for each activity.\n\nActivity 1: Design and set up the common repository for the SPI implementations (U3).\n   - This involves setting up a new module or package structure, defining the SPI interfaces, and creating initial tests. Since it's a foundation, it might take some time.\n   - Estimate: 3 workdays.\n\nActivity 2: Design and implement the module registry abstraction (U4).\n   - This is the core abstraction that the SPI implementations will use. It will define the SPI interface and the module registry. We need to design the interface and implement a basic version.\n   - Estimate: 5 workdays.\n\nActivity 3: Implement the Receptor implementation of Admin SPI (U1).\n   - This involves implementing the interface for the Receptor-based deployment. We need to implement the three methods: getStatus, listModules, and the map method.\n   - Estimate: 4 workdays.\n\nActivity 4: Implement the CloudController implementation of Admin SPI (U2).\n   - Similar to Activity 3, but for CloudController. We assume the CloudController API is different and requires a different implementation.\n   - Estimate: 4 workdays.\n\nActivity 5: Make the SPI implementation profile aware (U5).\n   - This involves setting up Spring profiles and conditionally loading the appropriate implementation. We need to define profiles and adjust the configuration.\n   - Estimate: 2 workdays.\n\nActivity 6: Implement module self-registration with Eureka (U6).\n   - We need to integrate with Eureka and register each module when it is installed. This might involve using Spring Cloud Netflix Eureka client.\n   - Estimate: 3 workdays.\n\nActivity 7: Implement module search by name (U7).\n   - We need to extend the module registry or the Eureka integration to allow searching by name. This might involve storing the module name in a way that is searchable.\n   - Estimate: 2 workdays.\n\nActivity 8: Implement storage of module metadata in Eureka (U8).\n   - We need to store additional metadata (beyond the default) in Eureka. This might involve extending the instance registration or using a separate store.\n   - Estimate: 3 workdays.\n\nStep 4: Calculate the total most likely effort estimate.\n\nTotal = 3 + 5 + 4 + 4 + 2 + 3 + 2 + 3 = 26 workdays.\n\nNow, we need to output in the specified JSON format.\n\nNote: The JSON schema requires that the \"activities\" array has at least one item, and each activity has activity_id, activity_name, activity_description, and most_likely_effort.\n\nWe will assign activity_ids as \"A1\", \"A2\", etc.\n\nLet's construct the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We are given a specification for a software increment related to Spring XD and Eureka. The specification includes8 user stories (U1 to U8).\n\nWe are to estimate the total software development effort in workdays using a WBS-based process.\n\nStep 1: Break down the development into necessary activities.\n\nLet's analyze the user stories:\n\nU1: Implement a Receptor implementation of Admin SPI for module deployment, with APIs: getStatus, listModules, and a map of module keys to status.\nU2: Implement a CloudController implementation of Admin SPI for module deployment, with the same APIs.\nU3: Create a permanent location (common repo) for SPI implementations to facilitate contribution and test coverage.\nU4: Create an initial version of the new module registry abstraction (foundation for the SPI implementations).\nU5: Make the SPI implementation profile aware so that the correct implementation is wired in based on the deployment environment (java -jar, cf push, ltc create).\nU6: Implement self-registration of modules with Eureka when they are installed.\nU7: Allow searching modules by name (in addition to the default Spring application name).\nU8: Store module metadata in Eureka.\n\nFrom these, we can derive the following activities:\n\n1. Design and set up the common repository for the SPI implementations (U3).\n2. Design and implement the module registry abstraction (U4) which will be used by both Receptor and CloudController implementations.\n3. Implement the Receptor implementation of Admin SPI (U1).\n4. Implement the CloudController implementation of Admin SPI (U2).\n5. Make the SPI implementation profile aware (U5) so that the correct implementation is selected.\n6. Implement module self-registration with Eureka (U6).\n7. Implement module search by name (U7).\n8. Implement storage of module metadata in Eureka (U8).\n\nWe also note that there might be some overlapping concerns, but we'll keep them as separate activities for clarity.\n\nStep 2: State the main technical and design decisions and any additional assumptions.\n\nTechnical and design decisions:\n- We will use Spring Boot for building the applications, as it is a common framework for Spring-based applications.\n- We will use Eureka for service discovery and storing module metadata.\n- The module registry abstraction will be designed as an interface with two implementations: one for Receptor and one for CloudController.\n- We will use Spring profiles to select the appropriate implementation.\n- We will assume that the existing Spring XD codebase is available and we are extending it with these new features.\n- We will assume that the development environment is set up and we are familiar with the Spring XD codebase.\n\nAssumptions:\n- We are working in a team of one (as per the problem statement: \"you will personally perform all the required development work\").\n- The specification does not provide detailed design, so we assume that the design will be done as part of the development activities.\n- We assume that the development will be done in Java, as per the Spring Framework requirement (Java 17+).\n- We assume that the existing codebase has some infrastructure for module deployment and administration, so we are building on top of that.\n- We assume that the Eureka server is already set up and available for use.\n\nStep 3: For each activity, provide a single most likely effort estimate.\n\nWe need to estimate the effort in workdays for each activity.\n\nActivity 1: Design and set up the common repository for the SPI implementations (U3).\n   - This involves setting up a new module or package structure, defining the SPI interfaces, and creating initial tests. Since it's a foundation, it might take some time.\n   - Estimate: 3 workdays.\n\nActivity 2: Design and implement the module registry abstraction (U4).\n   - This is the core abstraction that the SPI implementations will use. It will define the SPI interface and the module registry. We need to design the interface and implement a basic version.\n   - Estimate: 5 workdays.\n\nActivity 3: Implement the Receptor implementation of Admin SPI (U1).\n   - This involves implementing the interface for the Receptor-based deployment. We need to implement the three methods: getStatus, listModules, and the map method.\n   - Estimate: 4 workdays.\n\nActivity 4: Implement the CloudController implementation of Admin SPI (U2).\n   - Similar to Activity 3, but for CloudController. We assume the CloudController API is different and requires a different implementation.\n   - Estimate: 4 workdays.\n\nActivity 5: Make the SPI implementation profile aware (U5).\n   - This involves setting up Spring profiles and conditionally loading the appropriate implementation. We need to define profiles and adjust the configuration.\n   - Estimate: 2 workdays.\n\nActivity 6: Implement module self-registration with Eureka (U6).\n   - We need to integrate with Eureka and register each module when it is installed. This might involve using Spring Cloud Netflix Eureka client.\n   - Estimate: 3 workdays.\n\nActivity 7: Implement module search by name (U7).\n   - We need to extend the module registry or the Eureka integration to allow searching by name. This might involve storing the module name in a way that is searchable.\n   - Estimate: 2 workdays.\n\nActivity 8: Implement storage of module metadata in Eureka (U8).\n   - We need to store additional metadata (beyond the default) in Eureka. This might involve extending the instance registration or using a separate store.\n   - Estimate: 3 workdays.\n\nStep 4: Calculate the total most likely effort estimate.\n\nTotal = 3 + 5 + 4 + 4 + 2 + 3 + 2 + 3 = 26 workdays.\n\nNow, we need to output in the specified JSON format.\n\nNote: The JSON schema requires that the \"activities\" array has at least one item, and each activity has activity_id, activity_name, activity_description, and most_likely_effort.\n\nWe will assign activity_ids as \"A1\", \"A2\", etc.\n\nLet's construct the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1552,
+      "completion_tokens": 2084,
+      "total_tokens": 3636,
+      "cost": 0.0007305536,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0007305536,
+        "upstream_inference_prompt_cost": 0.0001470336,
+        "upstream_inference_completions_cost": 0.00058352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"We will use Spring Boot and Spring Cloud for the implementation to align with the existing Spring ecosystem.\",\n    \"The module registry abstraction will be defined as a Java interface with method signatures as specified in the user stories.\",\n    \"We will use Spring profiles (e.g., 'receptor', 'cloudcontroller') to conditionally load the appropriate Admin SPI implementation.\",\n    \"Eureka client integration will use Spring Cloud Netflix for self-registration and metadata storage.\",\n    \"We assume the existing Spring XD codebase is modular and allows extension without major refactoring.\"\n  ],\n  \"assumptions\": [\n    \"The development environment is set up with Java 17+, Maven/Gradle, and necessary Spring dependencies.\",\n    \"The developer is familiar with Spring XD internals, Eureka, and the target deployment environments (CF, Receptor, LTC).\",\n    \"Existing test infrastructure and CI/CD pipelines are in place and can be reused.\",\n    \"Third-party libraries (e.g., Spring Cloud Eureka) are already approved and available.\",\n    \"No additional infrastructure setup (e.g., Eureka server) is required beyond development/testing.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Design and set up common repository for SPI implementations\",\n      \"activity_description\": \"Create a new Maven/Gradle module or package structure for shared SPI interfaces and implementations. Define the base Admin SPI interface and module registry abstraction (U3, U4).\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Implement module registry abstraction foundation\",\n      \"activity_description\": \"Develop the core interfaces and abstract classes for the module registry, including method signatures for getStatus, listModules, and the map operation (U4).\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement Receptor Admin SPI\",\n      \"activity_description\": \"Create a concrete implementation of the Admin SPI for Receptor, including integration with Receptor APIs for module deployment and status queries (U1).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement CloudController Admin SPI\",\n      \"activity_description\": \"Create a concrete implementation of the Admin SPI for Cloud Foundry, using the CloudController client library for module operations (U2).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Make SPI implementations profile-aware\",\n      \"activity_description\": \"Configure Spring profiles to conditionally load the Receptor or CloudController implementation based on deployment context (U5).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Implement Eureka self-registration for modules\",\n      \"activity_description\": \"Integrate Spring Cloud Eureka client to automatically register modules with Eureka upon installation (U6).\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Add module search by name\",\n      \"activity_description\": \"Extend the module registry or Eureka client to support searching modules by name in addition to default Spring application name (U7).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Store module metadata in Eureka\",\n      \"activity_description\": \"Design and implement a mechanism to persist module-specific metadata in Eureka instance registration (U8).\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 26\n  }\n}",
+  "usage": {
+    "prompt_tokens": 1552,
+    "completion_tokens": 2084,
+    "total_tokens": 3636,
+    "cost": 0.0007305536,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0007305536,
+      "upstream_inference_prompt_cost": 0.0001470336,
+      "upstream_inference_completions_cost": 0.00058352
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "xiaomi/mimo-v2.5",
+  "conversion_response": {
+    "id": "gen-1787841025-GYvxCF2V2crBa8cgETqH",
+    "object": "chat.completion",
+    "created": 1787841025,
+    "model": "xiaomi/mimo-v2.5",
+    "provider": "Xiaomi",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking me a simple conversion question: how many work-hours do I consider equivalent to one estimated workday? This is a standard industry assumption.\n\nThe most common assumption in software development estimation is that one workday equals 8 work-hours. This is the standard full-time workday in most countries and industries.\n\nI need to return only the JSON response without any additional calculations or revisions to the previous estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking me a simple conversion question: how many work-hours do I consider equivalent to one estimated workday? This is a standard industry assumption.\n\nThe most common assumption in software development estimation is that one workday equals 8 work-hours. This is the standard full-time workday in most countries and industries.\n\nI need to return only the JSON response without any additional calculations or revisions to the previous estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2502,
+      "completion_tokens": 103,
+      "total_tokens": 2605,
+      "cost": 0.0001683808,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1536,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0001683808,
+        "upstream_inference_prompt_cost": 0.0001395408,
+        "upstream_inference_completions_cost": 2.884e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "We will use Spring Boot and Spring Cloud for the implementation to align with the existing Spring ecosystem.",
+      "The module registry abstraction will be defined as a Java interface with method signatures as specified in the user stories.",
+      "We will use Spring profiles (e.g., 'receptor', 'cloudcontroller') to conditionally load the appropriate Admin SPI implementation.",
+      "Eureka client integration will use Spring Cloud Netflix for self-registration and metadata storage.",
+      "We assume the existing Spring XD codebase is modular and allows extension without major refactoring."
+    ],
+    "assumptions": [
+      "The development environment is set up with Java 17+, Maven/Gradle, and necessary Spring dependencies.",
+      "The developer is familiar with Spring XD internals, Eureka, and the target deployment environments (CF, Receptor, LTC).",
+      "Existing test infrastructure and CI/CD pipelines are in place and can be reused.",
+      "Third-party libraries (e.g., Spring Cloud Eureka) are already approved and available.",
+      "No additional infrastructure setup (e.g., Eureka server) is required beyond development/testing."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Design and set up common repository for SPI implementations",
+        "activity_description": "Create a new Maven/Gradle module or package structure for shared SPI interfaces and implementations. Define the base Admin SPI interface and module registry abstraction (U3, U4).",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Implement module registry abstraction foundation",
+        "activity_description": "Develop the core interfaces and abstract classes for the module registry, including method signatures for getStatus, listModules, and the map operation (U4).",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Implement Receptor Admin SPI",
+        "activity_description": "Create a concrete implementation of the Admin SPI for Receptor, including integration with Receptor APIs for module deployment and status queries (U1).",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Implement CloudController Admin SPI",
+        "activity_description": "Create a concrete implementation of the Admin SPI for Cloud Foundry, using the CloudController client library for module operations (U2).",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Make SPI implementations profile-aware",
+        "activity_description": "Configure Spring profiles to conditionally load the Receptor or CloudController implementation based on deployment context (U5).",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Implement Eureka self-registration for modules",
+        "activity_description": "Integrate Spring Cloud Eureka client to automatically register modules with Eureka upon installation (U6).",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Add module search by name",
+        "activity_description": "Extend the module registry or Eureka client to support searching modules by name in addition to default Spring application name (U7).",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Store module metadata in Eureka",
+        "activity_description": "Design and implement a mechanism to persist module-specific metadata in Eureka instance registration (U8).",
+        "most_likely_effort": 3
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 26
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

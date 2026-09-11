@@ -1,0 +1,188 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-061",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788415148-QME1OFZvUATuCOkaEHPV",
+    "object": "chat.completion",
+    "created": 1788415148,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Each module is treated as a separate source/sink component port from Spring XD to Spring Cloud Stream (s-c-s); the mail module is counted twice (U2 source, U7 sink) since the stories require both directions even though some internal code can be shared.\",\n    \"Porting strategy: re-use the original XD module Java code, adapt the XD-specific binding/options/annotation model to the s-c-s @EnableBinding style, and expose equivalent configuration properties.\",\n    \"All modules will be implemented as s-c-s source/sink starters using Spring Boot auto-configuration so that downstream applications consume them through dependency + properties only.\",\n    \"HDFS support (hdfs-dataset) will rely on the standard Hadoop FileSystem API and the existing s-c-s HDFS binder assumptions, not on a re-implementation of XD's dataset abstractions.\",\n    \"TCP modules will use Netty (consistent with the existing s-c-s tcp source) rather than XD's reactor-netty custom pipeline; tcp-client is implemented as a single outbound connection per stream.\",\n    \"gpfdist will be ported as an HTTP-based sink that posts records to a Pivotal Greenplum gpfdist endpoint, preserving the existing XD wire format.\",\n    \"Mongo module will use Spring Data MongoDB (reactive driver for the sink when used in reactive pipelines) instead of XD's direct Mongo client wrappers.\",\n    \"Estimated effort reflects a single experienced developer who already knows s-c-s internals; effort for learning the XD codebase is included in the 'analysis' activity.\"\n  ],\n  \"assumptions\": [\n    \"Source code of the original Spring XD modules is available and can be copied/adapted; no reverse-engineering from binaries is needed.\",\n    \"The s-c-s target version, base class APIs, and binder interfaces are already known to the developer (no ramp-up on the target framework).\",\n    \"Mail (source and sink) shares the underlying JavaMail integration; the sink variant adds sending capability. The estimate assumes ~40% reuse of the source work for the sink work.\",\n    \"Unit tests for the original XD modules are reused as a baseline and adapted to s-c-s test infrastructure (no new functional test design from scratch).\",\n    \"No infrastructure-side work (CI pipelines, release engineering, Sonar, license headers automation beyond standard templates) is included beyond a small documentation update.\",\n    \"All required third-party libraries (Netty, Hadoop client, Spring Data MongoDB, JavaMail, gpfdist client library if any) are already declared in the parent s-c-s BOM; only minor dependency tweaks are needed.\",\n    \"Java 17 baseline (consistent with Spring Framework 6) is in place on the developer's machine and CI; no JDK migration work is required.\",\n    \"No new user-facing documentation beyond a brief README per module is required (acceptance is 'can be used as source/sink to build streaming pipeline').\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository analysis and project setup\",\n      \"activity_description\": \"Clone the XD source code, identify the 7 unique module projects, study s-c-s source/sink module conventions (annotation model, options binding, auto-config), and create the new s-c-s module skeletons with the correct package layout and build configuration.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Port syslog source module (U1)\",\n      \"activity_description\": \"Adapt the XD syslog TCP/UDP receiver to an s-c-s MessageSource supporting RFC3164/RFC5424, with s-c-s options for host/port/protocol and an integration test.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Port mail source module (U2)\",\n      \"activity_description\": \"Port the XD IMAP/POP3 mail source into an s-c-s source using JavaMail, with configurable polling, folder, and credentials exposed through s-c-s @ConfigurationProperties.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Port tcp source module (U3)\",\n      \"activity_description\": \"Port the XD TCP server source to s-c-s using Netty; preserve text/binary codecs, decoder, and client-mode options; provide s-c-s configuration metadata.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Port tcp-client source module (U4)\",\n      \"activity_description\": \"Port the XD TCP client source (single outgoing connection feeding the stream) to s-c-s, reusing the Netty plumbing from A4 but with client bootstrap and reconnection logic.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Port gpfdist sink module (U5)\",\n      \"activity_description\": \"Port the XD gpfdist sink to s-c-s: HTTP POST records to a Greenplum gpfdist endpoint, handle the load-balancing file rotation protocol, and expose the same XD options (port, segment count, batch size).\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Port hdfs-dataset sink module (U6)\",\n      \"activity_description\": \"Port the XD HDFS dataset sink to s-c-s: use Hadoop FileSystem to write partitioned/rolling files, map XD dataset format and rollover options to s-c-s configuration properties, and integrate with s-c-s partition selection if applicable.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Port mail sink module (U7)\",\n      \"activity_description\": \"Add a sink companion to the ported mail source using JavaMail's Transport: send each record (or batch) as an email driven by s-c-s configuration (host, from, to, subject template, body template). Reuses ~40% of the work done in A3.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Port mongo sink module (U8)\",\n      \"activity_description\": \"Port the XD MongoDB sink to s-c-s using Spring Data MongoDB: support insert/upsert/update operations via a SpEL-based write concern, configurable collection, and connection options.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-module integration testing\",\n      \"activity_description\": \"Build a sample s-c-s stream that wires each ported source to a ported sink (e.g. syslog -> mongo, tcp -> hdfs-dataset), run them under Testcontainers where needed, and fix issues discovered at the integration level.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Module READMEs and configuration reference\",\n      \"activity_description\": \"Write a short README per module describing dependencies, configuration options, and a minimal example stream definition so the modules are usable as sources/sinks in pipelines (satisfies the 'so I can use it' acceptance criterion).\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 148\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully.\n\nThe specification describes the Spring Framework context, but the actual user stories (U1-U8) are about moving modules from Spring XD to Spring Cloud Stream (s-c-s) repo. These are essentially migration/port tasks:\n\nSources (U1-U4): syslog, mail, tcp, tcp-client\nSinks (U5-U8): gpfdist, hdfs-dataset, mail, mongo\n\nLet me break down the work involved in porting these 8 modules. Note that \"mail\" appears in both U2 (source) and U7 (sink) - so there are actually 7 unique modules: syslog, mail (as both source and sink), tcp, tcp-client, gpfdist, hdfs-dataset, mongo.\n\nLet me think about typical activities for this kind of work:\n\n1. Project setup & repository analysis - understand the existing XD module code, s-c-s conventions\n2. Source modules migration (4 modules)\n3. Sink modules migration (4 modules, but mail is shared)\n4. Testing & integration\n5. Documentation\n\nLet me plan this out more carefully with a WBS approach.\n\nActivities:\n1. Analyze existing Spring XD modules and study s-c-s source/sink module conventions\n2. Port syslog source module\n3. Port mail source module\n4. Port tcp source module\n5. Port tcp-client source module\n6. Port gpfdist sink module\n7. Port hdfs-dataset sink module\n8. Port mail sink module (could overlap with source)\n9. Port mongo sink module\n10. Integration testing\n11. Documentation\n\nFor a typical module port, an experienced developer might take 8-16 hours per simple module, more for complex ones (hdfs-dataset, gpfdist might be more complex).\n\nLet me estimate per module:\n- syslog source: 8h\n- mail source: 10h (may overlap with mail sink)\n- tcp source: 16h (TCP server implementation)\n- tcp-client source: 12h\n- gpfdist sink: 20h (external protocol)\n- hdfs-dataset sink: 20h (HDFS integration)\n- mail sink: 10h\n- mongo sink: 12h\n\nPlus:\n- Analysis & setup: 8h\n- Shared mail code work: 8h\n- Testing: 16h\n- Documentation: 8h\n\nLet me be more systematic.\n\nFor the activities list:\n\n1. A1: Repository analysis and project setup - 8h\n2. A2: Port syslog source module - 8h\n3. A3: Port mail source module - 10h\n4. A4: Port tcp source module - 16h\n5. A5: Port tcp-client source module - 12h\n6. A6: Port gpfdist sink module - 20h\n7. A7: Port hdfs-dataset sink module - 24h\n8. A8: Port mail sink module - 8h\n9. A9: Port mongo sink module - 12h\n10. A10: Unit tests for all modules - 16h\n11. A11: Integration tests - 16h\n12. A12: Documentation - 8h\n\nTotal: 8+8+10+16+12+20+24+8+12+16+16+8 = 158h\n\nLet me round to a reasonable number. This seems like a reasonable estimate.\n\nActually, let me reconsider. The user stories are quite focused - they say \"move\" modules. The mail module is mentioned twice (source and sink), so I'll treat them as two separate porting tasks but note that they share code.\n\nLet me finalize my estimates and present them in a clean JSON format.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully.\n\nThe specification describes the Spring Framework context, but the actual user stories (U1-U8) are about moving modules from Spring XD to Spring Cloud Stream (s-c-s) repo. These are essentially migration/port tasks:\n\nSources (U1-U4): syslog, mail, tcp, tcp-client\nSinks (U5-U8): gpfdist, hdfs-dataset, mail, mongo\n\nLet me break down the work involved in porting these 8 modules. Note that \"mail\" appears in both U2 (source) and U7 (sink) - so there are actually 7 unique modules: syslog, mail (as both source and sink), tcp, tcp-client, gpfdist, hdfs-dataset, mongo.\n\nLet me think about typical activities for this kind of work:\n\n1. Project setup & repository analysis - understand the existing XD module code, s-c-s conventions\n2. Source modules migration (4 modules)\n3. Sink modules migration (4 modules, but mail is shared)\n4. Testing & integration\n5. Documentation\n\nLet me plan this out more carefully with a WBS approach.\n\nActivities:\n1. Analyze existing Spring XD modules and study s-c-s source/sink module conventions\n2. Port syslog source module\n3. Port mail source module\n4. Port tcp source module\n5. Port tcp-client source module\n6. Port gpfdist sink module\n7. Port hdfs-dataset sink module\n8. Port mail sink module (could overlap with source)\n9. Port mongo sink module\n10. Integration testing\n11. Documentation\n\nFor a typical module port, an experienced developer might take 8-16 hours per simple module, more for complex ones (hdfs-dataset, gpfdist might be more complex).\n\nLet me estimate per module:\n- syslog source: 8h\n- mail source: 10h (may overlap with mail sink)\n- tcp source: 16h (TCP server implementation)\n- tcp-client source: 12h\n- gpfdist sink: 20h (external protocol)\n- hdfs-dataset sink: 20h (HDFS integration)\n- mail sink: 10h\n- mongo sink: 12h\n\nPlus:\n- Analysis & setup: 8h\n- Shared mail code work: 8h\n- Testing: 16h\n- Documentation: 8h\n\nLet me be more systematic.\n\nFor the activities list:\n\n1. A1: Repository analysis and project setup - 8h\n2. A2: Port syslog source module - 8h\n3. A3: Port mail source module - 10h\n4. A4: Port tcp source module - 16h\n5. A5: Port tcp-client source module - 12h\n6. A6: Port gpfdist sink module - 20h\n7. A7: Port hdfs-dataset sink module - 24h\n8. A8: Port mail sink module - 8h\n9. A9: Port mongo sink module - 12h\n10. A10: Unit tests for all modules - 16h\n11. A11: Integration tests - 16h\n12. A12: Documentation - 8h\n\nTotal: 8+8+10+16+12+20+24+8+12+16+16+8 = 158h\n\nLet me round to a reasonable number. This seems like a reasonable estimate.\n\nActually, let me reconsider. The user stories are quite focused - they say \"move\" modules. The mail module is mentioned twice (source and sink), so I'll treat them as two separate porting tasks but note that they share code.\n\nLet me finalize my estimates and present them in a clean JSON format.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1351,
+      "completion_tokens": 2435,
+      "total_tokens": 3786,
+      "cost": 0.00328986,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00328986,
+        "upstream_inference_prompt_cost": 0.00036786,
+        "upstream_inference_completions_cost": 0.002922
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 796,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Each module is treated as a separate source/sink component port from Spring XD to Spring Cloud Stream (s-c-s); the mail module is counted twice (U2 source, U7 sink) since the stories require both directions even though some internal code can be shared.\",\n    \"Porting strategy: re-use the original XD module Java code, adapt the XD-specific binding/options/annotation model to the s-c-s @EnableBinding style, and expose equivalent configuration properties.\",\n    \"All modules will be implemented as s-c-s source/sink starters using Spring Boot auto-configuration so that downstream applications consume them through dependency + properties only.\",\n    \"HDFS support (hdfs-dataset) will rely on the standard Hadoop FileSystem API and the existing s-c-s HDFS binder assumptions, not on a re-implementation of XD's dataset abstractions.\",\n    \"TCP modules will use Netty (consistent with the existing s-c-s tcp source) rather than XD's reactor-netty custom pipeline; tcp-client is implemented as a single outbound connection per stream.\",\n    \"gpfdist will be ported as an HTTP-based sink that posts records to a Pivotal Greenplum gpfdist endpoint, preserving the existing XD wire format.\",\n    \"Mongo module will use Spring Data MongoDB (reactive driver for the sink when used in reactive pipelines) instead of XD's direct Mongo client wrappers.\",\n    \"Estimated effort reflects a single experienced developer who already knows s-c-s internals; effort for learning the XD codebase is included in the 'analysis' activity.\"\n  ],\n  \"assumptions\": [\n    \"Source code of the original Spring XD modules is available and can be copied/adapted; no reverse-engineering from binaries is needed.\",\n    \"The s-c-s target version, base class APIs, and binder interfaces are already known to the developer (no ramp-up on the target framework).\",\n    \"Mail (source and sink) shares the underlying JavaMail integration; the sink variant adds sending capability. The estimate assumes ~40% reuse of the source work for the sink work.\",\n    \"Unit tests for the original XD modules are reused as a baseline and adapted to s-c-s test infrastructure (no new functional test design from scratch).\",\n    \"No infrastructure-side work (CI pipelines, release engineering, Sonar, license headers automation beyond standard templates) is included beyond a small documentation update.\",\n    \"All required third-party libraries (Netty, Hadoop client, Spring Data MongoDB, JavaMail, gpfdist client library if any) are already declared in the parent s-c-s BOM; only minor dependency tweaks are needed.\",\n    \"Java 17 baseline (consistent with Spring Framework 6) is in place on the developer's machine and CI; no JDK migration work is required.\",\n    \"No new user-facing documentation beyond a brief README per module is required (acceptance is 'can be used as source/sink to build streaming pipeline').\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository analysis and project setup\",\n      \"activity_description\": \"Clone the XD source code, identify the 7 unique module projects, study s-c-s source/sink module conventions (annotation model, options binding, auto-config), and create the new s-c-s module skeletons with the correct package layout and build configuration.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Port syslog source module (U1)\",\n      \"activity_description\": \"Adapt the XD syslog TCP/UDP receiver to an s-c-s MessageSource supporting RFC3164/RFC5424, with s-c-s options for host/port/protocol and an integration test.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Port mail source module (U2)\",\n      \"activity_description\": \"Port the XD IMAP/POP3 mail source into an s-c-s source using JavaMail, with configurable polling, folder, and credentials exposed through s-c-s @ConfigurationProperties.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Port tcp source module (U3)\",\n      \"activity_description\": \"Port the XD TCP server source to s-c-s using Netty; preserve text/binary codecs, decoder, and client-mode options; provide s-c-s configuration metadata.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Port tcp-client source module (U4)\",\n      \"activity_description\": \"Port the XD TCP client source (single outgoing connection feeding the stream) to s-c-s, reusing the Netty plumbing from A4 but with client bootstrap and reconnection logic.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Port gpfdist sink module (U5)\",\n      \"activity_description\": \"Port the XD gpfdist sink to s-c-s: HTTP POST records to a Greenplum gpfdist endpoint, handle the load-balancing file rotation protocol, and expose the same XD options (port, segment count, batch size).\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Port hdfs-dataset sink module (U6)\",\n      \"activity_description\": \"Port the XD HDFS dataset sink to s-c-s: use Hadoop FileSystem to write partitioned/rolling files, map XD dataset format and rollover options to s-c-s configuration properties, and integrate with s-c-s partition selection if applicable.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Port mail sink module (U7)\",\n      \"activity_description\": \"Add a sink companion to the ported mail source using JavaMail's Transport: send each record (or batch) as an email driven by s-c-s configuration (host, from, to, subject template, body template). Reuses ~40% of the work done in A3.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Port mongo sink module (U8)\",\n      \"activity_description\": \"Port the XD MongoDB sink to s-c-s using Spring Data MongoDB: support insert/upsert/update operations via a SpEL-based write concern, configurable collection, and connection options.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-module integration testing\",\n      \"activity_description\": \"Build a sample s-c-s stream that wires each ported source to a ported sink (e.g. syslog -> mongo, tcp -> hdfs-dataset), run them under Testcontainers where needed, and fix issues discovered at the integration level.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Module READMEs and configuration reference\",\n      \"activity_description\": \"Write a short README per module describing dependencies, configuration options, and a minimal example stream definition so the modules are usable as sources/sinks in pipelines (satisfies the 'so I can use it' acceptance criterion).\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 148\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1351,
+    "completion_tokens": 2435,
+    "total_tokens": 3786,
+    "cost": 0.00328986,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00328986,
+      "upstream_inference_prompt_cost": 0.00036786,
+      "upstream_inference_completions_cost": 0.002922
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 796,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Each module is treated as a separate source/sink component port from Spring XD to Spring Cloud Stream (s-c-s); the mail module is counted twice (U2 source, U7 sink) since the stories require both directions even though some internal code can be shared.",
+      "Porting strategy: re-use the original XD module Java code, adapt the XD-specific binding/options/annotation model to the s-c-s @EnableBinding style, and expose equivalent configuration properties.",
+      "All modules will be implemented as s-c-s source/sink starters using Spring Boot auto-configuration so that downstream applications consume them through dependency + properties only.",
+      "HDFS support (hdfs-dataset) will rely on the standard Hadoop FileSystem API and the existing s-c-s HDFS binder assumptions, not on a re-implementation of XD's dataset abstractions.",
+      "TCP modules will use Netty (consistent with the existing s-c-s tcp source) rather than XD's reactor-netty custom pipeline; tcp-client is implemented as a single outbound connection per stream.",
+      "gpfdist will be ported as an HTTP-based sink that posts records to a Pivotal Greenplum gpfdist endpoint, preserving the existing XD wire format.",
+      "Mongo module will use Spring Data MongoDB (reactive driver for the sink when used in reactive pipelines) instead of XD's direct Mongo client wrappers.",
+      "Estimated effort reflects a single experienced developer who already knows s-c-s internals; effort for learning the XD codebase is included in the 'analysis' activity."
+    ],
+    "assumptions": [
+      "Source code of the original Spring XD modules is available and can be copied/adapted; no reverse-engineering from binaries is needed.",
+      "The s-c-s target version, base class APIs, and binder interfaces are already known to the developer (no ramp-up on the target framework).",
+      "Mail (source and sink) shares the underlying JavaMail integration; the sink variant adds sending capability. The estimate assumes ~40% reuse of the source work for the sink work.",
+      "Unit tests for the original XD modules are reused as a baseline and adapted to s-c-s test infrastructure (no new functional test design from scratch).",
+      "No infrastructure-side work (CI pipelines, release engineering, Sonar, license headers automation beyond standard templates) is included beyond a small documentation update.",
+      "All required third-party libraries (Netty, Hadoop client, Spring Data MongoDB, JavaMail, gpfdist client library if any) are already declared in the parent s-c-s BOM; only minor dependency tweaks are needed.",
+      "Java 17 baseline (consistent with Spring Framework 6) is in place on the developer's machine and CI; no JDK migration work is required.",
+      "No new user-facing documentation beyond a brief README per module is required (acceptance is 'can be used as source/sink to build streaming pipeline')."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Repository analysis and project setup",
+        "activity_description": "Clone the XD source code, identify the 7 unique module projects, study s-c-s source/sink module conventions (annotation model, options binding, auto-config), and create the new s-c-s module skeletons with the correct package layout and build configuration.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Port syslog source module (U1)",
+        "activity_description": "Adapt the XD syslog TCP/UDP receiver to an s-c-s MessageSource supporting RFC3164/RFC5424, with s-c-s options for host/port/protocol and an integration test.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Port mail source module (U2)",
+        "activity_description": "Port the XD IMAP/POP3 mail source into an s-c-s source using JavaMail, with configurable polling, folder, and credentials exposed through s-c-s @ConfigurationProperties.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Port tcp source module (U3)",
+        "activity_description": "Port the XD TCP server source to s-c-s using Netty; preserve text/binary codecs, decoder, and client-mode options; provide s-c-s configuration metadata.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Port tcp-client source module (U4)",
+        "activity_description": "Port the XD TCP client source (single outgoing connection feeding the stream) to s-c-s, reusing the Netty plumbing from A4 but with client bootstrap and reconnection logic.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Port gpfdist sink module (U5)",
+        "activity_description": "Port the XD gpfdist sink to s-c-s: HTTP POST records to a Greenplum gpfdist endpoint, handle the load-balancing file rotation protocol, and expose the same XD options (port, segment count, batch size).",
+        "most_likely_effort": 22
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Port hdfs-dataset sink module (U6)",
+        "activity_description": "Port the XD HDFS dataset sink to s-c-s: use Hadoop FileSystem to write partitioned/rolling files, map XD dataset format and rollover options to s-c-s configuration properties, and integrate with s-c-s partition selection if applicable.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Port mail sink module (U7)",
+        "activity_description": "Add a sink companion to the ported mail source using JavaMail's Transport: send each record (or batch) as an email driven by s-c-s configuration (host, from, to, subject template, body template). Reuses ~40% of the work done in A3.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Port mongo sink module (U8)",
+        "activity_description": "Port the XD MongoDB sink to s-c-s using Spring Data MongoDB: support insert/upsert/update operations via a SpEL-based write concern, configurable collection, and connection options.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-module integration testing",
+        "activity_description": "Build a sample s-c-s stream that wires each ported source to a ported sink (e.g. syslog -> mongo, tcp -> hdfs-dataset), run them under Testcontainers where needed, and fix issues discovered at the integration level.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Module READMEs and configuration reference",
+        "activity_description": "Write a short README per module describing dependencies, configuration options, and a minimal example stream definition so the modules are usable as sources/sinks in pipelines (satisfies the 'so I can use it' acceptance criterion).",
+        "most_likely_effort": 8
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 148
+    }
+  }
+}

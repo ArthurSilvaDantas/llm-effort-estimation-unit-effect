@@ -1,0 +1,248 @@
+{
+  "model_id": "minimax/minimax-m3",
+  "spec_id": "spring-xd-045",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1788414955-MfvbEuLN8i6EoQWZtwt0",
+    "object": "chat.completion",
+    "created": 1788414955,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The Admin SPI will be defined as a Java interface module (spring-xd-admin-spi) with abstractions for ModuleStatus, ModuleDescriptor, and ModuleDescriptor.Key, placed in a shared module so it can be consumed by both client and server code.\",\n    \"A new module registry abstraction (ModuleRegistry) will sit on top of the Admin SPI, acting as a higher-level facade for discovery, status lookup, and bulk retrieval, so the SPI implementations remain thin adapters to the underlying system.\",\n    \"Two concrete Admin SPI implementations will be built: a Receptor implementation (delegating to the Receptor API used by Spring XD on CF) and a CloudController implementation (delegating to the CF Cloud Controller API). Both will live in a dedicated implementations package/module under the shared SPI repo.\",\n    \"Profile-based wiring (U5) will use Spring's @Profile annotations and dedicated application-{profile}.yml / property files so the correct SPI implementation is auto-selected when running as java -jar admin, cf push admin, or ltc create admin.\",\n    \"Eureka integration (U6/U8) will use spring-cloud-netflix-eureka-client; module instances will self-register on startup with metadata stored in the Eureka instance info map, and the ModuleRegistry will query Eureka for discovery and status.\",\n    \"Module search by name (U7) will be implemented both in the module registry (querying the registry's index) and via Eureka's lookup by app name (which is parameterized beyond the default spring.application.name).\",\n    \"Project will use Java 17 (per Spring 6.0 baseline), Maven for build, and existing Spring XD conventions for module packaging.\"\n  ],\n  \"assumptions\": [\n    \"A productive developer working full-time (8h/day) is assumed; 'workdays' map to 8 hours of focused development effort.\",\n    \"The Receptor and CloudController APIs are already accessible from the JVM (clients available or a thin HTTP client wrapper is acceptable); no new API design is required for them.\",\n    \"A Eureka server is assumed to be available in the target deployment environments (CF, ltc, standalone), and the Eureka client configuration (URL, credentials) is provided externally.\",\n    \"No major refactoring of existing Spring XD code is in scope — only additive changes for the SPI, registry, and Eureka integration.\",\n    \"The developer has working familiarity with Spring XD, Spring Cloud, and Cloud Foundry concepts; no learning/ramp-up time is included.\",\n    \"Unit tests target ~70% coverage of the new code; integration tests cover the three profile scenarios and Eureka round-trip flows.\",\n    \"Existing test infrastructure (CI, mock servers) can be reused; setting up new CI pipelines is out of scope.\",\n    \"Documentation is concise Javadoc plus a short README section; no separate user guide is required.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Create shared SPI module/repository and build setup (U3)\",\n      \"activity_description\": \"Create the new spring-xd-admin-spi Maven module, set up its pom, package structure, and wire it into the parent reactor build so SPI interfaces and implementations have a permanent home. Configure dependency management for shared libraries.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Design and implement Admin SPI interfaces\",\n      \"activity_description\": \"Define the ModuleStatus, ModuleDescriptor, ModuleDescriptor.Key types and the AdminSPI interface with getStatus(ModuleDescriptor), listModules(), and getAllStatuses() methods. Add Javadoc and base implementations where appropriate.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Design and implement Module Registry abstraction (U4)\",\n      \"activity_description\": \"Create the initial ModuleRegistry interface and a default in-memory implementation. Provide methods to register modules, look up by descriptor, list all, and search by name. This serves as the foundation that SPI implementations plug into.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement Receptor Admin SPI (U1)\",\n      \"activity_description\": \"Implement the AdminSPI backed by the Receptor API: translate Receptor responses to ModuleStatus/ModuleDescriptor, implement getStatus, listModules, and the bulk map method. Include client wiring and error handling.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement CloudController Admin SPI (U2)\",\n      \"activity_description\": \"Implement the AdminSPI backed by the CF Cloud Controller API: map app instances to ModuleStatus/ModuleDescriptor, implement the required methods, handle paging/authentication, and convert CF-specific errors into the SPI's exception model.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Profile-aware SPI wiring (U5)\",\n      \"activity_description\": \"Add @Configuration classes annotated with @Profile to register the appropriate AdminSPI bean per profile (default for java -jar admin, cf for cf push admin, ltc for ltc create admin). Include property files and a profile-selection switch in the launcher.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Eureka self-registration of modules (U6)\",\n      \"activity_description\": \"Integrate spring-cloud-netflix-eureka-client into s-c-s modules so they self-register with Eureka on install/startup, exposing themselves for discovery via the Spring XD Admin SPI and Module Registry.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Store module metadata in Eureka (U8)\",\n      \"activity_description\": \"Extend Eureka registration so module metadata (group, index, deployment context, custom properties) is stored in the Eureka instance info metadata map, and implement the repository-side logic to read this metadata when determining state.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Search modules by name (U7)\",\n      \"activity_description\": \"Add a findByName(String name) capability to the ModuleRegistry and a corresponding lookup path in the Admin SPI implementations so modules can be retrieved by a custom name independent of the default spring.application.name.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Unit tests for SPI, registry, and profile wiring\",\n      \"activity_description\": \"Write JUnit/Mockito unit tests for the AdminSPI interfaces, ModuleRegistry, Receptor/CloudController adapters, and profile-based bean selection. Cover happy paths, error mapping, and edge cases.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration tests for the three deployment profiles and Eureka flow\",\n      \"activity_description\": \"Build integration tests that exercise java -jar admin, cf push admin, and ltc create admin paths, plus Eureka registration/lookup round-trips against a test Eureka instance and stubbed Receptor/CloudController endpoints.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and code review polish\",\n      \"activity_description\": \"Write Javadoc for public APIs, a README section explaining the SPI, registry, profile wiring, and Eureka integration, plus a short upgrade note. Final code review fixes and cleanup.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 29.5\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the specification carefully to break down the development work for this Spring XD Admin SPI implementation.\n\nThe specification describes a Spring XD on Cloud Foundry (CF) project with the following user stories:\n- U1: Receptor implementation of Admin SPI\n- U2: CloudController implementation of Admin SPI\n- U3: Create a permanent location (repo) for SPI implementations\n- U4: Create initial version of new module registry abstraction\n- U5: Make SPI implementation profile-aware\n- U6: Self-register modules with Eureka\n- U7: Search modules by name\n- U8: Store module metadata in Eureka\n\nLet me break this down into development activities using a WBS approach.\n\nMain activities I can identify:\n1. Setup project structure and shared SPI module location (U3)\n2. Design and create the Admin SPI interfaces (ModuleStatus, ModuleDescriptor, getStatus, listModules, etc.)\n3. Design and create the module registry abstraction (U4)\n4. Implement Receptor Admin SPI (U1)\n5. Implement CloudController Admin SPI (U2)\n6. Implement profile-based SPI wiring (U5)\n7. Implement Eureka self-registration for modules (U6, U8)\n8. Implement module search by name (U7)\n9. Integration testing across the implementations\n10. Unit tests for each implementation\n11. Documentation\n\nLet me think about the technical decisions:\n- The Admin SPI is an interface/abstract contract\n- Module registry is an abstraction over the SPI\n- Profile-based wiring suggests Spring profiles\n- Receptor and CloudController are CF-specific services\n- Eureka is Netflix's service discovery\n\nLet me estimate each activity in workdays. A typical workday is 8 hours. Let me think realistically about this - the work is substantial but well-defined.\n\nActivities:\n1. Project setup, shared repo creation, build configuration (U3): 1-2 days\n2. Design Admin SPI interfaces (ModuleStatus, ModuleDescriptor, Key): 1 day\n3. Implement Module Registry abstraction (U4): 2-3 days\n4. Implement Receptor Admin SPI (U1): 3-4 days\n5. Implement CloudController Admin SPI (U2): 3-4 days\n6. Implement profile-based wiring (U5): 1-2 days\n7. Implement Eureka self-registration (U6): 2-3 days\n8. Implement module metadata storage in Eureka (U8): 1-2 days\n9. Implement module search by name (U7): 1-2 days\n10. Unit tests: 3-4 days\n11. Integration tests: 3-4 days\n12. Documentation: 1-2 days\n\nLet me refine these estimates. The user is a software developer doing all the work, and these are well-defined tasks.\n\nLet me be more precise:\n\n1. U3 - Setup shared SPI module/repository: 1.5 days\n2. Design Admin SPI interfaces: 1 day\n3. U4 - Module registry abstraction: 2.5 days\n4. U1 - Receptor implementation: 4 days\n5. U2 - CloudController implementation: 4 days\n6. U5 - Profile-based wiring: 2 days\n7. U6 - Eureka self-registration: 3 days\n8. U8 - Module metadata in Eureka: 2 days\n9. U7 - Module search by name: 1.5 days\n10. Unit tests: 3 days\n11. Integration tests: 3 days\n12. Documentation: 1.5 days\n\nTotal: ~29 days\n\nLet me think about this more carefully. The complexity here is significant:\n- Implementing two different cloud-foundry-specific admin SPIs (Receptor and CloudController)\n- Each of these requires understanding of the underlying CF APIs\n- The module registry abstraction\n- Eureka integration\n- Profile-based configuration\n\nI'll be a bit more detailed:\n\n1. Setup SPI shared module location and build configuration (U3): 1 day\n2. Design and define Admin SPI interfaces (ModuleStatus, ModuleDescriptor, listModules, getStatus): 1.5 days\n3. Design and implement Module Registry abstraction (U4): 3 days\n4. Implement Receptor Admin SPI (U1): 4 days\n5. Implement CloudController Admin SPI (U2): 4 days\n6. Profile-aware SPI implementation selection (U5): 1.5 days\n7. Eureka module self-registration (U6): 3 days\n8. Module metadata storage in Eureka (U8): 2 days\n9. Module search by name functionality (U7): 1.5 days\n10. Unit test development: 3 days\n11. Integration test development: 3 days\n12. Documentation and code review prep: 1.5 days\n\nTotal: 29 days\n\nThis feels about right. Let me finalize.\n\nActually, I should be more careful. Let me reconsider the activities and group them more logically.\n\nFinal activities:\n1. Project setup and shared SPI module creation (U3)\n2. Admin SPI interface design and implementation\n3. Module registry abstraction design and implementation (U4)\n4. Receptor Admin SPI implementation (U1)\n5. CloudController Admin SPI implementation (U2)\n6. Profile-based SPI wiring (U5)\n7. Eureka self-registration integration (U6)\n8. Module metadata storage in Eureka (U8)\n9. Module search by name feature (U7)\n10. Unit testing across all components\n11. Integration testing\n12. Documentation\n\nLet me settle on these estimates:\n1. 1.5 days\n2. 1.5 days\n3. 3 days\n4. 4 days\n5. 4 days\n6. 1.5 days\n7. 3 days\n8. 2 days\n9. 1.5 days\n10. 3 days\n11. 3 days\n12. 1.5 days\n\nTotal: 29.5 days\n\nI'll go with 29.5 days. Let me round to whole numbers where possible for simplicity in the JSON, but decimals are fine.\n\nLet me reconsider once more. The \"developer doing all the work\" and \"single most likely estimate\" suggests using most likely values, which I should provide as best estimates.\n\nI'll finalize the response.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the specification carefully to break down the development work for this Spring XD Admin SPI implementation.\n\nThe specification describes a Spring XD on Cloud Foundry (CF) project with the following user stories:\n- U1: Receptor implementation of Admin SPI\n- U2: CloudController implementation of Admin SPI\n- U3: Create a permanent location (repo) for SPI implementations\n- U4: Create initial version of new module registry abstraction\n- U5: Make SPI implementation profile-aware\n- U6: Self-register modules with Eureka\n- U7: Search modules by name\n- U8: Store module metadata in Eureka\n\nLet me break this down into development activities using a WBS approach.\n\nMain activities I can identify:\n1. Setup project structure and shared SPI module location (U3)\n2. Design and create the Admin SPI interfaces (ModuleStatus, ModuleDescriptor, getStatus, listModules, etc.)\n3. Design and create the module registry abstraction (U4)\n4. Implement Receptor Admin SPI (U1)\n5. Implement CloudController Admin SPI (U2)\n6. Implement profile-based SPI wiring (U5)\n7. Implement Eureka self-registration for modules (U6, U8)\n8. Implement module search by name (U7)\n9. Integration testing across the implementations\n10. Unit tests for each implementation\n11. Documentation\n\nLet me think about the technical decisions:\n- The Admin SPI is an interface/abstract contract\n- Module registry is an abstraction over the SPI\n- Profile-based wiring suggests Spring profiles\n- Receptor and CloudController are CF-specific services\n- Eureka is Netflix's service discovery\n\nLet me estimate each activity in workdays. A typical workday is 8 hours. Let me think realistically about this - the work is substantial but well-defined.\n\nActivities:\n1. Project setup, shared repo creation, build configuration (U3): 1-2 days\n2. Design Admin SPI interfaces (ModuleStatus, ModuleDescriptor, Key): 1 day\n3. Implement Module Registry abstraction (U4): 2-3 days\n4. Implement Receptor Admin SPI (U1): 3-4 days\n5. Implement CloudController Admin SPI (U2): 3-4 days\n6. Implement profile-based wiring (U5): 1-2 days\n7. Implement Eureka self-registration (U6): 2-3 days\n8. Implement module metadata storage in Eureka (U8): 1-2 days\n9. Implement module search by name (U7): 1-2 days\n10. Unit tests: 3-4 days\n11. Integration tests: 3-4 days\n12. Documentation: 1-2 days\n\nLet me refine these estimates. The user is a software developer doing all the work, and these are well-defined tasks.\n\nLet me be more precise:\n\n1. U3 - Setup shared SPI module/repository: 1.5 days\n2. Design Admin SPI interfaces: 1 day\n3. U4 - Module registry abstraction: 2.5 days\n4. U1 - Receptor implementation: 4 days\n5. U2 - CloudController implementation: 4 days\n6. U5 - Profile-based wiring: 2 days\n7. U6 - Eureka self-registration: 3 days\n8. U8 - Module metadata in Eureka: 2 days\n9. U7 - Module search by name: 1.5 days\n10. Unit tests: 3 days\n11. Integration tests: 3 days\n12. Documentation: 1.5 days\n\nTotal: ~29 days\n\nLet me think about this more carefully. The complexity here is significant:\n- Implementing two different cloud-foundry-specific admin SPIs (Receptor and CloudController)\n- Each of these requires understanding of the underlying CF APIs\n- The module registry abstraction\n- Eureka integration\n- Profile-based configuration\n\nI'll be a bit more detailed:\n\n1. Setup SPI shared module location and build configuration (U3): 1 day\n2. Design and define Admin SPI interfaces (ModuleStatus, ModuleDescriptor, listModules, getStatus): 1.5 days\n3. Design and implement Module Registry abstraction (U4): 3 days\n4. Implement Receptor Admin SPI (U1): 4 days\n5. Implement CloudController Admin SPI (U2): 4 days\n6. Profile-aware SPI implementation selection (U5): 1.5 days\n7. Eureka module self-registration (U6): 3 days\n8. Module metadata storage in Eureka (U8): 2 days\n9. Module search by name functionality (U7): 1.5 days\n10. Unit test development: 3 days\n11. Integration test development: 3 days\n12. Documentation and code review prep: 1.5 days\n\nTotal: 29 days\n\nThis feels about right. Let me finalize.\n\nActually, I should be more careful. Let me reconsider the activities and group them more logically.\n\nFinal activities:\n1. Project setup and shared SPI module creation (U3)\n2. Admin SPI interface design and implementation\n3. Module registry abstraction design and implementation (U4)\n4. Receptor Admin SPI implementation (U1)\n5. CloudController Admin SPI implementation (U2)\n6. Profile-based SPI wiring (U5)\n7. Eureka self-registration integration (U6)\n8. Module metadata storage in Eureka (U8)\n9. Module search by name feature (U7)\n10. Unit testing across all components\n11. Integration testing\n12. Documentation\n\nLet me settle on these estimates:\n1. 1.5 days\n2. 1.5 days\n3. 3 days\n4. 4 days\n5. 4 days\n6. 1.5 days\n7. 3 days\n8. 2 days\n9. 1.5 days\n10. 3 days\n11. 3 days\n12. 1.5 days\n\nTotal: 29.5 days\n\nI'll go with 29.5 days. Let me round to whole numbers where possible for simplicity in the JSON, but decimals are fine.\n\nLet me reconsider once more. The \"developer doing all the work\" and \"single most likely estimate\" suggests using most likely values, which I should provide as best estimates.\n\nI'll finalize the response.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1472,
+      "completion_tokens": 3034,
+      "total_tokens": 4506,
+      "cost": 0.00404496,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 156,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00404496,
+        "upstream_inference_prompt_cost": 0.00040416,
+        "upstream_inference_completions_cost": 0.0036408
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1317,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The Admin SPI will be defined as a Java interface module (spring-xd-admin-spi) with abstractions for ModuleStatus, ModuleDescriptor, and ModuleDescriptor.Key, placed in a shared module so it can be consumed by both client and server code.\",\n    \"A new module registry abstraction (ModuleRegistry) will sit on top of the Admin SPI, acting as a higher-level facade for discovery, status lookup, and bulk retrieval, so the SPI implementations remain thin adapters to the underlying system.\",\n    \"Two concrete Admin SPI implementations will be built: a Receptor implementation (delegating to the Receptor API used by Spring XD on CF) and a CloudController implementation (delegating to the CF Cloud Controller API). Both will live in a dedicated implementations package/module under the shared SPI repo.\",\n    \"Profile-based wiring (U5) will use Spring's @Profile annotations and dedicated application-{profile}.yml / property files so the correct SPI implementation is auto-selected when running as java -jar admin, cf push admin, or ltc create admin.\",\n    \"Eureka integration (U6/U8) will use spring-cloud-netflix-eureka-client; module instances will self-register on startup with metadata stored in the Eureka instance info map, and the ModuleRegistry will query Eureka for discovery and status.\",\n    \"Module search by name (U7) will be implemented both in the module registry (querying the registry's index) and via Eureka's lookup by app name (which is parameterized beyond the default spring.application.name).\",\n    \"Project will use Java 17 (per Spring 6.0 baseline), Maven for build, and existing Spring XD conventions for module packaging.\"\n  ],\n  \"assumptions\": [\n    \"A productive developer working full-time (8h/day) is assumed; 'workdays' map to 8 hours of focused development effort.\",\n    \"The Receptor and CloudController APIs are already accessible from the JVM (clients available or a thin HTTP client wrapper is acceptable); no new API design is required for them.\",\n    \"A Eureka server is assumed to be available in the target deployment environments (CF, ltc, standalone), and the Eureka client configuration (URL, credentials) is provided externally.\",\n    \"No major refactoring of existing Spring XD code is in scope — only additive changes for the SPI, registry, and Eureka integration.\",\n    \"The developer has working familiarity with Spring XD, Spring Cloud, and Cloud Foundry concepts; no learning/ramp-up time is included.\",\n    \"Unit tests target ~70% coverage of the new code; integration tests cover the three profile scenarios and Eureka round-trip flows.\",\n    \"Existing test infrastructure (CI, mock servers) can be reused; setting up new CI pipelines is out of scope.\",\n    \"Documentation is concise Javadoc plus a short README section; no separate user guide is required.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Create shared SPI module/repository and build setup (U3)\",\n      \"activity_description\": \"Create the new spring-xd-admin-spi Maven module, set up its pom, package structure, and wire it into the parent reactor build so SPI interfaces and implementations have a permanent home. Configure dependency management for shared libraries.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Design and implement Admin SPI interfaces\",\n      \"activity_description\": \"Define the ModuleStatus, ModuleDescriptor, ModuleDescriptor.Key types and the AdminSPI interface with getStatus(ModuleDescriptor), listModules(), and getAllStatuses() methods. Add Javadoc and base implementations where appropriate.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Design and implement Module Registry abstraction (U4)\",\n      \"activity_description\": \"Create the initial ModuleRegistry interface and a default in-memory implementation. Provide methods to register modules, look up by descriptor, list all, and search by name. This serves as the foundation that SPI implementations plug into.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Implement Receptor Admin SPI (U1)\",\n      \"activity_description\": \"Implement the AdminSPI backed by the Receptor API: translate Receptor responses to ModuleStatus/ModuleDescriptor, implement getStatus, listModules, and the bulk map method. Include client wiring and error handling.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement CloudController Admin SPI (U2)\",\n      \"activity_description\": \"Implement the AdminSPI backed by the CF Cloud Controller API: map app instances to ModuleStatus/ModuleDescriptor, implement the required methods, handle paging/authentication, and convert CF-specific errors into the SPI's exception model.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Profile-aware SPI wiring (U5)\",\n      \"activity_description\": \"Add @Configuration classes annotated with @Profile to register the appropriate AdminSPI bean per profile (default for java -jar admin, cf for cf push admin, ltc for ltc create admin). Include property files and a profile-selection switch in the launcher.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Eureka self-registration of modules (U6)\",\n      \"activity_description\": \"Integrate spring-cloud-netflix-eureka-client into s-c-s modules so they self-register with Eureka on install/startup, exposing themselves for discovery via the Spring XD Admin SPI and Module Registry.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Store module metadata in Eureka (U8)\",\n      \"activity_description\": \"Extend Eureka registration so module metadata (group, index, deployment context, custom properties) is stored in the Eureka instance info metadata map, and implement the repository-side logic to read this metadata when determining state.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Search modules by name (U7)\",\n      \"activity_description\": \"Add a findByName(String name) capability to the ModuleRegistry and a corresponding lookup path in the Admin SPI implementations so modules can be retrieved by a custom name independent of the default spring.application.name.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Unit tests for SPI, registry, and profile wiring\",\n      \"activity_description\": \"Write JUnit/Mockito unit tests for the AdminSPI interfaces, ModuleRegistry, Receptor/CloudController adapters, and profile-based bean selection. Cover happy paths, error mapping, and edge cases.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration tests for the three deployment profiles and Eureka flow\",\n      \"activity_description\": \"Build integration tests that exercise java -jar admin, cf push admin, and ltc create admin paths, plus Eureka registration/lookup round-trips against a test Eureka instance and stubbed Receptor/CloudController endpoints.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and code review polish\",\n      \"activity_description\": \"Write Javadoc for public APIs, a README section explaining the SPI, registry, profile wiring, and Eureka integration, plus a short upgrade note. Final code review fixes and cleanup.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 29.5\n  }\n}\n```",
+  "usage": {
+    "prompt_tokens": 1472,
+    "completion_tokens": 3034,
+    "total_tokens": 4506,
+    "cost": 0.00404496,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 156,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00404496,
+      "upstream_inference_prompt_cost": 0.00040416,
+      "upstream_inference_completions_cost": 0.0036408
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1317,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "minimax/minimax-m3",
+  "conversion_response": {
+    "id": "gen-1788414982-ip1VMJp8MPSQn7eqFsLl",
+    "object": "chat.completion",
+    "created": 1788414982,
+    "model": "minimax/minimax-m3",
+    "provider": "Minimax",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3316,
+      "completion_tokens": 19,
+      "total_tokens": 3335,
+      "cost": 0.00066792,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1457,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00066792,
+        "upstream_inference_prompt_cost": 0.00064512,
+        "upstream_inference_completions_cost": 2.28e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "The Admin SPI will be defined as a Java interface module (spring-xd-admin-spi) with abstractions for ModuleStatus, ModuleDescriptor, and ModuleDescriptor.Key, placed in a shared module so it can be consumed by both client and server code.",
+      "A new module registry abstraction (ModuleRegistry) will sit on top of the Admin SPI, acting as a higher-level facade for discovery, status lookup, and bulk retrieval, so the SPI implementations remain thin adapters to the underlying system.",
+      "Two concrete Admin SPI implementations will be built: a Receptor implementation (delegating to the Receptor API used by Spring XD on CF) and a CloudController implementation (delegating to the CF Cloud Controller API). Both will live in a dedicated implementations package/module under the shared SPI repo.",
+      "Profile-based wiring (U5) will use Spring's @Profile annotations and dedicated application-{profile}.yml / property files so the correct SPI implementation is auto-selected when running as java -jar admin, cf push admin, or ltc create admin.",
+      "Eureka integration (U6/U8) will use spring-cloud-netflix-eureka-client; module instances will self-register on startup with metadata stored in the Eureka instance info map, and the ModuleRegistry will query Eureka for discovery and status.",
+      "Module search by name (U7) will be implemented both in the module registry (querying the registry's index) and via Eureka's lookup by app name (which is parameterized beyond the default spring.application.name).",
+      "Project will use Java 17 (per Spring 6.0 baseline), Maven for build, and existing Spring XD conventions for module packaging."
+    ],
+    "assumptions": [
+      "A productive developer working full-time (8h/day) is assumed; 'workdays' map to 8 hours of focused development effort.",
+      "The Receptor and CloudController APIs are already accessible from the JVM (clients available or a thin HTTP client wrapper is acceptable); no new API design is required for them.",
+      "A Eureka server is assumed to be available in the target deployment environments (CF, ltc, standalone), and the Eureka client configuration (URL, credentials) is provided externally.",
+      "No major refactoring of existing Spring XD code is in scope — only additive changes for the SPI, registry, and Eureka integration.",
+      "The developer has working familiarity with Spring XD, Spring Cloud, and Cloud Foundry concepts; no learning/ramp-up time is included.",
+      "Unit tests target ~70% coverage of the new code; integration tests cover the three profile scenarios and Eureka round-trip flows.",
+      "Existing test infrastructure (CI, mock servers) can be reused; setting up new CI pipelines is out of scope.",
+      "Documentation is concise Javadoc plus a short README section; no separate user guide is required."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Create shared SPI module/repository and build setup (U3)",
+        "activity_description": "Create the new spring-xd-admin-spi Maven module, set up its pom, package structure, and wire it into the parent reactor build so SPI interfaces and implementations have a permanent home. Configure dependency management for shared libraries.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Design and implement Admin SPI interfaces",
+        "activity_description": "Define the ModuleStatus, ModuleDescriptor, ModuleDescriptor.Key types and the AdminSPI interface with getStatus(ModuleDescriptor), listModules(), and getAllStatuses() methods. Add Javadoc and base implementations where appropriate.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Design and implement Module Registry abstraction (U4)",
+        "activity_description": "Create the initial ModuleRegistry interface and a default in-memory implementation. Provide methods to register modules, look up by descriptor, list all, and search by name. This serves as the foundation that SPI implementations plug into.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Implement Receptor Admin SPI (U1)",
+        "activity_description": "Implement the AdminSPI backed by the Receptor API: translate Receptor responses to ModuleStatus/ModuleDescriptor, implement getStatus, listModules, and the bulk map method. Include client wiring and error handling.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Implement CloudController Admin SPI (U2)",
+        "activity_description": "Implement the AdminSPI backed by the CF Cloud Controller API: map app instances to ModuleStatus/ModuleDescriptor, implement the required methods, handle paging/authentication, and convert CF-specific errors into the SPI's exception model.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Profile-aware SPI wiring (U5)",
+        "activity_description": "Add @Configuration classes annotated with @Profile to register the appropriate AdminSPI bean per profile (default for java -jar admin, cf for cf push admin, ltc for ltc create admin). Include property files and a profile-selection switch in the launcher.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Eureka self-registration of modules (U6)",
+        "activity_description": "Integrate spring-cloud-netflix-eureka-client into s-c-s modules so they self-register with Eureka on install/startup, exposing themselves for discovery via the Spring XD Admin SPI and Module Registry.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Store module metadata in Eureka (U8)",
+        "activity_description": "Extend Eureka registration so module metadata (group, index, deployment context, custom properties) is stored in the Eureka instance info metadata map, and implement the repository-side logic to read this metadata when determining state.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Search modules by name (U7)",
+        "activity_description": "Add a findByName(String name) capability to the ModuleRegistry and a corresponding lookup path in the Admin SPI implementations so modules can be retrieved by a custom name independent of the default spring.application.name.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Unit tests for SPI, registry, and profile wiring",
+        "activity_description": "Write JUnit/Mockito unit tests for the AdminSPI interfaces, ModuleRegistry, Receptor/CloudController adapters, and profile-based bean selection. Cover happy paths, error mapping, and edge cases.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Integration tests for the three deployment profiles and Eureka flow",
+        "activity_description": "Build integration tests that exercise java -jar admin, cf push admin, and ltc create admin paths, plus Eureka registration/lookup round-trips against a test Eureka instance and stubbed Receptor/CloudController endpoints.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation and code review polish",
+        "activity_description": "Write Javadoc for public APIs, a README section explaining the SPI, registry, profile wiring, and Eureka integration, plus a short upgrade note. Final code review fixes and cleanup.",
+        "most_likely_effort": 1.5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 29.5
+    }
+  },
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}
