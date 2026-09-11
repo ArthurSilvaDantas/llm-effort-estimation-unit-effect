@@ -16,6 +16,7 @@ Pré-requisitos:
 import sys
 import json
 import time
+import argparse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
@@ -283,6 +284,15 @@ def process_json_stage(
     stage: str,
     content: str,
 ) -> Exception | None:
+    """
+    Faz o parsing do conteúdo já coletado. Uma resposta recebida cujo
+    conteúdo não constitua JSON válido é uma resposta inválida, não uma
+    falha técnica sem resposta registrada — a Seção 5.6.4 do protocolo já
+    prevê esse caso via seu critério de validação (1), "conformidade da
+    resposta com o esquema JSON correspondente": a execução é marcada como
+    falha de processamento definitiva, sem nova tentativa (Seção 5.6.3:
+    "respostas recebidas... não serão coletadas novamente").
+    """
     processing = result["processing"]
     status = processing[stage]
 
@@ -317,6 +327,47 @@ def process_json_stage(
     save_result(model_id, spec_id, treatment, result)
 
     return None
+
+
+def collect_and_parse(
+    model_id: str,
+    provider: str,
+    spec_id: str,
+    treatment: str,
+    result: dict,
+    stage: str,
+    build_messages,
+) -> tuple[str | None, Exception | None, Exception | None]:
+    """
+    Executa collect_stage + process_json_stage para uma etapa. Falhas de
+    parsing NÃO são retentadas (ver process_json_stage) — só falhas técnicas
+    de coleta (rede) têm direito a nova tentativa, já dentro de collect_stage.
+
+    Retorna (content, collection_error, processing_error).
+    """
+    content = None
+    collection_error = None
+    processing_error = None
+
+    messages = build_messages()
+
+    try:
+        content = collect_stage(
+            model_id, provider, spec_id, treatment, result, stage, messages,
+        )
+    except Exception as error:
+        collection_error = error
+        content = None
+
+    if content is not None:
+        outcome = process_json_stage(
+            model_id, spec_id, treatment, result, stage, content,
+        )
+
+        if isinstance(outcome, Exception):
+            processing_error = outcome
+
+    return content, collection_error, processing_error
 
 
 def run_single(
@@ -380,15 +431,18 @@ def run_single(
 
         save_result(model_id, spec_id, treatment, result)
 
-    content = collect_stage(
+    content, estimation_collection_error, estimation_error = collect_and_parse(
         model_id,
         provider,
         spec_id,
         treatment,
         result,
         "estimation",
-        estimation_messages,
+        lambda: estimation_messages,
     )
+
+    if estimation_collection_error is not None:
+        raise estimation_collection_error
 
     if content is None:
         return result
@@ -402,53 +456,33 @@ def run_single(
 
     conv_content = None
     collection_error = None
+    conversion_error = None
 
     if treatment == "WD":
-        conversion_messages = [
-            {"role": "user", "content": estimation_prompt},
-            {"role": "assistant", "content": content},
-            {"role": "user", "content": build_conversion_prompt()},
-        ]
+        def build_conversion_messages():
+            return [
+                {"role": "user", "content": estimation_prompt},
+                {"role": "assistant", "content": content},
+                {"role": "user", "content": build_conversion_prompt()},
+            ]
 
-        try:
-            conv_content = collect_stage(
-                model_id,
-                provider,
-                spec_id,
-                treatment,
-                result,
-                "conversion",
-                conversion_messages,
-            )
-        except Exception as error:
-            collection_error = error
-
-    processing_errors = []
-
-    estimation_error = process_json_stage(
-        model_id,
-        spec_id,
-        treatment,
-        result,
-        "estimation",
-        content,
-    )
-
-    if estimation_error is not None:
-        processing_errors.append(estimation_error)
-
-    if treatment == "WD" and conv_content is not None:
-        conversion_error = process_json_stage(
+        conv_content, collection_error, conversion_error = collect_and_parse(
             model_id,
+            provider,
             spec_id,
             treatment,
             result,
             "conversion",
-            conv_content,
+            build_conversion_messages,
         )
 
-        if conversion_error is not None:
-            processing_errors.append(conversion_error)
+    processing_errors = []
+
+    if estimation_error is not None:
+        processing_errors.append(estimation_error)
+
+    if conversion_error is not None:
+        processing_errors.append(conversion_error)
 
     if collection_error is not None:
         raise collection_error
@@ -483,7 +517,24 @@ def run_model(model: dict, randomization: dict):
                 time.sleep(0.5)  # respeito ao rate limit
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--model",
+        action="append",
+        dest="model_ids",
+        default=None,
+        help="Restringe a execução a este model_id (pode repetir a flag "
+             "para rodar mais de um). Sem essa flag, roda todos os "
+             "modelos ativos em config/models.yaml. Útil para disparar "
+             "um processo por modelo em paralelo.",
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+
     if not RAND_FILE.exists():
         print("randomization.json não encontrado. Execute randomize.py primeiro.")
         return
@@ -492,6 +543,17 @@ def main():
     if not models:
         print("Nenhum modelo em config/models.yaml")
         return
+
+    if args.model_ids:
+        wanted = set(args.model_ids)
+        found_ids = {m["id"] for m in models}
+        missing = wanted - found_ids
+        if missing:
+            print(f"Aviso: model_id(s) não encontrados em config/models.yaml: {missing}")
+        models = [m for m in models if m["id"] in wanted]
+        if not models:
+            print("Nenhum modelo correspondente aos filtros --model.")
+            return
 
     randomization = load_randomization()
 

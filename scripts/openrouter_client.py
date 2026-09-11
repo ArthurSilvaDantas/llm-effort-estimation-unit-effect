@@ -26,6 +26,18 @@ def load_execution_config() -> dict:
     return load_config().get("execution") or {}
 
 
+class UpstreamError(Exception):
+    """
+    OpenRouter às vezes responde 200 OK com um corpo {"error": {"message":...,
+    "code": N}} quando o provedor upstream falha (ex.: sobrecarga temporária).
+    response.raise_for_status() não detecta isso, pois o status HTTP é 200.
+    """
+
+    def __init__(self, message: str, code: int | None):
+        super().__init__(message)
+        self.code = code
+
+
 def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
     """Chama um modelo no OpenRouter e retorna o objeto de resposta completo."""
     headers = {
@@ -53,13 +65,24 @@ def call_model(model_id: str, provider: str, messages: list[dict]) -> dict:
     timeout=execution_config["request_timeout_seconds"],
 )
     response.raise_for_status()
-    return response.json()
+    body = response.json()
+
+    # Erro upstream disfarçado de 200 OK (sem "choices", com "error" no corpo).
+    if "choices" not in body and isinstance(body.get("error"), dict):
+        err = body["error"]
+        raise UpstreamError(err.get("message", "erro upstream sem mensagem"), err.get("code"))
+
+    return body
 
 
 def is_retryable_error(error: Exception) -> bool:
     if isinstance(
         error,
-        (requests.exceptions.Timeout, requests.exceptions.ConnectionError),
+        (
+            requests.exceptions.Timeout,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ChunkedEncodingError,
+        ),
     ):
         return True
 
@@ -70,6 +93,10 @@ def is_retryable_error(error: Exception) -> bool:
 
         status_code = response.status_code
         return status_code == 429 or 500 <= status_code < 600
+
+    if isinstance(error, UpstreamError):
+        code = error.code
+        return code is not None and (code == 429 or 500 <= code < 600)
 
     return False
 
