@@ -1,0 +1,250 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "hyperledger-001",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789177231-usjfilCgMcgFHHm8F5TU",
+    "object": "chat.completion",
+    "created": 1789177231,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement all code in Go, consistent with the existing Hyperledger Fabric codebase, using gRPC for inter-component APIs (orderer broadcast/deliver, peer CLI to peer node).\",\n    \"Solo orderer (U4): implement a minimal Atomic Broadcast service with a buffered ingress channel, a single goroutine performing batch/block cutting (by max message count and batch timeout), and an in-RAM ledger supporting seek so Deliver clients can reconnect and resume from a given block number; no persistence or multi-node consensus.\",\n    \"Lifecycle system chaincode (U2): implement LSCC as a system chaincode registered at peer startup; it stores chaincode deployment metadata and deployment policies on the ledger and exposes lifecycle operations used by deploy/upgrade flows.\",\n    \"Chaincode friendly naming (U1): chaincode is identified by a human-readable unique name carried in the chaincode deployment spec and accepted by deploy/invoke/query interfaces (CLI, SDK, REST/gRPC), replacing raw hash-based IDs in developer workflows.\",\n    \"State cache (U6): add an in-memory, version-aware state cache in front of the state database on the endorser/committer path so submitters can quickly build read-write sets; cache entries are invalidated at block commit time.\",\n    \"Standalone CLI (U8): extract peer commands into a separate client component that depends only on gRPC client libraries and protobuf definitions (no RocksDB or peer internals), cross-compiled and distributed as platform-specific binaries for Linux, macOS, and Windows.\",\n    \"Documentation (U3, U7) authored in the repo (reStructuredText/Markdown) and published so it is discoverable from hyperledger.org; GitHub (U5) is a read-only mirror of the canonical Gerrit repository.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Go developer, already familiar with the Hyperledger Fabric codebase, performs all work; estimates are effort in workdays, not elapsed time.\",\n    \"Development workstations, Gerrit access, CI infrastructure, and the existing Fabric baseline are already available; no environment setup time is required.\",\n    \"The solo orderer is required to be in-memory only (no on-disk persistence or crash recovery), as stated in U4.\",\n    \"For U5 and U7, necessary accounts, permissions, and web-site/mirror hosting from the Hyperledger foundation are granted; only the developer's own setup effort is counted.\",\n    \"Each implementation activity includes its own unit testing; cross-feature integration and system testing is estimated as a separate activity.\",\n    \"Scope is limited to the functionality in the eight user stories; production hardening, large-scale performance tuning, and HA ordering (e.g., Kafka) are out of scope.\",\n    \"Documentation is written in English only; no translation effort is included.\",\n    \"An allowance for code review rework and release packaging is included in the final hardening activity.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Increment architecture and design\",\n      \"activity_description\": \"Analyze the eight user stories, define interfaces (chaincode naming model, LSCC API, orderer broadcast/deliver API, state cache API, standalone CLI structure), and produce short design notes reviewed before coding.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Chaincode friendly naming\",\n      \"activity_description\": \"Add support for human-friendly chaincode names in the chaincode deployment spec and ID handling, update deploy/invoke/query paths (CLI, SDK, gRPC) to accept the name, and add unit tests.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2: Lifecycle system chaincode (LSCC)\",\n      \"activity_description\": \"Implement the system chaincode registration framework and the LSCC itself: lifecycle operations for deploy/upgrade, storage of chaincode metadata and deployment policies on the ledger, policy evaluation hooks, and unit tests.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3: Upgrade flow documentation\",\n      \"activity_description\": \"Write developer documentation covering chaincode upgrade flows end to end, including examples and compatibility notes.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4: Solo ordering service\",\n      \"activity_description\": \"Implement the solo orderer: gRPC Broadcast ingress into a buffered channel, single-threaded batch/block cutting, an in-RAM ledger with seek support, gRPC Deliver with disconnection/reconnection and history retrieval, configuration, logging, and unit tests.\",\n      \"most_likely_effort\": 25\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5: GitHub mirror of the code\",\n      \"activity_description\": \"Configure automated replication of the canonical Gerrit repository to a public read-only GitHub mirror, verify synchronization, and document the mirror location for developers.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6: State cache for rw-set building\",\n      \"activity_description\": \"Implement a version-aware in-memory state cache in front of the state database for the endorser/submitter path, including commit-time invalidation, concurrency handling, basic benchmarks, and unit tests.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7: Documentation discoverability\",\n      \"activity_description\": \"Reorganize the existing documentation set, wire publication so Fabric docs are easily found from hyperledger.org alongside other Hyperledger projects, and verify navigation and links.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8: Standalone cross-platform CLI\",\n      \"activity_description\": \"Extract peer CLI commands into a separate component depending only on gRPC client libraries (removing RocksDB and peer-internal dependencies), refactor command wiring, cross-compile and package binaries for Linux, macOS, and Windows, add install docs and tests.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration and system testing\",\n      \"activity_description\": \"End-to-end testing of the increment: bring up a network with the solo orderer, deploy/invoke/upgrade chaincode by friendly name via LSCC using the standalone CLI on multiple platforms, exercise state cache behavior, and fix defects found.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Hardening, review rework and release packaging\",\n      \"activity_description\": \"Address code review feedback, update CI/build jobs for the new components and mirror, finalize release notes, and package the increment for delivery.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 116\n  }\n}",
+          "refusal": null,
+          "reasoning": "The user wants me to estimate software development effort for implementing a software increment described in the specification, which contains 8 user stories from Hyperledger Fabric (early development era — this looks like the Fabric v0.6/v1.0 era requirements: solo orderer, chaincode friendly names, lifecycle system chaincode, state cache, standalone CLI tool, GitHub mirror, documentation).\n\nI need to:\n1. Break down into WBS activities\n2. State technical/design decisions and assumptions\n3. Give most likely effort per activity in workdays\n4. Sum total\n\nOutput must be valid JSON matching the schema. No extra text.\n\nLet me think about each user story and map to activities:\n\nU1: Friendly name to identify chaincode — chaincode naming support (chaincodeID, naming in deploy/invoke/query APIs, CLI/SDK params). Moderate effort.\n\nU2: Lifecycle system chaincode (LSCC) to manage deployment policies — this is a significant piece: system chaincode framework, LSCC implementation, deployment policy storage, validation. Large effort.\n\nU3: Documentation for upgrade flows — documentation writing.\n\nU4: Solo orderer — new ordering service component: broadcast interface, buffered channels, batching/block cutting, in-RAM ledger with seek/history for deliver, gRPC service, config, tests. Large effort.\n\nU5: GitHub mirror of code from Gerrit — infra task: set up mirroring, CI config. Small effort.\n\nU6: State cache for building read-write sets — state cache in peer/ledger (or endorser) to help submitters build rw-set; performance. Medium effort.\n\nU7: Documentation discoverable at hyperledger.org — consolidate docs, publish to site, readthedocs setup. Small-medium.\n\nU8: Standalone CLI binary decoupled from peer internals (no RocksDB dependency), cross-platform (Mac/Windows/Linux) — refactor peer commands into separate CLI, remove dependency on peer internals, build/packaging for platforms. Medium-large.\n\nAlso common activities: overall architecture/design, integration, system testing, CI, code review/rework, project-level integration. I should include activities like requirements/architecture, integration & system testing, etc.\n\nLet me create a WBS:\n\nA1: Increment planning, architecture and design (overall) — e.g., 8 days.\nA2: U1 — Chaincode friendly naming: design + implement (API, CLI, chaincode ID handling), unit tests — 8 days.\nA3: U2 — Lifecycle system chaincode (LSCC): system chaincode framework, LSCC implementation, deployment policy management, unit tests — 20 days.\nA4: U3 — Upgrade flow documentation — 5 days.\nA5: U4 — Solo orderer: broadcast, batching, in-memory ledger with seek, deliver with reconnect, config, unit tests — 25 days.\nA6: U5 — GitHub mirror setup — 2 days.\nA7: U6 — State cache for rw-set building — 12 days.\nA8: U7 — Documentation consolidation and publishing on hyperledger.org — 4 days.\nA9: U8 — Standalone CLI extraction and cross-platform packaging — 15 days.\nA10: Integration and system testing across increment — 12 days.\nA11: CI/build pipeline updates and code review/rework — maybe fold into activities; but let's add \"Integration testing and defect fixing\" 12 days and \"Release packaging and final documentation review\" 5 days.\n\nTotal: let's compute. 8+8+20+5+25+2+12+4+15+12+5 = 116 workdays.\n\nLet me detail estimates more carefully, in a manner consistent with a single developer.\n\nA1: Overall architecture & design: analyze stories, design interfaces (chaincode naming, LSCC APIs, orderer interfaces, state cache API, CLI structure), produce design docs. ~8 days.\n\nA2 (U1): Friendly chaincode names:\n- Extend chaincode deployment spec with name field (already exists name in ChaincodeID in real fabric, but here implement), ensure deploy/invoke/query accept name, map name to chaincode ID, CLI/SDK changes, unit tests. ~8 days.\n\nA3 (U2): LSCC:\n- System chaincode framework registration, LSCC lifecycle operations (install/deploy/upgrade), deployment policy storage in ledger, policy evaluation hooks, unit tests. ~20 days.\n\nA4 (U3): Upgrade flow docs: 5 days.\n\nA5 (U4): Solo orderer:\n- Define orderer service interfaces (atomic broadcast API: Broadcast/Deliver gRPC), solo consensus: buffered channel ingress, batch timer and block cutting, in-RAM ledger with block storage and seek, deliver with reconnection support, config, logging, unit tests. ~25 days.\n\nA6 (U5): GitHub mirror: configure replication from Gerrit to GitHub, verify, document. 2 days.\n\nA7 (U6): State cache:\n- Cache layer in front of state DB for endorser/committer path, invalidation on commit, integration with rw-set building for submitters, concurrency handling, benchmarks, unit tests. 12 days.\n\nA8 (U7): Docs discoverability: reorganize docs, publish to hyperledger.org/readthedocs, links. 4 days.\n\nA9 (U8): Standalone CLI:\n- Refactor peer CLI commands out of peer node binary, remove RocksDB/internal deps, use gRPC client only, cross-compile for Linux/Mac/Windows, packaging and install docs, tests. 15 days.\n\nA10: Integration and end-to-end testing: network bring-up with solo orderer, deploy chaincode via LSCC with friendly name via standalone CLI, state cache enabled, upgrade flow test; defect fixing. 12 days.\n\nA11: Increment hardening/release: code review rework, CI updates, release notes. 5 days.\n\nTotal = 8+8+20+5+25+2+12+4+15+12+5 = 116.\n\nCheck sum: 8+8=16; +20=36; +5=41; +25=66; +2=68; +12=80; +4=84; +15=99; +12=111; +5=116. Yes, 116 workdays.\n\nTechnical and design decisions:\n- Go as implementation language, gRPC for service APIs (consistent with Fabric).\n- Solo orderer implements Atomic Broadcast API with in-memory ledger (no persistence), block cutting based on batch size/timeout.\n- LSCC implemented as system chaincode managing chaincode lifecycle and deployment policies stored on ledger.\n- Chaincode identified by human-friendly name mapped in ChaincodeDeploymentSpec; name uniqueness enforced per chain.\n- State cache implemented as in-memory cache over versioned state DB with invalidation at commit; used by endorsers/submitters for rw-set construction.\n- CLI refactored as standalone Go binary using only gRPC client libs; cross-compiled for Linux/macOS/Windows.\n- Docs in reStructuredText/Markdown published via hyperledger.org site; GitHub repo as read-only mirror of Gerrit master.\n\nAssumptions:\n- Single experienced Go developer familiar with Fabric codebase; estimates are effort (workdays), not duration.\n- Existing Fabric codebase (Gerrit-based) is the baseline; development environment already set up.\n- Solo orderer persistence not required (in-RAM only) per story; no crash recovery needed.\n- U5/U7 require coordination with LF infra but only our effort counted; assume accounts/permissions granted.\n- Scope limited to functional implementation plus unit/integration tests; production hardening, performance tuning beyond basic benchmarks excluded.\n- Unit tests included in per-activity estimates; dedicated integration/system test activity separate.\n- No UI work; CLI only.\n- Documentation written in English.\n- Review/rework allowance included in hardening activity.\n\nNow produce JSON only. Ensure numbers > 0, activity ids strings. Output only JSON, no markdown fences? The instruction says \"Return only valid JSON\". I'll output raw JSON without code fences to be safe.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user wants me to estimate software development effort for implementing a software increment described in the specification, which contains 8 user stories from Hyperledger Fabric (early development era — this looks like the Fabric v0.6/v1.0 era requirements: solo orderer, chaincode friendly names, lifecycle system chaincode, state cache, standalone CLI tool, GitHub mirror, documentation).\n\nI need to:\n1. Break down into WBS activities\n2. State technical/design decisions and assumptions\n3. Give most likely effort per activity in workdays\n4. Sum total\n\nOutput must be valid JSON matching the schema. No extra text.\n\nLet me think about each user story and map to activities:\n\nU1: Friendly name to identify chaincode — chaincode naming support (chaincodeID, naming in deploy/invoke/query APIs, CLI/SDK params). Moderate effort.\n\nU2: Lifecycle system chaincode (LSCC) to manage deployment policies — this is a significant piece: system chaincode framework, LSCC implementation, deployment policy storage, validation. Large effort.\n\nU3: Documentation for upgrade flows — documentation writing.\n\nU4: Solo orderer — new ordering service component: broadcast interface, buffered channels, batching/block cutting, in-RAM ledger with seek/history for deliver, gRPC service, config, tests. Large effort.\n\nU5: GitHub mirror of code from Gerrit — infra task: set up mirroring, CI config. Small effort.\n\nU6: State cache for building read-write sets — state cache in peer/ledger (or endorser) to help submitters build rw-set; performance. Medium effort.\n\nU7: Documentation discoverable at hyperledger.org — consolidate docs, publish to site, readthedocs setup. Small-medium.\n\nU8: Standalone CLI binary decoupled from peer internals (no RocksDB dependency), cross-platform (Mac/Windows/Linux) — refactor peer commands into separate CLI, remove dependency on peer internals, build/packaging for platforms. Medium-large.\n\nAlso common activities: overall architecture/design, integration, system testing, CI, code review/rework, project-level integration. I should include activities like requirements/architecture, integration & system testing, etc.\n\nLet me create a WBS:\n\nA1: Increment planning, architecture and design (overall) — e.g., 8 days.\nA2: U1 — Chaincode friendly naming: design + implement (API, CLI, chaincode ID handling), unit tests — 8 days.\nA3: U2 — Lifecycle system chaincode (LSCC): system chaincode framework, LSCC implementation, deployment policy management, unit tests — 20 days.\nA4: U3 — Upgrade flow documentation — 5 days.\nA5: U4 — Solo orderer: broadcast, batching, in-memory ledger with seek, deliver with reconnect, config, unit tests — 25 days.\nA6: U5 — GitHub mirror setup — 2 days.\nA7: U6 — State cache for rw-set building — 12 days.\nA8: U7 — Documentation consolidation and publishing on hyperledger.org — 4 days.\nA9: U8 — Standalone CLI extraction and cross-platform packaging — 15 days.\nA10: Integration and system testing across increment — 12 days.\nA11: CI/build pipeline updates and code review/rework — maybe fold into activities; but let's add \"Integration testing and defect fixing\" 12 days and \"Release packaging and final documentation review\" 5 days.\n\nTotal: let's compute. 8+8+20+5+25+2+12+4+15+12+5 = 116 workdays.\n\nLet me detail estimates more carefully, in a manner consistent with a single developer.\n\nA1: Overall architecture & design: analyze stories, design interfaces (chaincode naming, LSCC APIs, orderer interfaces, state cache API, CLI structure), produce design docs. ~8 days.\n\nA2 (U1): Friendly chaincode names:\n- Extend chaincode deployment spec with name field (already exists name in ChaincodeID in real fabric, but here implement), ensure deploy/invoke/query accept name, map name to chaincode ID, CLI/SDK changes, unit tests. ~8 days.\n\nA3 (U2): LSCC:\n- System chaincode framework registration, LSCC lifecycle operations (install/deploy/upgrade), deployment policy storage in ledger, policy evaluation hooks, unit tests. ~20 days.\n\nA4 (U3): Upgrade flow docs: 5 days.\n\nA5 (U4): Solo orderer:\n- Define orderer service interfaces (atomic broadcast API: Broadcast/Deliver gRPC), solo consensus: buffered channel ingress, batch timer and block cutting, in-RAM ledger with block storage and seek, deliver with reconnection support, config, logging, unit tests. ~25 days.\n\nA6 (U5): GitHub mirror: configure replication from Gerrit to GitHub, verify, document. 2 days.\n\nA7 (U6): State cache:\n- Cache layer in front of state DB for endorser/committer path, invalidation on commit, integration with rw-set building for submitters, concurrency handling, benchmarks, unit tests. 12 days.\n\nA8 (U7): Docs discoverability: reorganize docs, publish to hyperledger.org/readthedocs, links. 4 days.\n\nA9 (U8): Standalone CLI:\n- Refactor peer CLI commands out of peer node binary, remove RocksDB/internal deps, use gRPC client only, cross-compile for Linux/Mac/Windows, packaging and install docs, tests. 15 days.\n\nA10: Integration and end-to-end testing: network bring-up with solo orderer, deploy chaincode via LSCC with friendly name via standalone CLI, state cache enabled, upgrade flow test; defect fixing. 12 days.\n\nA11: Increment hardening/release: code review rework, CI updates, release notes. 5 days.\n\nTotal = 8+8+20+5+25+2+12+4+15+12+5 = 116.\n\nCheck sum: 8+8=16; +20=36; +5=41; +25=66; +2=68; +12=80; +4=84; +15=99; +12=111; +5=116. Yes, 116 workdays.\n\nTechnical and design decisions:\n- Go as implementation language, gRPC for service APIs (consistent with Fabric).\n- Solo orderer implements Atomic Broadcast API with in-memory ledger (no persistence), block cutting based on batch size/timeout.\n- LSCC implemented as system chaincode managing chaincode lifecycle and deployment policies stored on ledger.\n- Chaincode identified by human-friendly name mapped in ChaincodeDeploymentSpec; name uniqueness enforced per chain.\n- State cache implemented as in-memory cache over versioned state DB with invalidation at commit; used by endorsers/submitters for rw-set construction.\n- CLI refactored as standalone Go binary using only gRPC client libs; cross-compiled for Linux/macOS/Windows.\n- Docs in reStructuredText/Markdown published via hyperledger.org site; GitHub repo as read-only mirror of Gerrit master.\n\nAssumptions:\n- Single experienced Go developer familiar with Fabric codebase; estimates are effort (workdays), not duration.\n- Existing Fabric codebase (Gerrit-based) is the baseline; development environment already set up.\n- Solo orderer persistence not required (in-RAM only) per story; no crash recovery needed.\n- U5/U7 require coordination with LF infra but only our effort counted; assume accounts/permissions granted.\n- Scope limited to functional implementation plus unit/integration tests; production hardening, performance tuning beyond basic benchmarks excluded.\n- Unit tests included in per-activity estimates; dedicated integration/system test activity separate.\n- No UI work; CLI only.\n- Documentation written in English.\n- Review/rework allowance included in hardening activity.\n\nNow produce JSON only. Ensure numbers > 0, activity ids strings. Output only JSON, no markdown fences? The instruction says \"Return only valid JSON\". I'll output raw JSON without code fences to be safe.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1139,
+      "completion_tokens": 3230,
+      "total_tokens": 4369,
+      "cost": 0.051867,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.051867,
+        "upstream_inference_prompt_cost": 0.003417,
+        "upstream_inference_completions_cost": 0.04845
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1674,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement all code in Go, consistent with the existing Hyperledger Fabric codebase, using gRPC for inter-component APIs (orderer broadcast/deliver, peer CLI to peer node).\",\n    \"Solo orderer (U4): implement a minimal Atomic Broadcast service with a buffered ingress channel, a single goroutine performing batch/block cutting (by max message count and batch timeout), and an in-RAM ledger supporting seek so Deliver clients can reconnect and resume from a given block number; no persistence or multi-node consensus.\",\n    \"Lifecycle system chaincode (U2): implement LSCC as a system chaincode registered at peer startup; it stores chaincode deployment metadata and deployment policies on the ledger and exposes lifecycle operations used by deploy/upgrade flows.\",\n    \"Chaincode friendly naming (U1): chaincode is identified by a human-readable unique name carried in the chaincode deployment spec and accepted by deploy/invoke/query interfaces (CLI, SDK, REST/gRPC), replacing raw hash-based IDs in developer workflows.\",\n    \"State cache (U6): add an in-memory, version-aware state cache in front of the state database on the endorser/committer path so submitters can quickly build read-write sets; cache entries are invalidated at block commit time.\",\n    \"Standalone CLI (U8): extract peer commands into a separate client component that depends only on gRPC client libraries and protobuf definitions (no RocksDB or peer internals), cross-compiled and distributed as platform-specific binaries for Linux, macOS, and Windows.\",\n    \"Documentation (U3, U7) authored in the repo (reStructuredText/Markdown) and published so it is discoverable from hyperledger.org; GitHub (U5) is a read-only mirror of the canonical Gerrit repository.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced Go developer, already familiar with the Hyperledger Fabric codebase, performs all work; estimates are effort in workdays, not elapsed time.\",\n    \"Development workstations, Gerrit access, CI infrastructure, and the existing Fabric baseline are already available; no environment setup time is required.\",\n    \"The solo orderer is required to be in-memory only (no on-disk persistence or crash recovery), as stated in U4.\",\n    \"For U5 and U7, necessary accounts, permissions, and web-site/mirror hosting from the Hyperledger foundation are granted; only the developer's own setup effort is counted.\",\n    \"Each implementation activity includes its own unit testing; cross-feature integration and system testing is estimated as a separate activity.\",\n    \"Scope is limited to the functionality in the eight user stories; production hardening, large-scale performance tuning, and HA ordering (e.g., Kafka) are out of scope.\",\n    \"Documentation is written in English only; no translation effort is included.\",\n    \"An allowance for code review rework and release packaging is included in the final hardening activity.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Increment architecture and design\",\n      \"activity_description\": \"Analyze the eight user stories, define interfaces (chaincode naming model, LSCC API, orderer broadcast/deliver API, state cache API, standalone CLI structure), and produce short design notes reviewed before coding.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Chaincode friendly naming\",\n      \"activity_description\": \"Add support for human-friendly chaincode names in the chaincode deployment spec and ID handling, update deploy/invoke/query paths (CLI, SDK, gRPC) to accept the name, and add unit tests.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2: Lifecycle system chaincode (LSCC)\",\n      \"activity_description\": \"Implement the system chaincode registration framework and the LSCC itself: lifecycle operations for deploy/upgrade, storage of chaincode metadata and deployment policies on the ledger, policy evaluation hooks, and unit tests.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3: Upgrade flow documentation\",\n      \"activity_description\": \"Write developer documentation covering chaincode upgrade flows end to end, including examples and compatibility notes.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4: Solo ordering service\",\n      \"activity_description\": \"Implement the solo orderer: gRPC Broadcast ingress into a buffered channel, single-threaded batch/block cutting, an in-RAM ledger with seek support, gRPC Deliver with disconnection/reconnection and history retrieval, configuration, logging, and unit tests.\",\n      \"most_likely_effort\": 25\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5: GitHub mirror of the code\",\n      \"activity_description\": \"Configure automated replication of the canonical Gerrit repository to a public read-only GitHub mirror, verify synchronization, and document the mirror location for developers.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6: State cache for rw-set building\",\n      \"activity_description\": \"Implement a version-aware in-memory state cache in front of the state database for the endorser/submitter path, including commit-time invalidation, concurrency handling, basic benchmarks, and unit tests.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7: Documentation discoverability\",\n      \"activity_description\": \"Reorganize the existing documentation set, wire publication so Fabric docs are easily found from hyperledger.org alongside other Hyperledger projects, and verify navigation and links.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8: Standalone cross-platform CLI\",\n      \"activity_description\": \"Extract peer CLI commands into a separate component depending only on gRPC client libraries (removing RocksDB and peer-internal dependencies), refactor command wiring, cross-compile and package binaries for Linux, macOS, and Windows, add install docs and tests.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration and system testing\",\n      \"activity_description\": \"End-to-end testing of the increment: bring up a network with the solo orderer, deploy/invoke/upgrade chaincode by friendly name via LSCC using the standalone CLI on multiple platforms, exercise state cache behavior, and fix defects found.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Hardening, review rework and release packaging\",\n      \"activity_description\": \"Address code review feedback, update CI/build jobs for the new components and mirror, finalize release notes, and package the increment for delivery.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 116\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement all code in Go, consistent with the existing Hyperledger Fabric codebase, using gRPC for inter-component APIs (orderer broadcast/deliver, peer CLI to peer node).",
+      "Solo orderer (U4): implement a minimal Atomic Broadcast service with a buffered ingress channel, a single goroutine performing batch/block cutting (by max message count and batch timeout), and an in-RAM ledger supporting seek so Deliver clients can reconnect and resume from a given block number; no persistence or multi-node consensus.",
+      "Lifecycle system chaincode (U2): implement LSCC as a system chaincode registered at peer startup; it stores chaincode deployment metadata and deployment policies on the ledger and exposes lifecycle operations used by deploy/upgrade flows.",
+      "Chaincode friendly naming (U1): chaincode is identified by a human-readable unique name carried in the chaincode deployment spec and accepted by deploy/invoke/query interfaces (CLI, SDK, REST/gRPC), replacing raw hash-based IDs in developer workflows.",
+      "State cache (U6): add an in-memory, version-aware state cache in front of the state database on the endorser/committer path so submitters can quickly build read-write sets; cache entries are invalidated at block commit time.",
+      "Standalone CLI (U8): extract peer commands into a separate client component that depends only on gRPC client libraries and protobuf definitions (no RocksDB or peer internals), cross-compiled and distributed as platform-specific binaries for Linux, macOS, and Windows.",
+      "Documentation (U3, U7) authored in the repo (reStructuredText/Markdown) and published so it is discoverable from hyperledger.org; GitHub (U5) is a read-only mirror of the canonical Gerrit repository."
+    ],
+    "assumptions": [
+      "A single experienced Go developer, already familiar with the Hyperledger Fabric codebase, performs all work; estimates are effort in workdays, not elapsed time.",
+      "Development workstations, Gerrit access, CI infrastructure, and the existing Fabric baseline are already available; no environment setup time is required.",
+      "The solo orderer is required to be in-memory only (no on-disk persistence or crash recovery), as stated in U4.",
+      "For U5 and U7, necessary accounts, permissions, and web-site/mirror hosting from the Hyperledger foundation are granted; only the developer's own setup effort is counted.",
+      "Each implementation activity includes its own unit testing; cross-feature integration and system testing is estimated as a separate activity.",
+      "Scope is limited to the functionality in the eight user stories; production hardening, large-scale performance tuning, and HA ordering (e.g., Kafka) are out of scope.",
+      "Documentation is written in English only; no translation effort is included.",
+      "An allowance for code review rework and release packaging is included in the final hardening activity."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Increment architecture and design",
+        "activity_description": "Analyze the eight user stories, define interfaces (chaincode naming model, LSCC API, orderer broadcast/deliver API, state cache API, standalone CLI structure), and produce short design notes reviewed before coding.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1: Chaincode friendly naming",
+        "activity_description": "Add support for human-friendly chaincode names in the chaincode deployment spec and ID handling, update deploy/invoke/query paths (CLI, SDK, gRPC) to accept the name, and add unit tests.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2: Lifecycle system chaincode (LSCC)",
+        "activity_description": "Implement the system chaincode registration framework and the LSCC itself: lifecycle operations for deploy/upgrade, storage of chaincode metadata and deployment policies on the ledger, policy evaluation hooks, and unit tests.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3: Upgrade flow documentation",
+        "activity_description": "Write developer documentation covering chaincode upgrade flows end to end, including examples and compatibility notes.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4: Solo ordering service",
+        "activity_description": "Implement the solo orderer: gRPC Broadcast ingress into a buffered channel, single-threaded batch/block cutting, an in-RAM ledger with seek support, gRPC Deliver with disconnection/reconnection and history retrieval, configuration, logging, and unit tests.",
+        "most_likely_effort": 25
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5: GitHub mirror of the code",
+        "activity_description": "Configure automated replication of the canonical Gerrit repository to a public read-only GitHub mirror, verify synchronization, and document the mirror location for developers.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6: State cache for rw-set building",
+        "activity_description": "Implement a version-aware in-memory state cache in front of the state database for the endorser/submitter path, including commit-time invalidation, concurrency handling, basic benchmarks, and unit tests.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7: Documentation discoverability",
+        "activity_description": "Reorganize the existing documentation set, wire publication so Fabric docs are easily found from hyperledger.org alongside other Hyperledger projects, and verify navigation and links.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8: Standalone cross-platform CLI",
+        "activity_description": "Extract peer CLI commands into a separate component depending only on gRPC client libraries (removing RocksDB and peer-internal dependencies), refactor command wiring, cross-compile and package binaries for Linux, macOS, and Windows, add install docs and tests.",
+        "most_likely_effort": 15
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Integration and system testing",
+        "activity_description": "End-to-end testing of the increment: bring up a network with the solo orderer, deploy/invoke/upgrade chaincode by friendly name via LSCC using the standalone CLI on multiple platforms, exercise state cache behavior, and fix defects found.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Hardening, review rework and release packaging",
+        "activity_description": "Address code review feedback, update CI/build jobs for the new components and mirror, finalize release notes, and package the increment for delivery.",
+        "most_likely_effort": 5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 116
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1139,
+    "completion_tokens": 3230,
+    "total_tokens": 4369,
+    "cost": 0.051867,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.051867,
+      "upstream_inference_prompt_cost": 0.003417,
+      "upstream_inference_completions_cost": 0.04845
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1674,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789177321-PjbdLk1JnP9hHV4qzJmj",
+    "object": "chat.completion",
+    "created": 1789177321,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one workday for the purpose of converting the effort estimate. Standard is 8 hours per workday. I should just answer with the JSON, not revise the estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one workday for the purpose of converting the effort estimate. Standard is 8 hours per workday. I should just answer with the JSON, not revise the estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2829,
+      "completion_tokens": 75,
+      "total_tokens": 2904,
+      "cost": 0.0068472,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0068472,
+        "upstream_inference_prompt_cost": 0.0057222,
+        "upstream_inference_completions_cost": 0.001125
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 47,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

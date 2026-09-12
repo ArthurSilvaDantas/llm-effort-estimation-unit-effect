@@ -1,0 +1,253 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-062",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789176644-OdESLjmdI5mDRvJMRcj7",
+    "object": "chat.completion",
+    "created": 1789176644,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Each migrated module is restructured as a Spring Cloud Stream app starter: a Spring Boot auto-configuration plus an executable application, bound to a message broker via the Spring Cloud Stream binder abstraction (@EnableBinding Source/Sink/Processor).\",\n    \"Implementation reuses Spring Integration components where possible (spring-integration-mqtt for mqtt, spring-integration-ip for tcp, spring-integration-jdbc for jdbc, Spring Integration aggregator for aggregator, HTTP outbound gateway for http-client), since the original Spring XD modules were already Spring Integration based.\",\n    \"All module options are externalized as Spring Boot @ConfigurationProperties classes with spring-boot-configuration-processor to generate configuration metadata (replacing XD module descriptor XML files).\",\n    \"Maven multi-module build with a shared parent POM and a BOM for dependency management; Java 17 baseline per the stated Spring Framework 6 requirement.\",\n    \"Aggregator state store uses a pluggable abstraction with an in-memory default store plus JDBC/Redis-backed options; correlation and release strategies are configurable via properties.\",\n    \"Testing stack: JUnit 5, Spring Boot Test, and embedded/test-scoped infrastructure (embedded MQTT broker, H2 database, WireMock for HTTP, real socket servers for TCP/shell) so integration tests run self-contained in CI.\",\n    \"Each starter is packaged as an executable Spring Boot fat jar; documentation is provided as Asciidoc/README per module.\",\n    \"No XD-specific runtime (dirt, module registry) is retained; XD container features are replaced by Spring Boot auto-configuration and Spring Cloud Stream binding.\"\n  ],\n  \"assumptions\": [\n    \"The Spring XD source code for all eight modules is available and its open-source license permits copying and adaptation into the s-c-s repository.\",\n    \"A single developer performs all work; effort is expressed in workdays of 8 hours and excludes elapsed calendar effects such as waiting on reviews or CI queues.\",\n    \"For 'move' stories (U1–U6), module logic is largely reused with packaging and configuration adaptation; for 'port' stories (U7–U8), logic must be adapted to the processor (request-reply / stateful) model, which requires more rework.\",\n    \"The s-c-s repository, CI system, and artifact publishing infrastructure already exist; only build configuration within the repo is in scope.\",\n    \"External systems needed by sinks/sources (MQTT broker, Splunk instance, databases, TCP endpoints) are available for development and testing via embedded servers, test containers, or existing test environments, so no infrastructure provisioning effort is included.\",\n    \"Per-module estimates include unit tests, integration tests, code review rework, and module-level documentation.\",\n    \"No performance, load, or soak testing is required; functional correctness and broker-agnostic integration tests are sufficient for acceptance.\",\n    \"Splunk integration targets the Splunk HTTP Event Collector (HEC) or the official Splunk Java SDK; credentials and endpoint are configurable properties.\",\n    \"The null sink simply discards consumed messages (logging at debug level), making it a trivial module.\",\n    \"No changes to the Spring Cloud Stream core framework itself are needed; only the app starter modules are delivered.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Module analysis and migration planning\",\n      \"activity_description\": \"Analyze the eight Spring XD modules (dependencies, channel adapters, options metadata, tests), map XD options to Spring Boot configuration properties, and define the migration approach per module.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository and build infrastructure setup\",\n      \"activity_description\": \"Set up the multi-module Maven structure in the s-c-s repo: parent POM, BOM, shared build plugins, Java 17 toolchain, CI build configuration, and a starter skeleton/template reused by all modules.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Migrate mqtt sink module (U1)\",\n      \"activity_description\": \"Port the XD mqtt sink to a Spring Cloud Stream sink using spring-integration-mqtt: auto-configuration, connection/topic/QoS configuration properties, unit tests, integration test with an embedded MQTT broker, and documentation.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Migrate null sink module (U2)\",\n      \"activity_description\": \"Port the trivial XD null sink (message discarding consumer) to a Spring Cloud Stream sink, including auto-configuration, unit test, and minimal documentation.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Migrate shell sink module (U3)\",\n      \"activity_description\": \"Port the XD shell sink to a Spring Cloud Stream sink: execute configurable shell commands with the message payload as input, handle working directory, environment, timeout and charset options, unit and integration tests, and documentation.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Migrate splunk sink module (U4)\",\n      \"activity_description\": \"Port the XD splunk sink to a Spring Cloud Stream sink using the Splunk HEC/SDK: endpoint, token, index/source/sourcetype configuration, error handling and retry, unit tests, integration test against a stubbed Splunk endpoint, and documentation.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Migrate tcp sink module (U5)\",\n      \"activity_description\": \"Port the XD tcp sink to a Spring Cloud Stream sink using spring-integration-ip: connection factory, host/port, serializer/deserializer (CRLF, length header) options, unit tests, integration test against a real socket server, and documentation.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Migrate jdbc source module (U6)\",\n      \"activity_description\": \"Port the XD jdbc source to a Spring Cloud Stream source using spring-integration-jdbc: configurable polling query, update query, max rows, DataSource auto-configuration, unit tests, integration tests against an embedded H2 database, and documentation.\",\n      \"most_likely_effort\": 6.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Port aggregator processor module (U7)\",\n      \"activity_description\": \"Port the XD aggregator module to a Spring Cloud Stream processor: adapt aggregation logic to the processor model, implement correlation/release strategies, pluggable message store (in-memory default, JDBC/Redis options), timeout handling, unit tests, integration tests with a binder test harness, and documentation.\",\n      \"most_likely_effort\": 8.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Port http-client processor module (U8)\",\n      \"activity_description\": \"Port the XD http-client module to a Spring Cloud Stream processor: map incoming messages to HTTP requests (URL, method, headers, body expressions), map responses to output messages, error handling, unit tests, integration tests with WireMock, and documentation.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration verification and release packaging\",\n      \"activity_description\": \"Verify all eight starters together in end-to-end pipelines with a test binder/broker, align versions in the BOM, finalize reference documentation, and prepare release artifacts.\",\n      \"most_likely_effort\": 2.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 41.0\n  }\n}",
+          "refusal": null,
+          "reasoning": "Let me analyze this task. I need to estimate software development effort for porting/moving 8 modules from Spring XD to Spring Cloud Stream (s-c-s) repository:\n\n- U1: mqtt module → sink\n- U2: null module → sink\n- U3: shell module → sink\n- U4: splunk module → sink\n- U5: tcp module → sink\n- U6: jdbc module → source\n- U7: aggregator module → processor\n- U8: http-client module → processor\n\nI need to:\n1. Break down into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide most likely effort per activity\n4. Sum total\n\nLet me think about the WBS structure. A reasonable approach:\n\n**Common/shared activities:**\n1. Project setup & infrastructure analysis (analyze XD modules, understand s-c-s architecture)\n2. Common base/framework setup — create common module structure, parent POM, conventions for the s-c-s repo (Spring Cloud Stream app starters structure)\n\n**Per-module activities** — for each module: code migration/porting, configuration/properties metadata, unit tests, integration tests, documentation.\n\nLet me estimate per module based on complexity:\n\n- null sink: trivial — basically discards messages. Very small. Maybe 1 day total (code + test + docs).\n- mqtt sink: uses Eclipse Paho MQTT client; needs connection options, properties. Moderate. Maybe 4 days.\n- shell sink: executes shell command with message payload; moderate-low. Maybe 3 days.\n- splunk sink: integrates with Splunk (SDK/HTTP event collector), needs auth, indexing config. Moderate. Maybe 5 days.\n- tcp sink: TCP client sending messages, connection factory, serializers. Moderate. Maybe 4 days.\n- jdbc source: polls a database using JDBC, needs query config, polling, metadata store maybe. Moderate-high. Maybe 6 days.\n- aggregator processor: stateful aggregation logic, store (Redis/abstract), correlation/release strategies, quite complex. Maybe 8 days.\n- http-client processor: makes HTTP requests with payload, maps responses; moderate. Maybe 4 days.\n\nPlus shared activities:\n- Requirements analysis & XD module assessment: 2 days\n- Repository/build infrastructure setup (parent POM, BOM, CI config): 2 days\n- Common conventions/shared utilities: maybe fold into per-module.\n- Overall integration verification, release packaging, documentation review: 2 days\n\nLet me build the WBS:\n\n1. A1: Analysis of existing XD modules and s-c-s architecture, migration planning — 2 days\n2. A2: Repository/build setup — multi-module Maven/Gradle structure, parent POM, BOM, CI — 2 days\n3. A3–A10: per-module migration. Each includes: port code, adapt to Spring Cloud Stream binder model, externalize configuration properties with metadata, write unit tests, write integration tests, write README/docs.\n\nPer-module estimates:\n- mqtt sink: 4\n- null sink: 1\n- shell sink: 3\n- splunk sink: 5\n- tcp sink: 4\n- jdbc source: 6\n- aggregator processor: 8\n- http-client processor: 4\n\n11. A11: Cross-module integration testing, release packaging, and final documentation — 2 days\n\nTotal: 2+2 + (4+1+3+5+4+6+8+4) + 2 = 2+2+35+2 = 41 days.\n\nLet me double check module sum: 4+1=5, +3=8, +5=13, +4=17, +6=23, +8=31, +4=35. Yes, 35. Total 41 workdays.\n\nShould I split per-module into sub-activities? The schema allows flat activities array. I could either have one activity per module (with description listing the work) or break each module into design/code/test subactivities. A cleaner WBS might keep per-module single activities with description covering implementation, config metadata, tests, docs. That keeps the JSON manageable.\n\nAlternatively, add a \"code review and rework\" activity? Could fold into each. I'll keep it simple.\n\nTechnical and design decisions:\n- Adopt Spring Cloud Stream (SCSt) binder-based model: each module becomes a Spring Boot auto-configured app starter (source/sink/processor) using @EnableBinding / Spring Cloud Function style.\n- Use Spring Integration as the implementation foundation where applicable (MQTT via spring-integration-mqtt, TCP via spring-integration-ip, JDBC via spring-integration-jdbc, aggregator via spring-integration aggregator).\n- Configuration externalized via Spring Boot @ConfigurationProperties with spring-boot-configuration-processor for metadata.\n- Maven multi-module build with parent POM and BOM; Java 17 baseline (though this era used Java 8, spec says Spring 6 requires Java 17+ — but these XD modules were ported in Spring Cloud Stream app starters era. I'll assume Java 17 per spec statement).\n- Testing with JUnit, Spring Boot test, Testcontainers or embedded brokers (e.g., embedded MQTT broker like Moquette/HiveMQ for tests, H2 for JDBC, WireMock for HTTP).\n- Aggregator state store abstraction with default in-memory or JDBC/Redis store.\n- Each app starter packaged as executable Spring Boot jar; docs as README/asciidoc.\n\nAssumptions:\n- XD source code is available and licensed for porting; developer has access.\n- Existing XD modules are based on Spring Integration, easing port.\n- No UI work; no deployment to app server; deliverables are libraries/app starters.\n- 1 developer, effort in workdays (8h), excludes calendar duration.\n- Existing CI infrastructure (build jobs) available; only configuration needed.\n- External systems for integration tests available via embedded/testcontainers (no waiting on infra provisioning).\n- Code review overhead included in per-module estimates.\n- No performance/stress testing required beyond basic integration tests.\n- \"Move\" vs \"port\": move = adapt packaging to SCSt model with minimal logic changes; port = adapt logic (aggregator/http-client) to processor model.\n\nLet me finalize JSON. Ensure total = sum = 41.\n\nActivity IDs: A1..A11.\n\nLet me write descriptions concisely.\n\nDouble-check schema compliance:\n- technical_and_design_decisions: array of strings ✓\n- assumptions: array of strings ✓\n- activities: array of objects with activity_id, activity_name, activity_description, most_likely_effort (number > 0) ✓\n- reported_total.most_likely_effort number ✓\n- additionalProperties false — only include specified fields ✓\n\nTotal: 41.0.\n\nOutput only valid JSON, no markdown fences? \"Return only valid JSON\" — I'll return raw JSON without code fences to be safe. Actually code fences could break \"only valid JSON\" — return plain JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this task. I need to estimate software development effort for porting/moving 8 modules from Spring XD to Spring Cloud Stream (s-c-s) repository:\n\n- U1: mqtt module → sink\n- U2: null module → sink\n- U3: shell module → sink\n- U4: splunk module → sink\n- U5: tcp module → sink\n- U6: jdbc module → source\n- U7: aggregator module → processor\n- U8: http-client module → processor\n\nI need to:\n1. Break down into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide most likely effort per activity\n4. Sum total\n\nLet me think about the WBS structure. A reasonable approach:\n\n**Common/shared activities:**\n1. Project setup & infrastructure analysis (analyze XD modules, understand s-c-s architecture)\n2. Common base/framework setup — create common module structure, parent POM, conventions for the s-c-s repo (Spring Cloud Stream app starters structure)\n\n**Per-module activities** — for each module: code migration/porting, configuration/properties metadata, unit tests, integration tests, documentation.\n\nLet me estimate per module based on complexity:\n\n- null sink: trivial — basically discards messages. Very small. Maybe 1 day total (code + test + docs).\n- mqtt sink: uses Eclipse Paho MQTT client; needs connection options, properties. Moderate. Maybe 4 days.\n- shell sink: executes shell command with message payload; moderate-low. Maybe 3 days.\n- splunk sink: integrates with Splunk (SDK/HTTP event collector), needs auth, indexing config. Moderate. Maybe 5 days.\n- tcp sink: TCP client sending messages, connection factory, serializers. Moderate. Maybe 4 days.\n- jdbc source: polls a database using JDBC, needs query config, polling, metadata store maybe. Moderate-high. Maybe 6 days.\n- aggregator processor: stateful aggregation logic, store (Redis/abstract), correlation/release strategies, quite complex. Maybe 8 days.\n- http-client processor: makes HTTP requests with payload, maps responses; moderate. Maybe 4 days.\n\nPlus shared activities:\n- Requirements analysis & XD module assessment: 2 days\n- Repository/build infrastructure setup (parent POM, BOM, CI config): 2 days\n- Common conventions/shared utilities: maybe fold into per-module.\n- Overall integration verification, release packaging, documentation review: 2 days\n\nLet me build the WBS:\n\n1. A1: Analysis of existing XD modules and s-c-s architecture, migration planning — 2 days\n2. A2: Repository/build setup — multi-module Maven/Gradle structure, parent POM, BOM, CI — 2 days\n3. A3–A10: per-module migration. Each includes: port code, adapt to Spring Cloud Stream binder model, externalize configuration properties with metadata, write unit tests, write integration tests, write README/docs.\n\nPer-module estimates:\n- mqtt sink: 4\n- null sink: 1\n- shell sink: 3\n- splunk sink: 5\n- tcp sink: 4\n- jdbc source: 6\n- aggregator processor: 8\n- http-client processor: 4\n\n11. A11: Cross-module integration testing, release packaging, and final documentation — 2 days\n\nTotal: 2+2 + (4+1+3+5+4+6+8+4) + 2 = 2+2+35+2 = 41 days.\n\nLet me double check module sum: 4+1=5, +3=8, +5=13, +4=17, +6=23, +8=31, +4=35. Yes, 35. Total 41 workdays.\n\nShould I split per-module into sub-activities? The schema allows flat activities array. I could either have one activity per module (with description listing the work) or break each module into design/code/test subactivities. A cleaner WBS might keep per-module single activities with description covering implementation, config metadata, tests, docs. That keeps the JSON manageable.\n\nAlternatively, add a \"code review and rework\" activity? Could fold into each. I'll keep it simple.\n\nTechnical and design decisions:\n- Adopt Spring Cloud Stream (SCSt) binder-based model: each module becomes a Spring Boot auto-configured app starter (source/sink/processor) using @EnableBinding / Spring Cloud Function style.\n- Use Spring Integration as the implementation foundation where applicable (MQTT via spring-integration-mqtt, TCP via spring-integration-ip, JDBC via spring-integration-jdbc, aggregator via spring-integration aggregator).\n- Configuration externalized via Spring Boot @ConfigurationProperties with spring-boot-configuration-processor for metadata.\n- Maven multi-module build with parent POM and BOM; Java 17 baseline (though this era used Java 8, spec says Spring 6 requires Java 17+ — but these XD modules were ported in Spring Cloud Stream app starters era. I'll assume Java 17 per spec statement).\n- Testing with JUnit, Spring Boot test, Testcontainers or embedded brokers (e.g., embedded MQTT broker like Moquette/HiveMQ for tests, H2 for JDBC, WireMock for HTTP).\n- Aggregator state store abstraction with default in-memory or JDBC/Redis store.\n- Each app starter packaged as executable Spring Boot jar; docs as README/asciidoc.\n\nAssumptions:\n- XD source code is available and licensed for porting; developer has access.\n- Existing XD modules are based on Spring Integration, easing port.\n- No UI work; no deployment to app server; deliverables are libraries/app starters.\n- 1 developer, effort in workdays (8h), excludes calendar duration.\n- Existing CI infrastructure (build jobs) available; only configuration needed.\n- External systems for integration tests available via embedded/testcontainers (no waiting on infra provisioning).\n- Code review overhead included in per-module estimates.\n- No performance/stress testing required beyond basic integration tests.\n- \"Move\" vs \"port\": move = adapt packaging to SCSt model with minimal logic changes; port = adapt logic (aggregator/http-client) to processor model.\n\nLet me finalize JSON. Ensure total = sum = 41.\n\nActivity IDs: A1..A11.\n\nLet me write descriptions concisely.\n\nDouble-check schema compliance:\n- technical_and_design_decisions: array of strings ✓\n- assumptions: array of strings ✓\n- activities: array of objects with activity_id, activity_name, activity_description, most_likely_effort (number > 0) ✓\n- reported_total.most_likely_effort number ✓\n- additionalProperties false — only include specified fields ✓\n\nTotal: 41.0.\n\nOutput only valid JSON, no markdown fences? \"Return only valid JSON\" — I'll return raw JSON without code fences to be safe. Actually code fences could break \"only valid JSON\" — return plain JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1261,
+      "completion_tokens": 3133,
+      "total_tokens": 4394,
+      "cost": 0.050778,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.050778,
+        "upstream_inference_prompt_cost": 0.003783,
+        "upstream_inference_completions_cost": 0.046995
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1442,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Each migrated module is restructured as a Spring Cloud Stream app starter: a Spring Boot auto-configuration plus an executable application, bound to a message broker via the Spring Cloud Stream binder abstraction (@EnableBinding Source/Sink/Processor).\",\n    \"Implementation reuses Spring Integration components where possible (spring-integration-mqtt for mqtt, spring-integration-ip for tcp, spring-integration-jdbc for jdbc, Spring Integration aggregator for aggregator, HTTP outbound gateway for http-client), since the original Spring XD modules were already Spring Integration based.\",\n    \"All module options are externalized as Spring Boot @ConfigurationProperties classes with spring-boot-configuration-processor to generate configuration metadata (replacing XD module descriptor XML files).\",\n    \"Maven multi-module build with a shared parent POM and a BOM for dependency management; Java 17 baseline per the stated Spring Framework 6 requirement.\",\n    \"Aggregator state store uses a pluggable abstraction with an in-memory default store plus JDBC/Redis-backed options; correlation and release strategies are configurable via properties.\",\n    \"Testing stack: JUnit 5, Spring Boot Test, and embedded/test-scoped infrastructure (embedded MQTT broker, H2 database, WireMock for HTTP, real socket servers for TCP/shell) so integration tests run self-contained in CI.\",\n    \"Each starter is packaged as an executable Spring Boot fat jar; documentation is provided as Asciidoc/README per module.\",\n    \"No XD-specific runtime (dirt, module registry) is retained; XD container features are replaced by Spring Boot auto-configuration and Spring Cloud Stream binding.\"\n  ],\n  \"assumptions\": [\n    \"The Spring XD source code for all eight modules is available and its open-source license permits copying and adaptation into the s-c-s repository.\",\n    \"A single developer performs all work; effort is expressed in workdays of 8 hours and excludes elapsed calendar effects such as waiting on reviews or CI queues.\",\n    \"For 'move' stories (U1–U6), module logic is largely reused with packaging and configuration adaptation; for 'port' stories (U7–U8), logic must be adapted to the processor (request-reply / stateful) model, which requires more rework.\",\n    \"The s-c-s repository, CI system, and artifact publishing infrastructure already exist; only build configuration within the repo is in scope.\",\n    \"External systems needed by sinks/sources (MQTT broker, Splunk instance, databases, TCP endpoints) are available for development and testing via embedded servers, test containers, or existing test environments, so no infrastructure provisioning effort is included.\",\n    \"Per-module estimates include unit tests, integration tests, code review rework, and module-level documentation.\",\n    \"No performance, load, or soak testing is required; functional correctness and broker-agnostic integration tests are sufficient for acceptance.\",\n    \"Splunk integration targets the Splunk HTTP Event Collector (HEC) or the official Splunk Java SDK; credentials and endpoint are configurable properties.\",\n    \"The null sink simply discards consumed messages (logging at debug level), making it a trivial module.\",\n    \"No changes to the Spring Cloud Stream core framework itself are needed; only the app starter modules are delivered.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Module analysis and migration planning\",\n      \"activity_description\": \"Analyze the eight Spring XD modules (dependencies, channel adapters, options metadata, tests), map XD options to Spring Boot configuration properties, and define the migration approach per module.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository and build infrastructure setup\",\n      \"activity_description\": \"Set up the multi-module Maven structure in the s-c-s repo: parent POM, BOM, shared build plugins, Java 17 toolchain, CI build configuration, and a starter skeleton/template reused by all modules.\",\n      \"most_likely_effort\": 2.0\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Migrate mqtt sink module (U1)\",\n      \"activity_description\": \"Port the XD mqtt sink to a Spring Cloud Stream sink using spring-integration-mqtt: auto-configuration, connection/topic/QoS configuration properties, unit tests, integration test with an embedded MQTT broker, and documentation.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Migrate null sink module (U2)\",\n      \"activity_description\": \"Port the trivial XD null sink (message discarding consumer) to a Spring Cloud Stream sink, including auto-configuration, unit test, and minimal documentation.\",\n      \"most_likely_effort\": 1.0\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Migrate shell sink module (U3)\",\n      \"activity_description\": \"Port the XD shell sink to a Spring Cloud Stream sink: execute configurable shell commands with the message payload as input, handle working directory, environment, timeout and charset options, unit and integration tests, and documentation.\",\n      \"most_likely_effort\": 3.0\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Migrate splunk sink module (U4)\",\n      \"activity_description\": \"Port the XD splunk sink to a Spring Cloud Stream sink using the Splunk HEC/SDK: endpoint, token, index/source/sourcetype configuration, error handling and retry, unit tests, integration test against a stubbed Splunk endpoint, and documentation.\",\n      \"most_likely_effort\": 5.0\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Migrate tcp sink module (U5)\",\n      \"activity_description\": \"Port the XD tcp sink to a Spring Cloud Stream sink using spring-integration-ip: connection factory, host/port, serializer/deserializer (CRLF, length header) options, unit tests, integration test against a real socket server, and documentation.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Migrate jdbc source module (U6)\",\n      \"activity_description\": \"Port the XD jdbc source to a Spring Cloud Stream source using spring-integration-jdbc: configurable polling query, update query, max rows, DataSource auto-configuration, unit tests, integration tests against an embedded H2 database, and documentation.\",\n      \"most_likely_effort\": 6.0\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Port aggregator processor module (U7)\",\n      \"activity_description\": \"Port the XD aggregator module to a Spring Cloud Stream processor: adapt aggregation logic to the processor model, implement correlation/release strategies, pluggable message store (in-memory default, JDBC/Redis options), timeout handling, unit tests, integration tests with a binder test harness, and documentation.\",\n      \"most_likely_effort\": 8.0\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Port http-client processor module (U8)\",\n      \"activity_description\": \"Port the XD http-client module to a Spring Cloud Stream processor: map incoming messages to HTTP requests (URL, method, headers, body expressions), map responses to output messages, error handling, unit tests, integration tests with WireMock, and documentation.\",\n      \"most_likely_effort\": 4.0\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration verification and release packaging\",\n      \"activity_description\": \"Verify all eight starters together in end-to-end pipelines with a test binder/broker, align versions in the BOM, finalize reference documentation, and prepare release artifacts.\",\n      \"most_likely_effort\": 2.0\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 41.0\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Each migrated module is restructured as a Spring Cloud Stream app starter: a Spring Boot auto-configuration plus an executable application, bound to a message broker via the Spring Cloud Stream binder abstraction (@EnableBinding Source/Sink/Processor).",
+      "Implementation reuses Spring Integration components where possible (spring-integration-mqtt for mqtt, spring-integration-ip for tcp, spring-integration-jdbc for jdbc, Spring Integration aggregator for aggregator, HTTP outbound gateway for http-client), since the original Spring XD modules were already Spring Integration based.",
+      "All module options are externalized as Spring Boot @ConfigurationProperties classes with spring-boot-configuration-processor to generate configuration metadata (replacing XD module descriptor XML files).",
+      "Maven multi-module build with a shared parent POM and a BOM for dependency management; Java 17 baseline per the stated Spring Framework 6 requirement.",
+      "Aggregator state store uses a pluggable abstraction with an in-memory default store plus JDBC/Redis-backed options; correlation and release strategies are configurable via properties.",
+      "Testing stack: JUnit 5, Spring Boot Test, and embedded/test-scoped infrastructure (embedded MQTT broker, H2 database, WireMock for HTTP, real socket servers for TCP/shell) so integration tests run self-contained in CI.",
+      "Each starter is packaged as an executable Spring Boot fat jar; documentation is provided as Asciidoc/README per module.",
+      "No XD-specific runtime (dirt, module registry) is retained; XD container features are replaced by Spring Boot auto-configuration and Spring Cloud Stream binding."
+    ],
+    "assumptions": [
+      "The Spring XD source code for all eight modules is available and its open-source license permits copying and adaptation into the s-c-s repository.",
+      "A single developer performs all work; effort is expressed in workdays of 8 hours and excludes elapsed calendar effects such as waiting on reviews or CI queues.",
+      "For 'move' stories (U1–U6), module logic is largely reused with packaging and configuration adaptation; for 'port' stories (U7–U8), logic must be adapted to the processor (request-reply / stateful) model, which requires more rework.",
+      "The s-c-s repository, CI system, and artifact publishing infrastructure already exist; only build configuration within the repo is in scope.",
+      "External systems needed by sinks/sources (MQTT broker, Splunk instance, databases, TCP endpoints) are available for development and testing via embedded servers, test containers, or existing test environments, so no infrastructure provisioning effort is included.",
+      "Per-module estimates include unit tests, integration tests, code review rework, and module-level documentation.",
+      "No performance, load, or soak testing is required; functional correctness and broker-agnostic integration tests are sufficient for acceptance.",
+      "Splunk integration targets the Splunk HTTP Event Collector (HEC) or the official Splunk Java SDK; credentials and endpoint are configurable properties.",
+      "The null sink simply discards consumed messages (logging at debug level), making it a trivial module.",
+      "No changes to the Spring Cloud Stream core framework itself are needed; only the app starter modules are delivered."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Module analysis and migration planning",
+        "activity_description": "Analyze the eight Spring XD modules (dependencies, channel adapters, options metadata, tests), map XD options to Spring Boot configuration properties, and define the migration approach per module.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Repository and build infrastructure setup",
+        "activity_description": "Set up the multi-module Maven structure in the s-c-s repo: parent POM, BOM, shared build plugins, Java 17 toolchain, CI build configuration, and a starter skeleton/template reused by all modules.",
+        "most_likely_effort": 2.0
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Migrate mqtt sink module (U1)",
+        "activity_description": "Port the XD mqtt sink to a Spring Cloud Stream sink using spring-integration-mqtt: auto-configuration, connection/topic/QoS configuration properties, unit tests, integration test with an embedded MQTT broker, and documentation.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Migrate null sink module (U2)",
+        "activity_description": "Port the trivial XD null sink (message discarding consumer) to a Spring Cloud Stream sink, including auto-configuration, unit test, and minimal documentation.",
+        "most_likely_effort": 1.0
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Migrate shell sink module (U3)",
+        "activity_description": "Port the XD shell sink to a Spring Cloud Stream sink: execute configurable shell commands with the message payload as input, handle working directory, environment, timeout and charset options, unit and integration tests, and documentation.",
+        "most_likely_effort": 3.0
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Migrate splunk sink module (U4)",
+        "activity_description": "Port the XD splunk sink to a Spring Cloud Stream sink using the Splunk HEC/SDK: endpoint, token, index/source/sourcetype configuration, error handling and retry, unit tests, integration test against a stubbed Splunk endpoint, and documentation.",
+        "most_likely_effort": 5.0
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Migrate tcp sink module (U5)",
+        "activity_description": "Port the XD tcp sink to a Spring Cloud Stream sink using spring-integration-ip: connection factory, host/port, serializer/deserializer (CRLF, length header) options, unit tests, integration test against a real socket server, and documentation.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Migrate jdbc source module (U6)",
+        "activity_description": "Port the XD jdbc source to a Spring Cloud Stream source using spring-integration-jdbc: configurable polling query, update query, max rows, DataSource auto-configuration, unit tests, integration tests against an embedded H2 database, and documentation.",
+        "most_likely_effort": 6.0
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Port aggregator processor module (U7)",
+        "activity_description": "Port the XD aggregator module to a Spring Cloud Stream processor: adapt aggregation logic to the processor model, implement correlation/release strategies, pluggable message store (in-memory default, JDBC/Redis options), timeout handling, unit tests, integration tests with a binder test harness, and documentation.",
+        "most_likely_effort": 8.0
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Port http-client processor module (U8)",
+        "activity_description": "Port the XD http-client module to a Spring Cloud Stream processor: map incoming messages to HTTP requests (URL, method, headers, body expressions), map responses to output messages, error handling, unit tests, integration tests with WireMock, and documentation.",
+        "most_likely_effort": 4.0
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Cross-module integration verification and release packaging",
+        "activity_description": "Verify all eight starters together in end-to-end pipelines with a test binder/broker, align versions in the BOM, finalize reference documentation, and prepare release artifacts.",
+        "most_likely_effort": 2.0
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 41.0
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1261,
+    "completion_tokens": 3133,
+    "total_tokens": 4394,
+    "cost": 0.050778,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.050778,
+      "upstream_inference_prompt_cost": 0.003783,
+      "upstream_inference_completions_cost": 0.046995
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1442,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789176731-yjv4mRDZNgydFIp0r5kP",
+    "object": "chat.completion",
+    "created": 1789176731,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one workday, for conversion purposes. In my previous estimate, I stated in the assumptions: \"effort is expressed in workdays of 8 hours\". So the answer is 8.\n\nReturn only valid JSON matching the schema.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one workday, for conversion purposes. In my previous estimate, I stated in the assumptions: \"effort is expressed in workdays of 8 hours\". So the answer is 8.\n\nReturn only valid JSON matching the schema.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3086,
+      "completion_tokens": 88,
+      "total_tokens": 3174,
+      "cost": 0.0078132,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0078132,
+        "upstream_inference_prompt_cost": 0.0064932,
+        "upstream_inference_completions_cost": 0.00132
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 60,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

@@ -1,0 +1,249 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "hyperledger-012",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789198688-0pGxidMnqgcU9kXxKFYn",
+    "object": "chat.completion",
+    "created": 1789198688,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement all work in the Go configtx package, following the existing package conventions: modification functions that accept/return *cb.ConfigGroup or config types, functional Options structs where applicable, and protobuf marshal/unmarshal helpers already present in the codebase.\",\n    \"U1: Add a GetChannelConfig function that composes the existing dependent-field retrieval functions (application, orderer, consortiums, policies, capabilities, etc.) and returns a fully populated config.Channel.\",\n    \"U2: Implement the channel creation policy update as a ConfigValue (not ConfigPolicy) mutation on the target consortium group, e.g. UpdateConsortiumChannelCreationPolicy(config, consortiumName, policy), mirroring how other consortium ConfigValues are handled.\",\n    \"U3: Add channel-group-level policy functions AddChannelPolicy, RemoveChannelPolicy, and GetChannelPolicies that operate on the root channel ConfigGroup, reusing the existing policy conversion/marshaling helpers used for other groups.\",\n    \"U4/U5: Implement removal functions (RemoveConsortiumOrg, RemoveApplicationOrg, RemoveOrdererOrg, RemoveConsortium) by deleting the named child group from the parent ConfigGroup's Groups map, with explicit error handling when the target does not exist.\",\n    \"U6: Split system channel creation into a separate API function (e.g. NewSystemChannelGenesisBlock) rather than overloading application channel creation; it builds a channel group containing only orderer and consortiums groups (no application group) and produces a genesis block via the standard block-creation helper.\",\n    \"U8: Extend SigningIdentity with a SignConfigUpdate method; introduce the renamed SignConfigUpdateEnvelope as a SigningIdentity method and keep the old CreateSignedConfigUpdateEnvelope as a thin deprecated wrapper for backward compatibility.\",\n    \"Testing uses the repository's existing test style (standard Go tests with testify/require) and runnable example_test.go examples; all new public functions get unit tests plus examples where the stories require them.\"\n  ],\n  \"assumptions\": [\n    \"The supporting retrieval functions for all dependent configuration fields mentioned in U1 already exist and are tested, so U1 is composition work rather than building those from scratch.\",\n    \"The development environment (Go toolchain, vendored dependencies, Fabric protobuf types) is set up and the developer is proficient in Go, protobuf, and Hyperledger Fabric channel configuration concepts.\",\n    \"One workday equals 8 hours of focused development effort by a single developer (the author), including writing unit tests and examples; code review is performed as self-review with allocated rework time.\",\n    \"Effort covers design, implementation, unit tests, runnable examples, and GoDoc documentation only; it excludes release management, CI pipeline changes, downstream integration into Fabric core, and any translation/localization work.\",\n    \"Public API naming and signatures are free to be chosen by the implementer as long as acceptance criteria are met, and no external stakeholder approval cycles are required.\",\n    \"Existing CI/build infrastructure will run the new tests without modification.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A01\",\n      \"activity_name\": \"Requirements analysis and API design\",\n      \"activity_description\": \"Analyze U1-U8, study the existing configtx package structure and helpers, and define the public API surface: function names and signatures, the separate system-channel genesis function decision (U6), the SigningIdentity extension and rename strategy (U8), and shared error-handling conventions.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A02\",\n      \"activity_name\": \"U1: Retrieve entire channel configuration\",\n      \"activity_description\": \"Implement GetChannelConfig that composes the existing dependent-field retrieval functions into a full config.Channel return value; add unit tests covering populated and minimally populated channel configurations.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A03\",\n      \"activity_name\": \"U2: Update consortium channel creation policy value\",\n      \"activity_description\": \"Implement the function to update the default channel creation policy ConfigValue within a consortium group on config updates; add unit tests and a runnable example in example_test.go.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A04\",\n      \"activity_name\": \"U3: Channel group policy management\",\n      \"activity_description\": \"Implement add, remove, and retrieve functions for policies on the root channel group, reusing existing policy helpers; add unit tests and update examples to demonstrate usage.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A05\",\n      \"activity_name\": \"U4: Remove consortium, application, and orderer organizations\",\n      \"activity_description\": \"Implement three separate functions for removing an organization from a consortium group, the application group, and the orderer group, including not-found error handling; add unit tests and update examples.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A06\",\n      \"activity_name\": \"U5: Remove consortium from channel config\",\n      \"activity_description\": \"Implement a function to remove a specific consortium from the consortiums group of a channel config; add unit tests and update examples.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A07\",\n      \"activity_name\": \"U6: System channel genesis block creation\",\n      \"activity_description\": \"Implement a function to create a system channel genesis block whose channel group contains only orderer and consortiums groups (no application group); add unit tests validating block structure and a new runnable example.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A08\",\n      \"activity_name\": \"U7: GoDocs Overview section for configtx package\",\n      \"activity_description\": \"Author the package-level doc.go Overview section explaining the purpose and usage of the configtx library and how channels are structured, and verify rendering in GoDoc.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A09\",\n      \"activity_name\": \"U8: SigningIdentity extension and signing API rename\",\n      \"activity_description\": \"Extend SigningIdentity with SignConfigUpdate, add the renamed SignConfigUpdateEnvelope method, retain CreateSignedConfigUpdateEnvelope as a deprecated wrapper, write GoDoc explaining usage and differences, and add/adjust unit tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration and regression testing\",\n      \"activity_description\": \"Run the full package test suite and examples, perform cross-feature integration testing (e.g., build config, update it, sign it, retrieve it end-to-end), verify no regressions in existing API behavior, and fix defects found.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Self code review and finalization\",\n      \"activity_description\": \"Perform self-review of all changes for consistency, style, and documentation completeness; refactor and rework as needed; finalize comments, examples, and package docs for merge readiness.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 27\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. It's about the Hyperledger Fabric configtx library (the \"fabric-config\" / configtxgen API library). The user stories U1-U8 are actually real stories from the fabric-config project (pkg/configtx in hyperledger/fabric-config or fabric repository).\n\nLet me break down the work:\n\nU1: Retrieve entire channel configuration - a function like `GetChannelConfig` returning config.Channel. Supporting functions for dependent fields already exist.\n\nU2: Update channel creation policy value in a consortium (SetChannelCreationPolicy / UpdateConsortiumChannelCreationPolicy). Add example.\n\nU3: Channel group policies: add, remove, retrieve policies on the channel group. Update examples.\n\nU4: Remove orgs: RemoveConsortiumOrg, RemoveApplicationOrg, RemoveOrdererOrg. Update examples.\n\nU5: Remove consortium from channel config: RemoveConsortium. Update examples.\n\nU6: Create system channel genesis block. New example.\n\nU7: GoDocs Overview section for configtx package (doc.go).\n\nU8: SigningIdentity extended with SignConfigUpdate; consider renaming CreateSignedConfigUpdateEnvelope to SignConfigUpdateEnvelope; GoDoc documentation.\n\nI need to produce a WBS-based estimation in workdays, single most likely effort per activity, sum as total.\n\nLet me create activities:\n\nA1: Project setup, codebase familiarization, design of API surface for new functions (signatures, options pattern). ~2 days.\n\nA2: U1 - Implement GetChannelConfig (retrieval of entire channel config returning config.Channel) including unit tests. ~3 days.\n\nA3: U2 - Implement UpdateConsortiumChannelCreationPolicy (ConfigValue in consortium group) + unit tests. ~2 days.\n\nA4: U3 - Implement channel group policies: AddChannelPolicy, RemoveChannelPolicy, GetChannelPolicies + unit tests. ~3 days.\n\nA5: U4 - Implement RemoveConsortiumOrg, RemoveApplicationOrg, RemoveOrdererOrg + unit tests. ~3 days.\n\nA6: U5 - Implement RemoveConsortium + unit tests. ~1.5 days.\n\nA7: U6 - Implement system channel genesis block creation + unit tests. ~4 days.\n\nA8: U7 - Write GoDocs Overview (doc.go) for configtx package. ~1 day.\n\nA9: U8 - Extend SigningIdentity with SignConfigUpdate, rename/wrap CreateSignedConfigUpdateEnvelope to SignConfigUpdateEnvelope, documentation, tests. ~3 days.\n\nA10: Examples - update example_test.go for U2-U6 (and any usage examples) and validate they run. Could fold into each activity but spec asks separately. Let me fold examples into per-story activities? The acceptance criteria mention examples for U2, U3, U4, U5, U6. I can include examples within each story's effort, or have a separate examples activity. WBS: maybe keep separate per story to be cleaner. I'll include example work inside each story activity, and note it. Or separate activity for examples: 2 days total.\n\nA11: Integration testing, regression, CI, code review, fixes: 3 days.\n\nA12: Documentation updates beyond GoDoc (README), changelog, release notes: 0.5 day.\n\nLet me decide totals. Sum: 2 + 3 + 2 + 3 + 3 + 1.5 + 4 + 1 + 3 + 3 + 0.5 = 26 days. Plus examples maybe separate.\n\nLet me structure carefully. Activities with IDs:\n\n- A01: Requirements analysis & API design (decide function signatures, split vs combined genesis functions, naming for U8) — 2 days\n- A02: U1 implementation: GetChannelConfig + unit tests — 3 days\n- A03: U2 implementation: consortium channel creation policy update + tests + example — 2 days\n- A04: U3 implementation: channel group policy add/remove/get + tests + examples — 3 days\n- A05: U4 implementation: remove consortium/application/orderer orgs + tests + examples — 3 days\n- A06: U5 implementation: remove consortium + tests + example — 1.5 days\n- A07: U6 implementation: system channel genesis block creation + tests + example — 4 days\n- A08: U7 GoDocs overview documentation — 1 day\n- A09: U8 SigningIdentity extension & SignConfigUpdate/SignConfigUpdateEnvelope + tests + docs — 3 days\n- A10: Integration/regression testing & CI — 2.5 days\n- A11: Code review, rework, final merge — 2 days\n\nTotal: 2+3+2+3+3+1.5+4+1+3+2.5+2 = 27 workdays.\n\nTechnical and design decisions:\n- Implement in Go within configtx package, following existing patterns (modification functions taking *cb.ConfigGroup, Options structs).\n- U6: split into separate API function for system channel (e.g., NewSystemChannelGenesisBlock) rather than combining with application channel creation.\n- U8: keep backward compatibility: add SignConfigUpdate method to SigningIdentity; keep CreateSignedConfigUpdateEnvelope as deprecated wrapper or rename with alias; add SignConfigUpdateEnvelope method.\n- Use protobuf marshaling/unmarshaling helpers as in existing code.\n- Unit tests with ginkgo/gomega? Actually fabric-config uses standard testing with testify require. Assume standard Go tests with testify.\n\nAssumptions:\n- Existing supporting functions for retrieval of dependent fields are complete and tested (per U1).\n- Developer has Go, protobuf, and Fabric domain knowledge; environment ready.\n- Effort excludes deployment/ops; includes unit tests and examples.\n- Estimates assume single developer working at normal productivity, 1 workday = 8 hours.\n- Code review is performed by self-review (since personally performing all work) — but acceptance requires quality; allocate time.\n\nReported total: 27 workdays.\n\nJSON only. Ensure schema: technical_and_design_decisions array of strings; assumptions array of strings; activities array with activity_id, activity_name, activity_description, most_likely_effort (number > 0); reported_total object with most_likely_effort.\n\nLet me finalize numbers and check sum: 2+3+2+3+3+1.5+4+1+3+2.5+2 = 27. Yes.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. It's about the Hyperledger Fabric configtx library (the \"fabric-config\" / configtxgen API library). The user stories U1-U8 are actually real stories from the fabric-config project (pkg/configtx in hyperledger/fabric-config or fabric repository).\n\nLet me break down the work:\n\nU1: Retrieve entire channel configuration - a function like `GetChannelConfig` returning config.Channel. Supporting functions for dependent fields already exist.\n\nU2: Update channel creation policy value in a consortium (SetChannelCreationPolicy / UpdateConsortiumChannelCreationPolicy). Add example.\n\nU3: Channel group policies: add, remove, retrieve policies on the channel group. Update examples.\n\nU4: Remove orgs: RemoveConsortiumOrg, RemoveApplicationOrg, RemoveOrdererOrg. Update examples.\n\nU5: Remove consortium from channel config: RemoveConsortium. Update examples.\n\nU6: Create system channel genesis block. New example.\n\nU7: GoDocs Overview section for configtx package (doc.go).\n\nU8: SigningIdentity extended with SignConfigUpdate; consider renaming CreateSignedConfigUpdateEnvelope to SignConfigUpdateEnvelope; GoDoc documentation.\n\nI need to produce a WBS-based estimation in workdays, single most likely effort per activity, sum as total.\n\nLet me create activities:\n\nA1: Project setup, codebase familiarization, design of API surface for new functions (signatures, options pattern). ~2 days.\n\nA2: U1 - Implement GetChannelConfig (retrieval of entire channel config returning config.Channel) including unit tests. ~3 days.\n\nA3: U2 - Implement UpdateConsortiumChannelCreationPolicy (ConfigValue in consortium group) + unit tests. ~2 days.\n\nA4: U3 - Implement channel group policies: AddChannelPolicy, RemoveChannelPolicy, GetChannelPolicies + unit tests. ~3 days.\n\nA5: U4 - Implement RemoveConsortiumOrg, RemoveApplicationOrg, RemoveOrdererOrg + unit tests. ~3 days.\n\nA6: U5 - Implement RemoveConsortium + unit tests. ~1.5 days.\n\nA7: U6 - Implement system channel genesis block creation + unit tests. ~4 days.\n\nA8: U7 - Write GoDocs Overview (doc.go) for configtx package. ~1 day.\n\nA9: U8 - Extend SigningIdentity with SignConfigUpdate, rename/wrap CreateSignedConfigUpdateEnvelope to SignConfigUpdateEnvelope, documentation, tests. ~3 days.\n\nA10: Examples - update example_test.go for U2-U6 (and any usage examples) and validate they run. Could fold into each activity but spec asks separately. Let me fold examples into per-story activities? The acceptance criteria mention examples for U2, U3, U4, U5, U6. I can include examples within each story's effort, or have a separate examples activity. WBS: maybe keep separate per story to be cleaner. I'll include example work inside each story activity, and note it. Or separate activity for examples: 2 days total.\n\nA11: Integration testing, regression, CI, code review, fixes: 3 days.\n\nA12: Documentation updates beyond GoDoc (README), changelog, release notes: 0.5 day.\n\nLet me decide totals. Sum: 2 + 3 + 2 + 3 + 3 + 1.5 + 4 + 1 + 3 + 3 + 0.5 = 26 days. Plus examples maybe separate.\n\nLet me structure carefully. Activities with IDs:\n\n- A01: Requirements analysis & API design (decide function signatures, split vs combined genesis functions, naming for U8) — 2 days\n- A02: U1 implementation: GetChannelConfig + unit tests — 3 days\n- A03: U2 implementation: consortium channel creation policy update + tests + example — 2 days\n- A04: U3 implementation: channel group policy add/remove/get + tests + examples — 3 days\n- A05: U4 implementation: remove consortium/application/orderer orgs + tests + examples — 3 days\n- A06: U5 implementation: remove consortium + tests + example — 1.5 days\n- A07: U6 implementation: system channel genesis block creation + tests + example — 4 days\n- A08: U7 GoDocs overview documentation — 1 day\n- A09: U8 SigningIdentity extension & SignConfigUpdate/SignConfigUpdateEnvelope + tests + docs — 3 days\n- A10: Integration/regression testing & CI — 2.5 days\n- A11: Code review, rework, final merge — 2 days\n\nTotal: 2+3+2+3+3+1.5+4+1+3+2.5+2 = 27 workdays.\n\nTechnical and design decisions:\n- Implement in Go within configtx package, following existing patterns (modification functions taking *cb.ConfigGroup, Options structs).\n- U6: split into separate API function for system channel (e.g., NewSystemChannelGenesisBlock) rather than combining with application channel creation.\n- U8: keep backward compatibility: add SignConfigUpdate method to SigningIdentity; keep CreateSignedConfigUpdateEnvelope as deprecated wrapper or rename with alias; add SignConfigUpdateEnvelope method.\n- Use protobuf marshaling/unmarshaling helpers as in existing code.\n- Unit tests with ginkgo/gomega? Actually fabric-config uses standard testing with testify require. Assume standard Go tests with testify.\n\nAssumptions:\n- Existing supporting functions for retrieval of dependent fields are complete and tested (per U1).\n- Developer has Go, protobuf, and Fabric domain knowledge; environment ready.\n- Effort excludes deployment/ops; includes unit tests and examples.\n- Estimates assume single developer working at normal productivity, 1 workday = 8 hours.\n- Code review is performed by self-review (since personally performing all work) — but acceptance requires quality; allocate time.\n\nReported total: 27 workdays.\n\nJSON only. Ensure schema: technical_and_design_decisions array of strings; assumptions array of strings; activities array with activity_id, activity_name, activity_description, most_likely_effort (number > 0); reported_total object with most_likely_effort.\n\nLet me finalize numbers and check sum: 2+3+2+3+3+1.5+4+1+3+2.5+2 = 27. Yes.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1513,
+      "completion_tokens": 2916,
+      "total_tokens": 4429,
+      "cost": 0.048279,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.048279,
+        "upstream_inference_prompt_cost": 0.004539,
+        "upstream_inference_completions_cost": 0.04374
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1335,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement all work in the Go configtx package, following the existing package conventions: modification functions that accept/return *cb.ConfigGroup or config types, functional Options structs where applicable, and protobuf marshal/unmarshal helpers already present in the codebase.\",\n    \"U1: Add a GetChannelConfig function that composes the existing dependent-field retrieval functions (application, orderer, consortiums, policies, capabilities, etc.) and returns a fully populated config.Channel.\",\n    \"U2: Implement the channel creation policy update as a ConfigValue (not ConfigPolicy) mutation on the target consortium group, e.g. UpdateConsortiumChannelCreationPolicy(config, consortiumName, policy), mirroring how other consortium ConfigValues are handled.\",\n    \"U3: Add channel-group-level policy functions AddChannelPolicy, RemoveChannelPolicy, and GetChannelPolicies that operate on the root channel ConfigGroup, reusing the existing policy conversion/marshaling helpers used for other groups.\",\n    \"U4/U5: Implement removal functions (RemoveConsortiumOrg, RemoveApplicationOrg, RemoveOrdererOrg, RemoveConsortium) by deleting the named child group from the parent ConfigGroup's Groups map, with explicit error handling when the target does not exist.\",\n    \"U6: Split system channel creation into a separate API function (e.g. NewSystemChannelGenesisBlock) rather than overloading application channel creation; it builds a channel group containing only orderer and consortiums groups (no application group) and produces a genesis block via the standard block-creation helper.\",\n    \"U8: Extend SigningIdentity with a SignConfigUpdate method; introduce the renamed SignConfigUpdateEnvelope as a SigningIdentity method and keep the old CreateSignedConfigUpdateEnvelope as a thin deprecated wrapper for backward compatibility.\",\n    \"Testing uses the repository's existing test style (standard Go tests with testify/require) and runnable example_test.go examples; all new public functions get unit tests plus examples where the stories require them.\"\n  ],\n  \"assumptions\": [\n    \"The supporting retrieval functions for all dependent configuration fields mentioned in U1 already exist and are tested, so U1 is composition work rather than building those from scratch.\",\n    \"The development environment (Go toolchain, vendored dependencies, Fabric protobuf types) is set up and the developer is proficient in Go, protobuf, and Hyperledger Fabric channel configuration concepts.\",\n    \"One workday equals 8 hours of focused development effort by a single developer (the author), including writing unit tests and examples; code review is performed as self-review with allocated rework time.\",\n    \"Effort covers design, implementation, unit tests, runnable examples, and GoDoc documentation only; it excludes release management, CI pipeline changes, downstream integration into Fabric core, and any translation/localization work.\",\n    \"Public API naming and signatures are free to be chosen by the implementer as long as acceptance criteria are met, and no external stakeholder approval cycles are required.\",\n    \"Existing CI/build infrastructure will run the new tests without modification.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A01\",\n      \"activity_name\": \"Requirements analysis and API design\",\n      \"activity_description\": \"Analyze U1-U8, study the existing configtx package structure and helpers, and define the public API surface: function names and signatures, the separate system-channel genesis function decision (U6), the SigningIdentity extension and rename strategy (U8), and shared error-handling conventions.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A02\",\n      \"activity_name\": \"U1: Retrieve entire channel configuration\",\n      \"activity_description\": \"Implement GetChannelConfig that composes the existing dependent-field retrieval functions into a full config.Channel return value; add unit tests covering populated and minimally populated channel configurations.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A03\",\n      \"activity_name\": \"U2: Update consortium channel creation policy value\",\n      \"activity_description\": \"Implement the function to update the default channel creation policy ConfigValue within a consortium group on config updates; add unit tests and a runnable example in example_test.go.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A04\",\n      \"activity_name\": \"U3: Channel group policy management\",\n      \"activity_description\": \"Implement add, remove, and retrieve functions for policies on the root channel group, reusing existing policy helpers; add unit tests and update examples to demonstrate usage.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A05\",\n      \"activity_name\": \"U4: Remove consortium, application, and orderer organizations\",\n      \"activity_description\": \"Implement three separate functions for removing an organization from a consortium group, the application group, and the orderer group, including not-found error handling; add unit tests and update examples.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A06\",\n      \"activity_name\": \"U5: Remove consortium from channel config\",\n      \"activity_description\": \"Implement a function to remove a specific consortium from the consortiums group of a channel config; add unit tests and update examples.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A07\",\n      \"activity_name\": \"U6: System channel genesis block creation\",\n      \"activity_description\": \"Implement a function to create a system channel genesis block whose channel group contains only orderer and consortiums groups (no application group); add unit tests validating block structure and a new runnable example.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A08\",\n      \"activity_name\": \"U7: GoDocs Overview section for configtx package\",\n      \"activity_description\": \"Author the package-level doc.go Overview section explaining the purpose and usage of the configtx library and how channels are structured, and verify rendering in GoDoc.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A09\",\n      \"activity_name\": \"U8: SigningIdentity extension and signing API rename\",\n      \"activity_description\": \"Extend SigningIdentity with SignConfigUpdate, add the renamed SignConfigUpdateEnvelope method, retain CreateSignedConfigUpdateEnvelope as a deprecated wrapper, write GoDoc explaining usage and differences, and add/adjust unit tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Integration and regression testing\",\n      \"activity_description\": \"Run the full package test suite and examples, perform cross-feature integration testing (e.g., build config, update it, sign it, retrieve it end-to-end), verify no regressions in existing API behavior, and fix defects found.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Self code review and finalization\",\n      \"activity_description\": \"Perform self-review of all changes for consistency, style, and documentation completeness; refactor and rework as needed; finalize comments, examples, and package docs for merge readiness.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 27\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement all work in the Go configtx package, following the existing package conventions: modification functions that accept/return *cb.ConfigGroup or config types, functional Options structs where applicable, and protobuf marshal/unmarshal helpers already present in the codebase.",
+      "U1: Add a GetChannelConfig function that composes the existing dependent-field retrieval functions (application, orderer, consortiums, policies, capabilities, etc.) and returns a fully populated config.Channel.",
+      "U2: Implement the channel creation policy update as a ConfigValue (not ConfigPolicy) mutation on the target consortium group, e.g. UpdateConsortiumChannelCreationPolicy(config, consortiumName, policy), mirroring how other consortium ConfigValues are handled.",
+      "U3: Add channel-group-level policy functions AddChannelPolicy, RemoveChannelPolicy, and GetChannelPolicies that operate on the root channel ConfigGroup, reusing the existing policy conversion/marshaling helpers used for other groups.",
+      "U4/U5: Implement removal functions (RemoveConsortiumOrg, RemoveApplicationOrg, RemoveOrdererOrg, RemoveConsortium) by deleting the named child group from the parent ConfigGroup's Groups map, with explicit error handling when the target does not exist.",
+      "U6: Split system channel creation into a separate API function (e.g. NewSystemChannelGenesisBlock) rather than overloading application channel creation; it builds a channel group containing only orderer and consortiums groups (no application group) and produces a genesis block via the standard block-creation helper.",
+      "U8: Extend SigningIdentity with a SignConfigUpdate method; introduce the renamed SignConfigUpdateEnvelope as a SigningIdentity method and keep the old CreateSignedConfigUpdateEnvelope as a thin deprecated wrapper for backward compatibility.",
+      "Testing uses the repository's existing test style (standard Go tests with testify/require) and runnable example_test.go examples; all new public functions get unit tests plus examples where the stories require them."
+    ],
+    "assumptions": [
+      "The supporting retrieval functions for all dependent configuration fields mentioned in U1 already exist and are tested, so U1 is composition work rather than building those from scratch.",
+      "The development environment (Go toolchain, vendored dependencies, Fabric protobuf types) is set up and the developer is proficient in Go, protobuf, and Hyperledger Fabric channel configuration concepts.",
+      "One workday equals 8 hours of focused development effort by a single developer (the author), including writing unit tests and examples; code review is performed as self-review with allocated rework time.",
+      "Effort covers design, implementation, unit tests, runnable examples, and GoDoc documentation only; it excludes release management, CI pipeline changes, downstream integration into Fabric core, and any translation/localization work.",
+      "Public API naming and signatures are free to be chosen by the implementer as long as acceptance criteria are met, and no external stakeholder approval cycles are required.",
+      "Existing CI/build infrastructure will run the new tests without modification."
+    ],
+    "activities": [
+      {
+        "activity_id": "A01",
+        "activity_name": "Requirements analysis and API design",
+        "activity_description": "Analyze U1-U8, study the existing configtx package structure and helpers, and define the public API surface: function names and signatures, the separate system-channel genesis function decision (U6), the SigningIdentity extension and rename strategy (U8), and shared error-handling conventions.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A02",
+        "activity_name": "U1: Retrieve entire channel configuration",
+        "activity_description": "Implement GetChannelConfig that composes the existing dependent-field retrieval functions into a full config.Channel return value; add unit tests covering populated and minimally populated channel configurations.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A03",
+        "activity_name": "U2: Update consortium channel creation policy value",
+        "activity_description": "Implement the function to update the default channel creation policy ConfigValue within a consortium group on config updates; add unit tests and a runnable example in example_test.go.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A04",
+        "activity_name": "U3: Channel group policy management",
+        "activity_description": "Implement add, remove, and retrieve functions for policies on the root channel group, reusing existing policy helpers; add unit tests and update examples to demonstrate usage.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A05",
+        "activity_name": "U4: Remove consortium, application, and orderer organizations",
+        "activity_description": "Implement three separate functions for removing an organization from a consortium group, the application group, and the orderer group, including not-found error handling; add unit tests and update examples.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A06",
+        "activity_name": "U5: Remove consortium from channel config",
+        "activity_description": "Implement a function to remove a specific consortium from the consortiums group of a channel config; add unit tests and update examples.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A07",
+        "activity_name": "U6: System channel genesis block creation",
+        "activity_description": "Implement a function to create a system channel genesis block whose channel group contains only orderer and consortiums groups (no application group); add unit tests validating block structure and a new runnable example.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A08",
+        "activity_name": "U7: GoDocs Overview section for configtx package",
+        "activity_description": "Author the package-level doc.go Overview section explaining the purpose and usage of the configtx library and how channels are structured, and verify rendering in GoDoc.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A09",
+        "activity_name": "U8: SigningIdentity extension and signing API rename",
+        "activity_description": "Extend SigningIdentity with SignConfigUpdate, add the renamed SignConfigUpdateEnvelope method, retain CreateSignedConfigUpdateEnvelope as a deprecated wrapper, write GoDoc explaining usage and differences, and add/adjust unit tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Integration and regression testing",
+        "activity_description": "Run the full package test suite and examples, perform cross-feature integration testing (e.g., build config, update it, sign it, retrieve it end-to-end), verify no regressions in existing API behavior, and fix defects found.",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Self code review and finalization",
+        "activity_description": "Perform self-review of all changes for consistency, style, and documentation completeness; refactor and rework as needed; finalize comments, examples, and package docs for merge readiness.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 27
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1513,
+    "completion_tokens": 2916,
+    "total_tokens": 4429,
+    "cost": 0.048279,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.048279,
+      "upstream_inference_prompt_cost": 0.004539,
+      "upstream_inference_completions_cost": 0.04374
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1335,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789199063-4c4mLrbnHpVDG4S02ssw",
+    "object": "chat.completion",
+    "created": 1789199063,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours per workday I used in my estimate. In my previous response, I stated in the assumptions: \"One workday equals 8 hours of focused development effort by a single developer (the author)\".\n\nSo the answer is 8. I just need to return valid JSON with that value, without revising or restating the previous estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours per workday I used in my estimate. In my previous response, I stated in the assumptions: \"One workday equals 8 hours of focused development effort by a single developer (the author)\".\n\nSo the answer is 8. I just need to return valid JSON with that value, without revising or restating the previous estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3228,
+      "completion_tokens": 110,
+      "total_tokens": 3338,
+      "cost": 0.007878,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.007878,
+        "upstream_inference_prompt_cost": 0.006228,
+        "upstream_inference_completions_cost": 0.00165
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 78,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

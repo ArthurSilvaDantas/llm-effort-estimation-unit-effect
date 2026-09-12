@@ -1,0 +1,377 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-032",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789170273-p02iaVu0JX9iNjO6ZlCY",
+    "object": "chat.completion",
+    "created": 1789170273,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Target Java 17+ with Spring Framework 6 as the baseline platform, consistent with the specification's platform statement.\",\n    \"U1: Implement the Receptor client as a standalone Java library exposing a typed API (tasks, desired/actual LRPs); use Spring's REST client abstraction (RestTemplate/WebClient) with Jackson-based DTOs for JSON serialization, and design it so XD components can consume it as a Spring bean.\",\n    \"U2: Introduce clean repository interfaces for stream and job definitions that contain no module-deployment types; move deployment concerns into a separate deployment service layer; preserve existing persistence behavior while changing only structure and dependencies.\",\n    \"U3: Define a runtime SPI as a set of Java interfaces (e.g., StreamDeployer, JobDeployer, ModuleDeployer) with a service-loading/auto-configuration mechanism; select the implementation (CF, local/on-prem, Mesos) via externalized configuration and Spring profiles.\",\n    \"U4: Persist stream metadata in a replicated, highly available store (ZooKeeper, consistent with XD runtime coordination) behind the new repository abstraction; implement recovery logic that on restart/failure re-reads metadata and redeploys/reconnects the streaming pipeline.\",\n    \"U6: Integrate Spark/Spark Streaming as XD modules (processor/sink) using the Spark Streaming receiver API, packaged and configured via standard XD module options, tested against a local Spark runtime.\",\n    \"U8: Replace the free-form --args passthrough with first-class, named, validated module options for all import options, declared via module option metadata so the shell can parse, validate, and document them.\",\n    \"All reference documentation (U5, U7, plus updates for U8 and U6) is written in AsciiDoc in the project's reference guide, with runnable, verified examples.\"\n  ],\n  \"assumptions\": [\n    \"An existing Spring XD codebase, build system, CI pipeline, and test infrastructure are available, and the developer is already familiar with them.\",\n    \"Effort estimates are net development effort in workdays (8 hours per day) for a single developer and exclude elapsed-time effects such as review wait times, meetings, and environment outages.\",\n    \"The Receptor API is documented and reachable; integration testing uses a mock Receptor server plus one shared integration environment, which already exists.\",\n    \"Scope includes unit and integration tests plus developer-written reference documentation; it excludes performance/load testing, security audits, and formal QA certification.\",\n    \"U5, U7 are documentation-only; U5 and U7 code behavior already works and only needs verification of examples.\",\n    \"For U8, only shell/command-line and module metadata changes are required; no graphical UI changes are in scope.\",\n    \"The persistent store for U4 (ZooKeeper ensemble) is already provisioned in dev/test environments.\",\n    \"Documentation is delivered in English only, as part of the source repository.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"1.1\",\n      \"activity_name\": \"Increment analysis and architecture alignment\",\n      \"activity_description\": \"Analyze the eight user stories, map them onto the existing XD codebase, define package/API boundaries affected by the repository refactor (U2), SPI (U3), and persistence (U4) work, and produce a lightweight design note reviewed by self-check before coding.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"2.1\",\n      \"activity_name\": \"U1 - Design Receptor client API and domain model\",\n      \"activity_description\": \"Define the Java client interface and DTO/model classes for Receptor resources (tasks, desired LRPs, actual LRPs), including exception hierarchy.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"2.2\",\n      \"activity_name\": \"U1 - Implement Receptor HTTP client\",\n      \"activity_description\": \"Implement the REST client against the Receptor endpoints (CRUD for desired LRPs, task submission/cancellation, retrieval of actual LRP state) using Spring REST client support.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"2.3\",\n      \"activity_name\": \"U1 - Serialization and error handling\",\n      \"activity_description\": \"Implement Jackson mapping (including polymorphic/optional fields), response error mapping, timeouts, and retry-safe behavior for idempotent calls.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"2.4\",\n      \"activity_name\": \"U1 - Client unit and integration tests\",\n      \"activity_description\": \"Write unit tests with mocked HTTP layer and integration tests against a mock Receptor server plus a smoke test against a real endpoint.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"2.5\",\n      \"activity_name\": \"U1 - Wire client into XD runtime\",\n      \"activity_description\": \"Expose the client as a configurable Spring bean in XD, add configuration properties (endpoint, credentials), and verify end-to-end interaction with the Diego runtime via Receptor.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"3.1\",\n      \"activity_name\": \"U2 - Analyze coupling and define new repository interfaces\",\n      \"activity_description\": \"Inspect current stream/job definition repository usage, identify module-deployment dependencies, and define decoupled repository interfaces plus a separate deployment coordination service.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"3.2\",\n      \"activity_name\": \"U2 - Refactor stream definition repository\",\n      \"activity_description\": \"Refactor the stream definition repository implementation and its callers to the new deployment-free abstraction.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"3.3\",\n      \"activity_name\": \"U2 - Refactor job definition repository\",\n      \"activity_description\": \"Refactor the job definition repository implementation and its callers to the new deployment-free abstraction.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"3.4\",\n      \"activity_name\": \"U2 - Migrate and extend tests\",\n      \"activity_description\": \"Update existing unit/integration tests to the new structure and add regression tests proving repository behavior is unchanged.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.1\",\n      \"activity_name\": \"U3 - Design runtime SPI contracts\",\n      \"activity_description\": \"Define SPI interfaces (stream deployer, job deployer, module deployer, status/lifecycle operations) and their contract documentation, ensuring they cover CF, on-prem/local, and Mesos targets.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"4.2\",\n      \"activity_name\": \"U3 - Implement SPI core and loading mechanism\",\n      \"activity_description\": \"Implement the SPI core, auto-configuration, and service-loading mechanism that discovers and instantiates the selected implementation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"4.3\",\n      \"activity_name\": \"U3 - Adapt existing deployers to the SPI\",\n      \"activity_description\": \"Adapt the existing CF and local/on-prem deployment logic into SPI implementations without behavior change.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"4.4\",\n      \"activity_name\": \"U3 - Target-based selection and configuration\",\n      \"activity_description\": \"Implement configuration properties/profiles that select the SPI implementation per deployment target, with sensible defaults and validation.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.5\",\n      \"activity_name\": \"U3 - SPI tests\",\n      \"activity_description\": \"Add unit tests for selection/loading logic and integration tests exercising each adapted implementation through the SPI.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"5.1\",\n      \"activity_name\": \"U4 - Design persistence model and storage approach\",\n      \"activity_description\": \"Design the persisted stream metadata schema (definition, deployment state, module bindings, offsets/checkpoint pointers) and confirm ZooKeeper as the backing store behind the repository abstraction.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"5.2\",\n      \"activity_name\": \"U4 - Implement persistent stream repository\",\n      \"activity_description\": \"Implement CRUD and query operations for persisted stream metadata, including optimistic concurrency handling and listeners for metadata changes.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"5.3\",\n      \"activity_name\": \"U4 - Implement failure recovery and re-establishment\",\n      \"activity_description\": \"Implement startup/admin-triggered recovery that reads persisted metadata and re-establishes streaming pipelines (redeploy modules, resume from last persisted state) after failure.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"5.4\",\n      \"activity_name\": \"U4 - Persistence and failure-scenario tests\",\n      \"activity_description\": \"Add unit tests, integration tests against an embedded ZooKeeper, and failure-injection tests (node restart, crash mid-deployment) validating recovery behavior.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"6.1\",\n      \"activity_name\": \"U5 - Document quote escaping for Sqoop jobs\",\n      \"activity_description\": \"Verify the double-escape behavior (e.g., \\\\\\\\\\\\\\\\N vs '\\\\N') with a real job submission, then write the reference documentation section with correct and incorrect examples.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"7.1\",\n      \"activity_name\": \"U6 - Design Spark/Spark Streaming integration\",\n      \"activity_description\": \"Design how Spark Streaming fits XD streaming pipelines (module roles, receiver approach, checkpointing, module options) consistent with the latest XD and Spark specs.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"7.2\",\n      \"activity_name\": \"U6 - Implement Spark streaming modules\",\n      \"activity_description\": \"Implement the Spark/Spark Streaming module(s) with configurable options, serialization handling, and lifecycle integration with XD's module container.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"7.3\",\n      \"activity_name\": \"U6 - Test Spark pipelines end to end\",\n      \"activity_description\": \"Test with a local Spark runtime: unit tests, module-level integration tests, and an end-to-end XD stream (source -> Spark processor -> sink), including failure/restart sanity checks.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"7.4\",\n      \"activity_name\": \"U6 - Spark samples and documentation\",\n      \"activity_description\": \"Create a runnable sample streaming pipeline and write reference documentation covering options, deployment, and limitations.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"8.1\",\n      \"activity_name\": \"U7 - Verify nested batch job/workflow examples\",\n      \"activity_description\": \"Build and run verified examples of nesting batch jobs and composed workflows in XD to ensure the documented steps actually work.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"8.2\",\n      \"activity_name\": \"U7 - Write nested jobs/workflows documentation\",\n      \"activity_description\": \"Write the reference documentation for nesting batch jobs and workflows, including diagrams/examples and common pitfalls.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"9.1\",\n      \"activity_name\": \"U8 - Analyze current import options handling\",\n      \"activity_description\": \"Catalog all import options currently passed via --args and define the named, typed option metadata that replaces them.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"9.2\",\n      \"activity_name\": \"U8 - Implement parameterized import options\",\n      \"activity_description\": \"Implement named, validated options for all import options in the affected modules, wiring them into module option metadata.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"9.3\",\n      \"activity_name\": \"U8 - Update shell parsing and deprecate --args\",\n      \"activity_description\": \"Update shell command parsing/validation, provide deprecation handling and migration guidance for existing --args usage.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"9.4\",\n      \"activity_name\": \"U8 - Tests and documentation for new options\",\n      \"activity_description\": \"Add/adjust tests for the new options and update reference docs and examples to use parameterized options.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"10.1\",\n      \"activity_name\": \"Increment integration and regression testing\",\n      \"activity_description\": \"Run cross-feature integration and regression testing of the whole increment (repository refactor + SPI + persistence + Receptor client + Spark modules + options changes), fix integration defects, and stabilize the build.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"10.2\",\n      \"activity_name\": \"Release preparation and documentation review\",\n      \"activity_description\": \"Final documentation proofreading, changelog/release notes, build packaging verification, and release readiness checks.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 92\n  }\n}",
+          "refusal": null,
+          "reasoning": "Let me analyze this task. I need to estimate software development effort for 8 user stories related to Spring XD (Spring Data eXtreme / Spring Cloud Data Flow predecessor), based on a WBS-based estimation process.\n\nThe user stories:\n- U1: Create a Java client for Receptor (Diego runtime API) to interact from XD\n- U2: Refactor stream/job definition repository to decouple from module deployment concerns\n- U3: Define pluggable runtime SPI for deployment targets (CF, on-prem, Mesos)\n- U4: Create persistent repository for streams to leverage persisted metadata and reestablish streaming pipe under failure conditions\n- U5: Documentation on escape quotes for Sqoop job (double escape \\\\\\\\N instead of '\\N')\n- U6: Create streaming pipelines with latest specs from XD and Spark/Spark Streaming (Spark streaming module support)\n- U7: Document how to nest batch jobs and workflows in XD\n- U8: Parameterize all Import Options, eliminate need for --args option\n\nI need to:\n1. Break down development into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide single most likely effort per activity\n4. Sum for total\n\nEstimates in workdays. Let me think about reasonable estimates as a single developer doing all work.\n\nLet me structure activities per user story, possibly with sub-activities (analysis/design, implementation, testing, documentation, integration).\n\nLet me think about each:\n\nU1: Java client for Receptor API (Diego). This involves:\n- API design and HTTP client implementation against Receptor API endpoints (tasks, LRPs, actual LRP info)\n- DTO/model classes\n- Testing (unit + integration against mock or real receptor)\nEstimate: design 2d, implementation 8-10d, tests 4d, integration 3d. Maybe ~15-18 days total. Let me say design/modeling 3, client implementation 7, testing 5, integration/docs 3 = 18? Hmm, reasonable 15-20.\n\nU2: Refactor stream/job definition repository to decouple from module deployment:\n- Analyze current coupling, design new interfaces\n- Refactor stream repository\n- Refactor job repository\n- Update dependents, tests\nEstimate: ~10 days.\n\nU3: Pluggable runtime SPI:\n- Design SPI interfaces (ModuleDeployer abstraction)\n- Implement reference implementations or adapt existing deployers to SPI\n- Configuration/plug selection mechanism\n- Tests\nEstimate: ~15-20 days. SPI design 4, implementation 8, config 2, tests 4 = 18.\n\nU4: Persistent repository for streams:\n- Design persistence schema (streams metadata)\n- Implement repository (e.g., ZooKeeper or JDBC/Redis)\n- Recovery logic to reestablish streams on failure\n- Tests\nEstimate: ~15 days.\n\nU5: Documentation on escape quotes: 0.5-1 day. Say 1 day including testing examples.\n\nU6: Spark/Spark Streaming integration for streaming pipelines:\n- Design integration with Spark streaming module\n- Implement module(s) (processor/sink using Spark streaming)\n- Testing with Spark cluster/local\n- Docs\nEstimate: ~15-20 days. Spark integration is nontrivial: 18 days.\n\nU7: Document nested batch jobs and workflows: documentation with examples, maybe verify sample works. 2-3 days. Say 3.\n\nU8: Parameterize all Import Options (Sqoop? import options for modules) eliminating --args:\n- Analyze current options handling\n- Implement parameterized options\n- Update shell/UI parsing, tests, docs\nEstimate: ~8-10 days. Say 8.\n\nCommon activities: requirements analysis/architecture, integration testing, CI, release packaging. I could add cross-cutting activities: overall design 2, integration/system testing 5, build/CI 2. Or embed in each story.\n\nBetter approach: WBS with top-level activities per story plus cross-cutting activities (project setup/analysis, integration testing, release). Let me create activities:\n\n1. A1: Requirements analysis & overall architecture design — 3 days\n2. A2 (U1): Receptor Java client — break into sub-activities or single activity. The schema asks for activities; I can provide detailed WBS with sub-activities each with effort. Let me create maybe 15-20 activities total.\n\nLet me build detailed WBS:\n\nCross-cutting:\n- 1.1 Requirements analysis and architecture alignment: 3\n- 1.2 Integration/system testing & regression: 5\n- 1.3 Documentation review & release packaging: 2\n\nU1 Receptor client (total ~16):\n- 2.1 Design client API & model classes: 2\n- 2.2 Implement HTTP/REST client for Receptor endpoints (tasks/LRPs): 6\n- 2.3 Error handling, serialization (JSON mapping): 2\n- 2.4 Unit + integration tests: 4\n- 2.5 XD integration wiring: 2\nTotal: 16\n\nU2 Repository refactor (~10):\n- 3.1 Analyze coupling, define new repository interfaces: 2\n- 3.2 Refactor stream definition repository: 3\n- 3.3 Refactor job definition repository: 3\n- 3.4 Update callers, migrate tests: 2\nTotal: 10\n\nU3 Pluggable runtime SPI (~15):\n- 4.1 Design SPI contracts (deployer interfaces, lifecycle): 3\n- 4.2 Implement core SPI and service-loading mechanism: 4\n- 4.3 Adapt existing CF/local deployers to SPI: 4\n- 4.4 Configuration & selection based on deployment target: 2\n- 4.5 Tests: 2\nTotal: 15\n\nU4 Persistent stream repository (~13):\n- 5.1 Design persistence model & choose store (ZooKeeper/Redis/JDBC): 2\n- 5.2 Implement persistent repository: 4\n- 5.3 Implement recovery/reestablish logic on failure: 4\n- 5.4 Tests incl. failure scenario tests: 3\nTotal: 13\n\nU5 Escape quotes doc (~1):\n- 6.1 Write documentation with examples and verify: 1\n\nU6 Spark streaming (~16):\n- 7.1 Design Spark/Spark Streaming module integration: 3\n- 7.2 Implement streaming module(s) & module options: 6\n- 7.3 Testing (local Spark + XD end-to-end): 4\n- 7.4 Docs/samples: 3\nTotal: 16\n\nU7 Nested batch jobs doc (~3):\n- 8.1 Create samples and verify nested job/workflow behavior: 1\n- 8.2 Write documentation: 2\nTotal: 3\n\nU8 Parameterize import options (~8):\n- 9.1 Analyze current options handling/--args usage: 1\n- 9.2 Implement parameterized options across import modules: 4\n- 9.3 Update shell parsing/validation, deprecate --args: 2\n- 9.4 Tests & doc updates: 1\nTotal: 8\n\nTotals: 3 + 5 + 2 + 16 + 10 + 15 + 13 + 1 + 16 + 3 + 8 = 92\n\nLet me compute: 3+5+2=10; +16=26; +10=36; +15=51; +13=64; +1=65; +16=81; +3=84; +8=92. Total 92 workdays.\n\nThat seems reasonable: roughly 4.5 person-months for this increment, which matches the scale (Spring XD 1.1-ish release with Receptor client, SPI, persistence, Spark integration). Actual Spring XD releases took months with teams; a single dev at ~92 days is plausible.\n\nTechnical and design decisions:\n- Build on Spring Framework 6 / Java 17 baseline per spec context (though Spring XD predates; spec says Spring 6 requires Java 17 — use Java 17).\n- Receptor client implemented as standalone Java library using Spring RestTemplate/WebClient with Jackson DTOs.\n- Repository abstraction via interfaces; persistence using ZooKeeper (XD used ZK) or pluggable store; choose ZooKeeper to align with XD runtime coordination.\n- SPI defined as set of interfaces (ModuleDeployer, StreamDeployer, JobDeployer) loaded via Spring profiles/auto-configuration; selection via configuration property per deployment target.\n- Spark streaming integration as XD processor/sink modules using Spark Streaming receiver API.\n- Docs in AsciiDoc in reference guide.\n- Parameterized options via @ConfigurationProperties-like metadata / module options.\n\nAssumptions:\n- Existing Spring XD codebase available, developer familiar.\n- Estimates are net effort in workdays (8h), single developer, excluding code review waits.\n- Unit + integration tests included; no performance testing beyond basic.\n- Receptor API spec accessible; test against mock server plus one integration env.\n- No UI work for U8 beyond shell.\n- Documentation in English, AsciiDoc format, part of repo.\n\nI must return only valid JSON matching schema. No markdown fences? \"Return only valid JSON\" — I'll return raw JSON without fences to be safe.\n\nEnsure numbers: most_likely_effort number >0.\n\nLet me finalize the activities list with ids A1..A24 or grouped ids. I'll use hierarchical ids like \"1.1\". Activity names and descriptions.\n\nLet me double check sums: \n1.1:3, 2.1:2,2.2:6,2.3:2,2.4:4,2.5:2 =>16\n3.1:2,3.2:3,3.3:3,3.4:2 =>10\n4.1:3,4.2:4,4.3:4,4.4:2,4.5:2 =>15\n5.1:2,5.2:4,5.3:4,5.4:3 =>13\n6.1:1\n7.1:3,7.2:6,7.3:4,7.4:3 =>16\n8.1:1,8.2:2 =>3\n9.1:1,9.2:4,9.3:2,9.4:1 =>8\n10.1:5 (integration/system test)\n10.2:2 (release packaging & doc review)\n\nSum: 3+16+10+15+13+1+16+3+8+5+2 = 92. Yes.\n\nOutput JSON only.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this task. I need to estimate software development effort for 8 user stories related to Spring XD (Spring Data eXtreme / Spring Cloud Data Flow predecessor), based on a WBS-based estimation process.\n\nThe user stories:\n- U1: Create a Java client for Receptor (Diego runtime API) to interact from XD\n- U2: Refactor stream/job definition repository to decouple from module deployment concerns\n- U3: Define pluggable runtime SPI for deployment targets (CF, on-prem, Mesos)\n- U4: Create persistent repository for streams to leverage persisted metadata and reestablish streaming pipe under failure conditions\n- U5: Documentation on escape quotes for Sqoop job (double escape \\\\\\\\N instead of '\\N')\n- U6: Create streaming pipelines with latest specs from XD and Spark/Spark Streaming (Spark streaming module support)\n- U7: Document how to nest batch jobs and workflows in XD\n- U8: Parameterize all Import Options, eliminate need for --args option\n\nI need to:\n1. Break down development into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide single most likely effort per activity\n4. Sum for total\n\nEstimates in workdays. Let me think about reasonable estimates as a single developer doing all work.\n\nLet me structure activities per user story, possibly with sub-activities (analysis/design, implementation, testing, documentation, integration).\n\nLet me think about each:\n\nU1: Java client for Receptor API (Diego). This involves:\n- API design and HTTP client implementation against Receptor API endpoints (tasks, LRPs, actual LRP info)\n- DTO/model classes\n- Testing (unit + integration against mock or real receptor)\nEstimate: design 2d, implementation 8-10d, tests 4d, integration 3d. Maybe ~15-18 days total. Let me say design/modeling 3, client implementation 7, testing 5, integration/docs 3 = 18? Hmm, reasonable 15-20.\n\nU2: Refactor stream/job definition repository to decouple from module deployment:\n- Analyze current coupling, design new interfaces\n- Refactor stream repository\n- Refactor job repository\n- Update dependents, tests\nEstimate: ~10 days.\n\nU3: Pluggable runtime SPI:\n- Design SPI interfaces (ModuleDeployer abstraction)\n- Implement reference implementations or adapt existing deployers to SPI\n- Configuration/plug selection mechanism\n- Tests\nEstimate: ~15-20 days. SPI design 4, implementation 8, config 2, tests 4 = 18.\n\nU4: Persistent repository for streams:\n- Design persistence schema (streams metadata)\n- Implement repository (e.g., ZooKeeper or JDBC/Redis)\n- Recovery logic to reestablish streams on failure\n- Tests\nEstimate: ~15 days.\n\nU5: Documentation on escape quotes: 0.5-1 day. Say 1 day including testing examples.\n\nU6: Spark/Spark Streaming integration for streaming pipelines:\n- Design integration with Spark streaming module\n- Implement module(s) (processor/sink using Spark streaming)\n- Testing with Spark cluster/local\n- Docs\nEstimate: ~15-20 days. Spark integration is nontrivial: 18 days.\n\nU7: Document nested batch jobs and workflows: documentation with examples, maybe verify sample works. 2-3 days. Say 3.\n\nU8: Parameterize all Import Options (Sqoop? import options for modules) eliminating --args:\n- Analyze current options handling\n- Implement parameterized options\n- Update shell/UI parsing, tests, docs\nEstimate: ~8-10 days. Say 8.\n\nCommon activities: requirements analysis/architecture, integration testing, CI, release packaging. I could add cross-cutting activities: overall design 2, integration/system testing 5, build/CI 2. Or embed in each story.\n\nBetter approach: WBS with top-level activities per story plus cross-cutting activities (project setup/analysis, integration testing, release). Let me create activities:\n\n1. A1: Requirements analysis & overall architecture design — 3 days\n2. A2 (U1): Receptor Java client — break into sub-activities or single activity. The schema asks for activities; I can provide detailed WBS with sub-activities each with effort. Let me create maybe 15-20 activities total.\n\nLet me build detailed WBS:\n\nCross-cutting:\n- 1.1 Requirements analysis and architecture alignment: 3\n- 1.2 Integration/system testing & regression: 5\n- 1.3 Documentation review & release packaging: 2\n\nU1 Receptor client (total ~16):\n- 2.1 Design client API & model classes: 2\n- 2.2 Implement HTTP/REST client for Receptor endpoints (tasks/LRPs): 6\n- 2.3 Error handling, serialization (JSON mapping): 2\n- 2.4 Unit + integration tests: 4\n- 2.5 XD integration wiring: 2\nTotal: 16\n\nU2 Repository refactor (~10):\n- 3.1 Analyze coupling, define new repository interfaces: 2\n- 3.2 Refactor stream definition repository: 3\n- 3.3 Refactor job definition repository: 3\n- 3.4 Update callers, migrate tests: 2\nTotal: 10\n\nU3 Pluggable runtime SPI (~15):\n- 4.1 Design SPI contracts (deployer interfaces, lifecycle): 3\n- 4.2 Implement core SPI and service-loading mechanism: 4\n- 4.3 Adapt existing CF/local deployers to SPI: 4\n- 4.4 Configuration & selection based on deployment target: 2\n- 4.5 Tests: 2\nTotal: 15\n\nU4 Persistent stream repository (~13):\n- 5.1 Design persistence model & choose store (ZooKeeper/Redis/JDBC): 2\n- 5.2 Implement persistent repository: 4\n- 5.3 Implement recovery/reestablish logic on failure: 4\n- 5.4 Tests incl. failure scenario tests: 3\nTotal: 13\n\nU5 Escape quotes doc (~1):\n- 6.1 Write documentation with examples and verify: 1\n\nU6 Spark streaming (~16):\n- 7.1 Design Spark/Spark Streaming module integration: 3\n- 7.2 Implement streaming module(s) & module options: 6\n- 7.3 Testing (local Spark + XD end-to-end): 4\n- 7.4 Docs/samples: 3\nTotal: 16\n\nU7 Nested batch jobs doc (~3):\n- 8.1 Create samples and verify nested job/workflow behavior: 1\n- 8.2 Write documentation: 2\nTotal: 3\n\nU8 Parameterize import options (~8):\n- 9.1 Analyze current options handling/--args usage: 1\n- 9.2 Implement parameterized options across import modules: 4\n- 9.3 Update shell parsing/validation, deprecate --args: 2\n- 9.4 Tests & doc updates: 1\nTotal: 8\n\nTotals: 3 + 5 + 2 + 16 + 10 + 15 + 13 + 1 + 16 + 3 + 8 = 92\n\nLet me compute: 3+5+2=10; +16=26; +10=36; +15=51; +13=64; +1=65; +16=81; +3=84; +8=92. Total 92 workdays.\n\nThat seems reasonable: roughly 4.5 person-months for this increment, which matches the scale (Spring XD 1.1-ish release with Receptor client, SPI, persistence, Spark integration). Actual Spring XD releases took months with teams; a single dev at ~92 days is plausible.\n\nTechnical and design decisions:\n- Build on Spring Framework 6 / Java 17 baseline per spec context (though Spring XD predates; spec says Spring 6 requires Java 17 — use Java 17).\n- Receptor client implemented as standalone Java library using Spring RestTemplate/WebClient with Jackson DTOs.\n- Repository abstraction via interfaces; persistence using ZooKeeper (XD used ZK) or pluggable store; choose ZooKeeper to align with XD runtime coordination.\n- SPI defined as set of interfaces (ModuleDeployer, StreamDeployer, JobDeployer) loaded via Spring profiles/auto-configuration; selection via configuration property per deployment target.\n- Spark streaming integration as XD processor/sink modules using Spark Streaming receiver API.\n- Docs in AsciiDoc in reference guide.\n- Parameterized options via @ConfigurationProperties-like metadata / module options.\n\nAssumptions:\n- Existing Spring XD codebase available, developer familiar.\n- Estimates are net effort in workdays (8h), single developer, excluding code review waits.\n- Unit + integration tests included; no performance testing beyond basic.\n- Receptor API spec accessible; test against mock server plus one integration env.\n- No UI work for U8 beyond shell.\n- Documentation in English, AsciiDoc format, part of repo.\n\nI must return only valid JSON matching schema. No markdown fences? \"Return only valid JSON\" — I'll return raw JSON without fences to be safe.\n\nEnsure numbers: most_likely_effort number >0.\n\nLet me finalize the activities list with ids A1..A24 or grouped ids. I'll use hierarchical ids like \"1.1\". Activity names and descriptions.\n\nLet me double check sums: \n1.1:3, 2.1:2,2.2:6,2.3:2,2.4:4,2.5:2 =>16\n3.1:2,3.2:3,3.3:3,3.4:2 =>10\n4.1:3,4.2:4,4.3:4,4.4:2,4.5:2 =>15\n5.1:2,5.2:4,5.3:4,5.4:3 =>13\n6.1:1\n7.1:3,7.2:6,7.3:4,7.4:3 =>16\n8.1:1,8.2:2 =>3\n9.1:1,9.2:4,9.3:2,9.4:1 =>8\n10.1:5 (integration/system test)\n10.2:2 (release packaging & doc review)\n\nSum: 3+16+10+15+13+1+16+3+8+5+2 = 92. Yes.\n\nOutput JSON only.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1244,
+      "completion_tokens": 5253,
+      "total_tokens": 6497,
+      "cost": 0.0811446,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0811446,
+        "upstream_inference_prompt_cost": 0.0023496,
+        "upstream_inference_completions_cost": 0.078795
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2254,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Target Java 17+ with Spring Framework 6 as the baseline platform, consistent with the specification's platform statement.\",\n    \"U1: Implement the Receptor client as a standalone Java library exposing a typed API (tasks, desired/actual LRPs); use Spring's REST client abstraction (RestTemplate/WebClient) with Jackson-based DTOs for JSON serialization, and design it so XD components can consume it as a Spring bean.\",\n    \"U2: Introduce clean repository interfaces for stream and job definitions that contain no module-deployment types; move deployment concerns into a separate deployment service layer; preserve existing persistence behavior while changing only structure and dependencies.\",\n    \"U3: Define a runtime SPI as a set of Java interfaces (e.g., StreamDeployer, JobDeployer, ModuleDeployer) with a service-loading/auto-configuration mechanism; select the implementation (CF, local/on-prem, Mesos) via externalized configuration and Spring profiles.\",\n    \"U4: Persist stream metadata in a replicated, highly available store (ZooKeeper, consistent with XD runtime coordination) behind the new repository abstraction; implement recovery logic that on restart/failure re-reads metadata and redeploys/reconnects the streaming pipeline.\",\n    \"U6: Integrate Spark/Spark Streaming as XD modules (processor/sink) using the Spark Streaming receiver API, packaged and configured via standard XD module options, tested against a local Spark runtime.\",\n    \"U8: Replace the free-form --args passthrough with first-class, named, validated module options for all import options, declared via module option metadata so the shell can parse, validate, and document them.\",\n    \"All reference documentation (U5, U7, plus updates for U8 and U6) is written in AsciiDoc in the project's reference guide, with runnable, verified examples.\"\n  ],\n  \"assumptions\": [\n    \"An existing Spring XD codebase, build system, CI pipeline, and test infrastructure are available, and the developer is already familiar with them.\",\n    \"Effort estimates are net development effort in workdays (8 hours per day) for a single developer and exclude elapsed-time effects such as review wait times, meetings, and environment outages.\",\n    \"The Receptor API is documented and reachable; integration testing uses a mock Receptor server plus one shared integration environment, which already exists.\",\n    \"Scope includes unit and integration tests plus developer-written reference documentation; it excludes performance/load testing, security audits, and formal QA certification.\",\n    \"U5, U7 are documentation-only; U5 and U7 code behavior already works and only needs verification of examples.\",\n    \"For U8, only shell/command-line and module metadata changes are required; no graphical UI changes are in scope.\",\n    \"The persistent store for U4 (ZooKeeper ensemble) is already provisioned in dev/test environments.\",\n    \"Documentation is delivered in English only, as part of the source repository.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"1.1\",\n      \"activity_name\": \"Increment analysis and architecture alignment\",\n      \"activity_description\": \"Analyze the eight user stories, map them onto the existing XD codebase, define package/API boundaries affected by the repository refactor (U2), SPI (U3), and persistence (U4) work, and produce a lightweight design note reviewed by self-check before coding.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"2.1\",\n      \"activity_name\": \"U1 - Design Receptor client API and domain model\",\n      \"activity_description\": \"Define the Java client interface and DTO/model classes for Receptor resources (tasks, desired LRPs, actual LRPs), including exception hierarchy.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"2.2\",\n      \"activity_name\": \"U1 - Implement Receptor HTTP client\",\n      \"activity_description\": \"Implement the REST client against the Receptor endpoints (CRUD for desired LRPs, task submission/cancellation, retrieval of actual LRP state) using Spring REST client support.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"2.3\",\n      \"activity_name\": \"U1 - Serialization and error handling\",\n      \"activity_description\": \"Implement Jackson mapping (including polymorphic/optional fields), response error mapping, timeouts, and retry-safe behavior for idempotent calls.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"2.4\",\n      \"activity_name\": \"U1 - Client unit and integration tests\",\n      \"activity_description\": \"Write unit tests with mocked HTTP layer and integration tests against a mock Receptor server plus a smoke test against a real endpoint.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"2.5\",\n      \"activity_name\": \"U1 - Wire client into XD runtime\",\n      \"activity_description\": \"Expose the client as a configurable Spring bean in XD, add configuration properties (endpoint, credentials), and verify end-to-end interaction with the Diego runtime via Receptor.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"3.1\",\n      \"activity_name\": \"U2 - Analyze coupling and define new repository interfaces\",\n      \"activity_description\": \"Inspect current stream/job definition repository usage, identify module-deployment dependencies, and define decoupled repository interfaces plus a separate deployment coordination service.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"3.2\",\n      \"activity_name\": \"U2 - Refactor stream definition repository\",\n      \"activity_description\": \"Refactor the stream definition repository implementation and its callers to the new deployment-free abstraction.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"3.3\",\n      \"activity_name\": \"U2 - Refactor job definition repository\",\n      \"activity_description\": \"Refactor the job definition repository implementation and its callers to the new deployment-free abstraction.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"3.4\",\n      \"activity_name\": \"U2 - Migrate and extend tests\",\n      \"activity_description\": \"Update existing unit/integration tests to the new structure and add regression tests proving repository behavior is unchanged.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.1\",\n      \"activity_name\": \"U3 - Design runtime SPI contracts\",\n      \"activity_description\": \"Define SPI interfaces (stream deployer, job deployer, module deployer, status/lifecycle operations) and their contract documentation, ensuring they cover CF, on-prem/local, and Mesos targets.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"4.2\",\n      \"activity_name\": \"U3 - Implement SPI core and loading mechanism\",\n      \"activity_description\": \"Implement the SPI core, auto-configuration, and service-loading mechanism that discovers and instantiates the selected implementation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"4.3\",\n      \"activity_name\": \"U3 - Adapt existing deployers to the SPI\",\n      \"activity_description\": \"Adapt the existing CF and local/on-prem deployment logic into SPI implementations without behavior change.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"4.4\",\n      \"activity_name\": \"U3 - Target-based selection and configuration\",\n      \"activity_description\": \"Implement configuration properties/profiles that select the SPI implementation per deployment target, with sensible defaults and validation.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.5\",\n      \"activity_name\": \"U3 - SPI tests\",\n      \"activity_description\": \"Add unit tests for selection/loading logic and integration tests exercising each adapted implementation through the SPI.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"5.1\",\n      \"activity_name\": \"U4 - Design persistence model and storage approach\",\n      \"activity_description\": \"Design the persisted stream metadata schema (definition, deployment state, module bindings, offsets/checkpoint pointers) and confirm ZooKeeper as the backing store behind the repository abstraction.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"5.2\",\n      \"activity_name\": \"U4 - Implement persistent stream repository\",\n      \"activity_description\": \"Implement CRUD and query operations for persisted stream metadata, including optimistic concurrency handling and listeners for metadata changes.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"5.3\",\n      \"activity_name\": \"U4 - Implement failure recovery and re-establishment\",\n      \"activity_description\": \"Implement startup/admin-triggered recovery that reads persisted metadata and re-establishes streaming pipelines (redeploy modules, resume from last persisted state) after failure.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"5.4\",\n      \"activity_name\": \"U4 - Persistence and failure-scenario tests\",\n      \"activity_description\": \"Add unit tests, integration tests against an embedded ZooKeeper, and failure-injection tests (node restart, crash mid-deployment) validating recovery behavior.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"6.1\",\n      \"activity_name\": \"U5 - Document quote escaping for Sqoop jobs\",\n      \"activity_description\": \"Verify the double-escape behavior (e.g., \\\\\\\\\\\\\\\\N vs '\\\\N') with a real job submission, then write the reference documentation section with correct and incorrect examples.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"7.1\",\n      \"activity_name\": \"U6 - Design Spark/Spark Streaming integration\",\n      \"activity_description\": \"Design how Spark Streaming fits XD streaming pipelines (module roles, receiver approach, checkpointing, module options) consistent with the latest XD and Spark specs.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"7.2\",\n      \"activity_name\": \"U6 - Implement Spark streaming modules\",\n      \"activity_description\": \"Implement the Spark/Spark Streaming module(s) with configurable options, serialization handling, and lifecycle integration with XD's module container.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"7.3\",\n      \"activity_name\": \"U6 - Test Spark pipelines end to end\",\n      \"activity_description\": \"Test with a local Spark runtime: unit tests, module-level integration tests, and an end-to-end XD stream (source -> Spark processor -> sink), including failure/restart sanity checks.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"7.4\",\n      \"activity_name\": \"U6 - Spark samples and documentation\",\n      \"activity_description\": \"Create a runnable sample streaming pipeline and write reference documentation covering options, deployment, and limitations.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"8.1\",\n      \"activity_name\": \"U7 - Verify nested batch job/workflow examples\",\n      \"activity_description\": \"Build and run verified examples of nesting batch jobs and composed workflows in XD to ensure the documented steps actually work.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"8.2\",\n      \"activity_name\": \"U7 - Write nested jobs/workflows documentation\",\n      \"activity_description\": \"Write the reference documentation for nesting batch jobs and workflows, including diagrams/examples and common pitfalls.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"9.1\",\n      \"activity_name\": \"U8 - Analyze current import options handling\",\n      \"activity_description\": \"Catalog all import options currently passed via --args and define the named, typed option metadata that replaces them.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"9.2\",\n      \"activity_name\": \"U8 - Implement parameterized import options\",\n      \"activity_description\": \"Implement named, validated options for all import options in the affected modules, wiring them into module option metadata.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"9.3\",\n      \"activity_name\": \"U8 - Update shell parsing and deprecate --args\",\n      \"activity_description\": \"Update shell command parsing/validation, provide deprecation handling and migration guidance for existing --args usage.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"9.4\",\n      \"activity_name\": \"U8 - Tests and documentation for new options\",\n      \"activity_description\": \"Add/adjust tests for the new options and update reference docs and examples to use parameterized options.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"10.1\",\n      \"activity_name\": \"Increment integration and regression testing\",\n      \"activity_description\": \"Run cross-feature integration and regression testing of the whole increment (repository refactor + SPI + persistence + Receptor client + Spark modules + options changes), fix integration defects, and stabilize the build.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"10.2\",\n      \"activity_name\": \"Release preparation and documentation review\",\n      \"activity_description\": \"Final documentation proofreading, changelog/release notes, build packaging verification, and release readiness checks.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 92\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Target Java 17+ with Spring Framework 6 as the baseline platform, consistent with the specification's platform statement.",
+      "U1: Implement the Receptor client as a standalone Java library exposing a typed API (tasks, desired/actual LRPs); use Spring's REST client abstraction (RestTemplate/WebClient) with Jackson-based DTOs for JSON serialization, and design it so XD components can consume it as a Spring bean.",
+      "U2: Introduce clean repository interfaces for stream and job definitions that contain no module-deployment types; move deployment concerns into a separate deployment service layer; preserve existing persistence behavior while changing only structure and dependencies.",
+      "U3: Define a runtime SPI as a set of Java interfaces (e.g., StreamDeployer, JobDeployer, ModuleDeployer) with a service-loading/auto-configuration mechanism; select the implementation (CF, local/on-prem, Mesos) via externalized configuration and Spring profiles.",
+      "U4: Persist stream metadata in a replicated, highly available store (ZooKeeper, consistent with XD runtime coordination) behind the new repository abstraction; implement recovery logic that on restart/failure re-reads metadata and redeploys/reconnects the streaming pipeline.",
+      "U6: Integrate Spark/Spark Streaming as XD modules (processor/sink) using the Spark Streaming receiver API, packaged and configured via standard XD module options, tested against a local Spark runtime.",
+      "U8: Replace the free-form --args passthrough with first-class, named, validated module options for all import options, declared via module option metadata so the shell can parse, validate, and document them.",
+      "All reference documentation (U5, U7, plus updates for U8 and U6) is written in AsciiDoc in the project's reference guide, with runnable, verified examples."
+    ],
+    "assumptions": [
+      "An existing Spring XD codebase, build system, CI pipeline, and test infrastructure are available, and the developer is already familiar with them.",
+      "Effort estimates are net development effort in workdays (8 hours per day) for a single developer and exclude elapsed-time effects such as review wait times, meetings, and environment outages.",
+      "The Receptor API is documented and reachable; integration testing uses a mock Receptor server plus one shared integration environment, which already exists.",
+      "Scope includes unit and integration tests plus developer-written reference documentation; it excludes performance/load testing, security audits, and formal QA certification.",
+      "U5, U7 are documentation-only; U5 and U7 code behavior already works and only needs verification of examples.",
+      "For U8, only shell/command-line and module metadata changes are required; no graphical UI changes are in scope.",
+      "The persistent store for U4 (ZooKeeper ensemble) is already provisioned in dev/test environments.",
+      "Documentation is delivered in English only, as part of the source repository."
+    ],
+    "activities": [
+      {
+        "activity_id": "1.1",
+        "activity_name": "Increment analysis and architecture alignment",
+        "activity_description": "Analyze the eight user stories, map them onto the existing XD codebase, define package/API boundaries affected by the repository refactor (U2), SPI (U3), and persistence (U4) work, and produce a lightweight design note reviewed by self-check before coding.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "2.1",
+        "activity_name": "U1 - Design Receptor client API and domain model",
+        "activity_description": "Define the Java client interface and DTO/model classes for Receptor resources (tasks, desired LRPs, actual LRPs), including exception hierarchy.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "2.2",
+        "activity_name": "U1 - Implement Receptor HTTP client",
+        "activity_description": "Implement the REST client against the Receptor endpoints (CRUD for desired LRPs, task submission/cancellation, retrieval of actual LRP state) using Spring REST client support.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "2.3",
+        "activity_name": "U1 - Serialization and error handling",
+        "activity_description": "Implement Jackson mapping (including polymorphic/optional fields), response error mapping, timeouts, and retry-safe behavior for idempotent calls.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "2.4",
+        "activity_name": "U1 - Client unit and integration tests",
+        "activity_description": "Write unit tests with mocked HTTP layer and integration tests against a mock Receptor server plus a smoke test against a real endpoint.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "2.5",
+        "activity_name": "U1 - Wire client into XD runtime",
+        "activity_description": "Expose the client as a configurable Spring bean in XD, add configuration properties (endpoint, credentials), and verify end-to-end interaction with the Diego runtime via Receptor.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "3.1",
+        "activity_name": "U2 - Analyze coupling and define new repository interfaces",
+        "activity_description": "Inspect current stream/job definition repository usage, identify module-deployment dependencies, and define decoupled repository interfaces plus a separate deployment coordination service.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "3.2",
+        "activity_name": "U2 - Refactor stream definition repository",
+        "activity_description": "Refactor the stream definition repository implementation and its callers to the new deployment-free abstraction.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "3.3",
+        "activity_name": "U2 - Refactor job definition repository",
+        "activity_description": "Refactor the job definition repository implementation and its callers to the new deployment-free abstraction.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "3.4",
+        "activity_name": "U2 - Migrate and extend tests",
+        "activity_description": "Update existing unit/integration tests to the new structure and add regression tests proving repository behavior is unchanged.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "4.1",
+        "activity_name": "U3 - Design runtime SPI contracts",
+        "activity_description": "Define SPI interfaces (stream deployer, job deployer, module deployer, status/lifecycle operations) and their contract documentation, ensuring they cover CF, on-prem/local, and Mesos targets.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "4.2",
+        "activity_name": "U3 - Implement SPI core and loading mechanism",
+        "activity_description": "Implement the SPI core, auto-configuration, and service-loading mechanism that discovers and instantiates the selected implementation.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "4.3",
+        "activity_name": "U3 - Adapt existing deployers to the SPI",
+        "activity_description": "Adapt the existing CF and local/on-prem deployment logic into SPI implementations without behavior change.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "4.4",
+        "activity_name": "U3 - Target-based selection and configuration",
+        "activity_description": "Implement configuration properties/profiles that select the SPI implementation per deployment target, with sensible defaults and validation.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "4.5",
+        "activity_name": "U3 - SPI tests",
+        "activity_description": "Add unit tests for selection/loading logic and integration tests exercising each adapted implementation through the SPI.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "5.1",
+        "activity_name": "U4 - Design persistence model and storage approach",
+        "activity_description": "Design the persisted stream metadata schema (definition, deployment state, module bindings, offsets/checkpoint pointers) and confirm ZooKeeper as the backing store behind the repository abstraction.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "5.2",
+        "activity_name": "U4 - Implement persistent stream repository",
+        "activity_description": "Implement CRUD and query operations for persisted stream metadata, including optimistic concurrency handling and listeners for metadata changes.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "5.3",
+        "activity_name": "U4 - Implement failure recovery and re-establishment",
+        "activity_description": "Implement startup/admin-triggered recovery that reads persisted metadata and re-establishes streaming pipelines (redeploy modules, resume from last persisted state) after failure.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "5.4",
+        "activity_name": "U4 - Persistence and failure-scenario tests",
+        "activity_description": "Add unit tests, integration tests against an embedded ZooKeeper, and failure-injection tests (node restart, crash mid-deployment) validating recovery behavior.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "6.1",
+        "activity_name": "U5 - Document quote escaping for Sqoop jobs",
+        "activity_description": "Verify the double-escape behavior (e.g., \\\\\\\\N vs '\\N') with a real job submission, then write the reference documentation section with correct and incorrect examples.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "7.1",
+        "activity_name": "U6 - Design Spark/Spark Streaming integration",
+        "activity_description": "Design how Spark Streaming fits XD streaming pipelines (module roles, receiver approach, checkpointing, module options) consistent with the latest XD and Spark specs.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "7.2",
+        "activity_name": "U6 - Implement Spark streaming modules",
+        "activity_description": "Implement the Spark/Spark Streaming module(s) with configurable options, serialization handling, and lifecycle integration with XD's module container.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "7.3",
+        "activity_name": "U6 - Test Spark pipelines end to end",
+        "activity_description": "Test with a local Spark runtime: unit tests, module-level integration tests, and an end-to-end XD stream (source -> Spark processor -> sink), including failure/restart sanity checks.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "7.4",
+        "activity_name": "U6 - Spark samples and documentation",
+        "activity_description": "Create a runnable sample streaming pipeline and write reference documentation covering options, deployment, and limitations.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "8.1",
+        "activity_name": "U7 - Verify nested batch job/workflow examples",
+        "activity_description": "Build and run verified examples of nesting batch jobs and composed workflows in XD to ensure the documented steps actually work.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "8.2",
+        "activity_name": "U7 - Write nested jobs/workflows documentation",
+        "activity_description": "Write the reference documentation for nesting batch jobs and workflows, including diagrams/examples and common pitfalls.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "9.1",
+        "activity_name": "U8 - Analyze current import options handling",
+        "activity_description": "Catalog all import options currently passed via --args and define the named, typed option metadata that replaces them.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "9.2",
+        "activity_name": "U8 - Implement parameterized import options",
+        "activity_description": "Implement named, validated options for all import options in the affected modules, wiring them into module option metadata.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "9.3",
+        "activity_name": "U8 - Update shell parsing and deprecate --args",
+        "activity_description": "Update shell command parsing/validation, provide deprecation handling and migration guidance for existing --args usage.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "9.4",
+        "activity_name": "U8 - Tests and documentation for new options",
+        "activity_description": "Add/adjust tests for the new options and update reference docs and examples to use parameterized options.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "10.1",
+        "activity_name": "Increment integration and regression testing",
+        "activity_description": "Run cross-feature integration and regression testing of the whole increment (repository refactor + SPI + persistence + Receptor client + Spark modules + options changes), fix integration defects, and stabilize the build.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "10.2",
+        "activity_name": "Release preparation and documentation review",
+        "activity_description": "Final documentation proofreading, changelog/release notes, build packaging verification, and release readiness checks.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 92
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1244,
+    "completion_tokens": 5253,
+    "total_tokens": 6497,
+    "cost": 0.0811446,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0811446,
+      "upstream_inference_prompt_cost": 0.0023496,
+      "upstream_inference_completions_cost": 0.078795
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2254,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789170403-pnsUQye8EvlWmEpw9csn",
+    "object": "chat.completion",
+    "created": 1789170403,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one workday for converting the effort estimate. In my previous response, I stated in the assumptions: \"Effort estimates are net development effort in workdays (8 hours per day) for a single developer\".\n\nSo the answer is 8 work-hours per workday. I should return only valid JSON matching the schema.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one workday for converting the effort estimate. In my previous response, I stated in the assumptions: \"Effort estimates are net development effort in workdays (8 hours per day) for a single developer\".\n\nSo the answer is 8 work-hours per workday. I should return only valid JSON matching the schema.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 4377,
+      "completion_tokens": 105,
+      "total_tokens": 4482,
+      "cost": 0.0119412,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0119412,
+        "upstream_inference_prompt_cost": 0.0103662,
+        "upstream_inference_completions_cost": 0.001575
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 76,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

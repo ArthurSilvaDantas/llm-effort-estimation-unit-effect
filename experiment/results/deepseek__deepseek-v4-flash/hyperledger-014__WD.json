@@ -1,0 +1,232 @@
+{
+  "model_id": "deepseek/deepseek-v4-flash",
+  "spec_id": "hyperledger-014",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789238431-r97jzPxroz5QJB94Ws2G",
+    "object": "chat.completion",
+    "created": 1789238431,
+    "model": "deepseek/deepseek-v4-flash",
+    "provider": "Baidu",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"All new functions will be implemented in Go within the existing fabric-config library codebase, following established patterns for config manipulation (e.g., using protobuf and the configtx package).\",\n    \"For the CLI tool (U6), we will use the Cobra/Viper libraries for command-line parsing and configuration, and reuse the fabric-config library for config updates.\",\n    \"Existing functions like GetConfiguration/SetConfiguration and GetMSP/SetMSP will be preserved; new individual setter functions will be added alongside them.\",\n    \"For U2, the unsigned envelope will be created by omitting the signing step and returning a cb.ConfigUpdateEnvelope directly.\",\n    \"For U3 and U4, removal functions will modify the channel group and enforce that no update is allowed to set the legacy fields.\",\n    \"For U5, add/remove consenter functions will match on host, port, client TLS cert, and server TLS cert for removal.\",\n    \"For U6, the tool will support dry-run by printing the computed config update to stdout without submitting it, and will stack multiple operations in a single batch.\",\n    \"For U7 and U8, functions will persist existing values for other fields when updating individual ones (e.g., SetMaxMessageCount keeps other BatchSize values).\"\n  ],\n  \"assumptions\": [\n    \"The developer has prior experience with Hyperledger Fabric, Go, and the fabric-config library, and does not require ramp-up time.\",\n    \"Existing test infrastructure (unit tests, linters, CI) is in place; new tests will be added within each activity.\",\n    \"All examples will be updated as specified, but writing extensive documentation (user guides) beyond examples is not included.\",\n    \"The CLI tool does not need to support all possible connection profile fields; only those required per the specification.\",\n    \"Effort estimates include coding, unit testing, and updating examples for the respective user story.\",\n    \"No deployment or packaging (e.g., Docker images, release scripts) is required; only source code changes.\",\n    \"The codebase is under active development; no conflicts or merge overhead are considered.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"U1\",\n      \"activity_name\": \"Add New Consortium API\",\n      \"activity_description\": \"Implement AddNewConsortium function in fabric-config library to add a new consortium to the consortiums group, including handling the case where no orgs are added, and updating examples.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"U2\",\n      \"activity_name\": \"Unsigned ConfigUpdateEnvelope Function\",\n      \"activity_description\": \"Implement a function that returns a cb.ConfigUpdateEnvelope without requiring signing identities, enabling later signing via peer channel commands.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U3\",\n      \"activity_name\": \"RemoveLegacyOrdererAddresses Function\",\n      \"activity_description\": \"Implement RemoveLegacyOrdererAddresses to remove top-level orderer addresses from channel config, and prevent setting of OrdererAddresses field. New genesis blocks must be created without the field.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U4\",\n      \"activity_name\": \"RemoveKafkaBrokers Function\",\n      \"activity_description\": \"Implement a function to remove the KafkaBrokers section from config, similar to RemoveLegacyOrdererAddresses. Add/improve example for Kafka to EtcdRaft migration.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U5\",\n      \"activity_name\": \"Add/Remove Consenter API for EtcdRaft\",\n      \"activity_description\": \"Implement AddConsenter and RemoveConsenter functions for etcdraft orderer configuration, matching host, port, and both TLS certs for removal.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U6\",\n      \"activity_name\": \"CLI Tool for Bulk Operations on Multiple Channels\",\n      \"activity_description\": \"Develop a CLI tool that consumes the fabric-config library to perform bulk operations (update MSP, add/remove consenters, add/remove anchor peers, TLS cert updates, etc.) on a list of channels. Supports dry-run mode, error messages for unsupported operations, stacking multiple operations, connection profile, signing identities, and fetching/submitting config transactions via peer discovery.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"U7\",\n      \"activity_name\": \"Individual Orderer Config Field Setters\",\n      \"activity_description\": \"Add new API functions to OrdererGroup for setting individual fields: SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, SetConsensusType, SetConsensusState, and additional EtcdRaft metadata functions (e.g., AddConsenter/RemoveConsenter already covered in U5, but also other individual metadata value setters). Keep existing SetConfiguration/GetConfiguration.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"U8\",\n      \"activity_name\": \"Individual MSP Field Setters for Org Groups\",\n      \"activity_description\": \"Add new API functions to OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup for individual MSP field updates: AddRootCert/RemoveRootCert, AddIntermediateCert/RemoveIntermediateCert, AddAdminCert/RemoveAdminCert, AddCRL/RemoveCRL, AddOUIdentifier/RemoveOUIdentifier, SetCryptoConfig, AddTLSRootCert/RemoveTLSRootCert, AddTLSIntermediateCert/RemoveTLSIntermediateCert, SetClient/Peer/Admin/OrdererOUIdentifier, EnableNodeOUs/DisableNodeOUs. Perform necessary certificate validation. Keep existing GetMSP/SetMSP.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 38\n  }\n}",
+          "refusal": null,
+          "reasoning": "We need to estimate software development effort for implementing the specified user stories (U1-U8) for the Hyperledger Fabric config API library and CLI tool. We'll break down into activities using WBS. We need to state technical/design decisions and assumptions. Effort in workdays. Provide JSON output.\n\nFirst, understand the scope: U1-U8 are features for fabric-config library (Go) plus a CLI tool for bulk operations. We'll list activities per user story, and also cross-cutting activities like testing, documentation, integration.\n\nTechnical decisions: We will implement in Go (existing codebase). We'll follow existing patterns (e.g., using protobuf, configtx). For U6 CLI, we'll use cobra/viper. We'll assume existing test infrastructure.\n\nAssumptions: Developer is experienced with Hyperledger Fabric and Go. No need for deployment or CI setup. Effort includes coding, unit tests, doc updates, examples. For each user story, we estimate based on complexity.\n\nLet's map each user story to activities:\n\nU1: AddNewConsortium function. Involves adding to consortium group, updating examples. Low complexity. Estimate: 1 day.\n\nU2: Function returning ConfigUpdateEnvelope without signing. Medium: need to create unsigned envelope. Estimate: 2 days (including tests and examples).\n\nU3: RemoveLegacyOrdererAddresses function. Medium: modify channel group, prevent updates. Estimate: 2 days.\n\nU4: RemoveKafkaBrokers function. Similar to U3. Estimate: 1.5 days (maybe 2? but let's say 1.5). But we'll round to 2? Better to use half days? We can use 2.\n\nU5: Add/Remove consenter functions for etcdraft. Medium: similar to existing add/remove endpoints. Estimate: 2 days.\n\nU6: CLI tool for bulk operations. This is large. Activities: design CLI structure, implement commands, connection profile parsing, signing identities, dry-run, batch JSON parsing, operations for each (update MSP, add/remove consenter, anchor peers). Also error handling. Estimate: 10-15 days. Let's break into sub-activities: CLI scaffolding (2), batch operation parsing (2), individual operation implementations (5), integration tests (3), documentation (2). Total 14 days. But we need to sum across activities. Better to have one activity per user story? But WBS can have multiple activities. We'll create activities per user story, and for U6 we may split into sub-activities. However the instruction says \"break down the development of the software increment into the activities necessary to deliver it.\" So we can have high-level activities per user story. For U6, it's a CLI tool; it's a separate deliverable. We'll have one activity for U6 with effort 12 days.\n\nU7: Set individual orderer config fields. Many functions: SetMaxMessageCount, SetAbsoluteMaxBytes, etc. Also need to handle persistence. Medium-high complexity. Estimate: 5 days.\n\nU8: MSP individual field functions for three org groups. Many functions (AddRootCert, etc.). High complexity, but many are similar. Estimate: 6 days.\n\nAlso need cross-cutting: integration testing, documentation updates, code review? But the developer is doing all work, so we include testing and doc within each activity. However some documentation may be shared. We'll assume each activity includes its own unit tests and example updates. For U6, includes CLI documentation.\n\nThus activities: A1-U1, A2-U2, A3-U3, A4-U4, A5-U5, A6-U6, A7-U7, A8-U8. Possibly also a project setup activity? But we assume codebase already exists. So no.\n\nLet's assign effort in days: U1:1, U2:2, U3:2, U4:2, U5:2, U6:12, U7:5, U8:6. Total = 1+2+2+2+2+12+5+6 = 32 days. But U6 might be underestimated; let's think: The CLI tool requires reading connection profile, fetching config via discovery, submitting, multiple operations, dry-run, signing identities, error messages, etc. Could be 15 days. Let's adjust U6 to 15. Then total = 35 days.\n\nAlso U7 and U8: U7 has many small functions; U8 has many functions for three org groups; each function is small but many. U7: about 10 functions? U8: about 12 functions per org group = 36 functions, but many are similar. Might be higher. Let's increase U7 to 6 and U8 to 8. Then total = 1+2+2+2+2+15+6+8 = 38 days.\n\nWe also need to consider integration testing across stories? The specification says \"development of the software increment\", which includes all 8 user stories. Integration testing across all stories might be needed, but we'll include within each activity.\n\nWe'll also state technical decisions: using existing fabric-config patterns, Go, etc.\n\nAssumptions: we have full access to existing codebase and tests; no external dependencies; developer is familiar.\n\nNow produce JSON. We need activity_id like \"A1\", \"A2\", etc. Each has name, description, effort. Provide total.\n\nLet's write JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to estimate software development effort for implementing the specified user stories (U1-U8) for the Hyperledger Fabric config API library and CLI tool. We'll break down into activities using WBS. We need to state technical/design decisions and assumptions. Effort in workdays. Provide JSON output.\n\nFirst, understand the scope: U1-U8 are features for fabric-config library (Go) plus a CLI tool for bulk operations. We'll list activities per user story, and also cross-cutting activities like testing, documentation, integration.\n\nTechnical decisions: We will implement in Go (existing codebase). We'll follow existing patterns (e.g., using protobuf, configtx). For U6 CLI, we'll use cobra/viper. We'll assume existing test infrastructure.\n\nAssumptions: Developer is experienced with Hyperledger Fabric and Go. No need for deployment or CI setup. Effort includes coding, unit tests, doc updates, examples. For each user story, we estimate based on complexity.\n\nLet's map each user story to activities:\n\nU1: AddNewConsortium function. Involves adding to consortium group, updating examples. Low complexity. Estimate: 1 day.\n\nU2: Function returning ConfigUpdateEnvelope without signing. Medium: need to create unsigned envelope. Estimate: 2 days (including tests and examples).\n\nU3: RemoveLegacyOrdererAddresses function. Medium: modify channel group, prevent updates. Estimate: 2 days.\n\nU4: RemoveKafkaBrokers function. Similar to U3. Estimate: 1.5 days (maybe 2? but let's say 1.5). But we'll round to 2? Better to use half days? We can use 2.\n\nU5: Add/Remove consenter functions for etcdraft. Medium: similar to existing add/remove endpoints. Estimate: 2 days.\n\nU6: CLI tool for bulk operations. This is large. Activities: design CLI structure, implement commands, connection profile parsing, signing identities, dry-run, batch JSON parsing, operations for each (update MSP, add/remove consenter, anchor peers). Also error handling. Estimate: 10-15 days. Let's break into sub-activities: CLI scaffolding (2), batch operation parsing (2), individual operation implementations (5), integration tests (3), documentation (2). Total 14 days. But we need to sum across activities. Better to have one activity per user story? But WBS can have multiple activities. We'll create activities per user story, and for U6 we may split into sub-activities. However the instruction says \"break down the development of the software increment into the activities necessary to deliver it.\" So we can have high-level activities per user story. For U6, it's a CLI tool; it's a separate deliverable. We'll have one activity for U6 with effort 12 days.\n\nU7: Set individual orderer config fields. Many functions: SetMaxMessageCount, SetAbsoluteMaxBytes, etc. Also need to handle persistence. Medium-high complexity. Estimate: 5 days.\n\nU8: MSP individual field functions for three org groups. Many functions (AddRootCert, etc.). High complexity, but many are similar. Estimate: 6 days.\n\nAlso need cross-cutting: integration testing, documentation updates, code review? But the developer is doing all work, so we include testing and doc within each activity. However some documentation may be shared. We'll assume each activity includes its own unit tests and example updates. For U6, includes CLI documentation.\n\nThus activities: A1-U1, A2-U2, A3-U3, A4-U4, A5-U5, A6-U6, A7-U7, A8-U8. Possibly also a project setup activity? But we assume codebase already exists. So no.\n\nLet's assign effort in days: U1:1, U2:2, U3:2, U4:2, U5:2, U6:12, U7:5, U8:6. Total = 1+2+2+2+2+12+5+6 = 32 days. But U6 might be underestimated; let's think: The CLI tool requires reading connection profile, fetching config via discovery, submitting, multiple operations, dry-run, signing identities, error messages, etc. Could be 15 days. Let's adjust U6 to 15. Then total = 35 days.\n\nAlso U7 and U8: U7 has many small functions; U8 has many functions for three org groups; each function is small but many. U7: about 10 functions? U8: about 12 functions per org group = 36 functions, but many are similar. Might be higher. Let's increase U7 to 6 and U8 to 8. Then total = 1+2+2+2+2+15+6+8 = 38 days.\n\nWe also need to consider integration testing across stories? The specification says \"development of the software increment\", which includes all 8 user stories. Integration testing across all stories might be needed, but we'll include within each activity.\n\nWe'll also state technical decisions: using existing fabric-config patterns, Go, etc.\n\nAssumptions: we have full access to existing codebase and tests; no external dependencies; developer is familiar.\n\nNow produce JSON. We need activity_id like \"A1\", \"A2\", etc. Each has name, description, effort. Provide total.\n\nLet's write JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3211,
+      "completion_tokens": 2466,
+      "total_tokens": 5677,
+      "cost": 0.0005358094,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0005358094,
+        "upstream_inference_prompt_cost": 0.0002112838,
+        "upstream_inference_completions_cost": 0.0003245256
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1150,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"All new functions will be implemented in Go within the existing fabric-config library codebase, following established patterns for config manipulation (e.g., using protobuf and the configtx package).\",\n    \"For the CLI tool (U6), we will use the Cobra/Viper libraries for command-line parsing and configuration, and reuse the fabric-config library for config updates.\",\n    \"Existing functions like GetConfiguration/SetConfiguration and GetMSP/SetMSP will be preserved; new individual setter functions will be added alongside them.\",\n    \"For U2, the unsigned envelope will be created by omitting the signing step and returning a cb.ConfigUpdateEnvelope directly.\",\n    \"For U3 and U4, removal functions will modify the channel group and enforce that no update is allowed to set the legacy fields.\",\n    \"For U5, add/remove consenter functions will match on host, port, client TLS cert, and server TLS cert for removal.\",\n    \"For U6, the tool will support dry-run by printing the computed config update to stdout without submitting it, and will stack multiple operations in a single batch.\",\n    \"For U7 and U8, functions will persist existing values for other fields when updating individual ones (e.g., SetMaxMessageCount keeps other BatchSize values).\"\n  ],\n  \"assumptions\": [\n    \"The developer has prior experience with Hyperledger Fabric, Go, and the fabric-config library, and does not require ramp-up time.\",\n    \"Existing test infrastructure (unit tests, linters, CI) is in place; new tests will be added within each activity.\",\n    \"All examples will be updated as specified, but writing extensive documentation (user guides) beyond examples is not included.\",\n    \"The CLI tool does not need to support all possible connection profile fields; only those required per the specification.\",\n    \"Effort estimates include coding, unit testing, and updating examples for the respective user story.\",\n    \"No deployment or packaging (e.g., Docker images, release scripts) is required; only source code changes.\",\n    \"The codebase is under active development; no conflicts or merge overhead are considered.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"U1\",\n      \"activity_name\": \"Add New Consortium API\",\n      \"activity_description\": \"Implement AddNewConsortium function in fabric-config library to add a new consortium to the consortiums group, including handling the case where no orgs are added, and updating examples.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"U2\",\n      \"activity_name\": \"Unsigned ConfigUpdateEnvelope Function\",\n      \"activity_description\": \"Implement a function that returns a cb.ConfigUpdateEnvelope without requiring signing identities, enabling later signing via peer channel commands.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U3\",\n      \"activity_name\": \"RemoveLegacyOrdererAddresses Function\",\n      \"activity_description\": \"Implement RemoveLegacyOrdererAddresses to remove top-level orderer addresses from channel config, and prevent setting of OrdererAddresses field. New genesis blocks must be created without the field.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U4\",\n      \"activity_name\": \"RemoveKafkaBrokers Function\",\n      \"activity_description\": \"Implement a function to remove the KafkaBrokers section from config, similar to RemoveLegacyOrdererAddresses. Add/improve example for Kafka to EtcdRaft migration.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U5\",\n      \"activity_name\": \"Add/Remove Consenter API for EtcdRaft\",\n      \"activity_description\": \"Implement AddConsenter and RemoveConsenter functions for etcdraft orderer configuration, matching host, port, and both TLS certs for removal.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"U6\",\n      \"activity_name\": \"CLI Tool for Bulk Operations on Multiple Channels\",\n      \"activity_description\": \"Develop a CLI tool that consumes the fabric-config library to perform bulk operations (update MSP, add/remove consenters, add/remove anchor peers, TLS cert updates, etc.) on a list of channels. Supports dry-run mode, error messages for unsupported operations, stacking multiple operations, connection profile, signing identities, and fetching/submitting config transactions via peer discovery.\",\n      \"most_likely_effort\": 15\n    },\n    {\n      \"activity_id\": \"U7\",\n      \"activity_name\": \"Individual Orderer Config Field Setters\",\n      \"activity_description\": \"Add new API functions to OrdererGroup for setting individual fields: SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, SetConsensusType, SetConsensusState, and additional EtcdRaft metadata functions (e.g., AddConsenter/RemoveConsenter already covered in U5, but also other individual metadata value setters). Keep existing SetConfiguration/GetConfiguration.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"U8\",\n      \"activity_name\": \"Individual MSP Field Setters for Org Groups\",\n      \"activity_description\": \"Add new API functions to OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup for individual MSP field updates: AddRootCert/RemoveRootCert, AddIntermediateCert/RemoveIntermediateCert, AddAdminCert/RemoveAdminCert, AddCRL/RemoveCRL, AddOUIdentifier/RemoveOUIdentifier, SetCryptoConfig, AddTLSRootCert/RemoveTLSRootCert, AddTLSIntermediateCert/RemoveTLSIntermediateCert, SetClient/Peer/Admin/OrdererOUIdentifier, EnableNodeOUs/DisableNodeOUs. Perform necessary certificate validation. Keep existing GetMSP/SetMSP.\",\n      \"most_likely_effort\": 8\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 38\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "All new functions will be implemented in Go within the existing fabric-config library codebase, following established patterns for config manipulation (e.g., using protobuf and the configtx package).",
+      "For the CLI tool (U6), we will use the Cobra/Viper libraries for command-line parsing and configuration, and reuse the fabric-config library for config updates.",
+      "Existing functions like GetConfiguration/SetConfiguration and GetMSP/SetMSP will be preserved; new individual setter functions will be added alongside them.",
+      "For U2, the unsigned envelope will be created by omitting the signing step and returning a cb.ConfigUpdateEnvelope directly.",
+      "For U3 and U4, removal functions will modify the channel group and enforce that no update is allowed to set the legacy fields.",
+      "For U5, add/remove consenter functions will match on host, port, client TLS cert, and server TLS cert for removal.",
+      "For U6, the tool will support dry-run by printing the computed config update to stdout without submitting it, and will stack multiple operations in a single batch.",
+      "For U7 and U8, functions will persist existing values for other fields when updating individual ones (e.g., SetMaxMessageCount keeps other BatchSize values)."
+    ],
+    "assumptions": [
+      "The developer has prior experience with Hyperledger Fabric, Go, and the fabric-config library, and does not require ramp-up time.",
+      "Existing test infrastructure (unit tests, linters, CI) is in place; new tests will be added within each activity.",
+      "All examples will be updated as specified, but writing extensive documentation (user guides) beyond examples is not included.",
+      "The CLI tool does not need to support all possible connection profile fields; only those required per the specification.",
+      "Effort estimates include coding, unit testing, and updating examples for the respective user story.",
+      "No deployment or packaging (e.g., Docker images, release scripts) is required; only source code changes.",
+      "The codebase is under active development; no conflicts or merge overhead are considered."
+    ],
+    "activities": [
+      {
+        "activity_id": "U1",
+        "activity_name": "Add New Consortium API",
+        "activity_description": "Implement AddNewConsortium function in fabric-config library to add a new consortium to the consortiums group, including handling the case where no orgs are added, and updating examples.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "U2",
+        "activity_name": "Unsigned ConfigUpdateEnvelope Function",
+        "activity_description": "Implement a function that returns a cb.ConfigUpdateEnvelope without requiring signing identities, enabling later signing via peer channel commands.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "U3",
+        "activity_name": "RemoveLegacyOrdererAddresses Function",
+        "activity_description": "Implement RemoveLegacyOrdererAddresses to remove top-level orderer addresses from channel config, and prevent setting of OrdererAddresses field. New genesis blocks must be created without the field.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "U4",
+        "activity_name": "RemoveKafkaBrokers Function",
+        "activity_description": "Implement a function to remove the KafkaBrokers section from config, similar to RemoveLegacyOrdererAddresses. Add/improve example for Kafka to EtcdRaft migration.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "U5",
+        "activity_name": "Add/Remove Consenter API for EtcdRaft",
+        "activity_description": "Implement AddConsenter and RemoveConsenter functions for etcdraft orderer configuration, matching host, port, and both TLS certs for removal.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "U6",
+        "activity_name": "CLI Tool for Bulk Operations on Multiple Channels",
+        "activity_description": "Develop a CLI tool that consumes the fabric-config library to perform bulk operations (update MSP, add/remove consenters, add/remove anchor peers, TLS cert updates, etc.) on a list of channels. Supports dry-run mode, error messages for unsupported operations, stacking multiple operations, connection profile, signing identities, and fetching/submitting config transactions via peer discovery.",
+        "most_likely_effort": 15
+      },
+      {
+        "activity_id": "U7",
+        "activity_name": "Individual Orderer Config Field Setters",
+        "activity_description": "Add new API functions to OrdererGroup for setting individual fields: SetMaxMessageCount, SetAbsoluteMaxBytes, SetPreferredMaxBytes, SetBatchTimeout, SetMaxChannels, SetConsensusType, SetConsensusState, and additional EtcdRaft metadata functions (e.g., AddConsenter/RemoveConsenter already covered in U5, but also other individual metadata value setters). Keep existing SetConfiguration/GetConfiguration.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "U8",
+        "activity_name": "Individual MSP Field Setters for Org Groups",
+        "activity_description": "Add new API functions to OrdererOrgGroup, ApplicationOrgGroup, and ConsortiumOrgGroup for individual MSP field updates: AddRootCert/RemoveRootCert, AddIntermediateCert/RemoveIntermediateCert, AddAdminCert/RemoveAdminCert, AddCRL/RemoveCRL, AddOUIdentifier/RemoveOUIdentifier, SetCryptoConfig, AddTLSRootCert/RemoveTLSRootCert, AddTLSIntermediateCert/RemoveTLSIntermediateCert, SetClient/Peer/Admin/OrdererOUIdentifier, EnableNodeOUs/DisableNodeOUs. Perform necessary certificate validation. Keep existing GetMSP/SetMSP.",
+        "most_likely_effort": 8
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 38
+    }
+  },
+  "usage": {
+    "prompt_tokens": 3211,
+    "completion_tokens": 2466,
+    "total_tokens": 5677,
+    "cost": 0.0005358094,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005358094,
+      "upstream_inference_prompt_cost": 0.0002112838,
+      "upstream_inference_completions_cost": 0.0003245256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1150,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "deepseek/deepseek-v4-flash",
+  "conversion_response": {
+    "id": "gen-1789238454-rqQyuRF9JnmXlCCZFrkw",
+    "object": "chat.completion",
+    "created": 1789238454,
+    "model": "deepseek/deepseek-v4-flash",
+    "provider": "Baidu",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "We need to answer the conversion: how many work-hours per workday. Typically in software estimation, one workday is 8 hours. The specification didn't specify, but standard is 8. Return JSON with work_hours_per_workday as 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to answer the conversion: how many work-hours per workday. Typically in software estimation, one workday is 8 hours. The specification didn't specify, but standard is 8. Return JSON with work_hours_per_workday as 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 4649,
+      "completion_tokens": 71,
+      "total_tokens": 4720,
+      "cost": 0.0003152478,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0003152478,
+        "upstream_inference_prompt_cost": 0.0003059042,
+        "upstream_inference_completions_cost": 9.3436e-06
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 54,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

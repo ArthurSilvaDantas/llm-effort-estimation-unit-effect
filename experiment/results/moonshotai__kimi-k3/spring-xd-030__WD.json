@@ -1,0 +1,345 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-030",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789154808-xhBPghfMLUOs7BFWab0V",
+    "object": "chat.completion",
+    "created": 1789154808,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"The increment targets a Spring XD-style distributed runtime (streams, modules, containers, message bus) built on Spring Integration, Spring AMQP, and Spring Boot, as implied by the user stories.\",\n    \"U1: Implement the alternative DLQ as a configurable per-bus/per-module dead-letter destination; failed messages are republished with added headers carrying the exception class, message, and the stack trace serialized as a String header to guarantee transport safety.\",\n    \"U2: Implement the database-change (CDC) source as an out-of-the-box stream module using incremental polling (timestamp/version columns and change tables) via a Spring Integration JDBC inbound adapter, emitting canonical JSON change events onto the bus so any sink (broker, Hadoop, DB) can consume them.\",\n    \"U3: Support RabbitMQ HA/FT by accepting a list of cluster node addresses (host:port) in the connection factory configuration, leveraging spring-amqp's multi-address failover; upstream the change to spring-amqp if required.\",\n    \"U5: Colocation is achieved by deploying all modules of a stream into a single container JVM while preserving module classloader isolation; automatic failover uses leader election built on the existing ZooKeeper/Curator infrastructure already used by the runtime.\",\n    \"U8: Align all managed dependency versions with the Spring Boot 1.2.3 BOM using dependency-management overrides, then resolve incompatibilities iteratively until the full build and test suite pass.\",\n    \"The framework overview in the specification is descriptive only; the concrete versions named in the stories (Boot 1.2.3, Gemfire 8.1, SI GA, SI Kafka) define the target stack, on the project's existing JDK baseline (Java 8).\"\n  ],\n  \"assumptions\": [\n    \"All estimates are ideal engineering workdays (8 hours) for one senior developer performing all work, and exclude elapsed-time waits (e.g., external release timelines for Gemfire 8.1, Spring Data Gosling, SI milestones).\",\n    \"The external dependencies referenced in the stories (Gemfire 8.1, Spring Data Gosling GA, SI GA, SI Kafka release, Spring Boot 1.2.3) are available when work begins.\",\n    \"An existing codebase, build system, CI pipeline, and integration test environments (RabbitMQ cluster, databases, ZooKeeper, Gemfire) are available; no infrastructure provisioning effort is included.\",\n    \"Effort covers analysis, design, implementation, unit and integration testing, and documentation of the increment; production deployment, operations, project management, and release process overhead are excluded.\",\n    \"For U2, a polling-based CDC approach is assumed (no licensing or integration of a third-party log-based CDC product); supported databases are limited to those already supported by the platform's JDBC modules.\",\n    \"Defects found during increment-level integration testing are fixed within the hardening activity; no major architectural rework is triggered by the dependency upgrades.\",\n    \"Since a single developer performs all work, code review is performed as structured self-review within the hardening activity.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"1.1\",\n      \"activity_name\": \"Increment requirements analysis and architecture\",\n      \"activity_description\": \"Analyze all eight user stories, identify cross-cutting impacts (message bus, container, dependency management), and produce the overall technical design for the increment.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"2.1\",\n      \"activity_name\": \"U1: Design alternative DLQ configuration\",\n      \"activity_description\": \"Design the configuration option for an alternative dead-letter queue and the error-header schema (exception type, message, stack trace) for republished failed messages.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"2.2\",\n      \"activity_name\": \"U1: Implement alternative DLQ and error headers\",\n      \"activity_description\": \"Implement the alternative DLQ destination configuration and the enrichment of failed messages with exception and stack-trace headers in the message bus error handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"2.3\",\n      \"activity_name\": \"U1: Unit and integration tests\",\n      \"activity_description\": \"Write unit tests and broker-backed integration tests verifying messages are published to the alternative DLQ with the additional exception headers.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"2.4\",\n      \"activity_name\": \"U1: Documentation\",\n      \"activity_description\": \"Document the new DLQ configuration properties and header format.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"3.1\",\n      \"activity_name\": \"U2: Research and design CDC module\",\n      \"activity_description\": \"Evaluate CDC techniques, define the change-event schema, incremental polling strategy, and module contract for consuming database changes as event streams.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"3.2\",\n      \"activity_name\": \"U2: Implement CDC source module\",\n      \"activity_description\": \"Implement the out-of-the-box source module that polls database changes incrementally and publishes canonical change events to the stream for consumption by broker, Hadoop, and DB sinks.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"3.3\",\n      \"activity_name\": \"U2: Unit and integration tests\",\n      \"activity_description\": \"Test the CDC module against supported databases, including incremental synchronization correctness, restart/resume behavior, and event serialization.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"3.4\",\n      \"activity_name\": \"U2: Documentation and samples\",\n      \"activity_description\": \"Document module options and provide sample stream definitions for CDC use cases.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"4.1\",\n      \"activity_name\": \"U3: Design RabbitMQ cluster connectivity\",\n      \"activity_description\": \"Design configuration for connecting modules to a RabbitMQ cluster for HA/FT (address lists, failover and recovery behavior), aligned with spring-amqp capabilities.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"4.2\",\n      \"activity_name\": \"U3: Implement multi-address broker connection\",\n      \"activity_description\": \"Implement support for multiple RabbitMQ node addresses and automatic failover in the connection configuration, contributing changes to spring-amqp where appropriate.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.3\",\n      \"activity_name\": \"U3: Cluster failover integration tests\",\n      \"activity_description\": \"Set up a RabbitMQ cluster test environment and verify connection failover and recovery across node outages.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.4\",\n      \"activity_name\": \"U3: Documentation\",\n      \"activity_description\": \"Document cluster/HA connection configuration properties.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"5.1\",\n      \"activity_name\": \"U4: Upgrade to Gemfire 8.1\",\n      \"activity_description\": \"Upgrade the Gemfire dependency to 8.1 in coordination with the Spring Data Gosling release, adapt to API changes, and run Gemfire-related regression tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"6.1\",\n      \"activity_name\": \"U5: Design colocated deployment and leader election\",\n      \"activity_description\": \"Design the same-container (colocated) stream deployment model, module isolation within one JVM, and the leader-election-based failover approach using ZooKeeper.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"6.2\",\n      \"activity_name\": \"U5: Implement colocated stream deployment\",\n      \"activity_description\": \"Implement deployment of all modules of a stream into a single container while preserving module lifecycle and classloader isolation.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"6.3\",\n      \"activity_name\": \"U5: Implement leader election for failover\",\n      \"activity_description\": \"Implement leader election among modules/containers so a stream automatically fails over from one container to another.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"6.4\",\n      \"activity_name\": \"U5: Colocation and failover integration tests\",\n      \"activity_description\": \"Integration and system tests covering colocated stream execution and automatic failover under container failure scenarios.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"6.5\",\n      \"activity_name\": \"U5: Documentation\",\n      \"activity_description\": \"Document colocated deployment mode and failover behavior and configuration.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"7.1\",\n      \"activity_name\": \"U6: Upgrade Spring Integration to milestone/GA\",\n      \"activity_description\": \"Upgrade the Spring Integration version, validate the JMX improvements, and run affected regression tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"8.1\",\n      \"activity_name\": \"U7: Upgrade Spring Integration Kafka\",\n      \"activity_description\": \"Upgrade to the SI Kafka release, adapt to API/behavior changes, and regression-test Kafka-based modules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"9.1\",\n      \"activity_name\": \"U8: Upgrade Spring Boot 1.2.3 and align dependency versions\",\n      \"activity_description\": \"Upgrade to Spring Boot 1.2.3 and synchronize all listed managed dependency versions (logback, jackson, gemfire, tomcat, jetty, security, etc.) with the Boot BOM.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"9.2\",\n      \"activity_name\": \"U8: Resolve upgrade incompatibilities\",\n      \"activity_description\": \"Fix compilation errors, API breaks, and behavioral regressions introduced by the Boot and dependency upgrades.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"9.3\",\n      \"activity_name\": \"U8: Full build and regression verification\",\n      \"activity_description\": \"Run the complete build and regression test suite to verify the upgraded dependency stack.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"10.1\",\n      \"activity_name\": \"Increment end-to-end integration testing\",\n      \"activity_description\": \"Execute end-to-end scenarios spanning the new features (DLQ routing, CDC streams, Rabbit cluster failover, colocated deployment) on the upgraded stack.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"10.2\",\n      \"activity_name\": \"Defect fixing, self-review and hardening\",\n      \"activity_description\": \"Structured self-review of all changes, refactoring, and fixing defects found during increment-level testing.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"10.3\",\n      \"activity_name\": \"Release notes and final documentation\",\n      \"activity_description\": \"Consolidate documentation updates and produce release notes for the increment.\",\n      \"most_likely_effort\": 1\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 78\n  }\n}",
+          "refusal": null,
+          "reasoning": "The user wants me to estimate software development effort for a Spring XD (Spring Data eXtreme) related increment, based on user stories U1-U8. These stories appear to be from the Spring XD project's JIRA backlog (they look like actual Spring XD issues — XD-2647, etc.).\n\nLet me analyze each user story:\n\nU1: Alternative DLQ configuration option for publishing failed messages with additional headers including exception and stack trace. This is a feature for Spring XD's message bus / error handling. Effort: maybe 5-8 workdays including design, implementation, tests, docs.\n\nU2: OOTB module to consume database changes as event streams (CDC - Change Data Capture), to incrementally synchronize with real-time DB updates to various destinations (Brokers, Hadoop, DB, etc.). This is a significant feature — a CDC source module. Likely based on something like a polling-based JDBC source or integration with a CDC tool. Effort: maybe 15-20 workdays.\n\nU3: Connect to RabbitMQ cluster for HA/FT — support multiple broker addresses in spring-amqp. This is a moderate feature — adding address/ha support to connection factory configuration. Effort: maybe 5-8 workdays.\n\nU4: Upgrade to Gemfire 8.1 — dependency upgrade, depends on Spring Data Gosling GA. Includes testing. Effort: maybe 3-5 workdays.\n\nU5: Deploy stream in same container (colocated modules) — this is a big architectural feature in Spring XD, plus leader election for failover. This is a major feature. Effort: maybe 20-30 workdays. Leader election alone (using ZooKeeper/Curator) maybe 8-10 days.\n\nU6: Upgrade to Spring Integration milestone/GA release — dependency upgrade. Effort: 2-4 workdays.\n\nU7: Upgrade to Spring Integration Kafka release — dependency upgrade with testing. Effort: 2-4 workdays.\n\nU8: Upgrade to Spring Boot 1.2.3 and sync many dependency versions — this is a dependency alignment task across many libraries, requiring build changes, compatibility testing, regression fixing. Effort: maybe 8-12 workdays.\n\nThe context is Spring XD (a distributed data integration runtime). The spec mentions Spring Framework generally, but the stories are clearly Spring XD stories (streams, modules, containers, XD mentioned in U4 and U5).\n\nI need to produce a WBS-based estimate. Let me structure:\n\nActivities could be organized per user story, plus cross-cutting activities (project setup, integration testing, documentation, release). Or per story broken into design/implementation/test sub-activities. The instructions say break down into activities necessary to deliver the increment. I'll do a WBS with per-story activities each including analysis, implementation, unit/integration tests, and docs — but maybe better to break each story into its constituent activities (design, implement, test, document) to be more WBS-like. However that could produce many activities. Alternatively, one activity per story plus cross-cutting ones. I think a good WBS would have:\n\n1. Requirements analysis & architecture/design (overall increment) — 3 days\n2. U1: Alternative DLQ with exception headers — maybe broken into design+implement+test. Let me give per-story estimates:\n\n- U1: Alternative DLQ support with additional headers (exception + stack trace)\n  - Design: 1d, Implementation: 3d, Tests: 2d, Docs: 0.5d → total ~6.5d. Or single activity 6d.\n- U2: CDC module (database change event streams) — significant: design 3d, implementation 8d, tests 5d, docs 1d → ~17d.\n- U3: RabbitMQ cluster (HA/FT) connectivity — design 1d, implement 2d, test with cluster setup 2d, docs 0.5 → ~5.5d.\n- U4: Gemfire 8.1 upgrade — 3d.\n- U5: Colocated stream deployment + leader election — design 4d, implement colocation 8d, leader election 5d, tests 5d, docs 1d → ~23d.\n- U6: Spring Integration upgrade — 2d.\n- U7: Spring Integration Kafka upgrade — 2d.\n- U8: Spring Boot 1.2.3 + dependency sync — 8d.\n- Cross-cutting: integration/system testing of the increment — 5d; CI/build updates — included in U8 maybe; documentation/release notes — 2d; code reviews/rework — maybe fold in.\n\nLet me decide the granularity. I'll break each user story into 2-4 activities: design, implementation, testing, documentation where meaningful. That yields a detailed WBS. Let me compute.\n\nAlternatively, simpler: one activity per user story plus cross-cutting activities. The instructions: \"Start by breaking down the development of the software increment into the activities necessary to deliver it.\" A WBS with phases: for each story, activities like \"Design\", \"Implement\", \"Test\". I'll do a moderately detailed breakdown — maybe ~15-20 activities. Let me lay it out:\n\nPhase A: Overall analysis and design\n- A1: Requirements analysis and architecture for the increment — 3 workdays\n\nPhase B: U1 Alternative DLQ\n- B1: Design alternative DLQ configuration and error-message header enrichment — 1\n- B2: Implement DLQ config option + exception/stacktrace headers — 3\n- B3: Unit and integration tests — 2\n- B4: Documentation — 0.5\nSubtotal: 6.5\n\nPhase C: U2 CDC module\n- C1: Research/design CDC approach (choose technique: polling vs log-based) — 3\n- C2: Implement CDC source module (schema metadata, incremental polling, event serialization) — 8\n- C3: Unit and integration tests against supported DBs — 5\n- C4: Documentation and samples — 1\nSubtotal: 17\n\nPhase D: U3 Rabbit cluster connectivity\n- D1: Design cluster/HA connection configuration — 1\n- D2: Implement multiple-address/failover support in module config — 2\n- D3: Integration test against Rabbit cluster (failover scenarios) — 2\n- D4: Documentation — 0.5\nSubtotal: 5.5\n\nPhase E: U4 Gemfire 8.1 upgrade\n- E1: Upgrade Gemfire dependency, adapt to API changes, run regression tests — 3\n\nPhase F: U5 Colocated deployment + leader election\n- F1: Design colocated deployment model and leader election approach — 4\n- F2: Implement same-container (colocated) module deployment — 8\n- F3: Implement leader election for automatic failover — 5\n- F4: Integration/system tests (failover scenarios) — 4\n- F5: Documentation — 1\nSubtotal: 22\n\nPhase G: U6 SI upgrade\n- G1: Upgrade Spring Integration version, validate JMX improvements, regression test — 2\n\nPhase H: U7 SI Kafka upgrade\n- H1: Upgrade Spring Integration Kafka, adapt to changes, regression test — 2\n\nPhase I: U8 Boot 1.2.3 + dependency sync\n- I1: Upgrade Spring Boot to 1.2.3 and align ~28 managed dependency versions — 3\n- I2: Resolve incompatibilities/regressions caused by upgrades — 4\n- I3: Full regression/build verification — 2\nSubtotal: 9\n\nPhase J: Cross-cutting\n- J1: End-to-end integration testing of the increment — 4\n- J2: Code review and rework — 3\n- J3: Release notes and overall docs — 1\n\nTotals: A1 3 + B 6.5 + C 17 + D 5.5 + E 3 + F 22 + G 2 + H 2 + I 9 + J 8 = 78 workdays.\n\nLet me recompute: 3 + 6.5 = 9.5; +17 = 26.5; +5.5 = 32; +3 = 35; +22 = 57; +2 = 59; +2 = 61; +9 = 70; +8 = 78.\n\nTotal 78 workdays.\n\nAssumptions to record:\n- The increment targets Spring XD (or a Spring Integration/AMQP-based distributed runtime) consistent with the stories (streams, modules, containers, DLQ, Rabbit, Gemfire).\n- Estimates are in ideal engineering workdays (8h) of a single senior developer, excluding elapsed-time waits on external release timelines (dependencies noted in stories are assumed available at development start).\n- Existing codebase, CI infrastructure, and test environments are available; effort covers only the increment.\n- For U2, CDC implemented via incremental polling/JDBC-based approach (no third-party log-based CDC tool licensing) — or choose a reasonable approach.\n- Gemfire 8.1, SI GA, SI Kafka releases, Spring Boot 1.2.3 are available (dependencies resolved).\n- Effort includes unit and integration tests and documentation but excludes deployment to production, ops, and PM overhead.\n- Code reviews: assume reviews are done by the same developer? The prompt says I personally perform all development work. Review could be self-review; keep J2 as \"code review and rework\" — maybe rename to \"self-review, refactoring and rework\". Better: \"Integration hardening, defect fixing and rework\". Since single developer, code review by peers isn't part of \"development work\"? It says perform all required development work — self-review is fine.\n\nTechnical/design decisions:\n- U1: Implement DLQ alternative via configurable error channel / per-bus DLQ destination name; error message headers include exception class, message, and stack trace string; ensure serializability of stack trace as string header.\n- U2: Implement CDC as a new source module based on incremental polling of change tables/timestamp columns with Spring Integration JDBC inbound adapter, publishing canonical change events (JSON) to the bus; pluggable sinks.\n- U3: Configure Rabbit connection factory with multiple addresses (comma-separated host:port list) and use spring-amqp's failover to cluster nodes; contribute upstream to spring-amqp if needed.\n- U5: Colocation via deploying modules of a stream into a single container JVM with module classloader isolation; leader election via ZooKeeper/Curator recipes for failover.\n- U8: Use Spring Boot dependency management BOM alignment; resolve version conflicts via dependency management overrides.\n- Java 8 baseline? The spec says Spring 6 requires Java 17+, but these stories are from 2015 (Boot 1.2.3). Assume the project's existing baseline (Java 7/8). Hmm — the spec preamble is generic Spring description; the stories target older versions (Boot 1.2.3, Gemfire 8.1, SI Kafka). I'll assume we build on the existing project baseline JDK (Java 8) and that the preamble is informational. Actually to be safe: \"The framework preamble is descriptive; versions referenced in the stories (Boot 1.2.3, Gemfire 8.1) define the target stack.\"\n\nJSON response must match schema exactly: technical_and_design_decisions (array of strings), assumptions (array of strings), activities (array of objects with activity_id, activity_name, activity_description, most_likely_effort > 0), reported_total.most_likely_effort.\n\nMake sure activity ids unique, effort numbers positive. Total = sum.\n\nLet me finalize activities list with IDs like \"A1\", \"B1\", etc., or \"1\", \"1.1\"... I'll use WBS-style numbering: \"1.1\", \"2.1\", etc.\n\nActivities:\n\n1.1 Overall requirements analysis and increment architecture — 3\n2.1 U1 design — 1\n2.2 U1 implementation — 3\n2.3 U1 tests — 2\n2.4 U1 docs — 0.5\n3.1 U2 design/research — 3\n3.2 U2 implementation — 8\n3.3 U2 tests — 5\n3.4 U2 docs/samples — 1\n4.1 U3 design — 1\n4.2 U3 implementation — 2\n4.3 U3 cluster failover tests — 2\n4.4 U3 docs — 0.5\n5.1 U4 Gemfire 8.1 upgrade — 3\n6.1 U5 design — 4\n6.2 U5 colocated deployment implementation — 8\n6.3 U5 leader election implementation — 5\n6.4 U5 failover integration tests — 4\n6.5 U5 docs — 1\n7.1 U6 SI upgrade — 2\n8.1 U7 SI Kafka upgrade — 2\n9.1 U8 Boot upgrade + dependency alignment — 3\n9.2 U8 incompatibility resolution — 4\n9.3 U8 regression/build verification — 2\n10.1 Increment end-to-end integration testing — 4\n10.2 Defect fixing and hardening — 3\n10.3 Release notes and final documentation — 1\n\nSum: 3+1+3+2+0.5 = 9.5; +3+8+5+1 = 26.5; +1+2+2+0.5 = 32; +3 = 35; +4+8+5+4+1 = 57; +2 = 59; +2 = 61; +3+4+2 = 70; +4+3+1 = 78.\n\nTotal 78 workdays. Good.\n\nNow write JSON only. Keep descriptions concise but informative. Ensure valid JSON, no trailing commas, no markdown fences? The instruction says \"Return only valid JSON\". I'll return raw JSON without code fences to be safe. Actually code fences might break \"only valid JSON\" — return raw JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user wants me to estimate software development effort for a Spring XD (Spring Data eXtreme) related increment, based on user stories U1-U8. These stories appear to be from the Spring XD project's JIRA backlog (they look like actual Spring XD issues — XD-2647, etc.).\n\nLet me analyze each user story:\n\nU1: Alternative DLQ configuration option for publishing failed messages with additional headers including exception and stack trace. This is a feature for Spring XD's message bus / error handling. Effort: maybe 5-8 workdays including design, implementation, tests, docs.\n\nU2: OOTB module to consume database changes as event streams (CDC - Change Data Capture), to incrementally synchronize with real-time DB updates to various destinations (Brokers, Hadoop, DB, etc.). This is a significant feature — a CDC source module. Likely based on something like a polling-based JDBC source or integration with a CDC tool. Effort: maybe 15-20 workdays.\n\nU3: Connect to RabbitMQ cluster for HA/FT — support multiple broker addresses in spring-amqp. This is a moderate feature — adding address/ha support to connection factory configuration. Effort: maybe 5-8 workdays.\n\nU4: Upgrade to Gemfire 8.1 — dependency upgrade, depends on Spring Data Gosling GA. Includes testing. Effort: maybe 3-5 workdays.\n\nU5: Deploy stream in same container (colocated modules) — this is a big architectural feature in Spring XD, plus leader election for failover. This is a major feature. Effort: maybe 20-30 workdays. Leader election alone (using ZooKeeper/Curator) maybe 8-10 days.\n\nU6: Upgrade to Spring Integration milestone/GA release — dependency upgrade. Effort: 2-4 workdays.\n\nU7: Upgrade to Spring Integration Kafka release — dependency upgrade with testing. Effort: 2-4 workdays.\n\nU8: Upgrade to Spring Boot 1.2.3 and sync many dependency versions — this is a dependency alignment task across many libraries, requiring build changes, compatibility testing, regression fixing. Effort: maybe 8-12 workdays.\n\nThe context is Spring XD (a distributed data integration runtime). The spec mentions Spring Framework generally, but the stories are clearly Spring XD stories (streams, modules, containers, XD mentioned in U4 and U5).\n\nI need to produce a WBS-based estimate. Let me structure:\n\nActivities could be organized per user story, plus cross-cutting activities (project setup, integration testing, documentation, release). Or per story broken into design/implementation/test sub-activities. The instructions say break down into activities necessary to deliver the increment. I'll do a WBS with per-story activities each including analysis, implementation, unit/integration tests, and docs — but maybe better to break each story into its constituent activities (design, implement, test, document) to be more WBS-like. However that could produce many activities. Alternatively, one activity per story plus cross-cutting ones. I think a good WBS would have:\n\n1. Requirements analysis & architecture/design (overall increment) — 3 days\n2. U1: Alternative DLQ with exception headers — maybe broken into design+implement+test. Let me give per-story estimates:\n\n- U1: Alternative DLQ support with additional headers (exception + stack trace)\n  - Design: 1d, Implementation: 3d, Tests: 2d, Docs: 0.5d → total ~6.5d. Or single activity 6d.\n- U2: CDC module (database change event streams) — significant: design 3d, implementation 8d, tests 5d, docs 1d → ~17d.\n- U3: RabbitMQ cluster (HA/FT) connectivity — design 1d, implement 2d, test with cluster setup 2d, docs 0.5 → ~5.5d.\n- U4: Gemfire 8.1 upgrade — 3d.\n- U5: Colocated stream deployment + leader election — design 4d, implement colocation 8d, leader election 5d, tests 5d, docs 1d → ~23d.\n- U6: Spring Integration upgrade — 2d.\n- U7: Spring Integration Kafka upgrade — 2d.\n- U8: Spring Boot 1.2.3 + dependency sync — 8d.\n- Cross-cutting: integration/system testing of the increment — 5d; CI/build updates — included in U8 maybe; documentation/release notes — 2d; code reviews/rework — maybe fold in.\n\nLet me decide the granularity. I'll break each user story into 2-4 activities: design, implementation, testing, documentation where meaningful. That yields a detailed WBS. Let me compute.\n\nAlternatively, simpler: one activity per user story plus cross-cutting activities. The instructions: \"Start by breaking down the development of the software increment into the activities necessary to deliver it.\" A WBS with phases: for each story, activities like \"Design\", \"Implement\", \"Test\". I'll do a moderately detailed breakdown — maybe ~15-20 activities. Let me lay it out:\n\nPhase A: Overall analysis and design\n- A1: Requirements analysis and architecture for the increment — 3 workdays\n\nPhase B: U1 Alternative DLQ\n- B1: Design alternative DLQ configuration and error-message header enrichment — 1\n- B2: Implement DLQ config option + exception/stacktrace headers — 3\n- B3: Unit and integration tests — 2\n- B4: Documentation — 0.5\nSubtotal: 6.5\n\nPhase C: U2 CDC module\n- C1: Research/design CDC approach (choose technique: polling vs log-based) — 3\n- C2: Implement CDC source module (schema metadata, incremental polling, event serialization) — 8\n- C3: Unit and integration tests against supported DBs — 5\n- C4: Documentation and samples — 1\nSubtotal: 17\n\nPhase D: U3 Rabbit cluster connectivity\n- D1: Design cluster/HA connection configuration — 1\n- D2: Implement multiple-address/failover support in module config — 2\n- D3: Integration test against Rabbit cluster (failover scenarios) — 2\n- D4: Documentation — 0.5\nSubtotal: 5.5\n\nPhase E: U4 Gemfire 8.1 upgrade\n- E1: Upgrade Gemfire dependency, adapt to API changes, run regression tests — 3\n\nPhase F: U5 Colocated deployment + leader election\n- F1: Design colocated deployment model and leader election approach — 4\n- F2: Implement same-container (colocated) module deployment — 8\n- F3: Implement leader election for automatic failover — 5\n- F4: Integration/system tests (failover scenarios) — 4\n- F5: Documentation — 1\nSubtotal: 22\n\nPhase G: U6 SI upgrade\n- G1: Upgrade Spring Integration version, validate JMX improvements, regression test — 2\n\nPhase H: U7 SI Kafka upgrade\n- H1: Upgrade Spring Integration Kafka, adapt to changes, regression test — 2\n\nPhase I: U8 Boot 1.2.3 + dependency sync\n- I1: Upgrade Spring Boot to 1.2.3 and align ~28 managed dependency versions — 3\n- I2: Resolve incompatibilities/regressions caused by upgrades — 4\n- I3: Full regression/build verification — 2\nSubtotal: 9\n\nPhase J: Cross-cutting\n- J1: End-to-end integration testing of the increment — 4\n- J2: Code review and rework — 3\n- J3: Release notes and overall docs — 1\n\nTotals: A1 3 + B 6.5 + C 17 + D 5.5 + E 3 + F 22 + G 2 + H 2 + I 9 + J 8 = 78 workdays.\n\nLet me recompute: 3 + 6.5 = 9.5; +17 = 26.5; +5.5 = 32; +3 = 35; +22 = 57; +2 = 59; +2 = 61; +9 = 70; +8 = 78.\n\nTotal 78 workdays.\n\nAssumptions to record:\n- The increment targets Spring XD (or a Spring Integration/AMQP-based distributed runtime) consistent with the stories (streams, modules, containers, DLQ, Rabbit, Gemfire).\n- Estimates are in ideal engineering workdays (8h) of a single senior developer, excluding elapsed-time waits on external release timelines (dependencies noted in stories are assumed available at development start).\n- Existing codebase, CI infrastructure, and test environments are available; effort covers only the increment.\n- For U2, CDC implemented via incremental polling/JDBC-based approach (no third-party log-based CDC tool licensing) — or choose a reasonable approach.\n- Gemfire 8.1, SI GA, SI Kafka releases, Spring Boot 1.2.3 are available (dependencies resolved).\n- Effort includes unit and integration tests and documentation but excludes deployment to production, ops, and PM overhead.\n- Code reviews: assume reviews are done by the same developer? The prompt says I personally perform all development work. Review could be self-review; keep J2 as \"code review and rework\" — maybe rename to \"self-review, refactoring and rework\". Better: \"Integration hardening, defect fixing and rework\". Since single developer, code review by peers isn't part of \"development work\"? It says perform all required development work — self-review is fine.\n\nTechnical/design decisions:\n- U1: Implement DLQ alternative via configurable error channel / per-bus DLQ destination name; error message headers include exception class, message, and stack trace string; ensure serializability of stack trace as string header.\n- U2: Implement CDC as a new source module based on incremental polling of change tables/timestamp columns with Spring Integration JDBC inbound adapter, publishing canonical change events (JSON) to the bus; pluggable sinks.\n- U3: Configure Rabbit connection factory with multiple addresses (comma-separated host:port list) and use spring-amqp's failover to cluster nodes; contribute upstream to spring-amqp if needed.\n- U5: Colocation via deploying modules of a stream into a single container JVM with module classloader isolation; leader election via ZooKeeper/Curator recipes for failover.\n- U8: Use Spring Boot dependency management BOM alignment; resolve version conflicts via dependency management overrides.\n- Java 8 baseline? The spec says Spring 6 requires Java 17+, but these stories are from 2015 (Boot 1.2.3). Assume the project's existing baseline (Java 7/8). Hmm — the spec preamble is generic Spring description; the stories target older versions (Boot 1.2.3, Gemfire 8.1, SI Kafka). I'll assume we build on the existing project baseline JDK (Java 8) and that the preamble is informational. Actually to be safe: \"The framework preamble is descriptive; versions referenced in the stories (Boot 1.2.3, Gemfire 8.1) define the target stack.\"\n\nJSON response must match schema exactly: technical_and_design_decisions (array of strings), assumptions (array of strings), activities (array of objects with activity_id, activity_name, activity_description, most_likely_effort > 0), reported_total.most_likely_effort.\n\nMake sure activity ids unique, effort numbers positive. Total = sum.\n\nLet me finalize activities list with IDs like \"A1\", \"B1\", etc., or \"1\", \"1.1\"... I'll use WBS-style numbering: \"1.1\", \"2.1\", etc.\n\nActivities:\n\n1.1 Overall requirements analysis and increment architecture — 3\n2.1 U1 design — 1\n2.2 U1 implementation — 3\n2.3 U1 tests — 2\n2.4 U1 docs — 0.5\n3.1 U2 design/research — 3\n3.2 U2 implementation — 8\n3.3 U2 tests — 5\n3.4 U2 docs/samples — 1\n4.1 U3 design — 1\n4.2 U3 implementation — 2\n4.3 U3 cluster failover tests — 2\n4.4 U3 docs — 0.5\n5.1 U4 Gemfire 8.1 upgrade — 3\n6.1 U5 design — 4\n6.2 U5 colocated deployment implementation — 8\n6.3 U5 leader election implementation — 5\n6.4 U5 failover integration tests — 4\n6.5 U5 docs — 1\n7.1 U6 SI upgrade — 2\n8.1 U7 SI Kafka upgrade — 2\n9.1 U8 Boot upgrade + dependency alignment — 3\n9.2 U8 incompatibility resolution — 4\n9.3 U8 regression/build verification — 2\n10.1 Increment end-to-end integration testing — 4\n10.2 Defect fixing and hardening — 3\n10.3 Release notes and final documentation — 1\n\nSum: 3+1+3+2+0.5 = 9.5; +3+8+5+1 = 26.5; +1+2+2+0.5 = 32; +3 = 35; +4+8+5+4+1 = 57; +2 = 59; +2 = 61; +3+4+2 = 70; +4+3+1 = 78.\n\nTotal 78 workdays. Good.\n\nNow write JSON only. Keep descriptions concise but informative. Ensure valid JSON, no trailing commas, no markdown fences? The instruction says \"Return only valid JSON\". I'll return raw JSON without code fences to be safe. Actually code fences might break \"only valid JSON\" — return raw JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1811,
+      "completion_tokens": 5531,
+      "total_tokens": 7342,
+      "cost": 0.0870156,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0870156,
+        "upstream_inference_prompt_cost": 0.0040506,
+        "upstream_inference_completions_cost": 0.082965
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2984,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"The increment targets a Spring XD-style distributed runtime (streams, modules, containers, message bus) built on Spring Integration, Spring AMQP, and Spring Boot, as implied by the user stories.\",\n    \"U1: Implement the alternative DLQ as a configurable per-bus/per-module dead-letter destination; failed messages are republished with added headers carrying the exception class, message, and the stack trace serialized as a String header to guarantee transport safety.\",\n    \"U2: Implement the database-change (CDC) source as an out-of-the-box stream module using incremental polling (timestamp/version columns and change tables) via a Spring Integration JDBC inbound adapter, emitting canonical JSON change events onto the bus so any sink (broker, Hadoop, DB) can consume them.\",\n    \"U3: Support RabbitMQ HA/FT by accepting a list of cluster node addresses (host:port) in the connection factory configuration, leveraging spring-amqp's multi-address failover; upstream the change to spring-amqp if required.\",\n    \"U5: Colocation is achieved by deploying all modules of a stream into a single container JVM while preserving module classloader isolation; automatic failover uses leader election built on the existing ZooKeeper/Curator infrastructure already used by the runtime.\",\n    \"U8: Align all managed dependency versions with the Spring Boot 1.2.3 BOM using dependency-management overrides, then resolve incompatibilities iteratively until the full build and test suite pass.\",\n    \"The framework overview in the specification is descriptive only; the concrete versions named in the stories (Boot 1.2.3, Gemfire 8.1, SI GA, SI Kafka) define the target stack, on the project's existing JDK baseline (Java 8).\"\n  ],\n  \"assumptions\": [\n    \"All estimates are ideal engineering workdays (8 hours) for one senior developer performing all work, and exclude elapsed-time waits (e.g., external release timelines for Gemfire 8.1, Spring Data Gosling, SI milestones).\",\n    \"The external dependencies referenced in the stories (Gemfire 8.1, Spring Data Gosling GA, SI GA, SI Kafka release, Spring Boot 1.2.3) are available when work begins.\",\n    \"An existing codebase, build system, CI pipeline, and integration test environments (RabbitMQ cluster, databases, ZooKeeper, Gemfire) are available; no infrastructure provisioning effort is included.\",\n    \"Effort covers analysis, design, implementation, unit and integration testing, and documentation of the increment; production deployment, operations, project management, and release process overhead are excluded.\",\n    \"For U2, a polling-based CDC approach is assumed (no licensing or integration of a third-party log-based CDC product); supported databases are limited to those already supported by the platform's JDBC modules.\",\n    \"Defects found during increment-level integration testing are fixed within the hardening activity; no major architectural rework is triggered by the dependency upgrades.\",\n    \"Since a single developer performs all work, code review is performed as structured self-review within the hardening activity.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"1.1\",\n      \"activity_name\": \"Increment requirements analysis and architecture\",\n      \"activity_description\": \"Analyze all eight user stories, identify cross-cutting impacts (message bus, container, dependency management), and produce the overall technical design for the increment.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"2.1\",\n      \"activity_name\": \"U1: Design alternative DLQ configuration\",\n      \"activity_description\": \"Design the configuration option for an alternative dead-letter queue and the error-header schema (exception type, message, stack trace) for republished failed messages.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"2.2\",\n      \"activity_name\": \"U1: Implement alternative DLQ and error headers\",\n      \"activity_description\": \"Implement the alternative DLQ destination configuration and the enrichment of failed messages with exception and stack-trace headers in the message bus error handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"2.3\",\n      \"activity_name\": \"U1: Unit and integration tests\",\n      \"activity_description\": \"Write unit tests and broker-backed integration tests verifying messages are published to the alternative DLQ with the additional exception headers.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"2.4\",\n      \"activity_name\": \"U1: Documentation\",\n      \"activity_description\": \"Document the new DLQ configuration properties and header format.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"3.1\",\n      \"activity_name\": \"U2: Research and design CDC module\",\n      \"activity_description\": \"Evaluate CDC techniques, define the change-event schema, incremental polling strategy, and module contract for consuming database changes as event streams.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"3.2\",\n      \"activity_name\": \"U2: Implement CDC source module\",\n      \"activity_description\": \"Implement the out-of-the-box source module that polls database changes incrementally and publishes canonical change events to the stream for consumption by broker, Hadoop, and DB sinks.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"3.3\",\n      \"activity_name\": \"U2: Unit and integration tests\",\n      \"activity_description\": \"Test the CDC module against supported databases, including incremental synchronization correctness, restart/resume behavior, and event serialization.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"3.4\",\n      \"activity_name\": \"U2: Documentation and samples\",\n      \"activity_description\": \"Document module options and provide sample stream definitions for CDC use cases.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"4.1\",\n      \"activity_name\": \"U3: Design RabbitMQ cluster connectivity\",\n      \"activity_description\": \"Design configuration for connecting modules to a RabbitMQ cluster for HA/FT (address lists, failover and recovery behavior), aligned with spring-amqp capabilities.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"4.2\",\n      \"activity_name\": \"U3: Implement multi-address broker connection\",\n      \"activity_description\": \"Implement support for multiple RabbitMQ node addresses and automatic failover in the connection configuration, contributing changes to spring-amqp where appropriate.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.3\",\n      \"activity_name\": \"U3: Cluster failover integration tests\",\n      \"activity_description\": \"Set up a RabbitMQ cluster test environment and verify connection failover and recovery across node outages.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"4.4\",\n      \"activity_name\": \"U3: Documentation\",\n      \"activity_description\": \"Document cluster/HA connection configuration properties.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"5.1\",\n      \"activity_name\": \"U4: Upgrade to Gemfire 8.1\",\n      \"activity_description\": \"Upgrade the Gemfire dependency to 8.1 in coordination with the Spring Data Gosling release, adapt to API changes, and run Gemfire-related regression tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"6.1\",\n      \"activity_name\": \"U5: Design colocated deployment and leader election\",\n      \"activity_description\": \"Design the same-container (colocated) stream deployment model, module isolation within one JVM, and the leader-election-based failover approach using ZooKeeper.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"6.2\",\n      \"activity_name\": \"U5: Implement colocated stream deployment\",\n      \"activity_description\": \"Implement deployment of all modules of a stream into a single container while preserving module lifecycle and classloader isolation.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"6.3\",\n      \"activity_name\": \"U5: Implement leader election for failover\",\n      \"activity_description\": \"Implement leader election among modules/containers so a stream automatically fails over from one container to another.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"6.4\",\n      \"activity_name\": \"U5: Colocation and failover integration tests\",\n      \"activity_description\": \"Integration and system tests covering colocated stream execution and automatic failover under container failure scenarios.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"6.5\",\n      \"activity_name\": \"U5: Documentation\",\n      \"activity_description\": \"Document colocated deployment mode and failover behavior and configuration.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"7.1\",\n      \"activity_name\": \"U6: Upgrade Spring Integration to milestone/GA\",\n      \"activity_description\": \"Upgrade the Spring Integration version, validate the JMX improvements, and run affected regression tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"8.1\",\n      \"activity_name\": \"U7: Upgrade Spring Integration Kafka\",\n      \"activity_description\": \"Upgrade to the SI Kafka release, adapt to API/behavior changes, and regression-test Kafka-based modules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"9.1\",\n      \"activity_name\": \"U8: Upgrade Spring Boot 1.2.3 and align dependency versions\",\n      \"activity_description\": \"Upgrade to Spring Boot 1.2.3 and synchronize all listed managed dependency versions (logback, jackson, gemfire, tomcat, jetty, security, etc.) with the Boot BOM.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"9.2\",\n      \"activity_name\": \"U8: Resolve upgrade incompatibilities\",\n      \"activity_description\": \"Fix compilation errors, API breaks, and behavioral regressions introduced by the Boot and dependency upgrades.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"9.3\",\n      \"activity_name\": \"U8: Full build and regression verification\",\n      \"activity_description\": \"Run the complete build and regression test suite to verify the upgraded dependency stack.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"10.1\",\n      \"activity_name\": \"Increment end-to-end integration testing\",\n      \"activity_description\": \"Execute end-to-end scenarios spanning the new features (DLQ routing, CDC streams, Rabbit cluster failover, colocated deployment) on the upgraded stack.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"10.2\",\n      \"activity_name\": \"Defect fixing, self-review and hardening\",\n      \"activity_description\": \"Structured self-review of all changes, refactoring, and fixing defects found during increment-level testing.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"10.3\",\n      \"activity_name\": \"Release notes and final documentation\",\n      \"activity_description\": \"Consolidate documentation updates and produce release notes for the increment.\",\n      \"most_likely_effort\": 1\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 78\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "The increment targets a Spring XD-style distributed runtime (streams, modules, containers, message bus) built on Spring Integration, Spring AMQP, and Spring Boot, as implied by the user stories.",
+      "U1: Implement the alternative DLQ as a configurable per-bus/per-module dead-letter destination; failed messages are republished with added headers carrying the exception class, message, and the stack trace serialized as a String header to guarantee transport safety.",
+      "U2: Implement the database-change (CDC) source as an out-of-the-box stream module using incremental polling (timestamp/version columns and change tables) via a Spring Integration JDBC inbound adapter, emitting canonical JSON change events onto the bus so any sink (broker, Hadoop, DB) can consume them.",
+      "U3: Support RabbitMQ HA/FT by accepting a list of cluster node addresses (host:port) in the connection factory configuration, leveraging spring-amqp's multi-address failover; upstream the change to spring-amqp if required.",
+      "U5: Colocation is achieved by deploying all modules of a stream into a single container JVM while preserving module classloader isolation; automatic failover uses leader election built on the existing ZooKeeper/Curator infrastructure already used by the runtime.",
+      "U8: Align all managed dependency versions with the Spring Boot 1.2.3 BOM using dependency-management overrides, then resolve incompatibilities iteratively until the full build and test suite pass.",
+      "The framework overview in the specification is descriptive only; the concrete versions named in the stories (Boot 1.2.3, Gemfire 8.1, SI GA, SI Kafka) define the target stack, on the project's existing JDK baseline (Java 8)."
+    ],
+    "assumptions": [
+      "All estimates are ideal engineering workdays (8 hours) for one senior developer performing all work, and exclude elapsed-time waits (e.g., external release timelines for Gemfire 8.1, Spring Data Gosling, SI milestones).",
+      "The external dependencies referenced in the stories (Gemfire 8.1, Spring Data Gosling GA, SI GA, SI Kafka release, Spring Boot 1.2.3) are available when work begins.",
+      "An existing codebase, build system, CI pipeline, and integration test environments (RabbitMQ cluster, databases, ZooKeeper, Gemfire) are available; no infrastructure provisioning effort is included.",
+      "Effort covers analysis, design, implementation, unit and integration testing, and documentation of the increment; production deployment, operations, project management, and release process overhead are excluded.",
+      "For U2, a polling-based CDC approach is assumed (no licensing or integration of a third-party log-based CDC product); supported databases are limited to those already supported by the platform's JDBC modules.",
+      "Defects found during increment-level integration testing are fixed within the hardening activity; no major architectural rework is triggered by the dependency upgrades.",
+      "Since a single developer performs all work, code review is performed as structured self-review within the hardening activity."
+    ],
+    "activities": [
+      {
+        "activity_id": "1.1",
+        "activity_name": "Increment requirements analysis and architecture",
+        "activity_description": "Analyze all eight user stories, identify cross-cutting impacts (message bus, container, dependency management), and produce the overall technical design for the increment.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "2.1",
+        "activity_name": "U1: Design alternative DLQ configuration",
+        "activity_description": "Design the configuration option for an alternative dead-letter queue and the error-header schema (exception type, message, stack trace) for republished failed messages.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "2.2",
+        "activity_name": "U1: Implement alternative DLQ and error headers",
+        "activity_description": "Implement the alternative DLQ destination configuration and the enrichment of failed messages with exception and stack-trace headers in the message bus error handling.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "2.3",
+        "activity_name": "U1: Unit and integration tests",
+        "activity_description": "Write unit tests and broker-backed integration tests verifying messages are published to the alternative DLQ with the additional exception headers.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "2.4",
+        "activity_name": "U1: Documentation",
+        "activity_description": "Document the new DLQ configuration properties and header format.",
+        "most_likely_effort": 0.5
+      },
+      {
+        "activity_id": "3.1",
+        "activity_name": "U2: Research and design CDC module",
+        "activity_description": "Evaluate CDC techniques, define the change-event schema, incremental polling strategy, and module contract for consuming database changes as event streams.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "3.2",
+        "activity_name": "U2: Implement CDC source module",
+        "activity_description": "Implement the out-of-the-box source module that polls database changes incrementally and publishes canonical change events to the stream for consumption by broker, Hadoop, and DB sinks.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "3.3",
+        "activity_name": "U2: Unit and integration tests",
+        "activity_description": "Test the CDC module against supported databases, including incremental synchronization correctness, restart/resume behavior, and event serialization.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "3.4",
+        "activity_name": "U2: Documentation and samples",
+        "activity_description": "Document module options and provide sample stream definitions for CDC use cases.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "4.1",
+        "activity_name": "U3: Design RabbitMQ cluster connectivity",
+        "activity_description": "Design configuration for connecting modules to a RabbitMQ cluster for HA/FT (address lists, failover and recovery behavior), aligned with spring-amqp capabilities.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "4.2",
+        "activity_name": "U3: Implement multi-address broker connection",
+        "activity_description": "Implement support for multiple RabbitMQ node addresses and automatic failover in the connection configuration, contributing changes to spring-amqp where appropriate.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "4.3",
+        "activity_name": "U3: Cluster failover integration tests",
+        "activity_description": "Set up a RabbitMQ cluster test environment and verify connection failover and recovery across node outages.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "4.4",
+        "activity_name": "U3: Documentation",
+        "activity_description": "Document cluster/HA connection configuration properties.",
+        "most_likely_effort": 0.5
+      },
+      {
+        "activity_id": "5.1",
+        "activity_name": "U4: Upgrade to Gemfire 8.1",
+        "activity_description": "Upgrade the Gemfire dependency to 8.1 in coordination with the Spring Data Gosling release, adapt to API changes, and run Gemfire-related regression tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "6.1",
+        "activity_name": "U5: Design colocated deployment and leader election",
+        "activity_description": "Design the same-container (colocated) stream deployment model, module isolation within one JVM, and the leader-election-based failover approach using ZooKeeper.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "6.2",
+        "activity_name": "U5: Implement colocated stream deployment",
+        "activity_description": "Implement deployment of all modules of a stream into a single container while preserving module lifecycle and classloader isolation.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "6.3",
+        "activity_name": "U5: Implement leader election for failover",
+        "activity_description": "Implement leader election among modules/containers so a stream automatically fails over from one container to another.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "6.4",
+        "activity_name": "U5: Colocation and failover integration tests",
+        "activity_description": "Integration and system tests covering colocated stream execution and automatic failover under container failure scenarios.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "6.5",
+        "activity_name": "U5: Documentation",
+        "activity_description": "Document colocated deployment mode and failover behavior and configuration.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "7.1",
+        "activity_name": "U6: Upgrade Spring Integration to milestone/GA",
+        "activity_description": "Upgrade the Spring Integration version, validate the JMX improvements, and run affected regression tests.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "8.1",
+        "activity_name": "U7: Upgrade Spring Integration Kafka",
+        "activity_description": "Upgrade to the SI Kafka release, adapt to API/behavior changes, and regression-test Kafka-based modules.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "9.1",
+        "activity_name": "U8: Upgrade Spring Boot 1.2.3 and align dependency versions",
+        "activity_description": "Upgrade to Spring Boot 1.2.3 and synchronize all listed managed dependency versions (logback, jackson, gemfire, tomcat, jetty, security, etc.) with the Boot BOM.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "9.2",
+        "activity_name": "U8: Resolve upgrade incompatibilities",
+        "activity_description": "Fix compilation errors, API breaks, and behavioral regressions introduced by the Boot and dependency upgrades.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "9.3",
+        "activity_name": "U8: Full build and regression verification",
+        "activity_description": "Run the complete build and regression test suite to verify the upgraded dependency stack.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "10.1",
+        "activity_name": "Increment end-to-end integration testing",
+        "activity_description": "Execute end-to-end scenarios spanning the new features (DLQ routing, CDC streams, Rabbit cluster failover, colocated deployment) on the upgraded stack.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "10.2",
+        "activity_name": "Defect fixing, self-review and hardening",
+        "activity_description": "Structured self-review of all changes, refactoring, and fixing defects found during increment-level testing.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "10.3",
+        "activity_name": "Release notes and final documentation",
+        "activity_description": "Consolidate documentation updates and produce release notes for the increment.",
+        "most_likely_effort": 1
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 78
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1811,
+    "completion_tokens": 5531,
+    "total_tokens": 7342,
+    "cost": 0.0870156,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0870156,
+      "upstream_inference_prompt_cost": 0.0040506,
+      "upstream_inference_completions_cost": 0.082965
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2984,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789154965-p7YwxnftLZJIGToMq3oJ",
+    "object": "chat.completion",
+    "created": 1789154965,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours per workday I used in my estimates. I stated \"8 hours\" in my assumptions (\"All estimates are ideal engineering workdays (8 hours)\"). So the answer is 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours per workday I used in my estimates. I stated \"8 hours\" in my assumptions (\"All estimates are ideal engineering workdays (8 hours)\"). So the answer is 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 4492,
+      "completion_tokens": 75,
+      "total_tokens": 4567,
+      "cost": 0.0097626,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1792,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0097626,
+        "upstream_inference_prompt_cost": 0.0086376,
+        "upstream_inference_completions_cost": 0.001125
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 47,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

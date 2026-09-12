@@ -1,0 +1,261 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-027",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 2
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [
+    {
+      "stage": "conversion",
+      "attempt": 1,
+      "outcome": "technical_failure",
+      "error_type": "ChunkedEncodingError",
+      "error_message": "(\"Connection broken: ConnectionResetError(54, 'Connection reset by peer')\", ConnectionResetError(54, 'Connection reset by peer'))",
+      "retryable": true
+    }
+  ],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789182358-wOkybuHRmfXE3ES8KgX3",
+    "object": "chat.completion",
+    "created": 1789182358,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Align the XD codebase with Spring Framework 6.0 and Java 17+ as stated in the specification, and upgrade Spring Batch to the release that contains the execution-context/job-launch decoupling fix (U4).\",\n    \"U1: Migrate wiki pages into the project repository as Markdown/AsciiDoc under a /docs folder so documentation is versioned and tagged together with code releases; wire docs into the existing build so they publish with each tag.\",\n    \"U2: Use Spring externalized configuration (properties/YAML file on the classpath or a well-known location) holding the Hadoop namenode URI, loaded automatically at DSL session startup; explicit in-session settings still override the file.\",\n    \"U3: Implement the jdbchdfs passthrough mode as a non-chunk Tasklet-based job variant that streams JDBC results straight to HDFS, bypassing reader/processor/writer chunk overhead; mode selectable via a job/module option.\",\n    \"U4: Replace the XD-2486 workaround with the official Spring Batch fix by upgrading the Batch dependency and refactoring the job launch lifecycle integration so the execution context is no longer serialized/shared across launches.\",\n    \"U5: Extend module deployment to detect annotation-based job modules (@Configuration / @EnableBatchProcessing classes) in addition to XML, fixing classpath scanning and bean registration in the module classloader so Java Config jobs deploy and launch correctly.\",\n    \"U6: Design a pluggable container/runtime SPI (deploy, undeploy, status, scale operations) with the Lattice/Diego Receptor API as one implementation, keeping XD core code dependent only on the SPI interfaces.\",\n    \"U7: Add a shortDescription field to module metadata (module descriptor/properties), surface it in module listing/info commands, and update all shipped module docs/metadata.\",\n    \"U8: Extend the shell processor to resolve hdfs:// script locations via the existing HDFS file system abstraction, copy the Python script to a local working directory at runtime, execute it with the local Python runtime, and pipe stdout/stderr back into XD message channels.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs all work; estimates are effort in workdays, not calendar duration.\",\n    \"The existing Spring XD codebase, its build system, CI pipeline, and development environment are already available and functional.\",\n    \"A Hadoop/HDFS test environment (or HDFS mini-cluster for tests) is available for U2, U3, and U8 integration testing.\",\n    \"The Spring Batch release containing the execution-context decoupling fix is already published; XD only needs to consume it (no changes required inside Spring Batch itself by this developer).\",\n    \"A Python runtime is available on the target runtime cells (CF/Lattice/Diego) for U8.\",\n    \"Wiki content volume is moderate (roughly 40-60 pages) and can be converted semi-automatically.\",\n    \"No new UI development is required; existing shell/DSL and admin tooling are extended only.\",\n    \"Estimates include design, implementation, unit testing, and developer-level documentation per activity; cross-cutting integration testing and release packaging are separate activities.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Overall analysis, design and increment planning\",\n      \"activity_description\": \"Analyze the eight user stories against the existing XD codebase, confirm impacted components (DSL, batch jobs, module subsystem, runtime deployers, docs), define the design approach per story, and plan the increment.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Migrate wiki into project repository\",\n      \"activity_description\": \"Export existing wiki content, convert pages to Markdown/AsciiDoc under /docs, restructure navigation and links, integrate docs into the build/tagging process, and validate rendering.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Hadoop namenode configuration file\",\n      \"activity_description\": \"Define the config file format and lookup order, implement automatic loading of namenode settings at DSL session startup with override support, add unit/integration tests, and document the option.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - jdbchdfs passthrough batch job\",\n      \"activity_description\": \"Implement a passthrough (non-chunk, tasklet-based) variant of the jdbchdfs job that streams JDBC results directly to HDFS, add a mode option, write tests against an HDFS mini-cluster, and update module docs.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Upgrade Spring Batch and refactor XD-2486 workaround\",\n      \"activity_description\": \"Upgrade the Spring Batch dependency to the release containing the execution-context/job-launch decoupling fix, remove and refactor the XD-2486 workaround, adapt launch lifecycle code, and run regression tests for job launching and serialization.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Support Java Config-based custom job modules\",\n      \"activity_description\": \"Diagnose the 'job does not exist' deployment/launch error, extend module packaging/scanning and the module classloader to detect and register @Configuration-based job modules, verify with the reported scenario, and add tests and documentation.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Pluggable runtime SPI and Receptor API PoC\",\n      \"activity_description\": \"Design a general pluggable SPI for container/runtime integration (deploy, undeploy, status), implement the SPI core and a Receptor API (Lattice/Diego) reference implementation, and validate the PoC end to end.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A7b\",\n      \"activity_name\": \"U7 - Add shortDescription to module metadata and docs\",\n      \"activity_description\": \"Add shortDescription to the module descriptor/metadata model, expose it in module info/listing output, and update all shipped module documentation files with the new field, plus tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - Execute Python script hosted on HDFS via shell processor\",\n      \"activity_description\": \"Extend the shell processor to resolve hdfs:// script paths, copy/stream the Python script from HDFS to the local runtime working directory, execute it with the Python runtime, and route output back into XD channels; add tests and docs.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-cutting integration and system testing\",\n      \"activity_description\": \"Run end-to-end integration tests across all stories (DSL sessions, batch jobs, module deployment, runtime deployers, HDFS integration), fix defects found, and verify regressions from the Batch upgrade.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation consolidation and release packaging\",\n      \"activity_description\": \"Consolidate user and reference documentation for all new features, update changelog/readme, and package the increment (tagged build) for release.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 77\n  }\n}",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. It's about the Spring Framework ecosystem, specifically Spring XD (based on the user stories mentioning XD, modules, jobs, etc.). The user stories are:\n\nU1: Migrate wiki to project repo (documentation migration)\nU2: Hadoop namenode config file for automatic configuration (small config feature)\nU3: jdbchdfs batch job passthrough mode (without chunk processing)\nU4: Decouple execution context from job launch lifecycle - upgrade Spring Batch, refactor XD-2486 workaround\nU5: Custom job module using Java Config (fix error with job not existing - support Java Config-based modules)\nU6: XD-on-Lattice/Diego PoC - pluggable SPI design\nU7: Update module docs with shortDescription\nU8: Host/read Python script from HDFS for shell processor\n\nI need to create a WBS with activities, effort estimates in workdays, and a total.\n\nLet me break this down into activities per user story:\n\n**U1: Wiki migration to project repo**\n- Analyze existing wiki content and structure\n- Convert wiki pages to markdown/asciidoc in repo\n- Set up versioning/tagging process\n- Update CI/docs build, redirects\nEstimate: ~5-8 days\n\n**U2: Hadoop namenode config**\n- Design config file format (properties/YAML)\n- Implement config loading in DSL session startup\n- Tests + docs\nEstimate: ~4-5 days\n\n**U3: jdbchdfs passthrough batch job**\n- Analyze existing jdbchdfs job\n- Implement passthrough mode (tasklet-based, no chunk)\n- Tests + docs\nEstimate: ~6-8 days\n\n**U4: Decouple execution context from job launch lifecycle**\n- Wait for/integrate Spring Batch release with fix\n- Upgrade XD to new Batch release\n- Refactor XD-2486 workaround\n- Regression testing\nEstimate: ~8-10 days\n\n**U5: Java Config job module support**\n- Investigate error (job doesn't exist)\n- Implement Java Config detection/support in module deployment\n- Fix classloading/annotation processing\n- Tests + docs\nEstimate: ~8-10 days\n\n**U6: Pluggable SPI for XD-on-Lattice/Diego**\n- Design SPI interfaces\n- Implement core SPI\n- Implement Receptor API implementation\n- PoC validation\nEstimate: ~15-20 days (this is a design-heavy PoC)\n\n**U7: shortDescription in module docs**\n- Add shortDescription metadata support\n- Update all module docs/metadata\n- Tests\nEstimate: ~3-4 days\n\n**U8: Python script from HDFS**\n- Implement HDFS file resolution in shell processor\n- Streaming/copying script to local execution\n- Feedback channel handling\n- Tests + docs\nEstimate: ~8-10 days\n\nPlus overarching activities:\n- Project setup/planning: maybe included per activity\n- Integration testing and release: ~5 days\n\nLet me structure a WBS:\n\n1. Requirements analysis and architecture/design (across stories) - 4 days\n2. U1: Wiki migration - 6 days\n3. U2: namenode config - 4 days\n4. U3: jdbchdfs passthrough - 7 days\n5. U4: Spring Batch upgrade and refactor - 9 days\n6. U5: Java Config module support - 9 days\n7. U6: pluggable SPI PoC - 18 days\n8. U7: shortDescription docs - 3 days\n9. U8: Python from HDFS - 8 days\n10. Integration/system testing - 6 days\n11. Documentation and release packaging - 3 days\n\nTotal: 4+6+4+7+9+9+18+3+8+6+3 = 77 days\n\nLet me check: 4+6=10, +4=14, +7=21, +9=30, +9=39, +18=57, +3=60, +8=68, +6=74, +3=77.\n\nTotal: 77 workdays.\n\nTechnical and design decisions:\n- Spring XD targets Java 17+/Spring Framework 6 per spec; but note Spring XD historically ran on Java 6-8. I'll assume the codebase will be aligned with Spring Framework 6.0 / Java 17 as stated in the spec.\n- Wiki migrated to Markdown/AsciiDoc under /docs in the Git repo, versioned with code.\n- Namenode config via Spring Boot externalized configuration (application.yml / properties) read at DSL session startup.\n- Passthrough implemented as a Tasklet (no chunk-oriented processing).\n- Upgrade Spring Batch to release containing the execution context decoupling fix (e.g., Batch 4.x/5.x), remove XD-2486 workaround.\n- Java Config support via annotation-based module detection (@Configuration classes, component scanning) in the module classloader.\n- SPI designed with a well-defined interface (deploy/undeploy/status) and Receptor API as one implementation.\n- shortDescription added to module metadata (spring-module.properties / module descriptor).\n- HDFS Python script: resolve hdfs:// URIs, copy to local temp working dir or stream to process stdin, capture stdout/stderr back into XD message bus.\n\nAssumptions:\n- Single developer (per prompt), effort excludes elapsed time.\n- Existing XD codebase available with tests and CI; build environment set up.\n- Hadoop/HDFS test cluster available for integration tests (or use minicluster).\n- Spring Batch release with required fix is already published; XD only upgrades.\n- Python runtime available on target CF/Lattice cells for U8.\n- No UI work needed; DSL shell and admin server exist.\n- Estimates include unit tests; separate integration testing activity included.\n- Wiki content volume moderate (~50 pages).\n\nLet me be careful to report most likely effort as numbers > 0.\n\nI'll write valid JSON only. Let me make sure the JSON matches the schema exactly: technical_and_design_decisions (array of strings), assumptions (array of strings), activities (array of objects with activity_id, activity_name, activity_description, most_likely_effort), reported_total (object with most_likely_effort).\n\nTotal = 77. Let me double-check arithmetic: \n- A1: 4\n- A2 (U1): 6\n- A3 (U2): 4\n- A4 (U3): 7\n- A5 (U4): 9\n- A6 (U5): 9\n- A7 (U6): 18\n- A8 (U7): 3\n- A9 (U8): 8\n- A10: 6\n- A11: 3\nSum: 4+6+4+7+9+9+18+3+8+6+3 = 77. Yes.\n\nOutput only JSON, no markdown fences? \"Return only valid JSON\" — I'll return raw JSON without code fences to be safe.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. It's about the Spring Framework ecosystem, specifically Spring XD (based on the user stories mentioning XD, modules, jobs, etc.). The user stories are:\n\nU1: Migrate wiki to project repo (documentation migration)\nU2: Hadoop namenode config file for automatic configuration (small config feature)\nU3: jdbchdfs batch job passthrough mode (without chunk processing)\nU4: Decouple execution context from job launch lifecycle - upgrade Spring Batch, refactor XD-2486 workaround\nU5: Custom job module using Java Config (fix error with job not existing - support Java Config-based modules)\nU6: XD-on-Lattice/Diego PoC - pluggable SPI design\nU7: Update module docs with shortDescription\nU8: Host/read Python script from HDFS for shell processor\n\nI need to create a WBS with activities, effort estimates in workdays, and a total.\n\nLet me break this down into activities per user story:\n\n**U1: Wiki migration to project repo**\n- Analyze existing wiki content and structure\n- Convert wiki pages to markdown/asciidoc in repo\n- Set up versioning/tagging process\n- Update CI/docs build, redirects\nEstimate: ~5-8 days\n\n**U2: Hadoop namenode config**\n- Design config file format (properties/YAML)\n- Implement config loading in DSL session startup\n- Tests + docs\nEstimate: ~4-5 days\n\n**U3: jdbchdfs passthrough batch job**\n- Analyze existing jdbchdfs job\n- Implement passthrough mode (tasklet-based, no chunk)\n- Tests + docs\nEstimate: ~6-8 days\n\n**U4: Decouple execution context from job launch lifecycle**\n- Wait for/integrate Spring Batch release with fix\n- Upgrade XD to new Batch release\n- Refactor XD-2486 workaround\n- Regression testing\nEstimate: ~8-10 days\n\n**U5: Java Config job module support**\n- Investigate error (job doesn't exist)\n- Implement Java Config detection/support in module deployment\n- Fix classloading/annotation processing\n- Tests + docs\nEstimate: ~8-10 days\n\n**U6: Pluggable SPI for XD-on-Lattice/Diego**\n- Design SPI interfaces\n- Implement core SPI\n- Implement Receptor API implementation\n- PoC validation\nEstimate: ~15-20 days (this is a design-heavy PoC)\n\n**U7: shortDescription in module docs**\n- Add shortDescription metadata support\n- Update all module docs/metadata\n- Tests\nEstimate: ~3-4 days\n\n**U8: Python script from HDFS**\n- Implement HDFS file resolution in shell processor\n- Streaming/copying script to local execution\n- Feedback channel handling\n- Tests + docs\nEstimate: ~8-10 days\n\nPlus overarching activities:\n- Project setup/planning: maybe included per activity\n- Integration testing and release: ~5 days\n\nLet me structure a WBS:\n\n1. Requirements analysis and architecture/design (across stories) - 4 days\n2. U1: Wiki migration - 6 days\n3. U2: namenode config - 4 days\n4. U3: jdbchdfs passthrough - 7 days\n5. U4: Spring Batch upgrade and refactor - 9 days\n6. U5: Java Config module support - 9 days\n7. U6: pluggable SPI PoC - 18 days\n8. U7: shortDescription docs - 3 days\n9. U8: Python from HDFS - 8 days\n10. Integration/system testing - 6 days\n11. Documentation and release packaging - 3 days\n\nTotal: 4+6+4+7+9+9+18+3+8+6+3 = 77 days\n\nLet me check: 4+6=10, +4=14, +7=21, +9=30, +9=39, +18=57, +3=60, +8=68, +6=74, +3=77.\n\nTotal: 77 workdays.\n\nTechnical and design decisions:\n- Spring XD targets Java 17+/Spring Framework 6 per spec; but note Spring XD historically ran on Java 6-8. I'll assume the codebase will be aligned with Spring Framework 6.0 / Java 17 as stated in the spec.\n- Wiki migrated to Markdown/AsciiDoc under /docs in the Git repo, versioned with code.\n- Namenode config via Spring Boot externalized configuration (application.yml / properties) read at DSL session startup.\n- Passthrough implemented as a Tasklet (no chunk-oriented processing).\n- Upgrade Spring Batch to release containing the execution context decoupling fix (e.g., Batch 4.x/5.x), remove XD-2486 workaround.\n- Java Config support via annotation-based module detection (@Configuration classes, component scanning) in the module classloader.\n- SPI designed with a well-defined interface (deploy/undeploy/status) and Receptor API as one implementation.\n- shortDescription added to module metadata (spring-module.properties / module descriptor).\n- HDFS Python script: resolve hdfs:// URIs, copy to local temp working dir or stream to process stdin, capture stdout/stderr back into XD message bus.\n\nAssumptions:\n- Single developer (per prompt), effort excludes elapsed time.\n- Existing XD codebase available with tests and CI; build environment set up.\n- Hadoop/HDFS test cluster available for integration tests (or use minicluster).\n- Spring Batch release with required fix is already published; XD only upgrades.\n- Python runtime available on target CF/Lattice cells for U8.\n- No UI work needed; DSL shell and admin server exist.\n- Estimates include unit tests; separate integration testing activity included.\n- Wiki content volume moderate (~50 pages).\n\nLet me be careful to report most likely effort as numbers > 0.\n\nI'll write valid JSON only. Let me make sure the JSON matches the schema exactly: technical_and_design_decisions (array of strings), assumptions (array of strings), activities (array of objects with activity_id, activity_name, activity_description, most_likely_effort), reported_total (object with most_likely_effort).\n\nTotal = 77. Let me double-check arithmetic: \n- A1: 4\n- A2 (U1): 6\n- A3 (U2): 4\n- A4 (U3): 7\n- A5 (U4): 9\n- A6 (U5): 9\n- A7 (U6): 18\n- A8 (U7): 3\n- A9 (U8): 8\n- A10: 6\n- A11: 3\nSum: 4+6+4+7+9+9+18+3+8+6+3 = 77. Yes.\n\nOutput only JSON, no markdown fences? \"Return only valid JSON\" — I'll return raw JSON without code fences to be safe.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1429,
+      "completion_tokens": 3127,
+      "total_tokens": 4556,
+      "cost": 0.0498096,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0498096,
+        "upstream_inference_prompt_cost": 0.0029046,
+        "upstream_inference_completions_cost": 0.046905
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1463,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Align the XD codebase with Spring Framework 6.0 and Java 17+ as stated in the specification, and upgrade Spring Batch to the release that contains the execution-context/job-launch decoupling fix (U4).\",\n    \"U1: Migrate wiki pages into the project repository as Markdown/AsciiDoc under a /docs folder so documentation is versioned and tagged together with code releases; wire docs into the existing build so they publish with each tag.\",\n    \"U2: Use Spring externalized configuration (properties/YAML file on the classpath or a well-known location) holding the Hadoop namenode URI, loaded automatically at DSL session startup; explicit in-session settings still override the file.\",\n    \"U3: Implement the jdbchdfs passthrough mode as a non-chunk Tasklet-based job variant that streams JDBC results straight to HDFS, bypassing reader/processor/writer chunk overhead; mode selectable via a job/module option.\",\n    \"U4: Replace the XD-2486 workaround with the official Spring Batch fix by upgrading the Batch dependency and refactoring the job launch lifecycle integration so the execution context is no longer serialized/shared across launches.\",\n    \"U5: Extend module deployment to detect annotation-based job modules (@Configuration / @EnableBatchProcessing classes) in addition to XML, fixing classpath scanning and bean registration in the module classloader so Java Config jobs deploy and launch correctly.\",\n    \"U6: Design a pluggable container/runtime SPI (deploy, undeploy, status, scale operations) with the Lattice/Diego Receptor API as one implementation, keeping XD core code dependent only on the SPI interfaces.\",\n    \"U7: Add a shortDescription field to module metadata (module descriptor/properties), surface it in module listing/info commands, and update all shipped module docs/metadata.\",\n    \"U8: Extend the shell processor to resolve hdfs:// script locations via the existing HDFS file system abstraction, copy the Python script to a local working directory at runtime, execute it with the local Python runtime, and pipe stdout/stderr back into XD message channels.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs all work; estimates are effort in workdays, not calendar duration.\",\n    \"The existing Spring XD codebase, its build system, CI pipeline, and development environment are already available and functional.\",\n    \"A Hadoop/HDFS test environment (or HDFS mini-cluster for tests) is available for U2, U3, and U8 integration testing.\",\n    \"The Spring Batch release containing the execution-context decoupling fix is already published; XD only needs to consume it (no changes required inside Spring Batch itself by this developer).\",\n    \"A Python runtime is available on the target runtime cells (CF/Lattice/Diego) for U8.\",\n    \"Wiki content volume is moderate (roughly 40-60 pages) and can be converted semi-automatically.\",\n    \"No new UI development is required; existing shell/DSL and admin tooling are extended only.\",\n    \"Estimates include design, implementation, unit testing, and developer-level documentation per activity; cross-cutting integration testing and release packaging are separate activities.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Overall analysis, design and increment planning\",\n      \"activity_description\": \"Analyze the eight user stories against the existing XD codebase, confirm impacted components (DSL, batch jobs, module subsystem, runtime deployers, docs), define the design approach per story, and plan the increment.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Migrate wiki into project repository\",\n      \"activity_description\": \"Export existing wiki content, convert pages to Markdown/AsciiDoc under /docs, restructure navigation and links, integrate docs into the build/tagging process, and validate rendering.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - Hadoop namenode configuration file\",\n      \"activity_description\": \"Define the config file format and lookup order, implement automatic loading of namenode settings at DSL session startup with override support, add unit/integration tests, and document the option.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - jdbchdfs passthrough batch job\",\n      \"activity_description\": \"Implement a passthrough (non-chunk, tasklet-based) variant of the jdbchdfs job that streams JDBC results directly to HDFS, add a mode option, write tests against an HDFS mini-cluster, and update module docs.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4 - Upgrade Spring Batch and refactor XD-2486 workaround\",\n      \"activity_description\": \"Upgrade the Spring Batch dependency to the release containing the execution-context/job-launch decoupling fix, remove and refactor the XD-2486 workaround, adapt launch lifecycle code, and run regression tests for job launching and serialization.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5 - Support Java Config-based custom job modules\",\n      \"activity_description\": \"Diagnose the 'job does not exist' deployment/launch error, extend module packaging/scanning and the module classloader to detect and register @Configuration-based job modules, verify with the reported scenario, and add tests and documentation.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6 - Pluggable runtime SPI and Receptor API PoC\",\n      \"activity_description\": \"Design a general pluggable SPI for container/runtime integration (deploy, undeploy, status), implement the SPI core and a Receptor API (Lattice/Diego) reference implementation, and validate the PoC end to end.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A7b\",\n      \"activity_name\": \"U7 - Add shortDescription to module metadata and docs\",\n      \"activity_description\": \"Add shortDescription to the module descriptor/metadata model, expose it in module info/listing output, and update all shipped module documentation files with the new field, plus tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - Execute Python script hosted on HDFS via shell processor\",\n      \"activity_description\": \"Extend the shell processor to resolve hdfs:// script paths, copy/stream the Python script from HDFS to the local runtime working directory, execute it with the Python runtime, and route output back into XD channels; add tests and docs.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Cross-cutting integration and system testing\",\n      \"activity_description\": \"Run end-to-end integration tests across all stories (DSL sessions, batch jobs, module deployment, runtime deployers, HDFS integration), fix defects found, and verify regressions from the Batch upgrade.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation consolidation and release packaging\",\n      \"activity_description\": \"Consolidate user and reference documentation for all new features, update changelog/readme, and package the increment (tagged build) for release.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 77\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Align the XD codebase with Spring Framework 6.0 and Java 17+ as stated in the specification, and upgrade Spring Batch to the release that contains the execution-context/job-launch decoupling fix (U4).",
+      "U1: Migrate wiki pages into the project repository as Markdown/AsciiDoc under a /docs folder so documentation is versioned and tagged together with code releases; wire docs into the existing build so they publish with each tag.",
+      "U2: Use Spring externalized configuration (properties/YAML file on the classpath or a well-known location) holding the Hadoop namenode URI, loaded automatically at DSL session startup; explicit in-session settings still override the file.",
+      "U3: Implement the jdbchdfs passthrough mode as a non-chunk Tasklet-based job variant that streams JDBC results straight to HDFS, bypassing reader/processor/writer chunk overhead; mode selectable via a job/module option.",
+      "U4: Replace the XD-2486 workaround with the official Spring Batch fix by upgrading the Batch dependency and refactoring the job launch lifecycle integration so the execution context is no longer serialized/shared across launches.",
+      "U5: Extend module deployment to detect annotation-based job modules (@Configuration / @EnableBatchProcessing classes) in addition to XML, fixing classpath scanning and bean registration in the module classloader so Java Config jobs deploy and launch correctly.",
+      "U6: Design a pluggable container/runtime SPI (deploy, undeploy, status, scale operations) with the Lattice/Diego Receptor API as one implementation, keeping XD core code dependent only on the SPI interfaces.",
+      "U7: Add a shortDescription field to module metadata (module descriptor/properties), surface it in module listing/info commands, and update all shipped module docs/metadata.",
+      "U8: Extend the shell processor to resolve hdfs:// script locations via the existing HDFS file system abstraction, copy the Python script to a local working directory at runtime, execute it with the local Python runtime, and pipe stdout/stderr back into XD message channels."
+    ],
+    "assumptions": [
+      "A single developer performs all work; estimates are effort in workdays, not calendar duration.",
+      "The existing Spring XD codebase, its build system, CI pipeline, and development environment are already available and functional.",
+      "A Hadoop/HDFS test environment (or HDFS mini-cluster for tests) is available for U2, U3, and U8 integration testing.",
+      "The Spring Batch release containing the execution-context decoupling fix is already published; XD only needs to consume it (no changes required inside Spring Batch itself by this developer).",
+      "A Python runtime is available on the target runtime cells (CF/Lattice/Diego) for U8.",
+      "Wiki content volume is moderate (roughly 40-60 pages) and can be converted semi-automatically.",
+      "No new UI development is required; existing shell/DSL and admin tooling are extended only.",
+      "Estimates include design, implementation, unit testing, and developer-level documentation per activity; cross-cutting integration testing and release packaging are separate activities."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Overall analysis, design and increment planning",
+        "activity_description": "Analyze the eight user stories against the existing XD codebase, confirm impacted components (DSL, batch jobs, module subsystem, runtime deployers, docs), define the design approach per story, and plan the increment.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Migrate wiki into project repository",
+        "activity_description": "Export existing wiki content, convert pages to Markdown/AsciiDoc under /docs, restructure navigation and links, integrate docs into the build/tagging process, and validate rendering.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - Hadoop namenode configuration file",
+        "activity_description": "Define the config file format and lookup order, implement automatic loading of namenode settings at DSL session startup with override support, add unit/integration tests, and document the option.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - jdbchdfs passthrough batch job",
+        "activity_description": "Implement a passthrough (non-chunk, tasklet-based) variant of the jdbchdfs job that streams JDBC results directly to HDFS, add a mode option, write tests against an HDFS mini-cluster, and update module docs.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4 - Upgrade Spring Batch and refactor XD-2486 workaround",
+        "activity_description": "Upgrade the Spring Batch dependency to the release containing the execution-context/job-launch decoupling fix, remove and refactor the XD-2486 workaround, adapt launch lifecycle code, and run regression tests for job launching and serialization.",
+        "most_likely_effort": 9
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5 - Support Java Config-based custom job modules",
+        "activity_description": "Diagnose the 'job does not exist' deployment/launch error, extend module packaging/scanning and the module classloader to detect and register @Configuration-based job modules, verify with the reported scenario, and add tests and documentation.",
+        "most_likely_effort": 9
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6 - Pluggable runtime SPI and Receptor API PoC",
+        "activity_description": "Design a general pluggable SPI for container/runtime integration (deploy, undeploy, status), implement the SPI core and a Receptor API (Lattice/Diego) reference implementation, and validate the PoC end to end.",
+        "most_likely_effort": 18
+      },
+      {
+        "activity_id": "A7b",
+        "activity_name": "U7 - Add shortDescription to module metadata and docs",
+        "activity_description": "Add shortDescription to the module descriptor/metadata model, expose it in module info/listing output, and update all shipped module documentation files with the new field, plus tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8 - Execute Python script hosted on HDFS via shell processor",
+        "activity_description": "Extend the shell processor to resolve hdfs:// script paths, copy/stream the Python script from HDFS to the local runtime working directory, execute it with the Python runtime, and route output back into XD channels; add tests and docs.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Cross-cutting integration and system testing",
+        "activity_description": "Run end-to-end integration tests across all stories (DSL sessions, batch jobs, module deployment, runtime deployers, HDFS integration), fix defects found, and verify regressions from the Batch upgrade.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Documentation consolidation and release packaging",
+        "activity_description": "Consolidate user and reference documentation for all new features, update changelog/readme, and package the increment (tagged build) for release.",
+        "most_likely_effort": 3
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 77
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1429,
+    "completion_tokens": 3127,
+    "total_tokens": 4556,
+    "cost": 0.0498096,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0498096,
+      "upstream_inference_prompt_cost": 0.0029046,
+      "upstream_inference_completions_cost": 0.046905
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1463,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789183120-MGTnGo4bjGJdVJQz7H4h",
+    "object": "chat.completion",
+    "created": 1789183120,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user is asking a simple conversion question: how many work-hours per workday do I consider equivalent? Standard is 8 hours per workday. I should return only valid JSON matching the schema, without revising the previous estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple conversion question: how many work-hours per workday do I consider equivalent? Standard is 8 hours per workday. I should return only valid JSON matching the schema, without revising the previous estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3227,
+      "completion_tokens": 76,
+      "total_tokens": 3303,
+      "cost": 0.0052914,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 2048,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0052914,
+        "upstream_inference_prompt_cost": 0.0041514,
+        "upstream_inference_completions_cost": 0.00114
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 48,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

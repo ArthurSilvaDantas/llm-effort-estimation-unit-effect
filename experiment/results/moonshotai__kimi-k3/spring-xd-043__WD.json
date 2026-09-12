@@ -1,0 +1,328 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-043",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789161046-j5U9IHPvESjPNNXiJKZE",
+    "object": "chat.completion",
+    "created": 1789161046,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The increment is implemented on the existing Spring XD 1.x codebase (Gradle multi-module build, Git) and its supported Java/Spring baseline; no upgrade of the overall framework baseline is part of this increment.\",\n    \"U1: The Teradata NPE with the generic JDBC path will be root-caused and fixed where feasible; in addition, first-class support for the Hortonworks Connector for Teradata (org.apache.sqoop.teradata.TeradataConnManager) will be provided via documented configuration/packaging of the Sqoop job module so that --connection-manager works out of the box. Verification is done against a Teradata Express instance.\",\n    \"U2: The logging directory will be externalized into a configurable property (e.g., XD_LOGGING_DIR / xd.logging.dir) resolved by the startup scripts and logging configuration, with ${xd.home}/logs kept as the default for backward compatibility; the RPM packaging will override the default to /var/logs/spring-xd.\",\n    \"U3/U5: A new 'spring-bus' project will be created as a standalone Maven-published library; message-bus and serialization codec code will be extracted from the Spring XD repository preserving API compatibility, and Spring XD will consume them as Maven dependencies instead of in-repo modules.\",\n    \"U4: The input/output type conversion (MimeType-based conversion of payloads, e.g., Tuple/JSON/POJO) will be moved into a spring-cloud-dataflow module with a generalized API so that custom modules producing/consuming custom domain objects can reuse it; Spring XD is adapted to depend on it.\",\n    \"U6/U7: An XD Admin SPI based on the Module Launcher abstraction will be defined; the 'singlenode' implementation launches module containers within a single local JVM for local pipelines, and the Diego implementation uses the Diego Receptor API (LRPs/tasks) to run module containers on CF Lattice/Diego.\",\n    \"U8: Handled as a time-boxed research spike: prototype spring-cloud-stream modules self-registering with a service discovery mechanism (e.g., Eureka-style registry) and assess how the Spring XD runtime on CF could discover and orchestrate them; deliverable is a prototype plus a findings/recommendations document, not a production feature.\",\n    \"Unit tests are written as part of each development activity; cross-cutting integration/system testing and documentation are separate WBS activities.\"\n  ],\n  \"assumptions\": [\n    \"A single developer (the estimator) performs all work; estimates are pure effort in workdays (1 workday = 8 hours), not elapsed calendar time.\",\n    \"The existing Spring XD 1.x source tree, build infrastructure, and CI are available and operational; only minor CI/build changes for the new repositories are needed.\",\n    \"A Teradata Express test instance (or equivalent) and the Hortonworks Connector for Teradata archive are available for U1 verification; no license procurement effort is included.\",\n    \"A CF Lattice/Diego test environment is available for U7; effort for deploying and testing on it is included, but not the provisioning of the environment itself.\",\n    \"U8 is investigation-only; no production code changes from U8 are included in this increment.\",\n    \"Estimates include coding, unit testing, self-review, and rework to a 'done' state; they exclude holidays, meetings unrelated to the increment, and organizational overhead.\",\n    \"No clarifying questions were asked; where the specification is silent (e.g., exact SPI signatures, property names), reasonable naming/design choices were made as listed in the technical decisions.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Increment analysis and solution design\",\n      \"activity_description\": \"Analyze the eight user stories, define the XD Admin SPI approach, extraction strategy for spring-bus/spring-cloud-dataflow, and configuration design for logging; produce a short design outline per story.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository, build and CI setup for new modules\",\n      \"activity_description\": \"Set up the new spring-bus project skeleton and any build/CI wiring required to publish Maven artifacts consumed by Spring XD (also covers spring-cloud-dataflow module placement).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - Reproduce and root-cause Teradata JDBC NPE\",\n      \"activity_description\": \"Reproduce the NPE with the Teradata JDBC driver in the Sqoop job module, diagnose the failure path, and identify the fix or required connection-manager handling.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U1 - Implement Teradata support in Sqoop job module\",\n      \"activity_description\": \"Implement the fix for the generic JDBC path and/or integrate the Hortonworks Teradata connector (TeradataConnManager) so that import jobs with --connection-manager work out of the box, including packaging/config changes.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U1 - Verify Teradata import jobs end-to-end\",\n      \"activity_description\": \"Configure a Teradata Express test instance, run the tdTest Sqoop import job scenarios from the story, and verify data lands correctly in the target directory.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 - Externalize logging directory configuration\",\n      \"activity_description\": \"Replace the hard-coded ${xd.home}/logs location with a configurable property resolved in startup scripts and logging configuration, keeping the current default for backward compatibility.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U2 - RPM packaging default and install verification\",\n      \"activity_description\": \"Update RPM packaging so logs go to /var/logs/spring-xd by default and verify tarball/RPM installations start and log correctly with overridden and default values.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U3 - Create spring-bus project structure\",\n      \"activity_description\": \"Define the module layout, packages, and versioning scheme for the spring-bus library that will host the message-bus (and later the codec).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U3 - Extract message-bus code into spring-bus\",\n      \"activity_description\": \"Move the message-bus implementation out of the Spring XD repository into spring-bus, preserving API compatibility, and adapt its build/tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U3 - Migrate Spring XD to spring-bus dependency\",\n      \"activity_description\": \"Remove in-repo message-bus code from Spring XD, wire the Maven dependency on spring-bus, and run the existing XD regression test suite.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U4 - Move type conversion to spring-cloud-dataflow\",\n      \"activity_description\": \"Extract the input/output type conversion from Spring XD into spring-cloud-dataflow with a generalized API and adapt Spring XD to consume it as a dependency.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U4 - Validate custom domain object module scenario\",\n      \"activity_description\": \"Build a sample custom module that produces/consumes a custom domain object using the moved conversion support and verify stream processing end-to-end.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"U5 - Extract serialization codec into spring-bus\",\n      \"activity_description\": \"Move the serialization codec from Spring XD into spring-bus, integrate it with the message-bus module, and update Spring XD to use the Maven dependency.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"U5 - Codec regression and round-trip verification\",\n      \"activity_description\": \"Run codec regression tests (round-trip serialization of supported types) and verify streams still pass payloads correctly through the moved codec.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"U6 - Design XD Admin SPI contract\",\n      \"activity_description\": \"Define the Admin SPI interfaces based on the Module Launcher abstraction that both the singlenode and Diego implementations will realize.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"U6 - Implement singlenode Admin SPI runtime\",\n      \"activity_description\": \"Implement the single-JVM 'singlenode' implementation of the XD Admin SPI that launches and manages modules locally via the Module Launcher.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"U6 - Test local data pipeline use cases\",\n      \"activity_description\": \"Deploy and run representative stream/job pipelines on the singlenode runtime and verify lifecycle operations (deploy, undeploy, status) work correctly.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"U7 - Study Diego Receptor API and design implementation\",\n      \"activity_description\": \"Investigate the Diego Receptor API (LRPs/tasks) and design how module containers will be launched and supervised on CF Lattice/Diego.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"U7 - Implement Diego Receptor Admin SPI\",\n      \"activity_description\": \"Implement the Diego-based Receptor implementation of the XD Admin SPI that launches module containers on Lattice/Diego via the Module Launcher.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"U7 - Deploy and test on CF Lattice/Diego\",\n      \"activity_description\": \"Deploy the runtime to a Lattice/Diego environment, run data pipeline use cases, and verify module orchestration and lifecycle behavior.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"U8 - Spike: s-c-s module self-registration with service discovery\",\n      \"activity_description\": \"Time-boxed investigation and prototype of spring-cloud-stream modules self-registering with a service discovery mechanism so the Spring XD runtime on CF could discover and orchestrate them; includes a findings/recommendations write-up.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A22\",\n      \"activity_name\": \"Increment-wide integration and system testing\",\n      \"activity_description\": \"Run cross-story integration and system tests across the modified components (Sqoop module, logging config, spring-bus/codec/conversion extractions, both Admin SPI runtimes) and fix defects found.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A23\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update reference and user documentation: Teradata connectivity for Sqoop jobs, the new logging directory property and RPM behavior, the new library dependencies, and singlenode/Diego runtime usage.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A24\",\n      \"activity_name\": \"Final build, release packaging and review\",\n      \"activity_description\": \"Produce release-ready builds of all affected modules (including publishing spring-bus artifacts), perform final review, tagging, and packaging.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 90\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. This is about Spring XD (Spring eXtreme Data), a distributed runtime for data pipelines. The user stories are about:\n\nU1: Teradata connectivity support for Sqoop batch jobs - essentially fixing/supporting Teradata JDBC driver or documenting/bundling the connection manager approach.\n\nU2: Configurable logging directory (currently hardcoded as ${xd.home}/logs) - make it configurable, e.g., via environment variable or config property.\n\nU3: Move message-bus from Spring XD repo into spring-bus (a new shared library) - refactoring/extraction into a Maven dependency.\n\nU4: Move input/output type conversion from Spring XD repo to spring-cloud-dataflow - refactoring/extraction.\n\nU5: Move serialization codec from Spring XD repo into spring-bus - refactoring/extraction.\n\nU6: Develop a \"singlenode\" (single JVM) implementation of XD Admin SPI based on Module Launcher - local runtime.\n\nU7: Diego-based Receptor implementation of XD Admin SPI (based on ModuleLauncher) for CF Lattice/Diego - cloud foundry runtime.\n\nU8: Investigate s-c-s (spring-cloud-stream) modules self-registering to service discovery for orchestration through streams - an investigation/spike story.\n\nI need to:\n1. Break down development into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide single most likely effort estimate per activity (workdays)\n4. Sum the total\n\nLet me create a reasonable WBS. Effort is in workdays, single developer doing all work.\n\nActivities could be organized per user story plus common activities like project setup, integration testing, documentation, release management.\n\nLet me estimate:\n\n**U1: Teradata support for Sqoop jobs**\n- Analyze NPE root cause with Teradata JDBC driver: 2 days\n- Implement Teradata connection manager integration / document workaround, bundle Hortonworks connector config: 3 days\n- Test with Teradata Express (setup test env): 3 days\n- Total U1: ~8 days\n\n**U2: Configurable logging directory**\n- Modify startup scripts/config to externalize logging dir: 2 days\n- Update RPM packaging to default to /var/logs/spring-xd: 1 day\n- Testing on various platforms: 1 day\n- Documentation: 1 day\n- Total U2: ~4 days\n\n**U3: Move message-bus to spring-bus**\n- Create new spring-bus repo/module structure: 2 days\n- Extract message-bus code, refactor package names: 5 days\n- Update Spring XD to depend on spring-bus via Maven: 3 days\n- Testing/regression: 4 days\n- Total: ~12 days\n\n**U4: Move type conversion to spring-cloud-dataflow**\n- Extract conversion code: 3 days\n- Refactor and generalize API for custom modules: 3 days\n- Update XD to use it: 2 days\n- Tests: 2 days\n- Total: ~9 days\n\n**U5: Move serialization codec to spring-bus**\n- Extract codec: 2 days\n- Refactor/wire in spring-bus: 2 days\n- Update XD dependency: 1 day\n- Tests: 2 days\n- Total: ~7 days\n\n**U6: Singlenode implementation of XD Admin SPI based on Module Launcher**\n- Design SPI interfaces: 3 days\n- Implement singlenode module launcher: 8 days\n- Local deployment of streams/jobs: 5 days\n- Tests: 4 days\n- Total: ~18 days\n\n**U7: Diego Receptor implementation of XD Admin SPI**\n- Research Diego Receptor API: 3 days\n- Implement receptor-based module launcher: 10 days\n- Integration with Lattice/Diego environment: 5 days\n- Tests on CF Lattice: 4 days\n- Total: ~20 days\n\n**U8: Investigate s-c-s module self-registration with service discovery**\n- Spike/investigation: 4 days\n- Prototype: 3 days\n- Write-up/recommendations: 1 day\n- Total: ~7 days\n\n**Common activities**\n- Overall integration & system testing: 5 days\n- Documentation (user guide, reference): 4 days\n- Build/CI setup & release management: 3 days\n\nTotal: 8+4+12+9+7+18+20+7+5+4+3 = 97 days\n\nLet me structure as a proper WBS with activities. Maybe ~20 activities. Let me define activities with IDs.\n\nCommon:\n- A1: Requirements analysis & solution design across increment: 3 days\n- A2: Development environment/project setup (repos, CI): 2 days\n\nU1 (Teradata Sqoop connectivity):\n- A3: Reproduce and root-cause NPE with Teradata JDBC driver: 2\n- A4: Implement Teradata support (connection manager integration / packaging of Hortonworks connector config): 3\n- A5: Verify import jobs against Teradata Express test instance: 3\n\nU2 (logging directory):\n- A6: Externalize logging directory configuration (scripts + config): 2\n- A7: Update RPM packaging defaults and test install layouts: 2\n\nU3 (message-bus extraction):\n- A8: Create spring-bus project structure and build: 2\n- A9: Extract message-bus code from Spring XD into spring-bus: 4\n- A10: Migrate Spring XD to consume spring-bus Maven dependency and regression-test: 4\n\nU4 (type conversion extraction):\n- A11: Extract type conversion into spring-cloud-dataflow and adapt XD: 5\n- A12: Validate custom module with custom domain object scenario: 2\n\nU5 (codec extraction):\n- A13: Extract serialization codec into spring-bus and update XD: 4\n- A14: Codec regression/performance tests: 2\n\nU6 (singlenode):\n- A15: Design XD Admin SPI contract based on Module Launcher: 3\n- A16: Implement singlenode Admin SPI runtime: 8\n- A17: Test local data pipeline use cases end-to-end: 4\n\nU7 (Diego):\n- A18: Study Diego Receptor API and design implementation: 3\n- A19: Implement Diego Receptor Admin SPI: 9\n- A20: Deploy/test on CF Lattice-Diego environment: 5\n\nU8 (spike):\n- A21: Spike: s-c-s module self-registration with service discovery (prototype + report): 6\n\nCommon wrap-up:\n- A22: Increment-wide integration and system testing: 5\n- A23: Documentation updates (reference docs, migration notes): 4\n- A24: Final build, release packaging and review: 3\n\nSum: 3+2+2+3+3+2+2+2+4+4+5+2+4+2+3+8+4+3+9+5+6+5+4+3\n\nLet me add:\n3+2 = 5\n+2 = 7\n+3 = 10\n+3 = 13\n+2 = 15\n+2 = 17\n+2 = 19\n+4 = 23\n+4 = 27\n+5 = 32\n+2 = 34\n+4 = 38\n+2 = 40\n+3 = 43\n+8 = 51\n+4 = 55\n+3 = 58\n+9 = 67\n+5 = 72\n+6 = 78\n+5 = 83\n+4 = 87\n+3 = 90\n\nTotal: 90 workdays. That's a clean number.\n\nLet me double check: A1=3, A2=2, A3=2, A4=3, A5=3, A6=2, A7=2, A8=2, A9=4, A10=4, A11=5, A12=2, A13=4, A14=2, A15=3, A16=8, A17=4, A18=3, A19=9, A20=5, A21=6, A22=5, A23=4, A24=3.\n\nGroup sums:\n- Common start: 3+2=5\n- U1: 2+3+3=8 → 13\n- U2: 2+2=4 → 17\n- U3: 2+4+4=10 → 27\n- U4: 5+2=7 → 34\n- U5: 4+2=6 → 40\n- U6: 3+8+4=15 → 55\n- U7: 3+9+5=17 → 72\n- U8: 6 → 78\n- Common end: 5+4+3=12 → 90\n\nTotal = 90 workdays.\n\nTechnical and design decisions:\n- Keep existing Spring XD architecture (Java 8 era at the time; spec mentions Spring 6/Java 17 context, but Spring XD historically used Java 8 — I'll assume Java 8/Spring 4.x aligned with Spring XD 1.x codebase). Actually the spec includes generic Spring Framework description (Java 17+ as of Spring 6). Hmm. The spec text is boilerplate from the Spring Framework overview, but the user stories are clearly Spring XD 1.x era (spring-bus, spring-cloud-dataflow early days, 2015). I should note the assumption that the increment is built on the existing Spring XD 1.x codebase with its current JDK/build (Gradle), targeting Java 8 runtime, since Spring XD 1.x predates Java 17. I'll record as an assumption.\n- For U1: resolve NPE by ensuring the generic JDBC path handles Teradata driver properly and/or bundling/configuring the Hortonworks Teradata connector as documented connection manager; test against Teradata Express.\n- For U2: introduce XD_LOGGING_DIR / xd.logging.dir property resolved at startup in shell scripts and logging config, default remains ${xd.home}/logs for backward compatibility; RPM package overrides default to /var/logs/spring-xd.\n- U3/U5: create new spring-bus Maven modules (spring-bus-message-bus, spring-bus-codec) with semantic versioning; move code preserving API compatibility; XD consumes via Maven BOM/dependency.\n- U4: move type conversion (Tuple/JSON/POJO conversion, MimeType-based) into spring-cloud-dataflow module; XD depends on it.\n- U6/U7: define XD Admin SPI (ModuleDeployer/ModuleLauncher-based); singlenode runs modules in same JVM; Diego implementation uses Receptor API to create LRPs/tasks for module containers on Lattice.\n- U8: time-boxed spike with Eureka or similar service discovery, prototype self-registering s-c-s module, produce findings document.\n\nAssumptions:\n- Single developer performs all work sequentially; estimates are effort, not duration.\n- Existing Spring XD 1.x codebase, Gradle build, Git; CI (Jenkins/Travis) available.\n- Test environments: Teradata Express VM available; CF Lattice/Diego test environment available for U7; if not, setup time included in test activities.\n- U8 is a research spike; effort covers investigation, prototype, and report only, no production feature.\n- Unit tests included in each dev activity; separate integration/system test activity at end.\n- Estimates include code review time? Assume reviews are lightweight and included.\n- The effort excludes waiting times (CI queue), assumes ~8h workday.\n\nI'll output valid JSON only. Activity IDs like \"A1\"...\"A24\". Provide descriptions.\n\nLet me write the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. This is about Spring XD (Spring eXtreme Data), a distributed runtime for data pipelines. The user stories are about:\n\nU1: Teradata connectivity support for Sqoop batch jobs - essentially fixing/supporting Teradata JDBC driver or documenting/bundling the connection manager approach.\n\nU2: Configurable logging directory (currently hardcoded as ${xd.home}/logs) - make it configurable, e.g., via environment variable or config property.\n\nU3: Move message-bus from Spring XD repo into spring-bus (a new shared library) - refactoring/extraction into a Maven dependency.\n\nU4: Move input/output type conversion from Spring XD repo to spring-cloud-dataflow - refactoring/extraction.\n\nU5: Move serialization codec from Spring XD repo into spring-bus - refactoring/extraction.\n\nU6: Develop a \"singlenode\" (single JVM) implementation of XD Admin SPI based on Module Launcher - local runtime.\n\nU7: Diego-based Receptor implementation of XD Admin SPI (based on ModuleLauncher) for CF Lattice/Diego - cloud foundry runtime.\n\nU8: Investigate s-c-s (spring-cloud-stream) modules self-registering to service discovery for orchestration through streams - an investigation/spike story.\n\nI need to:\n1. Break down development into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide single most likely effort estimate per activity (workdays)\n4. Sum the total\n\nLet me create a reasonable WBS. Effort is in workdays, single developer doing all work.\n\nActivities could be organized per user story plus common activities like project setup, integration testing, documentation, release management.\n\nLet me estimate:\n\n**U1: Teradata support for Sqoop jobs**\n- Analyze NPE root cause with Teradata JDBC driver: 2 days\n- Implement Teradata connection manager integration / document workaround, bundle Hortonworks connector config: 3 days\n- Test with Teradata Express (setup test env): 3 days\n- Total U1: ~8 days\n\n**U2: Configurable logging directory**\n- Modify startup scripts/config to externalize logging dir: 2 days\n- Update RPM packaging to default to /var/logs/spring-xd: 1 day\n- Testing on various platforms: 1 day\n- Documentation: 1 day\n- Total U2: ~4 days\n\n**U3: Move message-bus to spring-bus**\n- Create new spring-bus repo/module structure: 2 days\n- Extract message-bus code, refactor package names: 5 days\n- Update Spring XD to depend on spring-bus via Maven: 3 days\n- Testing/regression: 4 days\n- Total: ~12 days\n\n**U4: Move type conversion to spring-cloud-dataflow**\n- Extract conversion code: 3 days\n- Refactor and generalize API for custom modules: 3 days\n- Update XD to use it: 2 days\n- Tests: 2 days\n- Total: ~9 days\n\n**U5: Move serialization codec to spring-bus**\n- Extract codec: 2 days\n- Refactor/wire in spring-bus: 2 days\n- Update XD dependency: 1 day\n- Tests: 2 days\n- Total: ~7 days\n\n**U6: Singlenode implementation of XD Admin SPI based on Module Launcher**\n- Design SPI interfaces: 3 days\n- Implement singlenode module launcher: 8 days\n- Local deployment of streams/jobs: 5 days\n- Tests: 4 days\n- Total: ~18 days\n\n**U7: Diego Receptor implementation of XD Admin SPI**\n- Research Diego Receptor API: 3 days\n- Implement receptor-based module launcher: 10 days\n- Integration with Lattice/Diego environment: 5 days\n- Tests on CF Lattice: 4 days\n- Total: ~20 days\n\n**U8: Investigate s-c-s module self-registration with service discovery**\n- Spike/investigation: 4 days\n- Prototype: 3 days\n- Write-up/recommendations: 1 day\n- Total: ~7 days\n\n**Common activities**\n- Overall integration & system testing: 5 days\n- Documentation (user guide, reference): 4 days\n- Build/CI setup & release management: 3 days\n\nTotal: 8+4+12+9+7+18+20+7+5+4+3 = 97 days\n\nLet me structure as a proper WBS with activities. Maybe ~20 activities. Let me define activities with IDs.\n\nCommon:\n- A1: Requirements analysis & solution design across increment: 3 days\n- A2: Development environment/project setup (repos, CI): 2 days\n\nU1 (Teradata Sqoop connectivity):\n- A3: Reproduce and root-cause NPE with Teradata JDBC driver: 2\n- A4: Implement Teradata support (connection manager integration / packaging of Hortonworks connector config): 3\n- A5: Verify import jobs against Teradata Express test instance: 3\n\nU2 (logging directory):\n- A6: Externalize logging directory configuration (scripts + config): 2\n- A7: Update RPM packaging defaults and test install layouts: 2\n\nU3 (message-bus extraction):\n- A8: Create spring-bus project structure and build: 2\n- A9: Extract message-bus code from Spring XD into spring-bus: 4\n- A10: Migrate Spring XD to consume spring-bus Maven dependency and regression-test: 4\n\nU4 (type conversion extraction):\n- A11: Extract type conversion into spring-cloud-dataflow and adapt XD: 5\n- A12: Validate custom module with custom domain object scenario: 2\n\nU5 (codec extraction):\n- A13: Extract serialization codec into spring-bus and update XD: 4\n- A14: Codec regression/performance tests: 2\n\nU6 (singlenode):\n- A15: Design XD Admin SPI contract based on Module Launcher: 3\n- A16: Implement singlenode Admin SPI runtime: 8\n- A17: Test local data pipeline use cases end-to-end: 4\n\nU7 (Diego):\n- A18: Study Diego Receptor API and design implementation: 3\n- A19: Implement Diego Receptor Admin SPI: 9\n- A20: Deploy/test on CF Lattice-Diego environment: 5\n\nU8 (spike):\n- A21: Spike: s-c-s module self-registration with service discovery (prototype + report): 6\n\nCommon wrap-up:\n- A22: Increment-wide integration and system testing: 5\n- A23: Documentation updates (reference docs, migration notes): 4\n- A24: Final build, release packaging and review: 3\n\nSum: 3+2+2+3+3+2+2+2+4+4+5+2+4+2+3+8+4+3+9+5+6+5+4+3\n\nLet me add:\n3+2 = 5\n+2 = 7\n+3 = 10\n+3 = 13\n+2 = 15\n+2 = 17\n+2 = 19\n+4 = 23\n+4 = 27\n+5 = 32\n+2 = 34\n+4 = 38\n+2 = 40\n+3 = 43\n+8 = 51\n+4 = 55\n+3 = 58\n+9 = 67\n+5 = 72\n+6 = 78\n+5 = 83\n+4 = 87\n+3 = 90\n\nTotal: 90 workdays. That's a clean number.\n\nLet me double check: A1=3, A2=2, A3=2, A4=3, A5=3, A6=2, A7=2, A8=2, A9=4, A10=4, A11=5, A12=2, A13=4, A14=2, A15=3, A16=8, A17=4, A18=3, A19=9, A20=5, A21=6, A22=5, A23=4, A24=3.\n\nGroup sums:\n- Common start: 3+2=5\n- U1: 2+3+3=8 → 13\n- U2: 2+2=4 → 17\n- U3: 2+4+4=10 → 27\n- U4: 5+2=7 → 34\n- U5: 4+2=6 → 40\n- U6: 3+8+4=15 → 55\n- U7: 3+9+5=17 → 72\n- U8: 6 → 78\n- Common end: 5+4+3=12 → 90\n\nTotal = 90 workdays.\n\nTechnical and design decisions:\n- Keep existing Spring XD architecture (Java 8 era at the time; spec mentions Spring 6/Java 17 context, but Spring XD historically used Java 8 — I'll assume Java 8/Spring 4.x aligned with Spring XD 1.x codebase). Actually the spec includes generic Spring Framework description (Java 17+ as of Spring 6). Hmm. The spec text is boilerplate from the Spring Framework overview, but the user stories are clearly Spring XD 1.x era (spring-bus, spring-cloud-dataflow early days, 2015). I should note the assumption that the increment is built on the existing Spring XD 1.x codebase with its current JDK/build (Gradle), targeting Java 8 runtime, since Spring XD 1.x predates Java 17. I'll record as an assumption.\n- For U1: resolve NPE by ensuring the generic JDBC path handles Teradata driver properly and/or bundling/configuring the Hortonworks Teradata connector as documented connection manager; test against Teradata Express.\n- For U2: introduce XD_LOGGING_DIR / xd.logging.dir property resolved at startup in shell scripts and logging config, default remains ${xd.home}/logs for backward compatibility; RPM package overrides default to /var/logs/spring-xd.\n- U3/U5: create new spring-bus Maven modules (spring-bus-message-bus, spring-bus-codec) with semantic versioning; move code preserving API compatibility; XD consumes via Maven BOM/dependency.\n- U4: move type conversion (Tuple/JSON/POJO conversion, MimeType-based) into spring-cloud-dataflow module; XD depends on it.\n- U6/U7: define XD Admin SPI (ModuleDeployer/ModuleLauncher-based); singlenode runs modules in same JVM; Diego implementation uses Receptor API to create LRPs/tasks for module containers on Lattice.\n- U8: time-boxed spike with Eureka or similar service discovery, prototype self-registering s-c-s module, produce findings document.\n\nAssumptions:\n- Single developer performs all work sequentially; estimates are effort, not duration.\n- Existing Spring XD 1.x codebase, Gradle build, Git; CI (Jenkins/Travis) available.\n- Test environments: Teradata Express VM available; CF Lattice/Diego test environment available for U7; if not, setup time included in test activities.\n- U8 is a research spike; effort covers investigation, prototype, and report only, no production feature.\n- Unit tests included in each dev activity; separate integration/system test activity at end.\n- Estimates include code review time? Assume reviews are lightweight and included.\n- The effort excludes waiting times (CI queue), assumes ~8h workday.\n\nI'll output valid JSON only. Activity IDs like \"A1\"...\"A24\". Provide descriptions.\n\nLet me write the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1587,
+      "completion_tokens": 5116,
+      "total_tokens": 6703,
+      "cost": 0.081501,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.081501,
+        "upstream_inference_prompt_cost": 0.004761,
+        "upstream_inference_completions_cost": 0.07674
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2472,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"The increment is implemented on the existing Spring XD 1.x codebase (Gradle multi-module build, Git) and its supported Java/Spring baseline; no upgrade of the overall framework baseline is part of this increment.\",\n    \"U1: The Teradata NPE with the generic JDBC path will be root-caused and fixed where feasible; in addition, first-class support for the Hortonworks Connector for Teradata (org.apache.sqoop.teradata.TeradataConnManager) will be provided via documented configuration/packaging of the Sqoop job module so that --connection-manager works out of the box. Verification is done against a Teradata Express instance.\",\n    \"U2: The logging directory will be externalized into a configurable property (e.g., XD_LOGGING_DIR / xd.logging.dir) resolved by the startup scripts and logging configuration, with ${xd.home}/logs kept as the default for backward compatibility; the RPM packaging will override the default to /var/logs/spring-xd.\",\n    \"U3/U5: A new 'spring-bus' project will be created as a standalone Maven-published library; message-bus and serialization codec code will be extracted from the Spring XD repository preserving API compatibility, and Spring XD will consume them as Maven dependencies instead of in-repo modules.\",\n    \"U4: The input/output type conversion (MimeType-based conversion of payloads, e.g., Tuple/JSON/POJO) will be moved into a spring-cloud-dataflow module with a generalized API so that custom modules producing/consuming custom domain objects can reuse it; Spring XD is adapted to depend on it.\",\n    \"U6/U7: An XD Admin SPI based on the Module Launcher abstraction will be defined; the 'singlenode' implementation launches module containers within a single local JVM for local pipelines, and the Diego implementation uses the Diego Receptor API (LRPs/tasks) to run module containers on CF Lattice/Diego.\",\n    \"U8: Handled as a time-boxed research spike: prototype spring-cloud-stream modules self-registering with a service discovery mechanism (e.g., Eureka-style registry) and assess how the Spring XD runtime on CF could discover and orchestrate them; deliverable is a prototype plus a findings/recommendations document, not a production feature.\",\n    \"Unit tests are written as part of each development activity; cross-cutting integration/system testing and documentation are separate WBS activities.\"\n  ],\n  \"assumptions\": [\n    \"A single developer (the estimator) performs all work; estimates are pure effort in workdays (1 workday = 8 hours), not elapsed calendar time.\",\n    \"The existing Spring XD 1.x source tree, build infrastructure, and CI are available and operational; only minor CI/build changes for the new repositories are needed.\",\n    \"A Teradata Express test instance (or equivalent) and the Hortonworks Connector for Teradata archive are available for U1 verification; no license procurement effort is included.\",\n    \"A CF Lattice/Diego test environment is available for U7; effort for deploying and testing on it is included, but not the provisioning of the environment itself.\",\n    \"U8 is investigation-only; no production code changes from U8 are included in this increment.\",\n    \"Estimates include coding, unit testing, self-review, and rework to a 'done' state; they exclude holidays, meetings unrelated to the increment, and organizational overhead.\",\n    \"No clarifying questions were asked; where the specification is silent (e.g., exact SPI signatures, property names), reasonable naming/design choices were made as listed in the technical decisions.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Increment analysis and solution design\",\n      \"activity_description\": \"Analyze the eight user stories, define the XD Admin SPI approach, extraction strategy for spring-bus/spring-cloud-dataflow, and configuration design for logging; produce a short design outline per story.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository, build and CI setup for new modules\",\n      \"activity_description\": \"Set up the new spring-bus project skeleton and any build/CI wiring required to publish Maven artifacts consumed by Spring XD (also covers spring-cloud-dataflow module placement).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - Reproduce and root-cause Teradata JDBC NPE\",\n      \"activity_description\": \"Reproduce the NPE with the Teradata JDBC driver in the Sqoop job module, diagnose the failure path, and identify the fix or required connection-manager handling.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U1 - Implement Teradata support in Sqoop job module\",\n      \"activity_description\": \"Implement the fix for the generic JDBC path and/or integrate the Hortonworks Teradata connector (TeradataConnManager) so that import jobs with --connection-manager work out of the box, including packaging/config changes.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U1 - Verify Teradata import jobs end-to-end\",\n      \"activity_description\": \"Configure a Teradata Express test instance, run the tdTest Sqoop import job scenarios from the story, and verify data lands correctly in the target directory.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 - Externalize logging directory configuration\",\n      \"activity_description\": \"Replace the hard-coded ${xd.home}/logs location with a configurable property resolved in startup scripts and logging configuration, keeping the current default for backward compatibility.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U2 - RPM packaging default and install verification\",\n      \"activity_description\": \"Update RPM packaging so logs go to /var/logs/spring-xd by default and verify tarball/RPM installations start and log correctly with overridden and default values.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U3 - Create spring-bus project structure\",\n      \"activity_description\": \"Define the module layout, packages, and versioning scheme for the spring-bus library that will host the message-bus (and later the codec).\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U3 - Extract message-bus code into spring-bus\",\n      \"activity_description\": \"Move the message-bus implementation out of the Spring XD repository into spring-bus, preserving API compatibility, and adapt its build/tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U3 - Migrate Spring XD to spring-bus dependency\",\n      \"activity_description\": \"Remove in-repo message-bus code from Spring XD, wire the Maven dependency on spring-bus, and run the existing XD regression test suite.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U4 - Move type conversion to spring-cloud-dataflow\",\n      \"activity_description\": \"Extract the input/output type conversion from Spring XD into spring-cloud-dataflow with a generalized API and adapt Spring XD to consume it as a dependency.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U4 - Validate custom domain object module scenario\",\n      \"activity_description\": \"Build a sample custom module that produces/consumes a custom domain object using the moved conversion support and verify stream processing end-to-end.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"U5 - Extract serialization codec into spring-bus\",\n      \"activity_description\": \"Move the serialization codec from Spring XD into spring-bus, integrate it with the message-bus module, and update Spring XD to use the Maven dependency.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"U5 - Codec regression and round-trip verification\",\n      \"activity_description\": \"Run codec regression tests (round-trip serialization of supported types) and verify streams still pass payloads correctly through the moved codec.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"U6 - Design XD Admin SPI contract\",\n      \"activity_description\": \"Define the Admin SPI interfaces based on the Module Launcher abstraction that both the singlenode and Diego implementations will realize.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"U6 - Implement singlenode Admin SPI runtime\",\n      \"activity_description\": \"Implement the single-JVM 'singlenode' implementation of the XD Admin SPI that launches and manages modules locally via the Module Launcher.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"U6 - Test local data pipeline use cases\",\n      \"activity_description\": \"Deploy and run representative stream/job pipelines on the singlenode runtime and verify lifecycle operations (deploy, undeploy, status) work correctly.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"U7 - Study Diego Receptor API and design implementation\",\n      \"activity_description\": \"Investigate the Diego Receptor API (LRPs/tasks) and design how module containers will be launched and supervised on CF Lattice/Diego.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"U7 - Implement Diego Receptor Admin SPI\",\n      \"activity_description\": \"Implement the Diego-based Receptor implementation of the XD Admin SPI that launches module containers on Lattice/Diego via the Module Launcher.\",\n      \"most_likely_effort\": 9\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"U7 - Deploy and test on CF Lattice/Diego\",\n      \"activity_description\": \"Deploy the runtime to a Lattice/Diego environment, run data pipeline use cases, and verify module orchestration and lifecycle behavior.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"U8 - Spike: s-c-s module self-registration with service discovery\",\n      \"activity_description\": \"Time-boxed investigation and prototype of spring-cloud-stream modules self-registering with a service discovery mechanism so the Spring XD runtime on CF could discover and orchestrate them; includes a findings/recommendations write-up.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A22\",\n      \"activity_name\": \"Increment-wide integration and system testing\",\n      \"activity_description\": \"Run cross-story integration and system tests across the modified components (Sqoop module, logging config, spring-bus/codec/conversion extractions, both Admin SPI runtimes) and fix defects found.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A23\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update reference and user documentation: Teradata connectivity for Sqoop jobs, the new logging directory property and RPM behavior, the new library dependencies, and singlenode/Diego runtime usage.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A24\",\n      \"activity_name\": \"Final build, release packaging and review\",\n      \"activity_description\": \"Produce release-ready builds of all affected modules (including publishing spring-bus artifacts), perform final review, tagging, and packaging.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 90\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "The increment is implemented on the existing Spring XD 1.x codebase (Gradle multi-module build, Git) and its supported Java/Spring baseline; no upgrade of the overall framework baseline is part of this increment.",
+      "U1: The Teradata NPE with the generic JDBC path will be root-caused and fixed where feasible; in addition, first-class support for the Hortonworks Connector for Teradata (org.apache.sqoop.teradata.TeradataConnManager) will be provided via documented configuration/packaging of the Sqoop job module so that --connection-manager works out of the box. Verification is done against a Teradata Express instance.",
+      "U2: The logging directory will be externalized into a configurable property (e.g., XD_LOGGING_DIR / xd.logging.dir) resolved by the startup scripts and logging configuration, with ${xd.home}/logs kept as the default for backward compatibility; the RPM packaging will override the default to /var/logs/spring-xd.",
+      "U3/U5: A new 'spring-bus' project will be created as a standalone Maven-published library; message-bus and serialization codec code will be extracted from the Spring XD repository preserving API compatibility, and Spring XD will consume them as Maven dependencies instead of in-repo modules.",
+      "U4: The input/output type conversion (MimeType-based conversion of payloads, e.g., Tuple/JSON/POJO) will be moved into a spring-cloud-dataflow module with a generalized API so that custom modules producing/consuming custom domain objects can reuse it; Spring XD is adapted to depend on it.",
+      "U6/U7: An XD Admin SPI based on the Module Launcher abstraction will be defined; the 'singlenode' implementation launches module containers within a single local JVM for local pipelines, and the Diego implementation uses the Diego Receptor API (LRPs/tasks) to run module containers on CF Lattice/Diego.",
+      "U8: Handled as a time-boxed research spike: prototype spring-cloud-stream modules self-registering with a service discovery mechanism (e.g., Eureka-style registry) and assess how the Spring XD runtime on CF could discover and orchestrate them; deliverable is a prototype plus a findings/recommendations document, not a production feature.",
+      "Unit tests are written as part of each development activity; cross-cutting integration/system testing and documentation are separate WBS activities."
+    ],
+    "assumptions": [
+      "A single developer (the estimator) performs all work; estimates are pure effort in workdays (1 workday = 8 hours), not elapsed calendar time.",
+      "The existing Spring XD 1.x source tree, build infrastructure, and CI are available and operational; only minor CI/build changes for the new repositories are needed.",
+      "A Teradata Express test instance (or equivalent) and the Hortonworks Connector for Teradata archive are available for U1 verification; no license procurement effort is included.",
+      "A CF Lattice/Diego test environment is available for U7; effort for deploying and testing on it is included, but not the provisioning of the environment itself.",
+      "U8 is investigation-only; no production code changes from U8 are included in this increment.",
+      "Estimates include coding, unit testing, self-review, and rework to a 'done' state; they exclude holidays, meetings unrelated to the increment, and organizational overhead.",
+      "No clarifying questions were asked; where the specification is silent (e.g., exact SPI signatures, property names), reasonable naming/design choices were made as listed in the technical decisions."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Increment analysis and solution design",
+        "activity_description": "Analyze the eight user stories, define the XD Admin SPI approach, extraction strategy for spring-bus/spring-cloud-dataflow, and configuration design for logging; produce a short design outline per story.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Repository, build and CI setup for new modules",
+        "activity_description": "Set up the new spring-bus project skeleton and any build/CI wiring required to publish Maven artifacts consumed by Spring XD (also covers spring-cloud-dataflow module placement).",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U1 - Reproduce and root-cause Teradata JDBC NPE",
+        "activity_description": "Reproduce the NPE with the Teradata JDBC driver in the Sqoop job module, diagnose the failure path, and identify the fix or required connection-manager handling.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U1 - Implement Teradata support in Sqoop job module",
+        "activity_description": "Implement the fix for the generic JDBC path and/or integrate the Hortonworks Teradata connector (TeradataConnManager) so that import jobs with --connection-manager work out of the box, including packaging/config changes.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U1 - Verify Teradata import jobs end-to-end",
+        "activity_description": "Configure a Teradata Express test instance, run the tdTest Sqoop import job scenarios from the story, and verify data lands correctly in the target directory.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U2 - Externalize logging directory configuration",
+        "activity_description": "Replace the hard-coded ${xd.home}/logs location with a configurable property resolved in startup scripts and logging configuration, keeping the current default for backward compatibility.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U2 - RPM packaging default and install verification",
+        "activity_description": "Update RPM packaging so logs go to /var/logs/spring-xd by default and verify tarball/RPM installations start and log correctly with overridden and default values.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U3 - Create spring-bus project structure",
+        "activity_description": "Define the module layout, packages, and versioning scheme for the spring-bus library that will host the message-bus (and later the codec).",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U3 - Extract message-bus code into spring-bus",
+        "activity_description": "Move the message-bus implementation out of the Spring XD repository into spring-bus, preserving API compatibility, and adapt its build/tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "U3 - Migrate Spring XD to spring-bus dependency",
+        "activity_description": "Remove in-repo message-bus code from Spring XD, wire the Maven dependency on spring-bus, and run the existing XD regression test suite.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "U4 - Move type conversion to spring-cloud-dataflow",
+        "activity_description": "Extract the input/output type conversion from Spring XD into spring-cloud-dataflow with a generalized API and adapt Spring XD to consume it as a dependency.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "U4 - Validate custom domain object module scenario",
+        "activity_description": "Build a sample custom module that produces/consumes a custom domain object using the moved conversion support and verify stream processing end-to-end.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "U5 - Extract serialization codec into spring-bus",
+        "activity_description": "Move the serialization codec from Spring XD into spring-bus, integrate it with the message-bus module, and update Spring XD to use the Maven dependency.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "U5 - Codec regression and round-trip verification",
+        "activity_description": "Run codec regression tests (round-trip serialization of supported types) and verify streams still pass payloads correctly through the moved codec.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A15",
+        "activity_name": "U6 - Design XD Admin SPI contract",
+        "activity_description": "Define the Admin SPI interfaces based on the Module Launcher abstraction that both the singlenode and Diego implementations will realize.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A16",
+        "activity_name": "U6 - Implement singlenode Admin SPI runtime",
+        "activity_description": "Implement the single-JVM 'singlenode' implementation of the XD Admin SPI that launches and manages modules locally via the Module Launcher.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A17",
+        "activity_name": "U6 - Test local data pipeline use cases",
+        "activity_description": "Deploy and run representative stream/job pipelines on the singlenode runtime and verify lifecycle operations (deploy, undeploy, status) work correctly.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A18",
+        "activity_name": "U7 - Study Diego Receptor API and design implementation",
+        "activity_description": "Investigate the Diego Receptor API (LRPs/tasks) and design how module containers will be launched and supervised on CF Lattice/Diego.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A19",
+        "activity_name": "U7 - Implement Diego Receptor Admin SPI",
+        "activity_description": "Implement the Diego-based Receptor implementation of the XD Admin SPI that launches module containers on Lattice/Diego via the Module Launcher.",
+        "most_likely_effort": 9
+      },
+      {
+        "activity_id": "A20",
+        "activity_name": "U7 - Deploy and test on CF Lattice/Diego",
+        "activity_description": "Deploy the runtime to a Lattice/Diego environment, run data pipeline use cases, and verify module orchestration and lifecycle behavior.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A21",
+        "activity_name": "U8 - Spike: s-c-s module self-registration with service discovery",
+        "activity_description": "Time-boxed investigation and prototype of spring-cloud-stream modules self-registering with a service discovery mechanism so the Spring XD runtime on CF could discover and orchestrate them; includes a findings/recommendations write-up.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A22",
+        "activity_name": "Increment-wide integration and system testing",
+        "activity_description": "Run cross-story integration and system tests across the modified components (Sqoop module, logging config, spring-bus/codec/conversion extractions, both Admin SPI runtimes) and fix defects found.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A23",
+        "activity_name": "Documentation updates",
+        "activity_description": "Update reference and user documentation: Teradata connectivity for Sqoop jobs, the new logging directory property and RPM behavior, the new library dependencies, and singlenode/Diego runtime usage.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A24",
+        "activity_name": "Final build, release packaging and review",
+        "activity_description": "Produce release-ready builds of all affected modules (including publishing spring-bus artifacts), perform final review, tagging, and packaging.",
+        "most_likely_effort": 3
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 90
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1587,
+    "completion_tokens": 5116,
+    "total_tokens": 6703,
+    "cost": 0.081501,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.081501,
+      "upstream_inference_prompt_cost": 0.004761,
+      "upstream_inference_completions_cost": 0.07674
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2472,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789161196-WFq71fD6Qi7tKnYwX5qS",
+    "object": "chat.completion",
+    "created": 1789161196,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user asks how many work-hours I consider equivalent to one estimated workday, without revising the previous estimate. I stated in my assumptions: \"estimates are pure effort in workdays (1 workday = 8 hours)\". So the answer is 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user asks how many work-hours I consider equivalent to one estimated workday, without revising the previous estimate. I stated in my assumptions: \"estimates are pure effort in workdays (1 workday = 8 hours)\". So the answer is 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 4365,
+      "completion_tokens": 87,
+      "total_tokens": 4452,
+      "cost": 0.0102528,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1536,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0102528,
+        "upstream_inference_prompt_cost": 0.0089478,
+        "upstream_inference_completions_cost": 0.001305
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 55,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

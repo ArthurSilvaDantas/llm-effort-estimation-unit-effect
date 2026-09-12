@@ -1,0 +1,190 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-012",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789158660-L5TDy7hxZ8r6B8FcP9GK",
+    "object": "chat.completion",
+    "created": 1789158660,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement acceptance tests as black-box, end-to-end tests that run each module as a Spring Cloud Stream application and verify message flow through a real binder (RabbitMQ/Kafka) provisioned with Testcontainers.\",\n    \"Use Java 17 with Spring Framework 6 / Spring Boot 3 baseline as mandated by the specification, with JUnit 5 as the test framework.\",\n    \"External service dependencies are containerized via Testcontainers: GreenMail for the Mail source, an SFTP server image (e.g., atmoz/sftp) for the SFTP source, and Redis for the aggregator processor's message store; reactor-ip and reactor-syslog tests use embedded Netty-based client/sender utilities; http-client tests use WireMock to stub HTTP endpoints.\",\n    \"Create a shared acceptance-test base infrastructure (abstract test class, container lifecycle management, binder configuration helpers, reusable assertion utilities) to be reused across all 8 module test suites.\",\n    \"Acceptance tests are placed in a dedicated source set/module executed by the Maven Failsafe (or equivalent Gradle) plugin in a separate 'acceptance-test' stage so they run on every CI build without slowing unit-test phases.\",\n    \"The bridge processor test is a simple binder-to-binder passthrough verification and requires no external containers beyond the binder.\"\n  ],\n  \"assumptions\": [\n    \"All 8 modules (Mail, reactor-ip, reactor-syslog, SFTP sources; aggregator, analytic-pmml, bridge, http-client processors) already exist, compile, and have passing unit tests; this increment adds acceptance test coverage only, with no feature changes.\",\n    \"A CI system (e.g., GitHub Actions or Jenkins) already exists and its build agents support Docker, which is required by Testcontainers.\",\n    \"A sample PMML model file and representative input/output data for analytic-pmml are available or can be created quickly from existing documentation.\",\n    \"Effort estimates include test design, fixture/test-data creation, implementation, debugging of flaky container startup/timing issues, and one round of code review rework; all work is performed by a single developer.\",\n    \"Only one binder variant (e.g., RabbitMQ) is exercised per module in acceptance tests; multi-binder matrices are out of scope.\",\n    \"No changes to module production code are needed beyond minor testability adjustments, which are included in the per-module estimates.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Analyze modules and define acceptance test strategy\",\n      \"activity_description\": \"Review the 8 modules' configurations and contracts, define the black-box acceptance test approach, select binder and container strategy, and enumerate test scenarios per module.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Build shared acceptance test infrastructure\",\n      \"activity_description\": \"Implement the shared base test class, Testcontainers lifecycle management for the binder, common assertion/wait utilities, build plugin configuration (Failsafe/Gradle task), and the CI test stage wiring.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Mail source acceptance tests (U1)\",\n      \"activity_description\": \"Stand up a GreenMail container, send test emails, and verify the Mail source emits expected messages (headers, body, attachments) to the binder, including polling and error cases.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"reactor-ip source acceptance tests (U2)\",\n      \"activity_description\": \"Implement TCP/UDP client senders against the running reactor-ip source and verify received datagrams/messages are published to the binder with correct framing and decoding.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"reactor-syslog source acceptance tests (U3)\",\n      \"activity_description\": \"Create a syslog message sender (UDP/TCP) producing RFC 3164/5424 messages and verify the reactor-syslog source parses and publishes them correctly, including malformed message handling.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"SFTP source acceptance tests (U4)\",\n      \"activity_description\": \"Provision a containerized SFTP server with seeded directories/files and credentials, and verify file pickup, local synchronization, filtering, and message emission to the binder.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"aggregator processor acceptance tests (U5)\",\n      \"activity_description\": \"Configure a Redis-backed message store in a container and verify correlation, aggregation, release strategies (count/timeout), and state handling by sending message sequences through the binder.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"analytic-pmml processor acceptance tests (U6)\",\n      \"activity_description\": \"Load a sample PMML model, send input tuples through the processor, and verify evaluated model outputs are emitted correctly, including invalid input handling.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"bridge processor acceptance tests (U7)\",\n      \"activity_description\": \"Verify end-to-end passthrough bridging from the input binding to the output binding, confirming message content and headers are preserved.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"http-client processor acceptance tests (U8)\",\n      \"activity_description\": \"Stub HTTP endpoints with WireMock, send request messages through the processor, and verify HTTP method, headers, body mapping, and response/reply emission, including error status handling.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"CI integration, stabilization, and flaky test remediation\",\n      \"activity_description\": \"Run the full acceptance suite in the CI pipeline, tune container startup timeouts and waits, fix flaky tests, and confirm the suite gates every build as required.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation, code review, and rework\",\n      \"activity_description\": \"Document how to run the acceptance tests locally and in CI, address review feedback across all test suites, and finalize the increment.\",\n      \"most_likely_effort\": 6\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 136\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "The task is to estimate software development effort for implementing acceptance test coverage for 8 modules (4 source modules: Mail, reactor-ip, reactor-syslog, SFTP; 4 processor modules: aggregator, analytic-pmml, bridge, http-client) in what appears to be Spring Cloud Stream / Spring Cloud Stream App Starters (or Spring Integration?) context. The spec mentions Spring Framework 6.0, Java 17+.\n\nThe user stories are about QA wanting acceptance test coverage for these modules, validated as part of every CI build. This looks like it's based on the Spring Cloud Stream applications project (stream-applications) where acceptance tests were added for sources and processors.\n\nI need to:\n1. Break down into activities (WBS).\n2. State technical/design decisions and assumptions.\n3. Provide most likely effort per activity (work-hours).\n4. Sum total.\n\nReturn only valid JSON matching schema.\n\nLet me think about a reasonable WBS:\n\nCommon infrastructure:\n- A1: Analyze modules & design acceptance test strategy (test harness, Testcontainers, Docker images, CI integration approach)\n- A2: Set up shared acceptance test infrastructure (base test classes, Testcontainers setup, JUnit 5, Maven/Gradle profile, CI pipeline integration)\n\nPer-module test implementation:\n- A3: Mail source acceptance tests (requires mail server container like GreenMail)\n- A4: reactor-ip source acceptance tests (TCP/UDP netty-based)\n- A5: reactor-syslog source acceptance tests (syslog server container, e.g., rsyslog or test syslog sender)\n- A6: SFTP source acceptance tests (SFTP server container, e.g., atmoz/sftp)\n- A7: aggregator processor acceptance tests (stateful, needs message store like Redis/JDBC)\n- A8: analytic-pmml processor acceptance tests (PMML model evaluation)\n- A9: bridge processor acceptance tests (simple passthrough between binders)\n- A10: http-client processor acceptance tests (needs HTTP endpoint, e.g., WireMock)\n\nFinal:\n- A11: CI pipeline integration and validation (ensure tests run in every build, tune timeouts/flakiness)\n- A12: Documentation and code review/rework\n\nEstimates:\n\nA1: 8 hours\nA2: 16 hours\nA3 (Mail): 12 hours\nA4 (reactor-ip): 12 hours\nA5 (reactor-syslog): 14 hours (trickier to generate syslog messages)\nA6 (SFTP): 14 hours (container + keys + files)\nA7 (aggregator): 16 hours (stateful store, correlation/release logic)\nA8 (analytic-pmml): 12 hours (need sample PMML model)\nA9 (bridge): 6 hours (simple)\nA10 (http-client): 10 hours (WireMock)\nA11: 10 hours\nA12: 6 hours\n\nSum: 8+16+12+12+14+14+16+12+6+10+10+6 = 136 hours.\n\nLet me compute: 8+16=24; +12=36; +12=48; +14=62; +14=76; +16=92; +12=104; +6=110; +10=120; +10=130; +6=136.\n\nTotal 136 work-hours.\n\nThis seems plausible. Realistically these acceptance test efforts in the actual stream-applications project took a while, but per-module most likely estimates of 1.5–2 days each are reasonable.\n\nAlternatively I could add test data/fixtures per module included in module activity. Fine.\n\nLet me ensure JSON is valid, no trailing commas. Numbers as integers.\n\nTechnical and design decisions:\n- Use JUnit 5 + Spring Integration Test / Spring Cloud Stream test binder or Testcontainers with real middleware (RabbitMQ/Kafka binder, Docker-based service dependencies) for black-box acceptance tests.\n- Testcontainers for external dependencies: GreenMail for Mail, atmoz/sftp for SFTP, a syslog listener/Netty for reactor-syslog, WireMock for http-client, Redis for aggregator state store.\n- Tests packaged in a dedicated acceptance-test module executed via Maven Failsafe (or Gradle task) and wired into CI so each PR/build runs them.\n- Java 17 + Spring Framework 6/Spring Boot 3 baseline per spec.\n- Reuse shared base test class for container lifecycle and binder config.\n\nAssumptions:\n- Modules already exist and build; work covers only acceptance tests, not new features or bug fixes except trivial.\n- CI system (e.g., GitHub Actions/Jenkins) exists and Docker is available on agents for Testcontainers.\n- Existing sample PMML model and test data available or quick to create.\n- Estimates include authoring tests, fixtures, debugging flaky runs, and code review, performed by one developer.\n- Acceptance test = black-box test running module as a Spring Cloud Stream app against real middleware in containers, verifying end-to-end message flow.\n\nNow produce JSON only.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The task is to estimate software development effort for implementing acceptance test coverage for 8 modules (4 source modules: Mail, reactor-ip, reactor-syslog, SFTP; 4 processor modules: aggregator, analytic-pmml, bridge, http-client) in what appears to be Spring Cloud Stream / Spring Cloud Stream App Starters (or Spring Integration?) context. The spec mentions Spring Framework 6.0, Java 17+.\n\nThe user stories are about QA wanting acceptance test coverage for these modules, validated as part of every CI build. This looks like it's based on the Spring Cloud Stream applications project (stream-applications) where acceptance tests were added for sources and processors.\n\nI need to:\n1. Break down into activities (WBS).\n2. State technical/design decisions and assumptions.\n3. Provide most likely effort per activity (work-hours).\n4. Sum total.\n\nReturn only valid JSON matching schema.\n\nLet me think about a reasonable WBS:\n\nCommon infrastructure:\n- A1: Analyze modules & design acceptance test strategy (test harness, Testcontainers, Docker images, CI integration approach)\n- A2: Set up shared acceptance test infrastructure (base test classes, Testcontainers setup, JUnit 5, Maven/Gradle profile, CI pipeline integration)\n\nPer-module test implementation:\n- A3: Mail source acceptance tests (requires mail server container like GreenMail)\n- A4: reactor-ip source acceptance tests (TCP/UDP netty-based)\n- A5: reactor-syslog source acceptance tests (syslog server container, e.g., rsyslog or test syslog sender)\n- A6: SFTP source acceptance tests (SFTP server container, e.g., atmoz/sftp)\n- A7: aggregator processor acceptance tests (stateful, needs message store like Redis/JDBC)\n- A8: analytic-pmml processor acceptance tests (PMML model evaluation)\n- A9: bridge processor acceptance tests (simple passthrough between binders)\n- A10: http-client processor acceptance tests (needs HTTP endpoint, e.g., WireMock)\n\nFinal:\n- A11: CI pipeline integration and validation (ensure tests run in every build, tune timeouts/flakiness)\n- A12: Documentation and code review/rework\n\nEstimates:\n\nA1: 8 hours\nA2: 16 hours\nA3 (Mail): 12 hours\nA4 (reactor-ip): 12 hours\nA5 (reactor-syslog): 14 hours (trickier to generate syslog messages)\nA6 (SFTP): 14 hours (container + keys + files)\nA7 (aggregator): 16 hours (stateful store, correlation/release logic)\nA8 (analytic-pmml): 12 hours (need sample PMML model)\nA9 (bridge): 6 hours (simple)\nA10 (http-client): 10 hours (WireMock)\nA11: 10 hours\nA12: 6 hours\n\nSum: 8+16+12+12+14+14+16+12+6+10+10+6 = 136 hours.\n\nLet me compute: 8+16=24; +12=36; +12=48; +14=62; +14=76; +16=92; +12=104; +6=110; +10=120; +10=130; +6=136.\n\nTotal 136 work-hours.\n\nThis seems plausible. Realistically these acceptance test efforts in the actual stream-applications project took a while, but per-module most likely estimates of 1.5–2 days each are reasonable.\n\nAlternatively I could add test data/fixtures per module included in module activity. Fine.\n\nLet me ensure JSON is valid, no trailing commas. Numbers as integers.\n\nTechnical and design decisions:\n- Use JUnit 5 + Spring Integration Test / Spring Cloud Stream test binder or Testcontainers with real middleware (RabbitMQ/Kafka binder, Docker-based service dependencies) for black-box acceptance tests.\n- Testcontainers for external dependencies: GreenMail for Mail, atmoz/sftp for SFTP, a syslog listener/Netty for reactor-syslog, WireMock for http-client, Redis for aggregator state store.\n- Tests packaged in a dedicated acceptance-test module executed via Maven Failsafe (or Gradle task) and wired into CI so each PR/build runs them.\n- Java 17 + Spring Framework 6/Spring Boot 3 baseline per spec.\n- Reuse shared base test class for container lifecycle and binder config.\n\nAssumptions:\n- Modules already exist and build; work covers only acceptance tests, not new features or bug fixes except trivial.\n- CI system (e.g., GitHub Actions/Jenkins) exists and Docker is available on agents for Testcontainers.\n- Existing sample PMML model and test data available or quick to create.\n- Estimates include authoring tests, fixtures, debugging flaky runs, and code review, performed by one developer.\n- Acceptance test = black-box test running module as a Spring Cloud Stream app against real middleware in containers, verifying end-to-end message flow.\n\nNow produce JSON only.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1243,
+      "completion_tokens": 2520,
+      "total_tokens": 3763,
+      "cost": 0.0401466,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0401466,
+        "upstream_inference_prompt_cost": 0.0023466,
+        "upstream_inference_completions_cost": 0.0378
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1041,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Implement acceptance tests as black-box, end-to-end tests that run each module as a Spring Cloud Stream application and verify message flow through a real binder (RabbitMQ/Kafka) provisioned with Testcontainers.\",\n    \"Use Java 17 with Spring Framework 6 / Spring Boot 3 baseline as mandated by the specification, with JUnit 5 as the test framework.\",\n    \"External service dependencies are containerized via Testcontainers: GreenMail for the Mail source, an SFTP server image (e.g., atmoz/sftp) for the SFTP source, and Redis for the aggregator processor's message store; reactor-ip and reactor-syslog tests use embedded Netty-based client/sender utilities; http-client tests use WireMock to stub HTTP endpoints.\",\n    \"Create a shared acceptance-test base infrastructure (abstract test class, container lifecycle management, binder configuration helpers, reusable assertion utilities) to be reused across all 8 module test suites.\",\n    \"Acceptance tests are placed in a dedicated source set/module executed by the Maven Failsafe (or equivalent Gradle) plugin in a separate 'acceptance-test' stage so they run on every CI build without slowing unit-test phases.\",\n    \"The bridge processor test is a simple binder-to-binder passthrough verification and requires no external containers beyond the binder.\"\n  ],\n  \"assumptions\": [\n    \"All 8 modules (Mail, reactor-ip, reactor-syslog, SFTP sources; aggregator, analytic-pmml, bridge, http-client processors) already exist, compile, and have passing unit tests; this increment adds acceptance test coverage only, with no feature changes.\",\n    \"A CI system (e.g., GitHub Actions or Jenkins) already exists and its build agents support Docker, which is required by Testcontainers.\",\n    \"A sample PMML model file and representative input/output data for analytic-pmml are available or can be created quickly from existing documentation.\",\n    \"Effort estimates include test design, fixture/test-data creation, implementation, debugging of flaky container startup/timing issues, and one round of code review rework; all work is performed by a single developer.\",\n    \"Only one binder variant (e.g., RabbitMQ) is exercised per module in acceptance tests; multi-binder matrices are out of scope.\",\n    \"No changes to module production code are needed beyond minor testability adjustments, which are included in the per-module estimates.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Analyze modules and define acceptance test strategy\",\n      \"activity_description\": \"Review the 8 modules' configurations and contracts, define the black-box acceptance test approach, select binder and container strategy, and enumerate test scenarios per module.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Build shared acceptance test infrastructure\",\n      \"activity_description\": \"Implement the shared base test class, Testcontainers lifecycle management for the binder, common assertion/wait utilities, build plugin configuration (Failsafe/Gradle task), and the CI test stage wiring.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Mail source acceptance tests (U1)\",\n      \"activity_description\": \"Stand up a GreenMail container, send test emails, and verify the Mail source emits expected messages (headers, body, attachments) to the binder, including polling and error cases.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"reactor-ip source acceptance tests (U2)\",\n      \"activity_description\": \"Implement TCP/UDP client senders against the running reactor-ip source and verify received datagrams/messages are published to the binder with correct framing and decoding.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"reactor-syslog source acceptance tests (U3)\",\n      \"activity_description\": \"Create a syslog message sender (UDP/TCP) producing RFC 3164/5424 messages and verify the reactor-syslog source parses and publishes them correctly, including malformed message handling.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"SFTP source acceptance tests (U4)\",\n      \"activity_description\": \"Provision a containerized SFTP server with seeded directories/files and credentials, and verify file pickup, local synchronization, filtering, and message emission to the binder.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"aggregator processor acceptance tests (U5)\",\n      \"activity_description\": \"Configure a Redis-backed message store in a container and verify correlation, aggregation, release strategies (count/timeout), and state handling by sending message sequences through the binder.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"analytic-pmml processor acceptance tests (U6)\",\n      \"activity_description\": \"Load a sample PMML model, send input tuples through the processor, and verify evaluated model outputs are emitted correctly, including invalid input handling.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"bridge processor acceptance tests (U7)\",\n      \"activity_description\": \"Verify end-to-end passthrough bridging from the input binding to the output binding, confirming message content and headers are preserved.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"http-client processor acceptance tests (U8)\",\n      \"activity_description\": \"Stub HTTP endpoints with WireMock, send request messages through the processor, and verify HTTP method, headers, body mapping, and response/reply emission, including error status handling.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"CI integration, stabilization, and flaky test remediation\",\n      \"activity_description\": \"Run the full acceptance suite in the CI pipeline, tune container startup timeouts and waits, fix flaky tests, and confirm the suite gates every build as required.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation, code review, and rework\",\n      \"activity_description\": \"Document how to run the acceptance tests locally and in CI, address review feedback across all test suites, and finalize the increment.\",\n      \"most_likely_effort\": 6\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 136\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement acceptance tests as black-box, end-to-end tests that run each module as a Spring Cloud Stream application and verify message flow through a real binder (RabbitMQ/Kafka) provisioned with Testcontainers.",
+      "Use Java 17 with Spring Framework 6 / Spring Boot 3 baseline as mandated by the specification, with JUnit 5 as the test framework.",
+      "External service dependencies are containerized via Testcontainers: GreenMail for the Mail source, an SFTP server image (e.g., atmoz/sftp) for the SFTP source, and Redis for the aggregator processor's message store; reactor-ip and reactor-syslog tests use embedded Netty-based client/sender utilities; http-client tests use WireMock to stub HTTP endpoints.",
+      "Create a shared acceptance-test base infrastructure (abstract test class, container lifecycle management, binder configuration helpers, reusable assertion utilities) to be reused across all 8 module test suites.",
+      "Acceptance tests are placed in a dedicated source set/module executed by the Maven Failsafe (or equivalent Gradle) plugin in a separate 'acceptance-test' stage so they run on every CI build without slowing unit-test phases.",
+      "The bridge processor test is a simple binder-to-binder passthrough verification and requires no external containers beyond the binder."
+    ],
+    "assumptions": [
+      "All 8 modules (Mail, reactor-ip, reactor-syslog, SFTP sources; aggregator, analytic-pmml, bridge, http-client processors) already exist, compile, and have passing unit tests; this increment adds acceptance test coverage only, with no feature changes.",
+      "A CI system (e.g., GitHub Actions or Jenkins) already exists and its build agents support Docker, which is required by Testcontainers.",
+      "A sample PMML model file and representative input/output data for analytic-pmml are available or can be created quickly from existing documentation.",
+      "Effort estimates include test design, fixture/test-data creation, implementation, debugging of flaky container startup/timing issues, and one round of code review rework; all work is performed by a single developer.",
+      "Only one binder variant (e.g., RabbitMQ) is exercised per module in acceptance tests; multi-binder matrices are out of scope.",
+      "No changes to module production code are needed beyond minor testability adjustments, which are included in the per-module estimates."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Analyze modules and define acceptance test strategy",
+        "activity_description": "Review the 8 modules' configurations and contracts, define the black-box acceptance test approach, select binder and container strategy, and enumerate test scenarios per module.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Build shared acceptance test infrastructure",
+        "activity_description": "Implement the shared base test class, Testcontainers lifecycle management for the binder, common assertion/wait utilities, build plugin configuration (Failsafe/Gradle task), and the CI test stage wiring.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Mail source acceptance tests (U1)",
+        "activity_description": "Stand up a GreenMail container, send test emails, and verify the Mail source emits expected messages (headers, body, attachments) to the binder, including polling and error cases.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "reactor-ip source acceptance tests (U2)",
+        "activity_description": "Implement TCP/UDP client senders against the running reactor-ip source and verify received datagrams/messages are published to the binder with correct framing and decoding.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "reactor-syslog source acceptance tests (U3)",
+        "activity_description": "Create a syslog message sender (UDP/TCP) producing RFC 3164/5424 messages and verify the reactor-syslog source parses and publishes them correctly, including malformed message handling.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "SFTP source acceptance tests (U4)",
+        "activity_description": "Provision a containerized SFTP server with seeded directories/files and credentials, and verify file pickup, local synchronization, filtering, and message emission to the binder.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "aggregator processor acceptance tests (U5)",
+        "activity_description": "Configure a Redis-backed message store in a container and verify correlation, aggregation, release strategies (count/timeout), and state handling by sending message sequences through the binder.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "analytic-pmml processor acceptance tests (U6)",
+        "activity_description": "Load a sample PMML model, send input tuples through the processor, and verify evaluated model outputs are emitted correctly, including invalid input handling.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "bridge processor acceptance tests (U7)",
+        "activity_description": "Verify end-to-end passthrough bridging from the input binding to the output binding, confirming message content and headers are preserved.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "http-client processor acceptance tests (U8)",
+        "activity_description": "Stub HTTP endpoints with WireMock, send request messages through the processor, and verify HTTP method, headers, body mapping, and response/reply emission, including error status handling.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "CI integration, stabilization, and flaky test remediation",
+        "activity_description": "Run the full acceptance suite in the CI pipeline, tune container startup timeouts and waits, fix flaky tests, and confirm the suite gates every build as required.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation, code review, and rework",
+        "activity_description": "Document how to run the acceptance tests locally and in CI, address review feedback across all test suites, and finalize the increment.",
+        "most_likely_effort": 6
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 136
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1243,
+    "completion_tokens": 2520,
+    "total_tokens": 3763,
+    "cost": 0.0401466,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0401466,
+      "upstream_inference_prompt_cost": 0.0023466,
+      "upstream_inference_completions_cost": 0.0378
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1041,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3"
+}

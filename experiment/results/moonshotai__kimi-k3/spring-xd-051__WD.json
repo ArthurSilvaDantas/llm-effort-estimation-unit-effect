@@ -1,0 +1,248 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-051",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789219607-VKFUUmdeZL00i10GZUXw",
+    "object": "chat.completion",
+    "created": 1789219607,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_35be80b2",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Each ported module will be implemented as a standalone Spring Boot application in the spring-cloud-stream (s-c-s) repository, using Spring Cloud Stream's @EnableBinding with the appropriate Source or Sink interface.\",\n    \"The existing Spring XD modules are Spring Integration based, so the porting strategy is to reuse and adapt the existing message handler/channel adapter logic rather than rewrite it, replacing XD-specific wiring with Spring Boot auto-configuration and @ConfigurationProperties classes for externalized options.\",\n    \"A shared parent Maven POM and a common project skeleton (build config, checkstyle, test conventions, binder dependencies) will be established once and reused by all ported modules.\",\n    \"Integration tests will use embedded/in-process test doubles where possible (embedded Redis, embedded RabbitMQ or mock broker, in-memory GemFire, local FTP server, MiniDFSCluster for HDFS) to keep the build self-contained.\",\n    \"The HDP/PHD support work (U7) will be done by upgrading the Hadoop/distro dependency versions and validating HDFS sink behavior against the latest HDP and PHD releases.\",\n    \"The migration documentation (U8) will be added as a dedicated section in the reference documentation covering new features and backward-incompatible changes between XD 1.2 and 1.3.\"\n  ],\n  \"assumptions\": [\n    \"The developer is experienced with Spring XD, Spring Integration, Spring Boot, and Spring Cloud Stream, and has full access to the XD source code and the target s-c-s repository.\",\n    \"The target stack is consistent with the XD 1.2/1.3 generation (Spring Boot 1.3/1.4, Spring Cloud Stream 1.x, Java 8); the Spring Framework 6 / Java 17 note in the specification is treated as background context, not the target for this migration increment.\",\n    \"All required test infrastructure (embedded brokers, test FTP server, MiniDFSCluster, or equivalent) is available or can be set up within the build without external provisioning effort.\",\n    \"Each module port includes unit tests, integration tests, and a README documenting configuration properties.\",\n    \"Since all work is performed by one developer, code review effort is included as self-review within each activity estimate; no coordination overhead is added.\",\n    \"Estimates are pure development effort (workdays), excluding elapsed-time delays such as environment outages, waiting for CI resources, or external approvals.\",\n    \"The scope of U8 is limited to the 1.2-to-1.3 migration strategy section, not a full documentation rewrite.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Development environment and migration scaffolding setup\",\n      \"activity_description\": \"Set up local development environment, create the shared parent POM and module skeleton in the s-c-s repository (build plugins, dependency management, test conventions), and establish the reusable porting pattern (binding annotations, configuration properties approach, binder wiring) that all module ports will follow.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Port router sink module (U1)\",\n      \"activity_description\": \"Analyze the XD router module, port its SpEL-expression-based routing logic to a spring-cloud-stream sink application, create @ConfigurationProperties for routing options, adapt Spring Integration router wiring, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Port file sink module (U2)\",\n      \"activity_description\": \"Analyze the XD file module, port its file-writing message handler to a spring-cloud-stream sink application, create configuration properties (directory, filename expression, mode, charset), adapt Spring Integration file outbound wiring, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Port FTP sink module (U3)\",\n      \"activity_description\": \"Analyze the XD FTP module, port its FTP session management and outbound transfer logic to a spring-cloud-stream sink application, create configuration properties (host, credentials, remote directory, mode), adapt Spring Integration FTP outbound gateway wiring, test against a local FTP server, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Move redis sink module (U4)\",\n      \"activity_description\": \"Move the XD redis module to the s-c-s repository as a spring-cloud-stream sink, adapt its Redis connection and write logic to Spring Boot auto-configuration, create configuration properties, verify against an embedded Redis instance, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Move rabbit source module (U5)\",\n      \"activity_description\": \"Move the XD rabbit module to the s-c-s repository as a spring-cloud-stream source, adapt the RabbitMQ inbound channel adapter wiring, create configuration properties (queues, exchanges, connection settings), verify against an embedded or local RabbitMQ broker, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Move gemfire sink module (U6)\",\n      \"activity_description\": \"Move the XD gemfire module to the s-c-s repository as a spring-cloud-stream sink, adapt its GemFire region write logic and cache client configuration, create configuration properties, test against an in-memory GemFire instance, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Support latest HDP/PHD distro releases for HDFS (U7)\",\n      \"activity_description\": \"Research the latest HDP and PHD distribution releases, upgrade Hadoop/distro dependencies and align versions in the build, resolve compatibility issues, and validate HDFS-related pipeline behavior (e.g., HDFS sink) against the updated distributions using a MiniDFSCluster-based test setup.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Migration strategy documentation 1.2 to 1.3 (U8)\",\n      \"activity_description\": \"Write a reference documentation section describing the migration strategy from XD 1.2 to 1.3 releases, covering new improvements, behavioral changes, and backward-incompatibility specifics with upgrade guidance.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-module integration and pipeline validation\",\n      \"activity_description\": \"Perform end-to-end validation of streaming pipelines combining the ported modules (e.g., rabbit source feeding file, FTP, redis, gemfire, and router sinks), verify binder integration end-to-end, and fix cross-module defects.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Build, CI, and release packaging\",\n      \"activity_description\": \"Configure continuous integration for all new modules, finalize versioning and release metadata, ensure generated starters/apps are packaged correctly, and perform the final self-review and clean-up before delivery.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 35\n  }\n}",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. It's about porting Spring XD modules to the spring-cloud-stream (s-c-s) repository. The user stories are:\n\n- U1: Port router module (sink)\n- U2: Port file module (sink)\n- U3: Port FTP module (sink)\n- U4: Move redis module (sink)\n- U5: Move rabbit module (source)\n- U6: Move gemfire module (sink)\n- U7: Support latest HDP/PHD distro releases for HDFS\n- U8: Documentation on migration strategy from 1.2 to 1.3\n\nThis appears to be a historical Spring Cloud Stream Apps migration task. I need to:\n\n1. Break down into WBS activities\n2. State technical/design decisions and assumptions\n3. Provide per-activity most likely effort estimates\n4. Sum total\n\nLet me create a reasonable WBS:\n\nCommon/Infrastructure activities:\n- A1: Project setup & migration infrastructure (skeleton, build config, Spring Boot 1.3/1.4 config, starter structure, common code base setup) — maybe 3 days\n- A2: Common module porting framework/pattern establishment (adapt XD module patterns to s-c-s: message converters, binder abstraction, configuration properties classes) — 3 days\n\nPer module activities (each includes: analysis of XD module, code port, configuration properties classes, tests (unit + integration), documentation/README):\n- A3: Router sink port — router is complex (SpEL expressions, channel mapping) — 4 days\n- A4: File sink port — simpler — 3 days\n- A5: FTP sink port — SFTP/FTP session management, file transfer — 4 days\n- A6: Redis sink move — moderate — 3 days\n- A7: Rabbit source move — 3 days\n- A8: Gemfire sink move — moderate — 4 days\n\nU7: HDP/PHD distro support for HDFS — research versions, update dependencies, test against distros — 5 days\n\nU8: Migration documentation 1.2 → 1.3 — 2 days\n\nPlus integration testing / release packaging:\n- Integration test across modules — 2 days\n- Code review, CI setup, release — 2 days\n\nLet me estimate more carefully. Each port activity:\n- Analyze existing XD module\n- Port/adapt code to s-c-s (Spring Boot, spring-cloud-stream binder, @EnableBinding, configuration properties)\n- Write unit tests\n- Write integration tests\n- Write README/docs\n\nLet me assign:\n\nA1: Development environment setup and s-c-s migration framework/scaffolding: 2 days\nA2: Port router sink module (U1): 4 days\nA3: Port file sink module (U2): 3 days\nA4: Port FTP sink module (U3): 4 days\nA5: Move redis sink module (U4): 3 days\nA6: Move rabbit source module (U5): 3 days\nA7: Move gemfire sink module (U6): 4 days\nA8: HDP/PHD latest distro support for HDFS (U7): 5 days\nA9: Migration strategy documentation 1.2→1.3 (U8): 2 days\nA10: Cross-module integration testing and validation: 3 days\nA11: Build/CI/release configuration and packaging: 2 days\n\nTotal: 2+4+3+4+3+3+4+5+2+3+2 = 35 days\n\nLet me double check: 2+4=6; +3=9; +4=13; +3=16; +3=19; +4=23; +5=28; +2=30; +3=33; +2=35. Total 35 workdays.\n\nThat's a reasonable total for such a port effort (~7 person-weeks).\n\nTechnical decisions:\n- Use Spring Boot 1.3.x and Spring Cloud Stream as the base\n- Model each module as a standalone Spring Boot application using @EnableBinding with Source/Sink processors\n- Use Spring Integration underneath (XD modules were SI-based), so porting is mostly re-packaging\n- Configuration via @ConfigurationProperties classes per module\n- Maven build with parent POM in s-c-s repo\n- Java 8 baseline (Spring 1.2/1.3 era — Spring Boot 1.3 used Java 8; actually Spring XD 1.2/1.3 era, Spring Boot 1.3, Java 7/8). The spec says Spring Framework 6 requires Java 17+, but this migration era was 1.2→1.3 which is Java 8 era. Hmm, the spec mentions Spring Framework 6.0 requiring Java 17+. I could assume Java 17+ and Spring Boot 3.x to be consistent with spec's context. Actually the spec is a generic Spring description plus these specific user stories which are from the spring-cloud-stream-app-migrations project (2015-2016 era). I should note the assumption about the baseline JDK. Let me assume the target stack: Spring Cloud Stream 1.0/1.1 era, Spring Boot 1.3/1.4, Java 8, consistent with the migration from XD 1.2/1.3. Alternatively align with Java 17. To be safe, I'll state assumption: target is spring-cloud-stream (s-c-s) repo consistent with XD 1.3 / Spring Boot 1.4 stack, Java 8, since user stories reference XD 1.2→1.3. The generic Spring 6/Java 17 text is background info.\n\nAssumptions:\n- Developer is experienced with Spring XD, Spring Integration, Spring Boot, Spring Cloud Stream\n- Existing XD module source code available and accessible\n- Test infrastructure (embedded Redis, RabbitMQ, GemFire, FTP server, HDFS test clusters) available or use embedded/testcontainers equivalents\n- Estimates exclude elapsed calendar delays; effort in workdays\n- Each module port includes unit + integration tests and README documentation\n- No changes to binder internals needed\n- Code review done by self; includes self-review time\n- Documentation for U8 limited to migration guide section\n\nLet me finalize JSON. Only valid JSON, no markdown fences? The instruction says \"Return only valid JSON\". I'll return raw JSON without code fences to be safe... Actually returning with fences could break parsing. Return pure JSON.\n\nStructure per schema: technical_and_design_decisions (array of strings), assumptions (array of strings), activities (array with activity_id, activity_name, activity_description, most_likely_effort), reported_total.most_likely_effort = 35.\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. It's about porting Spring XD modules to the spring-cloud-stream (s-c-s) repository. The user stories are:\n\n- U1: Port router module (sink)\n- U2: Port file module (sink)\n- U3: Port FTP module (sink)\n- U4: Move redis module (sink)\n- U5: Move rabbit module (source)\n- U6: Move gemfire module (sink)\n- U7: Support latest HDP/PHD distro releases for HDFS\n- U8: Documentation on migration strategy from 1.2 to 1.3\n\nThis appears to be a historical Spring Cloud Stream Apps migration task. I need to:\n\n1. Break down into WBS activities\n2. State technical/design decisions and assumptions\n3. Provide per-activity most likely effort estimates\n4. Sum total\n\nLet me create a reasonable WBS:\n\nCommon/Infrastructure activities:\n- A1: Project setup & migration infrastructure (skeleton, build config, Spring Boot 1.3/1.4 config, starter structure, common code base setup) — maybe 3 days\n- A2: Common module porting framework/pattern establishment (adapt XD module patterns to s-c-s: message converters, binder abstraction, configuration properties classes) — 3 days\n\nPer module activities (each includes: analysis of XD module, code port, configuration properties classes, tests (unit + integration), documentation/README):\n- A3: Router sink port — router is complex (SpEL expressions, channel mapping) — 4 days\n- A4: File sink port — simpler — 3 days\n- A5: FTP sink port — SFTP/FTP session management, file transfer — 4 days\n- A6: Redis sink move — moderate — 3 days\n- A7: Rabbit source move — 3 days\n- A8: Gemfire sink move — moderate — 4 days\n\nU7: HDP/PHD distro support for HDFS — research versions, update dependencies, test against distros — 5 days\n\nU8: Migration documentation 1.2 → 1.3 — 2 days\n\nPlus integration testing / release packaging:\n- Integration test across modules — 2 days\n- Code review, CI setup, release — 2 days\n\nLet me estimate more carefully. Each port activity:\n- Analyze existing XD module\n- Port/adapt code to s-c-s (Spring Boot, spring-cloud-stream binder, @EnableBinding, configuration properties)\n- Write unit tests\n- Write integration tests\n- Write README/docs\n\nLet me assign:\n\nA1: Development environment setup and s-c-s migration framework/scaffolding: 2 days\nA2: Port router sink module (U1): 4 days\nA3: Port file sink module (U2): 3 days\nA4: Port FTP sink module (U3): 4 days\nA5: Move redis sink module (U4): 3 days\nA6: Move rabbit source module (U5): 3 days\nA7: Move gemfire sink module (U6): 4 days\nA8: HDP/PHD latest distro support for HDFS (U7): 5 days\nA9: Migration strategy documentation 1.2→1.3 (U8): 2 days\nA10: Cross-module integration testing and validation: 3 days\nA11: Build/CI/release configuration and packaging: 2 days\n\nTotal: 2+4+3+4+3+3+4+5+2+3+2 = 35 days\n\nLet me double check: 2+4=6; +3=9; +4=13; +3=16; +3=19; +4=23; +5=28; +2=30; +3=33; +2=35. Total 35 workdays.\n\nThat's a reasonable total for such a port effort (~7 person-weeks).\n\nTechnical decisions:\n- Use Spring Boot 1.3.x and Spring Cloud Stream as the base\n- Model each module as a standalone Spring Boot application using @EnableBinding with Source/Sink processors\n- Use Spring Integration underneath (XD modules were SI-based), so porting is mostly re-packaging\n- Configuration via @ConfigurationProperties classes per module\n- Maven build with parent POM in s-c-s repo\n- Java 8 baseline (Spring 1.2/1.3 era — Spring Boot 1.3 used Java 8; actually Spring XD 1.2/1.3 era, Spring Boot 1.3, Java 7/8). The spec says Spring Framework 6 requires Java 17+, but this migration era was 1.2→1.3 which is Java 8 era. Hmm, the spec mentions Spring Framework 6.0 requiring Java 17+. I could assume Java 17+ and Spring Boot 3.x to be consistent with spec's context. Actually the spec is a generic Spring description plus these specific user stories which are from the spring-cloud-stream-app-migrations project (2015-2016 era). I should note the assumption about the baseline JDK. Let me assume the target stack: Spring Cloud Stream 1.0/1.1 era, Spring Boot 1.3/1.4, Java 8, consistent with the migration from XD 1.2/1.3. Alternatively align with Java 17. To be safe, I'll state assumption: target is spring-cloud-stream (s-c-s) repo consistent with XD 1.3 / Spring Boot 1.4 stack, Java 8, since user stories reference XD 1.2→1.3. The generic Spring 6/Java 17 text is background info.\n\nAssumptions:\n- Developer is experienced with Spring XD, Spring Integration, Spring Boot, Spring Cloud Stream\n- Existing XD module source code available and accessible\n- Test infrastructure (embedded Redis, RabbitMQ, GemFire, FTP server, HDFS test clusters) available or use embedded/testcontainers equivalents\n- Estimates exclude elapsed calendar delays; effort in workdays\n- Each module port includes unit + integration tests and README documentation\n- No changes to binder internals needed\n- Code review done by self; includes self-review time\n- Documentation for U8 limited to migration guide section\n\nLet me finalize JSON. Only valid JSON, no markdown fences? The instruction says \"Return only valid JSON\". I'll return raw JSON without code fences to be safe... Actually returning with fences could break parsing. Return pure JSON.\n\nStructure per schema: technical_and_design_decisions (array of strings), assumptions (array of strings), activities (array with activity_id, activity_name, activity_description, most_likely_effort), reported_total.most_likely_effort = 35.\n",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1278,
+      "completion_tokens": 3066,
+      "total_tokens": 4344,
+      "cost": 0.0484416,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0484416,
+        "upstream_inference_prompt_cost": 0.0024516,
+        "upstream_inference_completions_cost": 0.04599
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1417,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Each ported module will be implemented as a standalone Spring Boot application in the spring-cloud-stream (s-c-s) repository, using Spring Cloud Stream's @EnableBinding with the appropriate Source or Sink interface.\",\n    \"The existing Spring XD modules are Spring Integration based, so the porting strategy is to reuse and adapt the existing message handler/channel adapter logic rather than rewrite it, replacing XD-specific wiring with Spring Boot auto-configuration and @ConfigurationProperties classes for externalized options.\",\n    \"A shared parent Maven POM and a common project skeleton (build config, checkstyle, test conventions, binder dependencies) will be established once and reused by all ported modules.\",\n    \"Integration tests will use embedded/in-process test doubles where possible (embedded Redis, embedded RabbitMQ or mock broker, in-memory GemFire, local FTP server, MiniDFSCluster for HDFS) to keep the build self-contained.\",\n    \"The HDP/PHD support work (U7) will be done by upgrading the Hadoop/distro dependency versions and validating HDFS sink behavior against the latest HDP and PHD releases.\",\n    \"The migration documentation (U8) will be added as a dedicated section in the reference documentation covering new features and backward-incompatible changes between XD 1.2 and 1.3.\"\n  ],\n  \"assumptions\": [\n    \"The developer is experienced with Spring XD, Spring Integration, Spring Boot, and Spring Cloud Stream, and has full access to the XD source code and the target s-c-s repository.\",\n    \"The target stack is consistent with the XD 1.2/1.3 generation (Spring Boot 1.3/1.4, Spring Cloud Stream 1.x, Java 8); the Spring Framework 6 / Java 17 note in the specification is treated as background context, not the target for this migration increment.\",\n    \"All required test infrastructure (embedded brokers, test FTP server, MiniDFSCluster, or equivalent) is available or can be set up within the build without external provisioning effort.\",\n    \"Each module port includes unit tests, integration tests, and a README documenting configuration properties.\",\n    \"Since all work is performed by one developer, code review effort is included as self-review within each activity estimate; no coordination overhead is added.\",\n    \"Estimates are pure development effort (workdays), excluding elapsed-time delays such as environment outages, waiting for CI resources, or external approvals.\",\n    \"The scope of U8 is limited to the 1.2-to-1.3 migration strategy section, not a full documentation rewrite.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Development environment and migration scaffolding setup\",\n      \"activity_description\": \"Set up local development environment, create the shared parent POM and module skeleton in the s-c-s repository (build plugins, dependency management, test conventions), and establish the reusable porting pattern (binding annotations, configuration properties approach, binder wiring) that all module ports will follow.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Port router sink module (U1)\",\n      \"activity_description\": \"Analyze the XD router module, port its SpEL-expression-based routing logic to a spring-cloud-stream sink application, create @ConfigurationProperties for routing options, adapt Spring Integration router wiring, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Port file sink module (U2)\",\n      \"activity_description\": \"Analyze the XD file module, port its file-writing message handler to a spring-cloud-stream sink application, create configuration properties (directory, filename expression, mode, charset), adapt Spring Integration file outbound wiring, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Port FTP sink module (U3)\",\n      \"activity_description\": \"Analyze the XD FTP module, port its FTP session management and outbound transfer logic to a spring-cloud-stream sink application, create configuration properties (host, credentials, remote directory, mode), adapt Spring Integration FTP outbound gateway wiring, test against a local FTP server, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Move redis sink module (U4)\",\n      \"activity_description\": \"Move the XD redis module to the s-c-s repository as a spring-cloud-stream sink, adapt its Redis connection and write logic to Spring Boot auto-configuration, create configuration properties, verify against an embedded Redis instance, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Move rabbit source module (U5)\",\n      \"activity_description\": \"Move the XD rabbit module to the s-c-s repository as a spring-cloud-stream source, adapt the RabbitMQ inbound channel adapter wiring, create configuration properties (queues, exchanges, connection settings), verify against an embedded or local RabbitMQ broker, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Move gemfire sink module (U6)\",\n      \"activity_description\": \"Move the XD gemfire module to the s-c-s repository as a spring-cloud-stream sink, adapt its GemFire region write logic and cache client configuration, create configuration properties, test against an in-memory GemFire instance, and provide unit tests, integration tests, and README documentation.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Support latest HDP/PHD distro releases for HDFS (U7)\",\n      \"activity_description\": \"Research the latest HDP and PHD distribution releases, upgrade Hadoop/distro dependencies and align versions in the build, resolve compatibility issues, and validate HDFS-related pipeline behavior (e.g., HDFS sink) against the updated distributions using a MiniDFSCluster-based test setup.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Migration strategy documentation 1.2 to 1.3 (U8)\",\n      \"activity_description\": \"Write a reference documentation section describing the migration strategy from XD 1.2 to 1.3 releases, covering new improvements, behavioral changes, and backward-incompatibility specifics with upgrade guidance.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Cross-module integration and pipeline validation\",\n      \"activity_description\": \"Perform end-to-end validation of streaming pipelines combining the ported modules (e.g., rabbit source feeding file, FTP, redis, gemfire, and router sinks), verify binder integration end-to-end, and fix cross-module defects.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Build, CI, and release packaging\",\n      \"activity_description\": \"Configure continuous integration for all new modules, finalize versioning and release metadata, ensure generated starters/apps are packaged correctly, and perform the final self-review and clean-up before delivery.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 35\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Each ported module will be implemented as a standalone Spring Boot application in the spring-cloud-stream (s-c-s) repository, using Spring Cloud Stream's @EnableBinding with the appropriate Source or Sink interface.",
+      "The existing Spring XD modules are Spring Integration based, so the porting strategy is to reuse and adapt the existing message handler/channel adapter logic rather than rewrite it, replacing XD-specific wiring with Spring Boot auto-configuration and @ConfigurationProperties classes for externalized options.",
+      "A shared parent Maven POM and a common project skeleton (build config, checkstyle, test conventions, binder dependencies) will be established once and reused by all ported modules.",
+      "Integration tests will use embedded/in-process test doubles where possible (embedded Redis, embedded RabbitMQ or mock broker, in-memory GemFire, local FTP server, MiniDFSCluster for HDFS) to keep the build self-contained.",
+      "The HDP/PHD support work (U7) will be done by upgrading the Hadoop/distro dependency versions and validating HDFS sink behavior against the latest HDP and PHD releases.",
+      "The migration documentation (U8) will be added as a dedicated section in the reference documentation covering new features and backward-incompatible changes between XD 1.2 and 1.3."
+    ],
+    "assumptions": [
+      "The developer is experienced with Spring XD, Spring Integration, Spring Boot, and Spring Cloud Stream, and has full access to the XD source code and the target s-c-s repository.",
+      "The target stack is consistent with the XD 1.2/1.3 generation (Spring Boot 1.3/1.4, Spring Cloud Stream 1.x, Java 8); the Spring Framework 6 / Java 17 note in the specification is treated as background context, not the target for this migration increment.",
+      "All required test infrastructure (embedded brokers, test FTP server, MiniDFSCluster, or equivalent) is available or can be set up within the build without external provisioning effort.",
+      "Each module port includes unit tests, integration tests, and a README documenting configuration properties.",
+      "Since all work is performed by one developer, code review effort is included as self-review within each activity estimate; no coordination overhead is added.",
+      "Estimates are pure development effort (workdays), excluding elapsed-time delays such as environment outages, waiting for CI resources, or external approvals.",
+      "The scope of U8 is limited to the 1.2-to-1.3 migration strategy section, not a full documentation rewrite."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Development environment and migration scaffolding setup",
+        "activity_description": "Set up local development environment, create the shared parent POM and module skeleton in the s-c-s repository (build plugins, dependency management, test conventions), and establish the reusable porting pattern (binding annotations, configuration properties approach, binder wiring) that all module ports will follow.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Port router sink module (U1)",
+        "activity_description": "Analyze the XD router module, port its SpEL-expression-based routing logic to a spring-cloud-stream sink application, create @ConfigurationProperties for routing options, adapt Spring Integration router wiring, and provide unit tests, integration tests, and README documentation.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Port file sink module (U2)",
+        "activity_description": "Analyze the XD file module, port its file-writing message handler to a spring-cloud-stream sink application, create configuration properties (directory, filename expression, mode, charset), adapt Spring Integration file outbound wiring, and provide unit tests, integration tests, and README documentation.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Port FTP sink module (U3)",
+        "activity_description": "Analyze the XD FTP module, port its FTP session management and outbound transfer logic to a spring-cloud-stream sink application, create configuration properties (host, credentials, remote directory, mode), adapt Spring Integration FTP outbound gateway wiring, test against a local FTP server, and provide unit tests, integration tests, and README documentation.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Move redis sink module (U4)",
+        "activity_description": "Move the XD redis module to the s-c-s repository as a spring-cloud-stream sink, adapt its Redis connection and write logic to Spring Boot auto-configuration, create configuration properties, verify against an embedded Redis instance, and provide unit tests, integration tests, and README documentation.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Move rabbit source module (U5)",
+        "activity_description": "Move the XD rabbit module to the s-c-s repository as a spring-cloud-stream source, adapt the RabbitMQ inbound channel adapter wiring, create configuration properties (queues, exchanges, connection settings), verify against an embedded or local RabbitMQ broker, and provide unit tests, integration tests, and README documentation.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Move gemfire sink module (U6)",
+        "activity_description": "Move the XD gemfire module to the s-c-s repository as a spring-cloud-stream sink, adapt its GemFire region write logic and cache client configuration, create configuration properties, test against an in-memory GemFire instance, and provide unit tests, integration tests, and README documentation.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Support latest HDP/PHD distro releases for HDFS (U7)",
+        "activity_description": "Research the latest HDP and PHD distribution releases, upgrade Hadoop/distro dependencies and align versions in the build, resolve compatibility issues, and validate HDFS-related pipeline behavior (e.g., HDFS sink) against the updated distributions using a MiniDFSCluster-based test setup.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Migration strategy documentation 1.2 to 1.3 (U8)",
+        "activity_description": "Write a reference documentation section describing the migration strategy from XD 1.2 to 1.3 releases, covering new improvements, behavioral changes, and backward-incompatibility specifics with upgrade guidance.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Cross-module integration and pipeline validation",
+        "activity_description": "Perform end-to-end validation of streaming pipelines combining the ported modules (e.g., rabbit source feeding file, FTP, redis, gemfire, and router sinks), verify binder integration end-to-end, and fix cross-module defects.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Build, CI, and release packaging",
+        "activity_description": "Configure continuous integration for all new modules, finalize versioning and release metadata, ensure generated starters/apps are packaged correctly, and perform the final self-review and clean-up before delivery.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 35
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1278,
+    "completion_tokens": 3066,
+    "total_tokens": 4344,
+    "cost": 0.0484416,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0484416,
+      "upstream_inference_prompt_cost": 0.0024516,
+      "upstream_inference_completions_cost": 0.04599
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1417,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789219681-MZL8V0ya9bLnrvJXeorZ",
+    "object": "chat.completion",
+    "created": 1789219681,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_35be80b2",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user is asking a simple conversion question: how many work-hours do I consider equivalent to one workday? The standard is 8 hours per workday. I should return only valid JSON matching the schema, without revising the previous estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple conversion question: how many work-hours do I consider equivalent to one workday? The standard is 8 hours per workday. I should return only valid JSON matching the schema, without revising the previous estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3061,
+      "completion_tokens": 78,
+      "total_tokens": 3139,
+      "cost": 0.006897,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.006897,
+        "upstream_inference_prompt_cost": 0.005727,
+        "upstream_inference_completions_cost": 0.00117
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 50,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

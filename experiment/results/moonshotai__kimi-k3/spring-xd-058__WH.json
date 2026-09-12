@@ -1,0 +1,187 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-058",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789220814-KLUuPy3snXgeMTeOS8pX",
+    "object": "chat.completion",
+    "created": 1789220814,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_35be80b2",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target platform is Java 17+ with Spring Framework 6.x / Spring Cloud Stream 4.x, consistent with the referenced framework baseline.\",\n    \"Build system uses Maven with a BOM (Bill of Materials) import approach for managing external library versions dynamically; documentation for U1 will be written in AsciiDoc/Markdown alongside the existing reference docs and published with the standard docs build.\",\n    \"Unit tests (U5, U6) will be implemented with JUnit 5 and Mockito, following the existing test conventions of the deployer SPI modules, with no requirement for live runtime infrastructure (heavy use of mocks/fakes).\",\n    \"Integration tests (U2, U3, U4) will be implemented with JUnit 5 plus Testcontainers/in-process SPI stubs where feasible, and will be wired into the existing CI pipeline as separate Maven profiles/Gradle tasks so they can run on demand or per environment.\",\n    \"For U7 (container shutdown failure with a jdbc->hdfs stream), the fix will target the application/context lifecycle: ensure the JDBC source poller, DataSource, and HDFS sink threads/executors are properly stopped and closed during context shutdown so the container JVM can terminate; a regression integration test reproducing the reported stream definition will be added.\",\n    \"For U8 (multiple binder connection factories), the design will extend the existing binder configuration model (e.g., BinderFactory/binder per-binding configuration) so each binding can reference a named binder configuration with its own connection factory, keeping full backward compatibility with the single-binder default behavior.\",\n    \"All changes follow the existing code style, and each story will go through the standard review and CI verification before merge.\"\n  ],\n  \"assumptions\": [\n    \"A single developer (the estimator) performs all work and is already familiar with the Spring Cloud Data Flow / Spring Cloud Stream codebases and their build tooling.\",\n    \"Existing development environment, source repositories, and CI infrastructure are available and functional; no environment procurement time is included.\",\n    \"For integration tests, either lightweight test doubles or accessible test instances of Lattice, Cloud Foundry, and YARN are available; provisioning of production-grade external clusters is out of scope.\",\n    \"For U7, the referenced external issue (VESC-504) and stream definition provide enough information to reproduce the shutdown problem locally with an Oracle XE or equivalent JDBC test database substituted.\",\n    \"Effort estimates cover analysis, design, implementation, unit/integration testing, documentation, code review rework, and CI verification; they exclude release management, deployment to production, and ongoing maintenance.\",\n    \"'Enhance test coverage' means adding a meaningful, representative set of new tests for the main SPI code paths (deployment, undeployment, status, error handling), not achieving a fixed numerical coverage target.\",\n    \"The U8 feature is scoped to enabling multiple binder connection factories via configuration; no UI changes are required.\",\n    \"Estimates are most likely effort in work-hours, not elapsed calendar time.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Overall analysis, design and task breakdown\",\n      \"activity_description\": \"Review all eight user stories, inspect the relevant modules (deployer SPIs for Lattice/CF/YARN, spring-cloud-stream binder infrastructure, admin UI/container lifecycle), confirm reproduction of the U7 defect, and produce the technical design for U8 plus the test strategy for U2-U6.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Document BOM template usage\",\n      \"activity_description\": \"Write reference documentation explaining how to use BOM templates to include and manage external libraries dynamically, including examples, version alignment guidance, and common pitfalls; verify code snippets against a sample project and integrate the page into the documentation build.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2: Lattice SPI integration test coverage\",\n      \"activity_description\": \"Design and implement integration tests for the Lattice deployer SPI covering app deployment, undeployment, status reporting, scaling, and failure/timeout handling; wire the suite into the CI pipeline profile.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3: Cloud Foundry SPI integration test coverage\",\n      \"activity_description\": \"Design and implement integration tests for the Cloud Foundry deployer SPI covering push, delete, status, environment variable/property propagation, and error handling; wire the suite into the CI pipeline profile.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4: YARN SPI integration test coverage\",\n      \"activity_description\": \"Design and implement integration tests for the YARN deployer SPI covering application submission, kill/undeploy, status queries, and resource/error handling against a test or embedded YARN setup; wire the suite into the CI pipeline profile.\",\n      \"most_likely_effort\": 30\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5: Lattice SPI unit test coverage\",\n      \"activity_description\": \"Add unit tests (JUnit 5/Mockito) for the Lattice SPI implementation classes, covering request mapping, status translation, configuration handling, and exception paths.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6: YARN SPI unit test coverage\",\n      \"activity_description\": \"Add unit tests (JUnit 5/Mockito) for the YARN SPI implementation classes, covering command construction, state translation, configuration handling, and exception paths.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7: Fix container shutdown failure from Admin UI\",\n      \"activity_description\": \"Reproduce the shutdown hang with the reported jdbc->hdfs stream, diagnose the blocked lifecycle (e.g., lingering poller/executor threads or un-closed DataSource/HDFS resources), implement the shutdown/lifecycle fix, and add a regression test verifying the container stops cleanly.\",\n      \"most_likely_effort\": 26\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8: Multiple binder connection factories support\",\n      \"activity_description\": \"Implement support for more than one binder connection factory in spring-cloud-stream: extend binder configuration model, resolve named binder configurations per binding, manage lifecycle of multiple binder instances, maintain backward compatibility, and add unit and integration tests plus reference documentation.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"CI pipeline integration for new test suites\",\n      \"activity_description\": \"Configure CI jobs/profiles so the new unit and integration suites (U2-U6) run in the pipeline with appropriate triggers, reporting, and failure notifications.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration, review rework and final verification\",\n      \"activity_description\": \"Address code review feedback, resolve merge/integration conflicts, run the full build and regression suites across affected modules, and perform final verification that all eight stories meet their acceptance intent.\",\n      \"most_likely_effort\": 16\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 252\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. It's about Spring Framework / Spring Cloud Data Flow (s-c-d) / Spring Cloud Stream (s-c-s) related work. The user stories are:\n\nU1: Document the use of BOM templates (documentation task)\nU2: Enhance integration test coverage for Lattice SPI\nU3: Enhance integration test coverage for CC (Cloud Foundry) SPI\nU4: Enhance integration test coverage for YARN SPI\nU5: Enhance unit test coverage for Lattice SPI\nU6: Enhance unit test coverage for YARN SPI\nU7: Bug fix - can't shutdown container from Admin UI with a specific stream definition deployed (jdbc to hdfs stream, related to VESC-504)\nU8: Feature - support multiple binder connection factories in Spring Cloud Stream (issue #140)\n\nI need to create a WBS-based estimation. Let me break down activities:\n\n1. Requirements analysis & design (overall)\n2. U1: BOM templates documentation\n3. U2: Lattice SPI integration tests\n4. U3: CC SPI integration tests\n5. U4: YARN SPI integration tests\n6. U5: Lattice SPI unit tests\n7. U6: YARN SPI unit tests\n8. U7: Bug investigation and fix for container shutdown issue\n9. U8: Multiple binder connection factories feature (design + implementation)\n10. Build/CI integration\n11. Code review, testing, integration, documentation wrap-up\n\nTechnical decisions:\n- Java 17+, Spring Framework 6\n- Maven/Gradle build with BOM (Bill of Materials) templates\n- JUnit 5, integration test frameworks\n- SPI = Service Provider Interface for deployers (Lattice, Cloud Foundry, YARN)\n- For U8: modify BinderFactory to support multiple binder configurations (spring-cloud-stream)\n- For U7: likely related to shutdown lifecycle, JDBC source polling thread or connection not closing properly\n\nAssumptions:\n- Existing codebase familiarity\n- Test environments available for Lattice, CF, YARN\n- Estimates include development, testing, code review but not deployment\n- One developer\n\nEffort estimates:\n1. Analysis & design: 12 hours\n2. U1 BOM documentation: 12 hours\n3. U2 Lattice integration tests: 28 hours\n4. U3 CC integration tests: 28 hours\n5. U4 YARN integration tests: 28 hours\n6. U5 Lattice unit tests: 20 hours\n7. U6 YARN unit tests: 20 hours\n8. U7 bug fix: 24 hours (investigation + fix + test)\n9. U8 multiple binders: 48 hours (design, implementation, tests)\n10. CI pipeline integration: 12 hours\n11. Integration, code review rework, final verification: 16 hours\n\nTotal: 12+12+28+28+28+20+20+24+48+12+16 = 248 hours\n\nLet me compute: 12+12=24; +28=52; +28=80; +28=108; +20=128; +20=148; +24=172; +48=220; +12=232; +16=248.\n\nTotal 248 work-hours. That seems reasonable.\n\nLet me structure this as JSON. Each activity needs id, name, description, most_likely_effort.\n\nI'll output only valid JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. It's about Spring Framework / Spring Cloud Data Flow (s-c-d) / Spring Cloud Stream (s-c-s) related work. The user stories are:\n\nU1: Document the use of BOM templates (documentation task)\nU2: Enhance integration test coverage for Lattice SPI\nU3: Enhance integration test coverage for CC (Cloud Foundry) SPI\nU4: Enhance integration test coverage for YARN SPI\nU5: Enhance unit test coverage for Lattice SPI\nU6: Enhance unit test coverage for YARN SPI\nU7: Bug fix - can't shutdown container from Admin UI with a specific stream definition deployed (jdbc to hdfs stream, related to VESC-504)\nU8: Feature - support multiple binder connection factories in Spring Cloud Stream (issue #140)\n\nI need to create a WBS-based estimation. Let me break down activities:\n\n1. Requirements analysis & design (overall)\n2. U1: BOM templates documentation\n3. U2: Lattice SPI integration tests\n4. U3: CC SPI integration tests\n5. U4: YARN SPI integration tests\n6. U5: Lattice SPI unit tests\n7. U6: YARN SPI unit tests\n8. U7: Bug investigation and fix for container shutdown issue\n9. U8: Multiple binder connection factories feature (design + implementation)\n10. Build/CI integration\n11. Code review, testing, integration, documentation wrap-up\n\nTechnical decisions:\n- Java 17+, Spring Framework 6\n- Maven/Gradle build with BOM (Bill of Materials) templates\n- JUnit 5, integration test frameworks\n- SPI = Service Provider Interface for deployers (Lattice, Cloud Foundry, YARN)\n- For U8: modify BinderFactory to support multiple binder configurations (spring-cloud-stream)\n- For U7: likely related to shutdown lifecycle, JDBC source polling thread or connection not closing properly\n\nAssumptions:\n- Existing codebase familiarity\n- Test environments available for Lattice, CF, YARN\n- Estimates include development, testing, code review but not deployment\n- One developer\n\nEffort estimates:\n1. Analysis & design: 12 hours\n2. U1 BOM documentation: 12 hours\n3. U2 Lattice integration tests: 28 hours\n4. U3 CC integration tests: 28 hours\n5. U4 YARN integration tests: 28 hours\n6. U5 Lattice unit tests: 20 hours\n7. U6 YARN unit tests: 20 hours\n8. U7 bug fix: 24 hours (investigation + fix + test)\n9. U8 multiple binders: 48 hours (design, implementation, tests)\n10. CI pipeline integration: 12 hours\n11. Integration, code review rework, final verification: 16 hours\n\nTotal: 12+12+28+28+28+20+20+24+48+12+16 = 248 hours\n\nLet me compute: 12+12=24; +28=52; +28=80; +28=108; +20=128; +20=148; +24=172; +48=220; +12=232; +16=248.\n\nTotal 248 work-hours. That seems reasonable.\n\nLet me structure this as JSON. Each activity needs id, name, description, most_likely_effort.\n\nI'll output only valid JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1354,
+      "completion_tokens": 2340,
+      "total_tokens": 3694,
+      "cost": 0.0377796,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0377796,
+        "upstream_inference_prompt_cost": 0.0026796,
+        "upstream_inference_completions_cost": 0.0351
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 704,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target platform is Java 17+ with Spring Framework 6.x / Spring Cloud Stream 4.x, consistent with the referenced framework baseline.\",\n    \"Build system uses Maven with a BOM (Bill of Materials) import approach for managing external library versions dynamically; documentation for U1 will be written in AsciiDoc/Markdown alongside the existing reference docs and published with the standard docs build.\",\n    \"Unit tests (U5, U6) will be implemented with JUnit 5 and Mockito, following the existing test conventions of the deployer SPI modules, with no requirement for live runtime infrastructure (heavy use of mocks/fakes).\",\n    \"Integration tests (U2, U3, U4) will be implemented with JUnit 5 plus Testcontainers/in-process SPI stubs where feasible, and will be wired into the existing CI pipeline as separate Maven profiles/Gradle tasks so they can run on demand or per environment.\",\n    \"For U7 (container shutdown failure with a jdbc->hdfs stream), the fix will target the application/context lifecycle: ensure the JDBC source poller, DataSource, and HDFS sink threads/executors are properly stopped and closed during context shutdown so the container JVM can terminate; a regression integration test reproducing the reported stream definition will be added.\",\n    \"For U8 (multiple binder connection factories), the design will extend the existing binder configuration model (e.g., BinderFactory/binder per-binding configuration) so each binding can reference a named binder configuration with its own connection factory, keeping full backward compatibility with the single-binder default behavior.\",\n    \"All changes follow the existing code style, and each story will go through the standard review and CI verification before merge.\"\n  ],\n  \"assumptions\": [\n    \"A single developer (the estimator) performs all work and is already familiar with the Spring Cloud Data Flow / Spring Cloud Stream codebases and their build tooling.\",\n    \"Existing development environment, source repositories, and CI infrastructure are available and functional; no environment procurement time is included.\",\n    \"For integration tests, either lightweight test doubles or accessible test instances of Lattice, Cloud Foundry, and YARN are available; provisioning of production-grade external clusters is out of scope.\",\n    \"For U7, the referenced external issue (VESC-504) and stream definition provide enough information to reproduce the shutdown problem locally with an Oracle XE or equivalent JDBC test database substituted.\",\n    \"Effort estimates cover analysis, design, implementation, unit/integration testing, documentation, code review rework, and CI verification; they exclude release management, deployment to production, and ongoing maintenance.\",\n    \"'Enhance test coverage' means adding a meaningful, representative set of new tests for the main SPI code paths (deployment, undeployment, status, error handling), not achieving a fixed numerical coverage target.\",\n    \"The U8 feature is scoped to enabling multiple binder connection factories via configuration; no UI changes are required.\",\n    \"Estimates are most likely effort in work-hours, not elapsed calendar time.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Overall analysis, design and task breakdown\",\n      \"activity_description\": \"Review all eight user stories, inspect the relevant modules (deployer SPIs for Lattice/CF/YARN, spring-cloud-stream binder infrastructure, admin UI/container lifecycle), confirm reproduction of the U7 defect, and produce the technical design for U8 plus the test strategy for U2-U6.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Document BOM template usage\",\n      \"activity_description\": \"Write reference documentation explaining how to use BOM templates to include and manage external libraries dynamically, including examples, version alignment guidance, and common pitfalls; verify code snippets against a sample project and integrate the page into the documentation build.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2: Lattice SPI integration test coverage\",\n      \"activity_description\": \"Design and implement integration tests for the Lattice deployer SPI covering app deployment, undeployment, status reporting, scaling, and failure/timeout handling; wire the suite into the CI pipeline profile.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3: Cloud Foundry SPI integration test coverage\",\n      \"activity_description\": \"Design and implement integration tests for the Cloud Foundry deployer SPI covering push, delete, status, environment variable/property propagation, and error handling; wire the suite into the CI pipeline profile.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4: YARN SPI integration test coverage\",\n      \"activity_description\": \"Design and implement integration tests for the YARN deployer SPI covering application submission, kill/undeploy, status queries, and resource/error handling against a test or embedded YARN setup; wire the suite into the CI pipeline profile.\",\n      \"most_likely_effort\": 30\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5: Lattice SPI unit test coverage\",\n      \"activity_description\": \"Add unit tests (JUnit 5/Mockito) for the Lattice SPI implementation classes, covering request mapping, status translation, configuration handling, and exception paths.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U6: YARN SPI unit test coverage\",\n      \"activity_description\": \"Add unit tests (JUnit 5/Mockito) for the YARN SPI implementation classes, covering command construction, state translation, configuration handling, and exception paths.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U7: Fix container shutdown failure from Admin UI\",\n      \"activity_description\": \"Reproduce the shutdown hang with the reported jdbc->hdfs stream, diagnose the blocked lifecycle (e.g., lingering poller/executor threads or un-closed DataSource/HDFS resources), implement the shutdown/lifecycle fix, and add a regression test verifying the container stops cleanly.\",\n      \"most_likely_effort\": 26\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U8: Multiple binder connection factories support\",\n      \"activity_description\": \"Implement support for more than one binder connection factory in spring-cloud-stream: extend binder configuration model, resolve named binder configurations per binding, manage lifecycle of multiple binder instances, maintain backward compatibility, and add unit and integration tests plus reference documentation.\",\n      \"most_likely_effort\": 48\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"CI pipeline integration for new test suites\",\n      \"activity_description\": \"Configure CI jobs/profiles so the new unit and integration suites (U2-U6) run in the pipeline with appropriate triggers, reporting, and failure notifications.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration, review rework and final verification\",\n      \"activity_description\": \"Address code review feedback, resolve merge/integration conflicts, run the full build and regression suites across affected modules, and perform final verification that all eight stories meet their acceptance intent.\",\n      \"most_likely_effort\": 16\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 252\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Target platform is Java 17+ with Spring Framework 6.x / Spring Cloud Stream 4.x, consistent with the referenced framework baseline.",
+      "Build system uses Maven with a BOM (Bill of Materials) import approach for managing external library versions dynamically; documentation for U1 will be written in AsciiDoc/Markdown alongside the existing reference docs and published with the standard docs build.",
+      "Unit tests (U5, U6) will be implemented with JUnit 5 and Mockito, following the existing test conventions of the deployer SPI modules, with no requirement for live runtime infrastructure (heavy use of mocks/fakes).",
+      "Integration tests (U2, U3, U4) will be implemented with JUnit 5 plus Testcontainers/in-process SPI stubs where feasible, and will be wired into the existing CI pipeline as separate Maven profiles/Gradle tasks so they can run on demand or per environment.",
+      "For U7 (container shutdown failure with a jdbc->hdfs stream), the fix will target the application/context lifecycle: ensure the JDBC source poller, DataSource, and HDFS sink threads/executors are properly stopped and closed during context shutdown so the container JVM can terminate; a regression integration test reproducing the reported stream definition will be added.",
+      "For U8 (multiple binder connection factories), the design will extend the existing binder configuration model (e.g., BinderFactory/binder per-binding configuration) so each binding can reference a named binder configuration with its own connection factory, keeping full backward compatibility with the single-binder default behavior.",
+      "All changes follow the existing code style, and each story will go through the standard review and CI verification before merge."
+    ],
+    "assumptions": [
+      "A single developer (the estimator) performs all work and is already familiar with the Spring Cloud Data Flow / Spring Cloud Stream codebases and their build tooling.",
+      "Existing development environment, source repositories, and CI infrastructure are available and functional; no environment procurement time is included.",
+      "For integration tests, either lightweight test doubles or accessible test instances of Lattice, Cloud Foundry, and YARN are available; provisioning of production-grade external clusters is out of scope.",
+      "For U7, the referenced external issue (VESC-504) and stream definition provide enough information to reproduce the shutdown problem locally with an Oracle XE or equivalent JDBC test database substituted.",
+      "Effort estimates cover analysis, design, implementation, unit/integration testing, documentation, code review rework, and CI verification; they exclude release management, deployment to production, and ongoing maintenance.",
+      "'Enhance test coverage' means adding a meaningful, representative set of new tests for the main SPI code paths (deployment, undeployment, status, error handling), not achieving a fixed numerical coverage target.",
+      "The U8 feature is scoped to enabling multiple binder connection factories via configuration; no UI changes are required.",
+      "Estimates are most likely effort in work-hours, not elapsed calendar time."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Overall analysis, design and task breakdown",
+        "activity_description": "Review all eight user stories, inspect the relevant modules (deployer SPIs for Lattice/CF/YARN, spring-cloud-stream binder infrastructure, admin UI/container lifecycle), confirm reproduction of the U7 defect, and produce the technical design for U8 plus the test strategy for U2-U6.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1: Document BOM template usage",
+        "activity_description": "Write reference documentation explaining how to use BOM templates to include and manage external libraries dynamically, including examples, version alignment guidance, and common pitfalls; verify code snippets against a sample project and integrate the page into the documentation build.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2: Lattice SPI integration test coverage",
+        "activity_description": "Design and implement integration tests for the Lattice deployer SPI covering app deployment, undeployment, status reporting, scaling, and failure/timeout handling; wire the suite into the CI pipeline profile.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3: Cloud Foundry SPI integration test coverage",
+        "activity_description": "Design and implement integration tests for the Cloud Foundry deployer SPI covering push, delete, status, environment variable/property propagation, and error handling; wire the suite into the CI pipeline profile.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4: YARN SPI integration test coverage",
+        "activity_description": "Design and implement integration tests for the YARN deployer SPI covering application submission, kill/undeploy, status queries, and resource/error handling against a test or embedded YARN setup; wire the suite into the CI pipeline profile.",
+        "most_likely_effort": 30
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5: Lattice SPI unit test coverage",
+        "activity_description": "Add unit tests (JUnit 5/Mockito) for the Lattice SPI implementation classes, covering request mapping, status translation, configuration handling, and exception paths.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U6: YARN SPI unit test coverage",
+        "activity_description": "Add unit tests (JUnit 5/Mockito) for the YARN SPI implementation classes, covering command construction, state translation, configuration handling, and exception paths.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U7: Fix container shutdown failure from Admin UI",
+        "activity_description": "Reproduce the shutdown hang with the reported jdbc->hdfs stream, diagnose the blocked lifecycle (e.g., lingering poller/executor threads or un-closed DataSource/HDFS resources), implement the shutdown/lifecycle fix, and add a regression test verifying the container stops cleanly.",
+        "most_likely_effort": 26
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U8: Multiple binder connection factories support",
+        "activity_description": "Implement support for more than one binder connection factory in spring-cloud-stream: extend binder configuration model, resolve named binder configurations per binding, manage lifecycle of multiple binder instances, maintain backward compatibility, and add unit and integration tests plus reference documentation.",
+        "most_likely_effort": 48
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "CI pipeline integration for new test suites",
+        "activity_description": "Configure CI jobs/profiles so the new unit and integration suites (U2-U6) run in the pipeline with appropriate triggers, reporting, and failure notifications.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Integration, review rework and final verification",
+        "activity_description": "Address code review feedback, resolve merge/integration conflicts, run the full build and regression suites across affected modules, and perform final verification that all eight stories meet their acceptance intent.",
+        "most_likely_effort": 16
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 252
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1354,
+    "completion_tokens": 2340,
+    "total_tokens": 3694,
+    "cost": 0.0377796,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0377796,
+      "upstream_inference_prompt_cost": 0.0026796,
+      "upstream_inference_completions_cost": 0.0351
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 704,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3"
+}

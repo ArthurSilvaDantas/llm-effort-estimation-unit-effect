@@ -1,0 +1,318 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-003",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789169073-UJJh1nxIbh7BlCTilVe2",
+    "object": "chat.completion",
+    "created": 1789169073,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target the existing Spring Boot / Spring Framework 6 server application (endpoints on http://localhost:9393) with Java 17 as the baseline, consistent with the specification.\",\n    \"Use Spring Security for U1-U3 with a pluggable authentication strategy: file-based or LDAP-based authentication selected via external configuration (properties/YAML and Spring profiles), never both simultaneously.\",\n    \"U1: implement file-based authentication via a custom UserDetailsService that loads users, password hashes (BCrypt), and roles from an external properties file; HTTP Basic authentication protects all REST endpoints.\",\n    \"U2: implement LDAP authentication using Spring Security LDAP with configurable server URL, base DN, user search filter, and group-to-role mapping; an embedded LDAP server (UnboundID) is used for automated tests.\",\n    \"U3: implement endpoint-level authorization rules with two roles: Admin (full read/write access) and Viewer (read-only, HTTP GET access); unmapped endpoints default to deny-all, and role rules are configurable.\",\n    \"U4: implement the Kerberized HDFS sink using Hadoop UserGroupInformation with keytab/principal login and a background ticket-renewal mechanism; Kerberos settings are externalized as module properties.\",\n    \"U6: implement the HBase sink using the HBase Java client with configurable table name, column family, row-key strategy, and payload-to-column mapping.\",\n    \"U7: implement the File Roll sink as a streaming file writer to the local filesystem with configurable directory, filename pattern, and rollover policies (size/time based).\",\n    \"U8: implement the JMX source on top of Spring Integration's JMX notification-listening channel adapter, converting JMX notifications into messages published to the bound message broker.\",\n    \"Package U4, U6, U7 (sinks) and U8 (source) as standalone Spring Cloud Stream application modules consistent with the existing module ecosystem.\",\n    \"U5 is executed as a time-boxed spike: evaluate Apache Sqoop, Kafka Connect JDBC, Debezium/CDC, and Spring Batch/Task-based ingestion; the only deliverable is a documented design specification.\",\n    \"Testing stack: JUnit 5, Spring Boot Test, Spring Security Test, embedded LDAP, and Apache Hadoop MiniKdc/MiniDFSCluster/HBase mini-cluster for integration tests.\"\n  ],\n  \"assumptions\": [\n    \"All work is performed by a single developer (myself); one workday equals 8 hours of effort. Estimates cover effort, not calendar time.\",\n    \"An existing, building application codebase (server exposing endpoints at localhost:9393 plus a module framework for sources/sinks) is available, including source control and CI infrastructure.\",\n    \"Security stories U1-U3 apply to the server's HTTP/REST endpoints only; no OAuth2/SSO, no UI work, and no changes to non-HTTP interfaces are required.\",\n    \"Only two roles (Admin and Viewer) are needed for U3; Viewer is read-only and Admin has full access.\",\n    \"A Kerberos KDC, HDFS cluster, and HBase cluster are available for manual verification; automated integration tests rely on embedded/mini clusters instead.\",\n    \"U5 produces research findings and a design document only; no production code for mass-ingestion is implemented in this increment.\",\n    \"U5 evaluation is limited to common relational databases (Oracle, MySQL, PostgreSQL, SQL Server) as the ingestion sources.\",\n    \"The existing jdbchdfs approach remains unchanged and in place.\",\n    \"Documentation effort is limited to reference documentation and module README updates; no separate user guide or training material is produced.\",\n    \"No dedicated performance/load testing, penetration testing, or external security audit is included beyond developer-level sanity testing.\",\n    \"Third-party dependencies (Spring Security, Spring Integration, Hadoop/HBase client libraries) are readily available from internal or public repositories.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"ACT-01\",\n      \"activity_name\": \"Requirements analysis and overall technical design\",\n      \"activity_description\": \"Analyze U1-U8, design the security architecture (authentication/authorization model), module layouts for the new sinks/source, and the Kerberos integration approach; produce a brief design note.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-02\",\n      \"activity_name\": \"Build and project setup for new modules\",\n      \"activity_description\": \"Create build descriptors, module skeletons, dependency management, and CI pipeline updates for the four new modules (Kerberized HDFS sink, HBase sink, File Roll sink, JMX source) and security changes.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-03\",\n      \"activity_name\": \"U1 - File-based security implementation\",\n      \"activity_description\": \"Implement file-based UserDetailsService, password encoding, security properties, and Spring Security filter chain protecting all server endpoints; wire configuration toggle.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-04\",\n      \"activity_name\": \"U1 - File-based security tests\",\n      \"activity_description\": \"Unit and integration tests covering successful/failed authentication, endpoint protection, and configuration loading for file-based security.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-05\",\n      \"activity_name\": \"U2 - LDAP security implementation\",\n      \"activity_description\": \"Implement LDAP authentication provider with configurable URL, base DN, user search, and group/role mapping as an alternative to file-based security.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-06\",\n      \"activity_name\": \"U2 - LDAP security tests\",\n      \"activity_description\": \"Unit and integration tests against an embedded LDAP server (LDIF fixtures) covering authentication success/failure and role resolution.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-07\",\n      \"activity_name\": \"U3 - Default role-based access control implementation\",\n      \"activity_description\": \"Implement endpoint authorization rules mapping Admin (full access) and Viewer (read-only) roles across all listed endpoints, with configurable defaults and deny-by-default behavior.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-08\",\n      \"activity_name\": \"U3 - Access control tests\",\n      \"activity_description\": \"Tests verifying role-to-endpoint mappings, forbidden/allowed combinations for Admin and Viewer, and default rules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-09\",\n      \"activity_name\": \"U4 - Kerberized HDFS sink implementation\",\n      \"activity_description\": \"Implement HDFS sink write path plus Kerberos support: keytab/principal login via UserGroupInformation, JAAS configuration, and ticket renewal; externalize all settings as module properties.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"ACT-10\",\n      \"activity_name\": \"U4 - Kerberized HDFS sink tests\",\n      \"activity_description\": \"Unit tests plus integration tests using MiniKdc and MiniDFSCluster to verify authenticated writes and renewal behavior.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-11\",\n      \"activity_name\": \"U6 - HBase sink implementation\",\n      \"activity_description\": \"Implement HBase sink with configurable table, column family, row-key strategy, and payload mapping to Put operations, including connection management and error handling.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-12\",\n      \"activity_name\": \"U6 - HBase sink tests\",\n      \"activity_description\": \"Unit tests and integration tests against an HBase mini-cluster verifying writes, mapping logic, and failure handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-13\",\n      \"activity_name\": \"U7 - File Roll sink implementation\",\n      \"activity_description\": \"Implement sink writing incoming events to local filesystem files with configurable directory, filename pattern, and rollover policies.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-14\",\n      \"activity_name\": \"U7 - File Roll sink tests\",\n      \"activity_description\": \"Unit and integration tests for file creation, rollover behavior, naming, and content integrity.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-15\",\n      \"activity_name\": \"U8 - JMX source implementation\",\n      \"activity_description\": \"Implement JMX source module using Spring Integration JMX notification-listening adapter: MBean subscription configuration, notification-to-message conversion, and publication to the message broker.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-16\",\n      \"activity_name\": \"U8 - JMX source tests\",\n      \"activity_description\": \"Unit and integration tests with a local MBean server verifying notification receipt, conversion, and message publication.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-17\",\n      \"activity_name\": \"U5 - Spike: research mass-ingestion integration options\",\n      \"activity_description\": \"Investigate and prototype-evaluate options (Apache Sqoop, Kafka Connect JDBC, Debezium/CDC, Spring Batch/Task) for ingesting data from various database systems without JDBC-driver coupling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-18\",\n      \"activity_name\": \"U5 - Spike: design collaboration and documentation\",\n      \"activity_description\": \"Consolidate findings, hold design review/collaboration session, and produce the documented design specification with a recommended approach.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-19\",\n      \"activity_name\": \"End-to-end integration and system testing\",\n      \"activity_description\": \"Cross-feature verification: secured endpoints under both authentication modes with both roles, and end-to-end stream runs exercising the new sink/source modules.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-20\",\n      \"activity_name\": \"User and reference documentation\",\n      \"activity_description\": \"Document security configuration (file/LDAP, roles), new module properties and usage for the Kerberized HDFS, HBase, File Roll sinks and JMX source; include U5 design doc in the docs set.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-21\",\n      \"activity_name\": \"Code review, rework, and release preparation\",\n      \"activity_description\": \"Self-review and peer-style review pass, defect fixing and rework, final build verification, and release preparation of the increment.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 65\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the software specification carefully.\n\nThe specification describes a software increment for what appears to be Spring Cloud Data Flow (based on the localhost:9393 port which is Spring Cloud Data Flow's default port, and references to sinks, sources, and modules). The user stories are:\n\nU1: File-based security configurations for endpoints (Securing Web App guide)\nU2: LDAP-based security configurations for endpoints\nU3: Default access control for endpoints with Admin/Viewer roles\nU4: Kerberized HDFS sink (Kerberos authentication for Hadoop writes)\nU5: Spike - mass-ingest data from various database systems (identify options, collaborate on design, document outcome)\nU6: HBase sink (write data into HBase)\nU7: File Roll sink (store events on local file system)\nU8: JMX source module (publish/subscribe to JMX notifications)\n\nThis looks like Spring Cloud Data Flow / Spring Cloud Stream modules work. Let me break down the work into activities using a WBS approach.\n\nI need to:\n1. Break down development into activities\n2. State technical/design decisions and assumptions\n3. Provide single most likely effort estimate per activity\n4. Calculate total\n\nLet me think about the WBS:\n\n**Common/Project-level activities:**\n1. Requirements analysis and solution design (overall architecture, security design)\n2. Project setup / build configuration\n\n**U1 - File-based security:**\n- Implement file-based security configuration (in-memory/file user store, Spring Security config, properties)\n- Tests (unit + integration)\n\n**U2 - LDAP-based security:**\n- Implement LDAP security configuration\n- Tests\n\n**U3 - Default access control with Admin/Viewer roles:**\n- Role-based authorization rules, endpoint mappings\n- Tests\n\n**U4 - Kerberized HDFS sink:**\n- Implement Kerberos support for HDFS sink (keytab, principal config, JAAS)\n- Tests (may need integration test setup with Kerberos KDC - could assume testcontainers or mini-KDC)\n\n**U5 - Spike on mass-ingest:**\n- Research integration options (e.g., Apache Sqoop, Kafka Connect, Debezium CDC, Spring Cloud Task)\n- Collaborate/design\n- Document design specs\n\n**U6 - HBase sink:**\n- Implement HBase sink module\n- Tests\n\n**U7 - File Roll sink:**\n- Implement file roll sink module\n- Tests\n\n**U8 - JMX source:**\n- Implement JMX source module\n- Tests\n\n**Integration & release:**\n- End-to-end integration testing\n- Documentation (user docs)\n- Code review / QA\n\nLet me estimate efforts in workdays. Assuming a single developer doing all work.\n\nRealistic estimates (these are based on actual Spring Cloud Data Flow history - these user stories come from the Spring Cloud Data Flow project, around 2015-2016):\n\nLet me build a reasonable WBS:\n\n1. **A1: Requirements analysis & overall technical design** — 3 days\n2. **A2: Project setup, build & CI configuration for new modules** — 2 days\n\nSecurity (U1, U2, U3):\n3. **A3: U1 - File-based security implementation** — 4 days\n4. **A4: U1 - File-based security tests** — 2 days\n5. **A5: U2 - LDAP security implementation** — 4 days\n6. **A6: U2 - LDAP tests (with embedded LDAP)** — 3 days\n7. **A7: U3 - Role-based access control (Admin/Viewer) implementation** — 3 days\n8. **A8: U3 - RBAC tests** — 2 days\n\nAlternatively, combine implementation+tests per story. Let me think about granularity. A WBS with ~15-20 activities is reasonable.\n\nU4 - Kerberized HDFS sink:\n9. **A9: U4 - Kerberized HDFS sink implementation** — 5 days\n10. **A10: U4 - Kerberos/HDFS integration tests (mini-KDC, MiniDFSCluster)** — 4 days\n\nU5 - Spike:\n11. **A11: U5 - Spike: research integration options** — 3 days\n12. **A12: U5 - Design collaboration & document design specs** — 2 days\n\nU6 - HBase sink:\n13. **A13: U6 - HBase sink implementation** — 4 days\n14. **A14: U6 - HBase sink tests** — 3 days\n\nU7 - File Roll sink:\n15. **A15: U7 - File Roll sink implementation** — 3 days\n16. **A16: U7 - File Roll sink tests** — 2 days\n\nU8 - JMX source:\n17. **A17: U8 - JMX source implementation** — 4 days\n18. **A18: U8 - JMX source tests** — 2 days\n\nCross-cutting:\n19. **A19: End-to-end integration & system testing** — 4 days\n20. **A20: User documentation** — 3 days\n21. **A21: Code review & rework** — 3 days\n\nLet me sum: 3+2 = 5; +4+2+4+3+3+2 = 18 → 23; +5+4 = 9 → 32; +3+2 = 5 → 37; +4+3 = 7 → 44; +3+2 = 5 → 49; +4+2 = 6 → 55; +4+3+3 = 10 → 65.\n\nTotal: 65 workdays.\n\nHmm, let me reconsider the estimates to be realistic for each module.\n\nActually, let me reconsider. Spring Cloud Data Flow security work (U1-U3) historically: the security infrastructure using Spring Security OAuth2/file/LDAP was a significant feature. But per the spec, U1 is file-based security config for all endpoints, U2 LDAP, U3 role-based default access (Admin/Viewer). The actual implementation in SCDF used Spring Security with configurable authentication.\n\nFor a single developer:\n- U1 file-based: implement SecurityProperties, FileUserDetailsService or in-memory with users from properties file, configure HttpSecurity. ~3-5 days implementation including tests.\n- U2 LDAP: configure LdapAuthenticationProvider with embedded LDAP for tests. ~4-6 days.\n- U3: authorization rules mapping endpoints to roles (VIEW, CREATE, MANAGE in real SCDF). ~3-5 days.\n\nKerberized HDFS sink: configuration of UserGroupInformation, keytab login, ticket renewal, testing with MiniKdc. ~8-10 days total.\n\nHBase sink: HBase client config, Put operations, table/column family mapping. ~6-8 days.\n\nFile Roll sink: simpler - streaming file writes with rolling policies. ~4-5 days.\n\nJMX source: Spring Integration JMX notification listening channel adapter, message conversion. ~5-6 days.\n\nSpike: 5 days total (timeboxed).\n\nPlus common overhead: design, setup, integration testing, docs.\n\nLet me settle on a clean WBS. I'll organize by phases:\n\n**Phase 0: Foundation**\n- ACT-01: Requirements analysis and architecture/design — 3 days\n- ACT-02: Development environment & build setup (new modules, Maven/Gradle, CI) — 2 days\n\n**Phase 1: Security (U1, U2, U3)**\n- ACT-03: U1 file-based authentication implementation — 4 days\n- ACT-04: U1 unit & integration tests — 2 days\n- ACT-05: U2 LDAP authentication implementation — 4 days\n- ACT-06: U2 unit & integration tests (embedded LDAP) — 3 days\n- ACT-07: U3 role-based authorization (Admin/Viewer) implementation — 3 days\n- ACT-08: U3 authorization tests — 2 days\n\n**Phase 2: Sinks & Sources**\n- ACT-09: U4 Kerberized HDFS sink implementation — 5 days\n- ACT-10: U4 tests with MiniKdc/MiniDFSCluster — 4 days\n- ACT-11: U6 HBase sink implementation — 4 days\n- ACT-12: U6 HBase sink tests — 3 days\n- ACT-13: U7 File Roll sink implementation — 3 days\n- ACT-14: U7 File Roll sink tests — 2 days\n- ACT-15: U8 JMX source implementation — 4 days\n- ACT-16: U8 JMX source tests — 2 days\n\n**Phase 3: Spike**\n- ACT-17: U5 spike - research options — 3 days\n- ACT-18: U5 spike - design & documentation — 2 days\n\n**Phase 4: Wrap-up**\n- ACT-19: End-to-end integration testing — 4 days\n- ACT-20: Documentation (user reference docs) — 3 days\n- ACT-21: Code review, rework, release prep — 3 days\n\nSum: 3+2+4+2+4+3+3+2+5+4+4+3+3+2+4+2+3+2+4+3+3\n\nLet me add step by step:\n3+2 = 5\n5+4 = 9\n9+2 = 11\n11+4 = 15\n15+3 = 18\n18+3 = 21\n21+2 = 23\n23+5 = 28\n28+4 = 32\n32+4 = 36\n36+3 = 39\n39+3 = 42\n42+2 = 44\n44+4 = 48\n48+2 = 50\n50+3 = 53\n53+2 = 55\n55+4 = 59\n59+3 = 62\n62+3 = 65\n\nTotal: 65 workdays. That's about 13 person-weeks, ~3 person-months. Seems reasonable for this increment.\n\nTechnical and design decisions:\n- Build on Spring Boot 2.x / Spring Framework 6 with Java 17 baseline (spec mentions Spring 6 requires Java 17+)\n- Use Spring Security for U1-U3 with configurable authentication (file vs LDAP) toggled by properties/profiles\n- File-based security: users/roles defined in a properties/YAML file loaded via a custom UserDetailsService\n- LDAP: Spring Security LDAP authentication with configurable URL, base DN, bind patterns; embedded LDAP (UnboundID) for tests\n- Authorization: URL/endpoint-based rules mapping Admin and Viewer roles; Viewer = read-only (GET), Admin = full access; default deny\n- HDFS sink: Hadoop UserGroupInformation with keytab-based Kerberos login, ticket renewal thread, JAAS config\n- HBase sink: HBase Java client, configurable table/column family, payload-to-Put mapping\n- File Roll sink: local filesystem rolling file appender with filename patterns/rollover policies\n- JMX source: Spring Integration JMX notification-listening channel adapter publishing to message bus\n- Modules packaged as Spring Cloud Stream apps (source/sink) consistent with existing module approach\n- U5 spike: evaluate Apache Sqoop, Kafka Connect JDBC, Debezium CDC, Spring Cloud Task/JDBC batch; deliverable is design document\n- Testing: JUnit 5, Spring Boot Test, Testcontainers / Apache Hadoop MiniCluster, embedded LDAP\n\nAssumptions:\n- Single developer (me) performs all work; estimates in workdays (8h)\n- Existing application baseline: Spring Cloud Data Flow-like server at localhost:9393 with existing module ecosystem; code builds and I have access\n- Security applies to REST endpoints only; no OAuth2/SSO required; U1/U2 are mutually exclusive options selected via configuration\n- Roles limited to Admin and Viewer as stated; Viewer=read-only, Admin=read/write\n- Kerberos KDC and Hadoop cluster available for integration testing (or use MiniKdc/MiniDFSCluster)\n- No UI changes required; configuration via properties/YAML\n- U5 is a time-boxed spike producing a design document only; no production code\n- No performance/load testing beyond basic sanity checks\n- Documentation limited to reference docs and README updates\n- Database systems for U5 spike limited to common RDBMS (Oracle, MySQL, PostgreSQL, SQL Server)\n- CI infrastructure exists; minor pipeline updates only\n- The existing jdbchdfs module approach remains untouched\n\nNow format output as valid JSON only. Let me write activity descriptions concisely.\n\nActivity IDs: ACT-01 ... ACT-21.\n\nLet me make sure the JSON is valid and matches schema: additionalProperties false, required fields present. most_likely_effort numbers > 0. reported_total = 65.\n\nI'll write it out.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the software specification carefully.\n\nThe specification describes a software increment for what appears to be Spring Cloud Data Flow (based on the localhost:9393 port which is Spring Cloud Data Flow's default port, and references to sinks, sources, and modules). The user stories are:\n\nU1: File-based security configurations for endpoints (Securing Web App guide)\nU2: LDAP-based security configurations for endpoints\nU3: Default access control for endpoints with Admin/Viewer roles\nU4: Kerberized HDFS sink (Kerberos authentication for Hadoop writes)\nU5: Spike - mass-ingest data from various database systems (identify options, collaborate on design, document outcome)\nU6: HBase sink (write data into HBase)\nU7: File Roll sink (store events on local file system)\nU8: JMX source module (publish/subscribe to JMX notifications)\n\nThis looks like Spring Cloud Data Flow / Spring Cloud Stream modules work. Let me break down the work into activities using a WBS approach.\n\nI need to:\n1. Break down development into activities\n2. State technical/design decisions and assumptions\n3. Provide single most likely effort estimate per activity\n4. Calculate total\n\nLet me think about the WBS:\n\n**Common/Project-level activities:**\n1. Requirements analysis and solution design (overall architecture, security design)\n2. Project setup / build configuration\n\n**U1 - File-based security:**\n- Implement file-based security configuration (in-memory/file user store, Spring Security config, properties)\n- Tests (unit + integration)\n\n**U2 - LDAP-based security:**\n- Implement LDAP security configuration\n- Tests\n\n**U3 - Default access control with Admin/Viewer roles:**\n- Role-based authorization rules, endpoint mappings\n- Tests\n\n**U4 - Kerberized HDFS sink:**\n- Implement Kerberos support for HDFS sink (keytab, principal config, JAAS)\n- Tests (may need integration test setup with Kerberos KDC - could assume testcontainers or mini-KDC)\n\n**U5 - Spike on mass-ingest:**\n- Research integration options (e.g., Apache Sqoop, Kafka Connect, Debezium CDC, Spring Cloud Task)\n- Collaborate/design\n- Document design specs\n\n**U6 - HBase sink:**\n- Implement HBase sink module\n- Tests\n\n**U7 - File Roll sink:**\n- Implement file roll sink module\n- Tests\n\n**U8 - JMX source:**\n- Implement JMX source module\n- Tests\n\n**Integration & release:**\n- End-to-end integration testing\n- Documentation (user docs)\n- Code review / QA\n\nLet me estimate efforts in workdays. Assuming a single developer doing all work.\n\nRealistic estimates (these are based on actual Spring Cloud Data Flow history - these user stories come from the Spring Cloud Data Flow project, around 2015-2016):\n\nLet me build a reasonable WBS:\n\n1. **A1: Requirements analysis & overall technical design** — 3 days\n2. **A2: Project setup, build & CI configuration for new modules** — 2 days\n\nSecurity (U1, U2, U3):\n3. **A3: U1 - File-based security implementation** — 4 days\n4. **A4: U1 - File-based security tests** — 2 days\n5. **A5: U2 - LDAP security implementation** — 4 days\n6. **A6: U2 - LDAP tests (with embedded LDAP)** — 3 days\n7. **A7: U3 - Role-based access control (Admin/Viewer) implementation** — 3 days\n8. **A8: U3 - RBAC tests** — 2 days\n\nAlternatively, combine implementation+tests per story. Let me think about granularity. A WBS with ~15-20 activities is reasonable.\n\nU4 - Kerberized HDFS sink:\n9. **A9: U4 - Kerberized HDFS sink implementation** — 5 days\n10. **A10: U4 - Kerberos/HDFS integration tests (mini-KDC, MiniDFSCluster)** — 4 days\n\nU5 - Spike:\n11. **A11: U5 - Spike: research integration options** — 3 days\n12. **A12: U5 - Design collaboration & document design specs** — 2 days\n\nU6 - HBase sink:\n13. **A13: U6 - HBase sink implementation** — 4 days\n14. **A14: U6 - HBase sink tests** — 3 days\n\nU7 - File Roll sink:\n15. **A15: U7 - File Roll sink implementation** — 3 days\n16. **A16: U7 - File Roll sink tests** — 2 days\n\nU8 - JMX source:\n17. **A17: U8 - JMX source implementation** — 4 days\n18. **A18: U8 - JMX source tests** — 2 days\n\nCross-cutting:\n19. **A19: End-to-end integration & system testing** — 4 days\n20. **A20: User documentation** — 3 days\n21. **A21: Code review & rework** — 3 days\n\nLet me sum: 3+2 = 5; +4+2+4+3+3+2 = 18 → 23; +5+4 = 9 → 32; +3+2 = 5 → 37; +4+3 = 7 → 44; +3+2 = 5 → 49; +4+2 = 6 → 55; +4+3+3 = 10 → 65.\n\nTotal: 65 workdays.\n\nHmm, let me reconsider the estimates to be realistic for each module.\n\nActually, let me reconsider. Spring Cloud Data Flow security work (U1-U3) historically: the security infrastructure using Spring Security OAuth2/file/LDAP was a significant feature. But per the spec, U1 is file-based security config for all endpoints, U2 LDAP, U3 role-based default access (Admin/Viewer). The actual implementation in SCDF used Spring Security with configurable authentication.\n\nFor a single developer:\n- U1 file-based: implement SecurityProperties, FileUserDetailsService or in-memory with users from properties file, configure HttpSecurity. ~3-5 days implementation including tests.\n- U2 LDAP: configure LdapAuthenticationProvider with embedded LDAP for tests. ~4-6 days.\n- U3: authorization rules mapping endpoints to roles (VIEW, CREATE, MANAGE in real SCDF). ~3-5 days.\n\nKerberized HDFS sink: configuration of UserGroupInformation, keytab login, ticket renewal, testing with MiniKdc. ~8-10 days total.\n\nHBase sink: HBase client config, Put operations, table/column family mapping. ~6-8 days.\n\nFile Roll sink: simpler - streaming file writes with rolling policies. ~4-5 days.\n\nJMX source: Spring Integration JMX notification listening channel adapter, message conversion. ~5-6 days.\n\nSpike: 5 days total (timeboxed).\n\nPlus common overhead: design, setup, integration testing, docs.\n\nLet me settle on a clean WBS. I'll organize by phases:\n\n**Phase 0: Foundation**\n- ACT-01: Requirements analysis and architecture/design — 3 days\n- ACT-02: Development environment & build setup (new modules, Maven/Gradle, CI) — 2 days\n\n**Phase 1: Security (U1, U2, U3)**\n- ACT-03: U1 file-based authentication implementation — 4 days\n- ACT-04: U1 unit & integration tests — 2 days\n- ACT-05: U2 LDAP authentication implementation — 4 days\n- ACT-06: U2 unit & integration tests (embedded LDAP) — 3 days\n- ACT-07: U3 role-based authorization (Admin/Viewer) implementation — 3 days\n- ACT-08: U3 authorization tests — 2 days\n\n**Phase 2: Sinks & Sources**\n- ACT-09: U4 Kerberized HDFS sink implementation — 5 days\n- ACT-10: U4 tests with MiniKdc/MiniDFSCluster — 4 days\n- ACT-11: U6 HBase sink implementation — 4 days\n- ACT-12: U6 HBase sink tests — 3 days\n- ACT-13: U7 File Roll sink implementation — 3 days\n- ACT-14: U7 File Roll sink tests — 2 days\n- ACT-15: U8 JMX source implementation — 4 days\n- ACT-16: U8 JMX source tests — 2 days\n\n**Phase 3: Spike**\n- ACT-17: U5 spike - research options — 3 days\n- ACT-18: U5 spike - design & documentation — 2 days\n\n**Phase 4: Wrap-up**\n- ACT-19: End-to-end integration testing — 4 days\n- ACT-20: Documentation (user reference docs) — 3 days\n- ACT-21: Code review, rework, release prep — 3 days\n\nSum: 3+2+4+2+4+3+3+2+5+4+4+3+3+2+4+2+3+2+4+3+3\n\nLet me add step by step:\n3+2 = 5\n5+4 = 9\n9+2 = 11\n11+4 = 15\n15+3 = 18\n18+3 = 21\n21+2 = 23\n23+5 = 28\n28+4 = 32\n32+4 = 36\n36+3 = 39\n39+3 = 42\n42+2 = 44\n44+4 = 48\n48+2 = 50\n50+3 = 53\n53+2 = 55\n55+4 = 59\n59+3 = 62\n62+3 = 65\n\nTotal: 65 workdays. That's about 13 person-weeks, ~3 person-months. Seems reasonable for this increment.\n\nTechnical and design decisions:\n- Build on Spring Boot 2.x / Spring Framework 6 with Java 17 baseline (spec mentions Spring 6 requires Java 17+)\n- Use Spring Security for U1-U3 with configurable authentication (file vs LDAP) toggled by properties/profiles\n- File-based security: users/roles defined in a properties/YAML file loaded via a custom UserDetailsService\n- LDAP: Spring Security LDAP authentication with configurable URL, base DN, bind patterns; embedded LDAP (UnboundID) for tests\n- Authorization: URL/endpoint-based rules mapping Admin and Viewer roles; Viewer = read-only (GET), Admin = full access; default deny\n- HDFS sink: Hadoop UserGroupInformation with keytab-based Kerberos login, ticket renewal thread, JAAS config\n- HBase sink: HBase Java client, configurable table/column family, payload-to-Put mapping\n- File Roll sink: local filesystem rolling file appender with filename patterns/rollover policies\n- JMX source: Spring Integration JMX notification-listening channel adapter publishing to message bus\n- Modules packaged as Spring Cloud Stream apps (source/sink) consistent with existing module approach\n- U5 spike: evaluate Apache Sqoop, Kafka Connect JDBC, Debezium CDC, Spring Cloud Task/JDBC batch; deliverable is design document\n- Testing: JUnit 5, Spring Boot Test, Testcontainers / Apache Hadoop MiniCluster, embedded LDAP\n\nAssumptions:\n- Single developer (me) performs all work; estimates in workdays (8h)\n- Existing application baseline: Spring Cloud Data Flow-like server at localhost:9393 with existing module ecosystem; code builds and I have access\n- Security applies to REST endpoints only; no OAuth2/SSO required; U1/U2 are mutually exclusive options selected via configuration\n- Roles limited to Admin and Viewer as stated; Viewer=read-only, Admin=read/write\n- Kerberos KDC and Hadoop cluster available for integration testing (or use MiniKdc/MiniDFSCluster)\n- No UI changes required; configuration via properties/YAML\n- U5 is a time-boxed spike producing a design document only; no production code\n- No performance/load testing beyond basic sanity checks\n- Documentation limited to reference docs and README updates\n- Database systems for U5 spike limited to common RDBMS (Oracle, MySQL, PostgreSQL, SQL Server)\n- CI infrastructure exists; minor pipeline updates only\n- The existing jdbchdfs module approach remains untouched\n\nNow format output as valid JSON only. Let me write activity descriptions concisely.\n\nActivity IDs: ACT-01 ... ACT-21.\n\nLet me make sure the JSON is valid and matches schema: additionalProperties false, required fields present. most_likely_effort numbers > 0. reported_total = 65.\n\nI'll write it out.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1392,
+      "completion_tokens": 5144,
+      "total_tokens": 6536,
+      "cost": 0.0799536,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0799536,
+        "upstream_inference_prompt_cost": 0.0027936,
+        "upstream_inference_completions_cost": 0.07716
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2726,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target the existing Spring Boot / Spring Framework 6 server application (endpoints on http://localhost:9393) with Java 17 as the baseline, consistent with the specification.\",\n    \"Use Spring Security for U1-U3 with a pluggable authentication strategy: file-based or LDAP-based authentication selected via external configuration (properties/YAML and Spring profiles), never both simultaneously.\",\n    \"U1: implement file-based authentication via a custom UserDetailsService that loads users, password hashes (BCrypt), and roles from an external properties file; HTTP Basic authentication protects all REST endpoints.\",\n    \"U2: implement LDAP authentication using Spring Security LDAP with configurable server URL, base DN, user search filter, and group-to-role mapping; an embedded LDAP server (UnboundID) is used for automated tests.\",\n    \"U3: implement endpoint-level authorization rules with two roles: Admin (full read/write access) and Viewer (read-only, HTTP GET access); unmapped endpoints default to deny-all, and role rules are configurable.\",\n    \"U4: implement the Kerberized HDFS sink using Hadoop UserGroupInformation with keytab/principal login and a background ticket-renewal mechanism; Kerberos settings are externalized as module properties.\",\n    \"U6: implement the HBase sink using the HBase Java client with configurable table name, column family, row-key strategy, and payload-to-column mapping.\",\n    \"U7: implement the File Roll sink as a streaming file writer to the local filesystem with configurable directory, filename pattern, and rollover policies (size/time based).\",\n    \"U8: implement the JMX source on top of Spring Integration's JMX notification-listening channel adapter, converting JMX notifications into messages published to the bound message broker.\",\n    \"Package U4, U6, U7 (sinks) and U8 (source) as standalone Spring Cloud Stream application modules consistent with the existing module ecosystem.\",\n    \"U5 is executed as a time-boxed spike: evaluate Apache Sqoop, Kafka Connect JDBC, Debezium/CDC, and Spring Batch/Task-based ingestion; the only deliverable is a documented design specification.\",\n    \"Testing stack: JUnit 5, Spring Boot Test, Spring Security Test, embedded LDAP, and Apache Hadoop MiniKdc/MiniDFSCluster/HBase mini-cluster for integration tests.\"\n  ],\n  \"assumptions\": [\n    \"All work is performed by a single developer (myself); one workday equals 8 hours of effort. Estimates cover effort, not calendar time.\",\n    \"An existing, building application codebase (server exposing endpoints at localhost:9393 plus a module framework for sources/sinks) is available, including source control and CI infrastructure.\",\n    \"Security stories U1-U3 apply to the server's HTTP/REST endpoints only; no OAuth2/SSO, no UI work, and no changes to non-HTTP interfaces are required.\",\n    \"Only two roles (Admin and Viewer) are needed for U3; Viewer is read-only and Admin has full access.\",\n    \"A Kerberos KDC, HDFS cluster, and HBase cluster are available for manual verification; automated integration tests rely on embedded/mini clusters instead.\",\n    \"U5 produces research findings and a design document only; no production code for mass-ingestion is implemented in this increment.\",\n    \"U5 evaluation is limited to common relational databases (Oracle, MySQL, PostgreSQL, SQL Server) as the ingestion sources.\",\n    \"The existing jdbchdfs approach remains unchanged and in place.\",\n    \"Documentation effort is limited to reference documentation and module README updates; no separate user guide or training material is produced.\",\n    \"No dedicated performance/load testing, penetration testing, or external security audit is included beyond developer-level sanity testing.\",\n    \"Third-party dependencies (Spring Security, Spring Integration, Hadoop/HBase client libraries) are readily available from internal or public repositories.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"ACT-01\",\n      \"activity_name\": \"Requirements analysis and overall technical design\",\n      \"activity_description\": \"Analyze U1-U8, design the security architecture (authentication/authorization model), module layouts for the new sinks/source, and the Kerberos integration approach; produce a brief design note.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-02\",\n      \"activity_name\": \"Build and project setup for new modules\",\n      \"activity_description\": \"Create build descriptors, module skeletons, dependency management, and CI pipeline updates for the four new modules (Kerberized HDFS sink, HBase sink, File Roll sink, JMX source) and security changes.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-03\",\n      \"activity_name\": \"U1 - File-based security implementation\",\n      \"activity_description\": \"Implement file-based UserDetailsService, password encoding, security properties, and Spring Security filter chain protecting all server endpoints; wire configuration toggle.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-04\",\n      \"activity_name\": \"U1 - File-based security tests\",\n      \"activity_description\": \"Unit and integration tests covering successful/failed authentication, endpoint protection, and configuration loading for file-based security.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-05\",\n      \"activity_name\": \"U2 - LDAP security implementation\",\n      \"activity_description\": \"Implement LDAP authentication provider with configurable URL, base DN, user search, and group/role mapping as an alternative to file-based security.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-06\",\n      \"activity_name\": \"U2 - LDAP security tests\",\n      \"activity_description\": \"Unit and integration tests against an embedded LDAP server (LDIF fixtures) covering authentication success/failure and role resolution.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-07\",\n      \"activity_name\": \"U3 - Default role-based access control implementation\",\n      \"activity_description\": \"Implement endpoint authorization rules mapping Admin (full access) and Viewer (read-only) roles across all listed endpoints, with configurable defaults and deny-by-default behavior.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-08\",\n      \"activity_name\": \"U3 - Access control tests\",\n      \"activity_description\": \"Tests verifying role-to-endpoint mappings, forbidden/allowed combinations for Admin and Viewer, and default rules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-09\",\n      \"activity_name\": \"U4 - Kerberized HDFS sink implementation\",\n      \"activity_description\": \"Implement HDFS sink write path plus Kerberos support: keytab/principal login via UserGroupInformation, JAAS configuration, and ticket renewal; externalize all settings as module properties.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"ACT-10\",\n      \"activity_name\": \"U4 - Kerberized HDFS sink tests\",\n      \"activity_description\": \"Unit tests plus integration tests using MiniKdc and MiniDFSCluster to verify authenticated writes and renewal behavior.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-11\",\n      \"activity_name\": \"U6 - HBase sink implementation\",\n      \"activity_description\": \"Implement HBase sink with configurable table, column family, row-key strategy, and payload mapping to Put operations, including connection management and error handling.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-12\",\n      \"activity_name\": \"U6 - HBase sink tests\",\n      \"activity_description\": \"Unit tests and integration tests against an HBase mini-cluster verifying writes, mapping logic, and failure handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-13\",\n      \"activity_name\": \"U7 - File Roll sink implementation\",\n      \"activity_description\": \"Implement sink writing incoming events to local filesystem files with configurable directory, filename pattern, and rollover policies.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-14\",\n      \"activity_name\": \"U7 - File Roll sink tests\",\n      \"activity_description\": \"Unit and integration tests for file creation, rollover behavior, naming, and content integrity.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-15\",\n      \"activity_name\": \"U8 - JMX source implementation\",\n      \"activity_description\": \"Implement JMX source module using Spring Integration JMX notification-listening adapter: MBean subscription configuration, notification-to-message conversion, and publication to the message broker.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-16\",\n      \"activity_name\": \"U8 - JMX source tests\",\n      \"activity_description\": \"Unit and integration tests with a local MBean server verifying notification receipt, conversion, and message publication.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-17\",\n      \"activity_name\": \"U5 - Spike: research mass-ingestion integration options\",\n      \"activity_description\": \"Investigate and prototype-evaluate options (Apache Sqoop, Kafka Connect JDBC, Debezium/CDC, Spring Batch/Task) for ingesting data from various database systems without JDBC-driver coupling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-18\",\n      \"activity_name\": \"U5 - Spike: design collaboration and documentation\",\n      \"activity_description\": \"Consolidate findings, hold design review/collaboration session, and produce the documented design specification with a recommended approach.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"ACT-19\",\n      \"activity_name\": \"End-to-end integration and system testing\",\n      \"activity_description\": \"Cross-feature verification: secured endpoints under both authentication modes with both roles, and end-to-end stream runs exercising the new sink/source modules.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"ACT-20\",\n      \"activity_name\": \"User and reference documentation\",\n      \"activity_description\": \"Document security configuration (file/LDAP, roles), new module properties and usage for the Kerberized HDFS, HBase, File Roll sinks and JMX source; include U5 design doc in the docs set.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"ACT-21\",\n      \"activity_name\": \"Code review, rework, and release preparation\",\n      \"activity_description\": \"Self-review and peer-style review pass, defect fixing and rework, final build verification, and release preparation of the increment.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 65\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Target the existing Spring Boot / Spring Framework 6 server application (endpoints on http://localhost:9393) with Java 17 as the baseline, consistent with the specification.",
+      "Use Spring Security for U1-U3 with a pluggable authentication strategy: file-based or LDAP-based authentication selected via external configuration (properties/YAML and Spring profiles), never both simultaneously.",
+      "U1: implement file-based authentication via a custom UserDetailsService that loads users, password hashes (BCrypt), and roles from an external properties file; HTTP Basic authentication protects all REST endpoints.",
+      "U2: implement LDAP authentication using Spring Security LDAP with configurable server URL, base DN, user search filter, and group-to-role mapping; an embedded LDAP server (UnboundID) is used for automated tests.",
+      "U3: implement endpoint-level authorization rules with two roles: Admin (full read/write access) and Viewer (read-only, HTTP GET access); unmapped endpoints default to deny-all, and role rules are configurable.",
+      "U4: implement the Kerberized HDFS sink using Hadoop UserGroupInformation with keytab/principal login and a background ticket-renewal mechanism; Kerberos settings are externalized as module properties.",
+      "U6: implement the HBase sink using the HBase Java client with configurable table name, column family, row-key strategy, and payload-to-column mapping.",
+      "U7: implement the File Roll sink as a streaming file writer to the local filesystem with configurable directory, filename pattern, and rollover policies (size/time based).",
+      "U8: implement the JMX source on top of Spring Integration's JMX notification-listening channel adapter, converting JMX notifications into messages published to the bound message broker.",
+      "Package U4, U6, U7 (sinks) and U8 (source) as standalone Spring Cloud Stream application modules consistent with the existing module ecosystem.",
+      "U5 is executed as a time-boxed spike: evaluate Apache Sqoop, Kafka Connect JDBC, Debezium/CDC, and Spring Batch/Task-based ingestion; the only deliverable is a documented design specification.",
+      "Testing stack: JUnit 5, Spring Boot Test, Spring Security Test, embedded LDAP, and Apache Hadoop MiniKdc/MiniDFSCluster/HBase mini-cluster for integration tests."
+    ],
+    "assumptions": [
+      "All work is performed by a single developer (myself); one workday equals 8 hours of effort. Estimates cover effort, not calendar time.",
+      "An existing, building application codebase (server exposing endpoints at localhost:9393 plus a module framework for sources/sinks) is available, including source control and CI infrastructure.",
+      "Security stories U1-U3 apply to the server's HTTP/REST endpoints only; no OAuth2/SSO, no UI work, and no changes to non-HTTP interfaces are required.",
+      "Only two roles (Admin and Viewer) are needed for U3; Viewer is read-only and Admin has full access.",
+      "A Kerberos KDC, HDFS cluster, and HBase cluster are available for manual verification; automated integration tests rely on embedded/mini clusters instead.",
+      "U5 produces research findings and a design document only; no production code for mass-ingestion is implemented in this increment.",
+      "U5 evaluation is limited to common relational databases (Oracle, MySQL, PostgreSQL, SQL Server) as the ingestion sources.",
+      "The existing jdbchdfs approach remains unchanged and in place.",
+      "Documentation effort is limited to reference documentation and module README updates; no separate user guide or training material is produced.",
+      "No dedicated performance/load testing, penetration testing, or external security audit is included beyond developer-level sanity testing.",
+      "Third-party dependencies (Spring Security, Spring Integration, Hadoop/HBase client libraries) are readily available from internal or public repositories."
+    ],
+    "activities": [
+      {
+        "activity_id": "ACT-01",
+        "activity_name": "Requirements analysis and overall technical design",
+        "activity_description": "Analyze U1-U8, design the security architecture (authentication/authorization model), module layouts for the new sinks/source, and the Kerberos integration approach; produce a brief design note.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "ACT-02",
+        "activity_name": "Build and project setup for new modules",
+        "activity_description": "Create build descriptors, module skeletons, dependency management, and CI pipeline updates for the four new modules (Kerberized HDFS sink, HBase sink, File Roll sink, JMX source) and security changes.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "ACT-03",
+        "activity_name": "U1 - File-based security implementation",
+        "activity_description": "Implement file-based UserDetailsService, password encoding, security properties, and Spring Security filter chain protecting all server endpoints; wire configuration toggle.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "ACT-04",
+        "activity_name": "U1 - File-based security tests",
+        "activity_description": "Unit and integration tests covering successful/failed authentication, endpoint protection, and configuration loading for file-based security.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "ACT-05",
+        "activity_name": "U2 - LDAP security implementation",
+        "activity_description": "Implement LDAP authentication provider with configurable URL, base DN, user search, and group/role mapping as an alternative to file-based security.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "ACT-06",
+        "activity_name": "U2 - LDAP security tests",
+        "activity_description": "Unit and integration tests against an embedded LDAP server (LDIF fixtures) covering authentication success/failure and role resolution.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "ACT-07",
+        "activity_name": "U3 - Default role-based access control implementation",
+        "activity_description": "Implement endpoint authorization rules mapping Admin (full access) and Viewer (read-only) roles across all listed endpoints, with configurable defaults and deny-by-default behavior.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "ACT-08",
+        "activity_name": "U3 - Access control tests",
+        "activity_description": "Tests verifying role-to-endpoint mappings, forbidden/allowed combinations for Admin and Viewer, and default rules.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "ACT-09",
+        "activity_name": "U4 - Kerberized HDFS sink implementation",
+        "activity_description": "Implement HDFS sink write path plus Kerberos support: keytab/principal login via UserGroupInformation, JAAS configuration, and ticket renewal; externalize all settings as module properties.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "ACT-10",
+        "activity_name": "U4 - Kerberized HDFS sink tests",
+        "activity_description": "Unit tests plus integration tests using MiniKdc and MiniDFSCluster to verify authenticated writes and renewal behavior.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "ACT-11",
+        "activity_name": "U6 - HBase sink implementation",
+        "activity_description": "Implement HBase sink with configurable table, column family, row-key strategy, and payload mapping to Put operations, including connection management and error handling.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "ACT-12",
+        "activity_name": "U6 - HBase sink tests",
+        "activity_description": "Unit tests and integration tests against an HBase mini-cluster verifying writes, mapping logic, and failure handling.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "ACT-13",
+        "activity_name": "U7 - File Roll sink implementation",
+        "activity_description": "Implement sink writing incoming events to local filesystem files with configurable directory, filename pattern, and rollover policies.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "ACT-14",
+        "activity_name": "U7 - File Roll sink tests",
+        "activity_description": "Unit and integration tests for file creation, rollover behavior, naming, and content integrity.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "ACT-15",
+        "activity_name": "U8 - JMX source implementation",
+        "activity_description": "Implement JMX source module using Spring Integration JMX notification-listening adapter: MBean subscription configuration, notification-to-message conversion, and publication to the message broker.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "ACT-16",
+        "activity_name": "U8 - JMX source tests",
+        "activity_description": "Unit and integration tests with a local MBean server verifying notification receipt, conversion, and message publication.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "ACT-17",
+        "activity_name": "U5 - Spike: research mass-ingestion integration options",
+        "activity_description": "Investigate and prototype-evaluate options (Apache Sqoop, Kafka Connect JDBC, Debezium/CDC, Spring Batch/Task) for ingesting data from various database systems without JDBC-driver coupling.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "ACT-18",
+        "activity_name": "U5 - Spike: design collaboration and documentation",
+        "activity_description": "Consolidate findings, hold design review/collaboration session, and produce the documented design specification with a recommended approach.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "ACT-19",
+        "activity_name": "End-to-end integration and system testing",
+        "activity_description": "Cross-feature verification: secured endpoints under both authentication modes with both roles, and end-to-end stream runs exercising the new sink/source modules.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "ACT-20",
+        "activity_name": "User and reference documentation",
+        "activity_description": "Document security configuration (file/LDAP, roles), new module properties and usage for the Kerberized HDFS, HBase, File Roll sinks and JMX source; include U5 design doc in the docs set.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "ACT-21",
+        "activity_name": "Code review, rework, and release preparation",
+        "activity_description": "Self-review and peer-style review pass, defect fixing and rework, final build verification, and release preparation of the increment.",
+        "most_likely_effort": 3
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 65
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1392,
+    "completion_tokens": 5144,
+    "total_tokens": 6536,
+    "cost": 0.0799536,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0799536,
+      "upstream_inference_prompt_cost": 0.0027936,
+      "upstream_inference_completions_cost": 0.07716
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2726,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789169201-jprYqfemifrhv5CKioMJ",
+    "object": "chat.completion",
+    "created": 1789169201,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user asks how many work-hours per workday I considered. In my previous response, the assumptions stated: \"one workday equals 8 hours of effort.\" So answer 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user asks how many work-hours per workday I considered. In my previous response, the assumptions stated: \"one workday equals 8 hours of effort.\" So answer 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3944,
+      "completion_tokens": 70,
+      "total_tokens": 4014,
+      "cost": 0.009426,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.009426,
+        "upstream_inference_prompt_cost": 0.008376,
+        "upstream_inference_completions_cost": 0.00105
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 38,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

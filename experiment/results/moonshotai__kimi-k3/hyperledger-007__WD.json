@@ -1,0 +1,256 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "hyperledger-007",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789154482-wU6jjeoIDgVPH8iUD6yN",
+    "object": "chat.completion",
+    "created": 1789154482,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Create two new external Go module libraries: a general-purpose library (fabric-lib-go style) hosting gossip protoext/discovery utilities, cauthdsl policy utilities, ccprovider structures, ledger interfaces and common utilities (U1-U5), and a configuration library (fabric-config style) hosting configtxgen and configtxlator/protolator functionality (U7-U8).\",\n    \"Extract code from the hyperledger/fabric v2.x code base as the source of truth, preserving exported API signatures as far as practical to minimize changes in consumers.\",\n    \"Depend on the published hyperledger/fabric-protos-go module for generated protobuf types instead of vendoring .proto files or generated code into the new libraries.\",\n    \"Use Go modules (go.mod) with semantic versioning (initial release v1.0.0) for both new libraries; consumers (fabric-sdk-go) pin versions rather than vendoring copies.\",\n    \"Apply Apache-2.0 license headers, DCO sign-off, README/godoc documentation and a CI pipeline (build, unit tests, lint/vet, minimum coverage) to each new repository.\",\n    \"For U6, implement the go.mod honoring workaround inside the Fabric Go chaincode platform build logic: detect a go.mod file in the chaincode package and copy it into the build context so module builds work; mark it clearly as a temporary, deprecated behavior in code comments and docs.\",\n    \"Update fabric-sdk-go to delete its internal/ and third_party/ copies and import the new external libraries instead, including rewiring the discovery client and resource/configtx.go.\",\n    \"Keep extraction changes minimal and mechanical (no functional redesign) to limit regression risk; only adjust imports, visibility and package layout.\"\n  ],\n  \"assumptions\": [\n    \"One senior Go developer performs all work; estimates include the developer's own unit testing and self-review but exclude review time of other maintainers.\",\n    \"The hyperledger/fabric repository (v2.x stream) and fabric-sdk-go repository are available and build locally; no changes to protobuf definitions are required.\",\n    \"Existing unit tests travel with the extracted packages and only need import/path adaptation.\",\n    \"fabric-sdk-go already has Docker-based integration test infrastructure that can be run to validate the migration.\",\n    \"New repositories (hosting, CI minutes, branch protection) can be provisioned without significant organizational delay.\",\n    \"U6 is intentionally short-lived; only a minimal implementation plus deprecation note is required, no long-term support or extensive configuration surface.\",\n    \"Effort covers development, unit tests, SDK migration, integration/regression verification, documentation and release tagging for the complete increment; no end-user application migration is in scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository, module and CI setup for new shared libraries\",\n      \"activity_description\": \"Provision the two new repositories, initialize go.mod, add license/DCO/contribution files, set up CI (build, vet/lint, unit tests, coverage) and release/versioning conventions.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Externalize gossip protoext and discovery utilities\",\n      \"activity_description\": \"Extract gossip protoext utilities and the discovery-client-dependent gossip helper code into the general library, rewire generated protobuf references to fabric-protos-go, adapt imports and port/adapt unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2: Externalize cauthdsl policy utilities\",\n      \"activity_description\": \"Extract cauthdsl policy parsing/compilation utilities (and minimal protoutil dependencies) into the general library, clean up imports and port/adapt unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3: Externalize ccprovider structures\",\n      \"activity_description\": \"Extract ccprovider structures such as ChaincodeData, chaincode package parsing (tar/gzip) and deployment spec types into the general library, adapting imports and unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4: Externalize ledger structures\",\n      \"activity_description\": \"Extract commonly used ledger interfaces/types and ledger utilities needed by clients into the general library, adapting imports and unit tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5: Externalize common utilities\",\n      \"activity_description\": \"Extract common utilities (flogging with zap integration, crypto helpers, util, viperutil, genesis block helpers, etc.) into the general library, resolving interdependencies and porting/adapting unit tests.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7: Externalize configtxgen functions\",\n      \"activity_description\": \"Extract configtxgen functionality into the configuration library with a clean programmatic API (channel creation transactions, org/consortium definitions), replacing SDK-internal copies; port and extend unit tests.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8: Externalize configtxlator/protolator functions\",\n      \"activity_description\": \"Extract configtxlator/protolator deep-marshaling functionality into the configuration library, adapt imports and port/adapt unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U6: Temporary go.mod honoring in Go chaincode build\",\n      \"activity_description\": \"Modify the Go chaincode platform build logic to detect and copy a go.mod file from the chaincode package into the build context, add tests and mark the behavior as deprecated/temporary in code and docs.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Migrate fabric-sdk-go to the external libraries\",\n      \"activity_description\": \"Remove the SDK's internal/ and third_party/ copies, add module dependencies on the new libraries, rewire the discovery client and resource/configtx.go to the external configtxgen/configtxlator APIs, and fix all compile issues.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration and regression verification\",\n      \"activity_description\": \"Run and fix unit and Docker-based integration test suites across the new libraries and fabric-sdk-go, update CI pipelines, and resolve defects uncovered during verification.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and release\",\n      \"activity_description\": \"Write README/godoc and migration notes for SDK consumers, document the U6 deprecation, tag v1.0.0 releases of the new libraries and produce release notes.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 56\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. It's about Hyperledger Fabric — specifically about externalizing common Go packages so that the Fabric Go SDK (and other client developers) can consume them rather than copying code. This actually corresponds to the real-world creation of the `hyperledger/fabric-lib-go` repository, which externalized packages like:\n\n- `github.com/hyperledger/fabric-lib-go/common/cauthdsl`\n- `github.com/hyperledger/fabric-lib-go/common/flogging`\n- `github.com/hyperledger/fabric-lib-go/common/metrics` (maybe)\n- `github.com/hyperledger/fabric-lib-go/bccsp` etc.\n\nActually, the real fabric-lib-go includes: bccsp, common/cauthdsl, common/flogging, common/ledger, common/metrics, common/policies, healthz. Also there's the `hyperledger/fabric/common/...` externalization and the gossip protoext externalization, configtxgen functions externalization (the real solution: `github.com/hyperledger/fabric-config` library for configtxgen), and ccprovider/ledger externalizations.\n\nThe user stories:\n- U1: Externalize gossip utilities (protoext) — real solution: `github.com/hyperledger/fabric-lib-go/common/...`? Actually protoext was moved... In Fabric, `gossip/util`, `gossip/protoext` were externalized into `fabric-lib-go`? Let me recall: fabric-lib-go contains: bccsp, common/cauthdsl, common/flogging, common/ledger, common/metrics, common/policies, healthz. Hmm, protoext... The discovery client externalization: `github.com/hyperledger/fabric-sdk-go` had copies of `gossip/discovery`, `gossip/protoext`... In fabric-lib-go, I don't recall protoext. Actually there's `github.com/hyperledger/fabric-protos-go` for protobufs. The gossip protoext utilities were maybe moved to fabric-protos-go-apiv2? Not sure. For estimation purposes, exact mapping doesn't matter that much.\n\n- U2: Externalize cauthdsl utilities (policy parsing, e.g., policies.FromString, cauthdsl.Envelope, etc.)\n- U3: Externalize ccprovider structures (e.g., ChaincodeData, CCPackage, SignedChaincodeDeploymentSpec etc.)\n- U4: Externalize ledger structures (common ledger interfaces, e.g., ledger.PeerLedgerProvider? Actually \"core/ledger\" in SDK third_party — likely common/ledger interfaces and core/ledger/util)\n- U5: Externalize common utilities (common/crypto, common/util, common/flogging, common/viperutil, common/genesis, etc.)\n- U6: Temporary workaround: honor go.mod files in chaincode package during transition to modules (this is about the Fabric peer's chaincode build — actually in fabric-sdk-go? Hmm — \"honor go.mod files that are part of a chaincode package\" — this is likely about the Fabric chaincode lifecycle `go build` external builder in the peer... Actually it's about fabric chaincode go plugin: in fabric/core/chaincode/platforms/golang — there was a change to copy go.mod into the build directory. This user story is about the Go chaincode platform builder in Fabric.)\n- U7: Externalize configtxgen functions (real solution: `github.com/hyperledger/fabric-config` configtx package)\n- U8: Externalize configtxlator functions (protolator — real solution: protolator was moved into fabric-config library: `github.com/hyperledger/fabric-config/protolator`)\n\nSo the software increment: create a new shared Go library (or set of libraries) extracted from hyperledger/fabric, migrate packages, ensure proper Go modules setup, license/attribution, CI, and update fabric-sdk-go to consume the external library(ies), removing its internal copies; plus implement the go.mod chaincode workaround (U6) in the Go chaincode platform.\n\nThe task: WBS-based effort estimation in workdays, single most likely estimate per activity, total sum. Output JSON only.\n\nI need to define activities. Let me structure WBS:\n\n1. Project setup: create new repository (fabric-lib-go / fabric-config), Go module setup, CI pipeline, contribution/license docs.\n2. U1: Extract gossip protoext + discovery client utilities into shared library; adapt imports; tests.\n3. U2: Extract cauthdsl utilities (policies parsing) into shared library.\n4. U3: Extract ccprovider structures.\n5. U4: Extract ledger structures/interfaces.\n6. U5: Extract common utilities (flogging, crypto, util, viperutil, etc.).\n7. U7: Extract configtxgen functions into a config library (fabric-config).\n8. U8: Extract configtxlator/protolator functions into config library.\n9. U6: Implement temporary go.mod honoring in chaincode packaging/build (Go platform) with deprecation note.\n10. Update fabric-sdk-go to consume external libraries: replace internal copies with imports, dependency management, fix compile issues, adapt tests.\n11. Integration testing and verification (unit + integration, CI green), documentation updates.\n12. Release: tagging, versioning, release notes.\n\nI need to be careful about scope: The user stories are phrased from the perspective of the SDK maintainers and client developers wanting externalized copies. The increment likely includes both creating the external libraries (in Fabric side) and updating the SDK to use them. U6 is in the Fabric core (chaincode platform) but could be part of the same increment.\n\nEstimates: For a senior Go developer doing this work. Realistically, fabric-lib-go creation was incremental over months, but as an estimate for one developer, effort (not elapsed):\n\nLet me estimate:\n\nA1. Repository & infrastructure setup (new shared lib repo(s), go modules, CI, DCO/license, contribution guidelines): 3 days.\n\nA2. U1 gossip protoext/discovery externalization: extract protoext utilities (MessageExt, etc.), discovery client dependencies; handle protoc generation against fabric-protos-go; unit tests: 5 days.\n\nA3. U2 cauthdsl externalization: policies.go, cauthdsl.go, policy parser, dependency on protoutil/cb; may require extracting protoutil dependencies; tests: 4 days.\n\nA4. U3 ccprovider structures: ChaincodeData, CCPackage, SignedCDS, package parsing (tar/gzip), ChaincodeSpec conversions: 4 days.\n\nA5. U4 ledger structures: common ledger interfaces (ledger.Provider, ledger.PeerLedger, query results), ledgerutil: 3 days.\n\nA6. U5 common utilities: flogging (with zap integration), crypto, util, viperutil, genesis block helpers, policies helpers: 6 days (flogging alone is nontrivial: zap logger wrappers, specs, levels, mustgetlogger, fabenc).\n\nA7. U7 configtxgen externalization: extract configtxgen functions into reusable library with clean API (this corresponds to fabric-config configtx package — fairly large: orderer org config, application org config, consortium, channel creation tx, etc.): 8 days.\n\nA8. U8 configtxlator/protolator externalization: protolator package (deeply marshaling protos, static/variant field handling): 5 days.\n\nA9. U6 go.mod honoring workaround in chaincode go platform: modify go platform to detect go.mod in chaincode package and copy into build context; tests; deprecation documentation: 2 days.\n\nA10. SDK migration to external libraries: replace internal/ and third_party/ copies with imports from new libs; fix build; adapt vendoring; update discovery client usage; update resource/configtx.go to use external configtxgen: 8 days.\n\nA11. Integration & regression testing: run SDK integration test suites (fabric-sdk-go has big integration tests), fix issues, CI updates: 6 days.\n\nA12. Documentation & release: README, godoc, migration notes, release tagging/versioning: 2 days.\n\nTotal: 3+5+4+4+3+6+8+5+2+8+6+2 = 56 days.\n\nLet me sum: 3+5=8; +4=12; +4=16; +3=19; +6=25; +8=33; +5=38; +2=40; +8=48; +6=54; +2=56.\n\nTotal 56 workdays.\n\nI should also state technical/design decisions:\n- Create two new Go modules: `fabric-lib-go` (for gossip/protoext, cauthdsl, ccprovider, ledger, common utils) and `fabric-config` (for configtxgen & configtxlator/protolator) — mirroring the actual approach; or single module. I'll decide: two libraries: a general \"fabric-lib-go\" and a \"fabric-config\" library. Alternatively one repo with multiple packages under one module. Simpler: one new repo per library, semantic versioning v1.\n- Use Go modules (go.mod) for all new libs; target Fabric 2.x codebase as extraction source.\n- Depend on hyperledger/fabric-protos-go for generated protobufs instead of vendoring protos.\n- Preserve exported APIs to minimize SDK changes; where APIs need cleanup, keep small.\n- Keep Apache-2.0 license, DCO sign-off, CI (GitHub Actions or Azure Pipelines), unit test coverage threshold.\n- U6 implemented in Fabric Go chaincode platform with explicit temporary flag and deprecation comment.\n\nAssumptions:\n- Source of truth: hyperledger/fabric v2.x code base.\n- fabric-sdk-go is in scope for migration to the new libraries.\n- One senior Go developer; effort excludes code review by others? Usually estimates include own review fixes. I'll assume estimate includes developer's own work incl. unit tests, excludes other people's review time.\n- Existing unit tests for extracted packages come along with the code and need only adaptation.\n- Integration test environments (Docker-based) already exist in fabric-sdk-go.\n- U6 is short-lived: minimal implementation, no long-term support, guarded by comment/deprecation; done within Fabric peer Go platform component included in increment.\n- No changes to protobuf definitions required.\n- The new libraries are versioned v1.0.0 and consumed via modules; no vendoring needed.\n\nActivity breakdown with IDs like A1..A12 mapped to WBS. Provide names and descriptions.\n\nJSON must be valid, no extra fields, numbers for effort. Total 56.\n\nLet me write concise descriptions.\n\nDouble-check schema: required top-level: technical_and_design_decisions, assumptions, activities, reported_total. Each activity requires activity_id, activity_name, activity_description, most_likely_effort (>0). reported_total.most_likely_effort >0.\n\nOutput only JSON.\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. It's about Hyperledger Fabric — specifically about externalizing common Go packages so that the Fabric Go SDK (and other client developers) can consume them rather than copying code. This actually corresponds to the real-world creation of the `hyperledger/fabric-lib-go` repository, which externalized packages like:\n\n- `github.com/hyperledger/fabric-lib-go/common/cauthdsl`\n- `github.com/hyperledger/fabric-lib-go/common/flogging`\n- `github.com/hyperledger/fabric-lib-go/common/metrics` (maybe)\n- `github.com/hyperledger/fabric-lib-go/bccsp` etc.\n\nActually, the real fabric-lib-go includes: bccsp, common/cauthdsl, common/flogging, common/ledger, common/metrics, common/policies, healthz. Also there's the `hyperledger/fabric/common/...` externalization and the gossip protoext externalization, configtxgen functions externalization (the real solution: `github.com/hyperledger/fabric-config` library for configtxgen), and ccprovider/ledger externalizations.\n\nThe user stories:\n- U1: Externalize gossip utilities (protoext) — real solution: `github.com/hyperledger/fabric-lib-go/common/...`? Actually protoext was moved... In Fabric, `gossip/util`, `gossip/protoext` were externalized into `fabric-lib-go`? Let me recall: fabric-lib-go contains: bccsp, common/cauthdsl, common/flogging, common/ledger, common/metrics, common/policies, healthz. Hmm, protoext... The discovery client externalization: `github.com/hyperledger/fabric-sdk-go` had copies of `gossip/discovery`, `gossip/protoext`... In fabric-lib-go, I don't recall protoext. Actually there's `github.com/hyperledger/fabric-protos-go` for protobufs. The gossip protoext utilities were maybe moved to fabric-protos-go-apiv2? Not sure. For estimation purposes, exact mapping doesn't matter that much.\n\n- U2: Externalize cauthdsl utilities (policy parsing, e.g., policies.FromString, cauthdsl.Envelope, etc.)\n- U3: Externalize ccprovider structures (e.g., ChaincodeData, CCPackage, SignedChaincodeDeploymentSpec etc.)\n- U4: Externalize ledger structures (common ledger interfaces, e.g., ledger.PeerLedgerProvider? Actually \"core/ledger\" in SDK third_party — likely common/ledger interfaces and core/ledger/util)\n- U5: Externalize common utilities (common/crypto, common/util, common/flogging, common/viperutil, common/genesis, etc.)\n- U6: Temporary workaround: honor go.mod files in chaincode package during transition to modules (this is about the Fabric peer's chaincode build — actually in fabric-sdk-go? Hmm — \"honor go.mod files that are part of a chaincode package\" — this is likely about the Fabric chaincode lifecycle `go build` external builder in the peer... Actually it's about fabric chaincode go plugin: in fabric/core/chaincode/platforms/golang — there was a change to copy go.mod into the build directory. This user story is about the Go chaincode platform builder in Fabric.)\n- U7: Externalize configtxgen functions (real solution: `github.com/hyperledger/fabric-config` configtx package)\n- U8: Externalize configtxlator functions (protolator — real solution: protolator was moved into fabric-config library: `github.com/hyperledger/fabric-config/protolator`)\n\nSo the software increment: create a new shared Go library (or set of libraries) extracted from hyperledger/fabric, migrate packages, ensure proper Go modules setup, license/attribution, CI, and update fabric-sdk-go to consume the external library(ies), removing its internal copies; plus implement the go.mod chaincode workaround (U6) in the Go chaincode platform.\n\nThe task: WBS-based effort estimation in workdays, single most likely estimate per activity, total sum. Output JSON only.\n\nI need to define activities. Let me structure WBS:\n\n1. Project setup: create new repository (fabric-lib-go / fabric-config), Go module setup, CI pipeline, contribution/license docs.\n2. U1: Extract gossip protoext + discovery client utilities into shared library; adapt imports; tests.\n3. U2: Extract cauthdsl utilities (policies parsing) into shared library.\n4. U3: Extract ccprovider structures.\n5. U4: Extract ledger structures/interfaces.\n6. U5: Extract common utilities (flogging, crypto, util, viperutil, etc.).\n7. U7: Extract configtxgen functions into a config library (fabric-config).\n8. U8: Extract configtxlator/protolator functions into config library.\n9. U6: Implement temporary go.mod honoring in chaincode packaging/build (Go platform) with deprecation note.\n10. Update fabric-sdk-go to consume external libraries: replace internal copies with imports, dependency management, fix compile issues, adapt tests.\n11. Integration testing and verification (unit + integration, CI green), documentation updates.\n12. Release: tagging, versioning, release notes.\n\nI need to be careful about scope: The user stories are phrased from the perspective of the SDK maintainers and client developers wanting externalized copies. The increment likely includes both creating the external libraries (in Fabric side) and updating the SDK to use them. U6 is in the Fabric core (chaincode platform) but could be part of the same increment.\n\nEstimates: For a senior Go developer doing this work. Realistically, fabric-lib-go creation was incremental over months, but as an estimate for one developer, effort (not elapsed):\n\nLet me estimate:\n\nA1. Repository & infrastructure setup (new shared lib repo(s), go modules, CI, DCO/license, contribution guidelines): 3 days.\n\nA2. U1 gossip protoext/discovery externalization: extract protoext utilities (MessageExt, etc.), discovery client dependencies; handle protoc generation against fabric-protos-go; unit tests: 5 days.\n\nA3. U2 cauthdsl externalization: policies.go, cauthdsl.go, policy parser, dependency on protoutil/cb; may require extracting protoutil dependencies; tests: 4 days.\n\nA4. U3 ccprovider structures: ChaincodeData, CCPackage, SignedCDS, package parsing (tar/gzip), ChaincodeSpec conversions: 4 days.\n\nA5. U4 ledger structures: common ledger interfaces (ledger.Provider, ledger.PeerLedger, query results), ledgerutil: 3 days.\n\nA6. U5 common utilities: flogging (with zap integration), crypto, util, viperutil, genesis block helpers, policies helpers: 6 days (flogging alone is nontrivial: zap logger wrappers, specs, levels, mustgetlogger, fabenc).\n\nA7. U7 configtxgen externalization: extract configtxgen functions into reusable library with clean API (this corresponds to fabric-config configtx package — fairly large: orderer org config, application org config, consortium, channel creation tx, etc.): 8 days.\n\nA8. U8 configtxlator/protolator externalization: protolator package (deeply marshaling protos, static/variant field handling): 5 days.\n\nA9. U6 go.mod honoring workaround in chaincode go platform: modify go platform to detect go.mod in chaincode package and copy into build context; tests; deprecation documentation: 2 days.\n\nA10. SDK migration to external libraries: replace internal/ and third_party/ copies with imports from new libs; fix build; adapt vendoring; update discovery client usage; update resource/configtx.go to use external configtxgen: 8 days.\n\nA11. Integration & regression testing: run SDK integration test suites (fabric-sdk-go has big integration tests), fix issues, CI updates: 6 days.\n\nA12. Documentation & release: README, godoc, migration notes, release tagging/versioning: 2 days.\n\nTotal: 3+5+4+4+3+6+8+5+2+8+6+2 = 56 days.\n\nLet me sum: 3+5=8; +4=12; +4=16; +3=19; +6=25; +8=33; +5=38; +2=40; +8=48; +6=54; +2=56.\n\nTotal 56 workdays.\n\nI should also state technical/design decisions:\n- Create two new Go modules: `fabric-lib-go` (for gossip/protoext, cauthdsl, ccprovider, ledger, common utils) and `fabric-config` (for configtxgen & configtxlator/protolator) — mirroring the actual approach; or single module. I'll decide: two libraries: a general \"fabric-lib-go\" and a \"fabric-config\" library. Alternatively one repo with multiple packages under one module. Simpler: one new repo per library, semantic versioning v1.\n- Use Go modules (go.mod) for all new libs; target Fabric 2.x codebase as extraction source.\n- Depend on hyperledger/fabric-protos-go for generated protobufs instead of vendoring protos.\n- Preserve exported APIs to minimize SDK changes; where APIs need cleanup, keep small.\n- Keep Apache-2.0 license, DCO sign-off, CI (GitHub Actions or Azure Pipelines), unit test coverage threshold.\n- U6 implemented in Fabric Go chaincode platform with explicit temporary flag and deprecation comment.\n\nAssumptions:\n- Source of truth: hyperledger/fabric v2.x code base.\n- fabric-sdk-go is in scope for migration to the new libraries.\n- One senior Go developer; effort excludes code review by others? Usually estimates include own review fixes. I'll assume estimate includes developer's own work incl. unit tests, excludes other people's review time.\n- Existing unit tests for extracted packages come along with the code and need only adaptation.\n- Integration test environments (Docker-based) already exist in fabric-sdk-go.\n- U6 is short-lived: minimal implementation, no long-term support, guarded by comment/deprecation; done within Fabric peer Go platform component included in increment.\n- No changes to protobuf definitions required.\n- The new libraries are versioned v1.0.0 and consumed via modules; no vendoring needed.\n\nActivity breakdown with IDs like A1..A12 mapped to WBS. Provide names and descriptions.\n\nJSON must be valid, no extra fields, numbers for effort. Total 56.\n\nLet me write concise descriptions.\n\nDouble-check schema: required top-level: technical_and_design_decisions, assumptions, activities, reported_total. Each activity requires activity_id, activity_name, activity_description, most_likely_effort (>0). reported_total.most_likely_effort >0.\n\nOutput only JSON.\n",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1321,
+      "completion_tokens": 3824,
+      "total_tokens": 5145,
+      "cost": 0.061323,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.061323,
+        "upstream_inference_prompt_cost": 0.003963,
+        "upstream_inference_completions_cost": 0.05736
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2239,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Create two new external Go module libraries: a general-purpose library (fabric-lib-go style) hosting gossip protoext/discovery utilities, cauthdsl policy utilities, ccprovider structures, ledger interfaces and common utilities (U1-U5), and a configuration library (fabric-config style) hosting configtxgen and configtxlator/protolator functionality (U7-U8).\",\n    \"Extract code from the hyperledger/fabric v2.x code base as the source of truth, preserving exported API signatures as far as practical to minimize changes in consumers.\",\n    \"Depend on the published hyperledger/fabric-protos-go module for generated protobuf types instead of vendoring .proto files or generated code into the new libraries.\",\n    \"Use Go modules (go.mod) with semantic versioning (initial release v1.0.0) for both new libraries; consumers (fabric-sdk-go) pin versions rather than vendoring copies.\",\n    \"Apply Apache-2.0 license headers, DCO sign-off, README/godoc documentation and a CI pipeline (build, unit tests, lint/vet, minimum coverage) to each new repository.\",\n    \"For U6, implement the go.mod honoring workaround inside the Fabric Go chaincode platform build logic: detect a go.mod file in the chaincode package and copy it into the build context so module builds work; mark it clearly as a temporary, deprecated behavior in code comments and docs.\",\n    \"Update fabric-sdk-go to delete its internal/ and third_party/ copies and import the new external libraries instead, including rewiring the discovery client and resource/configtx.go.\",\n    \"Keep extraction changes minimal and mechanical (no functional redesign) to limit regression risk; only adjust imports, visibility and package layout.\"\n  ],\n  \"assumptions\": [\n    \"One senior Go developer performs all work; estimates include the developer's own unit testing and self-review but exclude review time of other maintainers.\",\n    \"The hyperledger/fabric repository (v2.x stream) and fabric-sdk-go repository are available and build locally; no changes to protobuf definitions are required.\",\n    \"Existing unit tests travel with the extracted packages and only need import/path adaptation.\",\n    \"fabric-sdk-go already has Docker-based integration test infrastructure that can be run to validate the migration.\",\n    \"New repositories (hosting, CI minutes, branch protection) can be provisioned without significant organizational delay.\",\n    \"U6 is intentionally short-lived; only a minimal implementation plus deprecation note is required, no long-term support or extensive configuration surface.\",\n    \"Effort covers development, unit tests, SDK migration, integration/regression verification, documentation and release tagging for the complete increment; no end-user application migration is in scope.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Repository, module and CI setup for new shared libraries\",\n      \"activity_description\": \"Provision the two new repositories, initialize go.mod, add license/DCO/contribution files, set up CI (build, vet/lint, unit tests, coverage) and release/versioning conventions.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1: Externalize gossip protoext and discovery utilities\",\n      \"activity_description\": \"Extract gossip protoext utilities and the discovery-client-dependent gossip helper code into the general library, rewire generated protobuf references to fabric-protos-go, adapt imports and port/adapt unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2: Externalize cauthdsl policy utilities\",\n      \"activity_description\": \"Extract cauthdsl policy parsing/compilation utilities (and minimal protoutil dependencies) into the general library, clean up imports and port/adapt unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3: Externalize ccprovider structures\",\n      \"activity_description\": \"Extract ccprovider structures such as ChaincodeData, chaincode package parsing (tar/gzip) and deployment spec types into the general library, adapting imports and unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U4: Externalize ledger structures\",\n      \"activity_description\": \"Extract commonly used ledger interfaces/types and ledger utilities needed by clients into the general library, adapting imports and unit tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U5: Externalize common utilities\",\n      \"activity_description\": \"Extract common utilities (flogging with zap integration, crypto helpers, util, viperutil, genesis block helpers, etc.) into the general library, resolving interdependencies and porting/adapting unit tests.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7: Externalize configtxgen functions\",\n      \"activity_description\": \"Extract configtxgen functionality into the configuration library with a clean programmatic API (channel creation transactions, org/consortium definitions), replacing SDK-internal copies; port and extend unit tests.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8: Externalize configtxlator/protolator functions\",\n      \"activity_description\": \"Extract configtxlator/protolator deep-marshaling functionality into the configuration library, adapt imports and port/adapt unit tests.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U6: Temporary go.mod honoring in Go chaincode build\",\n      \"activity_description\": \"Modify the Go chaincode platform build logic to detect and copy a go.mod file from the chaincode package into the build context, add tests and mark the behavior as deprecated/temporary in code and docs.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Migrate fabric-sdk-go to the external libraries\",\n      \"activity_description\": \"Remove the SDK's internal/ and third_party/ copies, add module dependencies on the new libraries, rewire the discovery client and resource/configtx.go to the external configtxgen/configtxlator APIs, and fix all compile issues.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Integration and regression verification\",\n      \"activity_description\": \"Run and fix unit and Docker-based integration test suites across the new libraries and fabric-sdk-go, update CI pipelines, and resolve defects uncovered during verification.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation and release\",\n      \"activity_description\": \"Write README/godoc and migration notes for SDK consumers, document the U6 deprecation, tag v1.0.0 releases of the new libraries and produce release notes.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 56\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Create two new external Go module libraries: a general-purpose library (fabric-lib-go style) hosting gossip protoext/discovery utilities, cauthdsl policy utilities, ccprovider structures, ledger interfaces and common utilities (U1-U5), and a configuration library (fabric-config style) hosting configtxgen and configtxlator/protolator functionality (U7-U8).",
+      "Extract code from the hyperledger/fabric v2.x code base as the source of truth, preserving exported API signatures as far as practical to minimize changes in consumers.",
+      "Depend on the published hyperledger/fabric-protos-go module for generated protobuf types instead of vendoring .proto files or generated code into the new libraries.",
+      "Use Go modules (go.mod) with semantic versioning (initial release v1.0.0) for both new libraries; consumers (fabric-sdk-go) pin versions rather than vendoring copies.",
+      "Apply Apache-2.0 license headers, DCO sign-off, README/godoc documentation and a CI pipeline (build, unit tests, lint/vet, minimum coverage) to each new repository.",
+      "For U6, implement the go.mod honoring workaround inside the Fabric Go chaincode platform build logic: detect a go.mod file in the chaincode package and copy it into the build context so module builds work; mark it clearly as a temporary, deprecated behavior in code comments and docs.",
+      "Update fabric-sdk-go to delete its internal/ and third_party/ copies and import the new external libraries instead, including rewiring the discovery client and resource/configtx.go.",
+      "Keep extraction changes minimal and mechanical (no functional redesign) to limit regression risk; only adjust imports, visibility and package layout."
+    ],
+    "assumptions": [
+      "One senior Go developer performs all work; estimates include the developer's own unit testing and self-review but exclude review time of other maintainers.",
+      "The hyperledger/fabric repository (v2.x stream) and fabric-sdk-go repository are available and build locally; no changes to protobuf definitions are required.",
+      "Existing unit tests travel with the extracted packages and only need import/path adaptation.",
+      "fabric-sdk-go already has Docker-based integration test infrastructure that can be run to validate the migration.",
+      "New repositories (hosting, CI minutes, branch protection) can be provisioned without significant organizational delay.",
+      "U6 is intentionally short-lived; only a minimal implementation plus deprecation note is required, no long-term support or extensive configuration surface.",
+      "Effort covers development, unit tests, SDK migration, integration/regression verification, documentation and release tagging for the complete increment; no end-user application migration is in scope."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Repository, module and CI setup for new shared libraries",
+        "activity_description": "Provision the two new repositories, initialize go.mod, add license/DCO/contribution files, set up CI (build, vet/lint, unit tests, coverage) and release/versioning conventions.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1: Externalize gossip protoext and discovery utilities",
+        "activity_description": "Extract gossip protoext utilities and the discovery-client-dependent gossip helper code into the general library, rewire generated protobuf references to fabric-protos-go, adapt imports and port/adapt unit tests.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2: Externalize cauthdsl policy utilities",
+        "activity_description": "Extract cauthdsl policy parsing/compilation utilities (and minimal protoutil dependencies) into the general library, clean up imports and port/adapt unit tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3: Externalize ccprovider structures",
+        "activity_description": "Extract ccprovider structures such as ChaincodeData, chaincode package parsing (tar/gzip) and deployment spec types into the general library, adapting imports and unit tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U4: Externalize ledger structures",
+        "activity_description": "Extract commonly used ledger interfaces/types and ledger utilities needed by clients into the general library, adapting imports and unit tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U5: Externalize common utilities",
+        "activity_description": "Extract common utilities (flogging with zap integration, crypto helpers, util, viperutil, genesis block helpers, etc.) into the general library, resolving interdependencies and porting/adapting unit tests.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7: Externalize configtxgen functions",
+        "activity_description": "Extract configtxgen functionality into the configuration library with a clean programmatic API (channel creation transactions, org/consortium definitions), replacing SDK-internal copies; port and extend unit tests.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8: Externalize configtxlator/protolator functions",
+        "activity_description": "Extract configtxlator/protolator deep-marshaling functionality into the configuration library, adapt imports and port/adapt unit tests.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U6: Temporary go.mod honoring in Go chaincode build",
+        "activity_description": "Modify the Go chaincode platform build logic to detect and copy a go.mod file from the chaincode package into the build context, add tests and mark the behavior as deprecated/temporary in code and docs.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Migrate fabric-sdk-go to the external libraries",
+        "activity_description": "Remove the SDK's internal/ and third_party/ copies, add module dependencies on the new libraries, rewire the discovery client and resource/configtx.go to the external configtxgen/configtxlator APIs, and fix all compile issues.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Integration and regression verification",
+        "activity_description": "Run and fix unit and Docker-based integration test suites across the new libraries and fabric-sdk-go, update CI pipelines, and resolve defects uncovered during verification.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation and release",
+        "activity_description": "Write README/godoc and migration notes for SDK consumers, document the U6 deprecation, tag v1.0.0 releases of the new libraries and produce release notes.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 56
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1321,
+    "completion_tokens": 3824,
+    "total_tokens": 5145,
+    "cost": 0.061323,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.061323,
+      "upstream_inference_prompt_cost": 0.003963,
+      "upstream_inference_completions_cost": 0.05736
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2239,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789154602-iDVxqUOxAWpPGDOwXt5u",
+    "object": "chat.completion",
+    "created": 1789154602,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one workday in my previous estimate. Standard convention: 8 hours per workday. I should just return the JSON, no revision of estimates.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one workday in my previous estimate. Standard convention: 8 hours per workday. I should just return the JSON, no revision of estimates.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3040,
+      "completion_tokens": 75,
+      "total_tokens": 3115,
+      "cost": 0.006789,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.006789,
+        "upstream_inference_prompt_cost": 0.005664,
+        "upstream_inference_completions_cost": 0.001125
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 43,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

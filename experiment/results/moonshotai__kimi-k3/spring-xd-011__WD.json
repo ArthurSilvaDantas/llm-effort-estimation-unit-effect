@@ -1,0 +1,324 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-011",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789173162-zWo1pVnW1IOUn1h4JSE3",
+    "object": "chat.completion",
+    "created": 1789173162,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target platform is a Spring XD-style distributed runtime with custom modules packaged as uber-jars; baseline is Spring Framework 6 on Java 17 per the specification.\",\n    \"U2: Host custom module uber-jars in a dedicated HDFS directory (e.g., /xd/modules) accessed via the Hadoop HDFS client; newly arriving containers resolve and download modules from HDFS into a local cache before classloading.\",\n    \"U3: Implement the WebSocket sink as a native sink module built on spring-websocket, exposing full-duplex channels over a single TCP connection with configurable port, path, and message codecs.\",\n    \"U8: Shared dependencies are placed under xd/lib and loaded by a shared parent classloader; modules requiring conflicting versions must embed those jars in their uber-jar to isolate them from the shared classloader.\",\n    \"U4/U5: CI builds remain Gradle-based via the Gradle wrapper (./gradlew); the Artifactory Gradle plugin task is replaced by a command task; npm-cache is evaluated and, if adopted, integrated to cache Node dependencies.\",\n    \"U6: Static analysis is centralized in SonarQube with quality gates; committer notifications are configured through SonarQube/CI hooks tied to the commit author.\",\n    \"U7: Windows integration tests run on a Bamboo agent on the existing Bamboo Windows server using PowerShell scripts; required services (Redis, RabbitMQ) are installed as Windows services and started by the CI task.\",\n    \"Testing approach: unit tests with JUnit, integration tests against embedded/minicluster Hadoop where feasible, plus end-to-end CI validation jobs on EC2 and Windows.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs all work; estimates are in ideal workdays (8 hours each) and represent effort, not elapsed calendar time.\",\n    \"An existing Spring XD-like codebase with module deployment, containers, and the xd/lib directory already exists and is the baseline for this increment.\",\n    \"Access to an HDFS cluster (or Hadoop minicluster for tests), EC2 CI infrastructure, a Bamboo server with a Windows agent, and PowerShell is already available without procurement effort.\",\n    \"npm-cache is relevant only to portions of the build that use npm (front-end assets); the evaluation will confirm applicability before adoption.\",\n    \"The WebSocket sink is a stream sink module only; no user interface work is required.\",\n    \"Documentation (U1) is delivered as markdown/asciidoc within the project repository, including module packaging, HDFS deployment, and xd/lib guidance.\",\n    \"U8 requires implementing/verifying shared xd/lib loading behavior plus documented guidance for version conflicts, not a redesign of the module classloader.\",\n    \"Existing test suites are functional; effort includes fixing only the PMD/Sonar violations related to the WARN log increase, not a full codebase cleanup.\",\n    \"Infrastructure accounts, licenses, and credentials (SonarQube, Artifactory, Bamboo, cloud) are pre-provisioned.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Author custom module development documentation (U1)\",\n      \"activity_description\": \"Write developer-facing documentation describing recommended standards and patterns for building custom modules, including project layout, packaging as uber-jar, and references to xd/lib and HDFS deployment.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Design and implement HDFS hosting of module uber-jars (U2)\",\n      \"activity_description\": \"Implement HDFS-based storage for custom module uber-jars: directory layout, upload/publish path, configuration properties, and module metadata handling using the Hadoop HDFS client.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement module deployment to newly arriving containers (U2)\",\n      \"activity_description\": \"Implement resolution and distribution of modules from HDFS to newly arriving containers, including local caching, version handling, and integration with the module classloading lifecycle.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Test HDFS module hosting and deployment (U2)\",\n      \"activity_description\": \"Write and execute unit and integration tests for HDFS hosting and container deployment, using a Hadoop minicluster where appropriate, and verify failure/retry scenarios.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement native WebSocket sink module (U3)\",\n      \"activity_description\": \"Design and implement the WebSocket sink module on spring-websocket, providing full-duplex communication over a single TCP connection with configurable endpoint, port, and message handling.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Test WebSocket sink module (U3)\",\n      \"activity_description\": \"Write and run unit and integration tests for the WebSocket sink, covering connection lifecycle, concurrent clients, message delivery, and error handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Research CI dependency caching options (U4)\",\n      \"activity_description\": \"Spike npm-cache and comparable caching options, assess applicability to the current build, and produce a recommendation for improving CI build stability and reliability.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Integrate selected caching option into CI build (U4)\",\n      \"activity_description\": \"Implement and validate the chosen caching solution (e.g., npm-cache) in the CI build so dependencies are reused across builds instead of being downloaded each time.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Enable distributed JVM tests on EC2 CI (U5)\",\n      \"activity_description\": \"Configure and validate distributed JVM test execution in the EC2 CI infrastructure.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Replace Artifactory Gradle task with wrapper command task (U5)\",\n      \"activity_description\": \"Change CI build configuration from the Artifactory Gradle task to a command task that invokes ./gradlew, and update publishing steps accordingly.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Run CI tests with embedded Hadoop disabled (U5)\",\n      \"activity_description\": \"Adjust test configuration to run with embedded Hadoop off, fix resulting test/environment issues, and verify suite stability.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Enable and tune maxParallelForks (U5)\",\n      \"activity_description\": \"Turn on maxParallelForks for Gradle test execution, tune fork counts for EC2 agents, and confirm build time and stability improvements.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Validate EC2 CI pipeline end-to-end (U5)\",\n      \"activity_description\": \"Run full commit-triggered builds on EC2 with all U5 changes applied and confirm reliable execution and functional assertions.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Investigate WARN log increase (U6)\",\n      \"activity_description\": \"Analyze build/test logs to identify root causes of the increased WARN entries and map them to PMD/Sonar violations.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"Fix PMD/Sonar violations (U6)\",\n      \"activity_description\": \"Remediate the identified PMD and Sonar violations in the codebase and verify that WARN output returns to expected levels.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"Configure Sonar committer notifications (U6)\",\n      \"activity_description\": \"Configure SonarQube/CI notification rules so that the committer responsible for new violations is automatically notified.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"Provision Windows Bamboo environment and PowerShell access (U7)\",\n      \"activity_description\": \"Gain access to the existing Bamboo Windows environment, configure the agent, and verify PowerShell execution capabilities for CI tasks.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"Install and configure Windows services (U7)\",\n      \"activity_description\": \"Set up required services (Redis, RabbitMQ, and similar) on the Windows CI environment with automated start/stop scripts.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"Create Windows integration test CI task (U7)\",\n      \"activity_description\": \"Implement the Bamboo CI task that runs integration tests on Windows automatically on commit-triggered builds.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"Stabilize and validate Windows CI runs (U7)\",\n      \"activity_description\": \"Execute repeated Windows CI runs, fix environment-specific failures, and confirm consistent automated integration test results.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"Implement shared xd/lib dependency location (U8)\",\n      \"activity_description\": \"Implement/verify support for placing jars shared by two or more modules under xd/lib, including classloader behavior and documented guidance for bundling conflicting versions inside module uber-jars.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A22\",\n      \"activity_name\": \"Test shared library scenarios (U8)\",\n      \"activity_description\": \"Test multi-module deployments using xd/lib, including shared jars and modules bundling older/newer versions to work around classloader conflicts.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A23\",\n      \"activity_name\": \"Increment integration, regression testing, and release preparation\",\n      \"activity_description\": \"Integrate all stories, run full regression suites across CI environments, finalize documentation updates, and prepare the software increment for release.\",\n      \"most_likely_effort\": 4\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 74\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. It's about the Spring Framework (specifically seems to reference Spring XD - \"xd/lib folder\", custom modules, HDFS, WebSocket sink). The user stories are U1-U8:\n\n- U1: Documentation for building custom modules based on recommended standards and patterns.\n- U2: Custom module (uber-jar) hosted in HDFS for deployment to containers.\n- U3: Native WebSocket sink for full-duplex communications.\n- U4: Research CI options (npm-cache) for build stability.\n- U5: EC2 CI infrastructure improvements (distributed jvm test, change artifactory gradle task to command task calling ./gradlew, test with embedded hadoop off, turn on maxParallelForks).\n- U6: Investigate increase in WARN logs, troubleshoot and fix PMD/Sonar violations, notify committer via SONAR configurations.\n- U7: Setup CI infrastructure to run integration tests on Windows OS (Bamboo environment, powershell access, setup services redis/rabbit, kick-off CI task).\n- U8: Common shared location (xd/lib) for dependent jars required by 2+ custom modules; classloader handling.\n\nI need to break down into activities (WBS), state technical/design decisions and assumptions, estimate most likely effort per activity in workdays, and sum.\n\nLet me create a WBS. I'll organize by user story plus some overarching project activities (planning, integration, testing, documentation?). The instructions say break down development of the software increment into activities necessary to deliver it. I should include analysis/design/implementation/testing per story, or activity per story with sub-activities.\n\nI'll produce a flat list of activities with IDs. Let me estimate:\n\nU1: Documentation for custom module development standards and patterns.\n- A1: Write developer documentation/guide for custom module standards and patterns (including module packaging, uber-jar, xd/lib usage): ~5 workdays.\n\nU2: HDFS hosting of custom module uber-jars and deployment to containers.\n- A2: Design and implement HDFS-based module registry/hosting (upload path, directory structure, config): ~5 days.\n- A3: Implement deployment mechanism to newly arriving containers (module resolution from HDFS, caching, classloading integration): ~8 days.\n- A4: Testing (unit + integration with Hadoop mini-cluster) for U2: ~4 days.\n\nU3: WebSocket sink.\n- A5: Design and implement WebSocket sink module (based on Spring WebSocket support, full-duplex): ~6 days.\n- A6: Testing WebSocket sink (unit + integration): ~3 days.\n\nU4: Research CI options (npm-cache).\n- A7: Research/spike npm-cache and alternatives, produce recommendation: ~2 days.\n- A8: Implement/pilot npm-cache in CI build: ~2 days.\n\nU5: EC2 CI infrastructure improvements.\n- A9: Enable distributed JVM test in CI: ~3 days.\n- A10: Replace artifactory gradle task with command task calling ./gradlew: ~2 days.\n- A11: Configure/test with embedded hadoop off: ~2 days.\n- A12: Turn on maxParallelForks and tune: ~1 day.\n- A13: Validate CI pipeline end-to-end on EC2: ~2 days.\n\nU6: WARN log investigation & PMD/Sonar fixes.\n- A14: Investigate WARN log increase, root cause analysis: ~3 days.\n- A15: Fix PMD/Sonar violations: ~4 days.\n- A16: Configure Sonar notifications to committers: ~1 day.\n\nU7: Windows CI infrastructure for integration tests.\n- A17: Provision/access Bamboo Windows environment & powershell: ~2 days.\n- A18: Setup services (redis, rabbitmq) on Windows: ~3 days.\n- A19: Create CI task to run integration tests on Windows, commit-triggered: ~3 days.\n- A20: Stabilize and validate Windows CI runs: ~2 days.\n\nU8: Shared lib location (xd/lib) support.\n- A21: Design and implement shared xd/lib classloading support with documentation of version-conflict guidance: ~4 days.\n- A22: Testing of shared lib scenarios (multiple modules, version conflicts): ~3 days.\n\nOverarching:\n- A23: Overall integration, regression testing, release preparation: ~4 days.\n- Maybe project management not needed since \"personally perform all development work\". Could include.\n\nSum: 5+5+8+4+6+3+2+2+3+2+2+1+2+3+4+1+2+3+3+2+4+3+4 = let's compute: \n5+5=10; +8=18; +4=22; +6=28; +3=31; +2=33; +2=35; +3=38; +2=40; +2=42; +1=43; +2=45; +3=48; +4=52; +1=53; +2=55; +3=58; +3=61; +2=63; +4=67; +3=70; +4=74.\n\nTotal = 74 workdays.\n\nLet me double check the addition: activities and estimates:\nA1 5\nA2 5\nA3 8\nA4 4\nA5 6\nA6 3\nA7 2\nA8 2\nA9 3\nA10 2\nA11 2\nA12 1\nA13 2\nA14 3\nA15 4\nA16 1\nA17 2\nA18 3\nA19 3\nA20 2\nA21 4\nA22 3\nA23 4\n\nSum group-wise: U1: 5. U2: 5+8+4=17. U3: 6+3=9. U4: 2+2=4. U5: 3+2+2+1+2=10. U6: 3+4+1=8. U7: 2+3+3+2=10. U8: 4+3=7. Integration: 4.\n5+17=22; +9=31; +4=35; +10=45; +8=53; +10=63; +7=70; +4=74. Total 74 workdays.\n\nTechnical and design decisions:\n- Build on Spring Framework 6 / Java 17 baseline (per spec) — though Spring XD historically older; spec says Spring 6 requires Java 17+, assume Java 17.\n- Use Spring WebSocket (spring-websocket) for native WebSocket sink implementation.\n- Use Hadoop HDFS client (hadoop-common/hdfs) for module hosting; uber-jar packaging via Spring Boot/Shadow plugin.\n- Shared libs in xd/lib loaded by parent classloader; module-specific conflicting versions bundled inside module uber-jar to avoid classloader conflicts.\n- CI on Bamboo; npm-cache evaluated for node-based build parts; Gradle wrapper used for builds.\n- SonarQube for static analysis notifications tied to commits.\n\nAssumptions:\n- Single developer performing all work; estimates in ideal workdays (8h), no elapsed duration.\n- Existing Spring XD-like platform codebase available (xd/lib, module deployment, containers).\n- Access to EC2, Bamboo, HDFS cluster (or mini-cluster), Windows Server with Bamboo agent, PowerShell.\n- npm-cache applies only to portions of build using npm; front-end asset pipeline exists.\n- WebSocket sink targets stream sinks; no UI work needed.\n- Documentation delivered as markdown/asciidoc in repo.\n- No changes needed to existing module classloader beyond documented guidance for U8 (implement support).\n- Team infrastructure (accounts, licenses) already available; effort includes setup/config but not procurement.\n\nResponse must be valid JSON only. Provide arrays of strings and activities.\n\nLet me write activity descriptions concisely.\n\nMake sure JSON schema matches: required fields, no additional properties. \"most_likely_effort\" number > 0. reported_total 74.\n\nI'll output only JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. It's about the Spring Framework (specifically seems to reference Spring XD - \"xd/lib folder\", custom modules, HDFS, WebSocket sink). The user stories are U1-U8:\n\n- U1: Documentation for building custom modules based on recommended standards and patterns.\n- U2: Custom module (uber-jar) hosted in HDFS for deployment to containers.\n- U3: Native WebSocket sink for full-duplex communications.\n- U4: Research CI options (npm-cache) for build stability.\n- U5: EC2 CI infrastructure improvements (distributed jvm test, change artifactory gradle task to command task calling ./gradlew, test with embedded hadoop off, turn on maxParallelForks).\n- U6: Investigate increase in WARN logs, troubleshoot and fix PMD/Sonar violations, notify committer via SONAR configurations.\n- U7: Setup CI infrastructure to run integration tests on Windows OS (Bamboo environment, powershell access, setup services redis/rabbit, kick-off CI task).\n- U8: Common shared location (xd/lib) for dependent jars required by 2+ custom modules; classloader handling.\n\nI need to break down into activities (WBS), state technical/design decisions and assumptions, estimate most likely effort per activity in workdays, and sum.\n\nLet me create a WBS. I'll organize by user story plus some overarching project activities (planning, integration, testing, documentation?). The instructions say break down development of the software increment into activities necessary to deliver it. I should include analysis/design/implementation/testing per story, or activity per story with sub-activities.\n\nI'll produce a flat list of activities with IDs. Let me estimate:\n\nU1: Documentation for custom module development standards and patterns.\n- A1: Write developer documentation/guide for custom module standards and patterns (including module packaging, uber-jar, xd/lib usage): ~5 workdays.\n\nU2: HDFS hosting of custom module uber-jars and deployment to containers.\n- A2: Design and implement HDFS-based module registry/hosting (upload path, directory structure, config): ~5 days.\n- A3: Implement deployment mechanism to newly arriving containers (module resolution from HDFS, caching, classloading integration): ~8 days.\n- A4: Testing (unit + integration with Hadoop mini-cluster) for U2: ~4 days.\n\nU3: WebSocket sink.\n- A5: Design and implement WebSocket sink module (based on Spring WebSocket support, full-duplex): ~6 days.\n- A6: Testing WebSocket sink (unit + integration): ~3 days.\n\nU4: Research CI options (npm-cache).\n- A7: Research/spike npm-cache and alternatives, produce recommendation: ~2 days.\n- A8: Implement/pilot npm-cache in CI build: ~2 days.\n\nU5: EC2 CI infrastructure improvements.\n- A9: Enable distributed JVM test in CI: ~3 days.\n- A10: Replace artifactory gradle task with command task calling ./gradlew: ~2 days.\n- A11: Configure/test with embedded hadoop off: ~2 days.\n- A12: Turn on maxParallelForks and tune: ~1 day.\n- A13: Validate CI pipeline end-to-end on EC2: ~2 days.\n\nU6: WARN log investigation & PMD/Sonar fixes.\n- A14: Investigate WARN log increase, root cause analysis: ~3 days.\n- A15: Fix PMD/Sonar violations: ~4 days.\n- A16: Configure Sonar notifications to committers: ~1 day.\n\nU7: Windows CI infrastructure for integration tests.\n- A17: Provision/access Bamboo Windows environment & powershell: ~2 days.\n- A18: Setup services (redis, rabbitmq) on Windows: ~3 days.\n- A19: Create CI task to run integration tests on Windows, commit-triggered: ~3 days.\n- A20: Stabilize and validate Windows CI runs: ~2 days.\n\nU8: Shared lib location (xd/lib) support.\n- A21: Design and implement shared xd/lib classloading support with documentation of version-conflict guidance: ~4 days.\n- A22: Testing of shared lib scenarios (multiple modules, version conflicts): ~3 days.\n\nOverarching:\n- A23: Overall integration, regression testing, release preparation: ~4 days.\n- Maybe project management not needed since \"personally perform all development work\". Could include.\n\nSum: 5+5+8+4+6+3+2+2+3+2+2+1+2+3+4+1+2+3+3+2+4+3+4 = let's compute: \n5+5=10; +8=18; +4=22; +6=28; +3=31; +2=33; +2=35; +3=38; +2=40; +2=42; +1=43; +2=45; +3=48; +4=52; +1=53; +2=55; +3=58; +3=61; +2=63; +4=67; +3=70; +4=74.\n\nTotal = 74 workdays.\n\nLet me double check the addition: activities and estimates:\nA1 5\nA2 5\nA3 8\nA4 4\nA5 6\nA6 3\nA7 2\nA8 2\nA9 3\nA10 2\nA11 2\nA12 1\nA13 2\nA14 3\nA15 4\nA16 1\nA17 2\nA18 3\nA19 3\nA20 2\nA21 4\nA22 3\nA23 4\n\nSum group-wise: U1: 5. U2: 5+8+4=17. U3: 6+3=9. U4: 2+2=4. U5: 3+2+2+1+2=10. U6: 3+4+1=8. U7: 2+3+3+2=10. U8: 4+3=7. Integration: 4.\n5+17=22; +9=31; +4=35; +10=45; +8=53; +10=63; +7=70; +4=74. Total 74 workdays.\n\nTechnical and design decisions:\n- Build on Spring Framework 6 / Java 17 baseline (per spec) — though Spring XD historically older; spec says Spring 6 requires Java 17+, assume Java 17.\n- Use Spring WebSocket (spring-websocket) for native WebSocket sink implementation.\n- Use Hadoop HDFS client (hadoop-common/hdfs) for module hosting; uber-jar packaging via Spring Boot/Shadow plugin.\n- Shared libs in xd/lib loaded by parent classloader; module-specific conflicting versions bundled inside module uber-jar to avoid classloader conflicts.\n- CI on Bamboo; npm-cache evaluated for node-based build parts; Gradle wrapper used for builds.\n- SonarQube for static analysis notifications tied to commits.\n\nAssumptions:\n- Single developer performing all work; estimates in ideal workdays (8h), no elapsed duration.\n- Existing Spring XD-like platform codebase available (xd/lib, module deployment, containers).\n- Access to EC2, Bamboo, HDFS cluster (or mini-cluster), Windows Server with Bamboo agent, PowerShell.\n- npm-cache applies only to portions of build using npm; front-end asset pipeline exists.\n- WebSocket sink targets stream sinks; no UI work needed.\n- Documentation delivered as markdown/asciidoc in repo.\n- No changes needed to existing module classloader beyond documented guidance for U8 (implement support).\n- Team infrastructure (accounts, licenses) already available; effort includes setup/config but not procurement.\n\nResponse must be valid JSON only. Provide arrays of strings and activities.\n\nLet me write activity descriptions concisely.\n\nMake sure JSON schema matches: required fields, no additional properties. \"most_likely_effort\" number > 0. reported_total 74.\n\nI'll output only JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1410,
+      "completion_tokens": 4097,
+      "total_tokens": 5507,
+      "cost": 0.0643026,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0643026,
+        "upstream_inference_prompt_cost": 0.0028476,
+        "upstream_inference_completions_cost": 0.061455
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1725,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Target platform is a Spring XD-style distributed runtime with custom modules packaged as uber-jars; baseline is Spring Framework 6 on Java 17 per the specification.\",\n    \"U2: Host custom module uber-jars in a dedicated HDFS directory (e.g., /xd/modules) accessed via the Hadoop HDFS client; newly arriving containers resolve and download modules from HDFS into a local cache before classloading.\",\n    \"U3: Implement the WebSocket sink as a native sink module built on spring-websocket, exposing full-duplex channels over a single TCP connection with configurable port, path, and message codecs.\",\n    \"U8: Shared dependencies are placed under xd/lib and loaded by a shared parent classloader; modules requiring conflicting versions must embed those jars in their uber-jar to isolate them from the shared classloader.\",\n    \"U4/U5: CI builds remain Gradle-based via the Gradle wrapper (./gradlew); the Artifactory Gradle plugin task is replaced by a command task; npm-cache is evaluated and, if adopted, integrated to cache Node dependencies.\",\n    \"U6: Static analysis is centralized in SonarQube with quality gates; committer notifications are configured through SonarQube/CI hooks tied to the commit author.\",\n    \"U7: Windows integration tests run on a Bamboo agent on the existing Bamboo Windows server using PowerShell scripts; required services (Redis, RabbitMQ) are installed as Windows services and started by the CI task.\",\n    \"Testing approach: unit tests with JUnit, integration tests against embedded/minicluster Hadoop where feasible, plus end-to-end CI validation jobs on EC2 and Windows.\"\n  ],\n  \"assumptions\": [\n    \"A single developer performs all work; estimates are in ideal workdays (8 hours each) and represent effort, not elapsed calendar time.\",\n    \"An existing Spring XD-like codebase with module deployment, containers, and the xd/lib directory already exists and is the baseline for this increment.\",\n    \"Access to an HDFS cluster (or Hadoop minicluster for tests), EC2 CI infrastructure, a Bamboo server with a Windows agent, and PowerShell is already available without procurement effort.\",\n    \"npm-cache is relevant only to portions of the build that use npm (front-end assets); the evaluation will confirm applicability before adoption.\",\n    \"The WebSocket sink is a stream sink module only; no user interface work is required.\",\n    \"Documentation (U1) is delivered as markdown/asciidoc within the project repository, including module packaging, HDFS deployment, and xd/lib guidance.\",\n    \"U8 requires implementing/verifying shared xd/lib loading behavior plus documented guidance for version conflicts, not a redesign of the module classloader.\",\n    \"Existing test suites are functional; effort includes fixing only the PMD/Sonar violations related to the WARN log increase, not a full codebase cleanup.\",\n    \"Infrastructure accounts, licenses, and credentials (SonarQube, Artifactory, Bamboo, cloud) are pre-provisioned.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Author custom module development documentation (U1)\",\n      \"activity_description\": \"Write developer-facing documentation describing recommended standards and patterns for building custom modules, including project layout, packaging as uber-jar, and references to xd/lib and HDFS deployment.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Design and implement HDFS hosting of module uber-jars (U2)\",\n      \"activity_description\": \"Implement HDFS-based storage for custom module uber-jars: directory layout, upload/publish path, configuration properties, and module metadata handling using the Hadoop HDFS client.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Implement module deployment to newly arriving containers (U2)\",\n      \"activity_description\": \"Implement resolution and distribution of modules from HDFS to newly arriving containers, including local caching, version handling, and integration with the module classloading lifecycle.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Test HDFS module hosting and deployment (U2)\",\n      \"activity_description\": \"Write and execute unit and integration tests for HDFS hosting and container deployment, using a Hadoop minicluster where appropriate, and verify failure/retry scenarios.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Implement native WebSocket sink module (U3)\",\n      \"activity_description\": \"Design and implement the WebSocket sink module on spring-websocket, providing full-duplex communication over a single TCP connection with configurable endpoint, port, and message handling.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Test WebSocket sink module (U3)\",\n      \"activity_description\": \"Write and run unit and integration tests for the WebSocket sink, covering connection lifecycle, concurrent clients, message delivery, and error handling.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Research CI dependency caching options (U4)\",\n      \"activity_description\": \"Spike npm-cache and comparable caching options, assess applicability to the current build, and produce a recommendation for improving CI build stability and reliability.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Integrate selected caching option into CI build (U4)\",\n      \"activity_description\": \"Implement and validate the chosen caching solution (e.g., npm-cache) in the CI build so dependencies are reused across builds instead of being downloaded each time.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Enable distributed JVM tests on EC2 CI (U5)\",\n      \"activity_description\": \"Configure and validate distributed JVM test execution in the EC2 CI infrastructure.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Replace Artifactory Gradle task with wrapper command task (U5)\",\n      \"activity_description\": \"Change CI build configuration from the Artifactory Gradle task to a command task that invokes ./gradlew, and update publishing steps accordingly.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Run CI tests with embedded Hadoop disabled (U5)\",\n      \"activity_description\": \"Adjust test configuration to run with embedded Hadoop off, fix resulting test/environment issues, and verify suite stability.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Enable and tune maxParallelForks (U5)\",\n      \"activity_description\": \"Turn on maxParallelForks for Gradle test execution, tune fork counts for EC2 agents, and confirm build time and stability improvements.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Validate EC2 CI pipeline end-to-end (U5)\",\n      \"activity_description\": \"Run full commit-triggered builds on EC2 with all U5 changes applied and confirm reliable execution and functional assertions.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Investigate WARN log increase (U6)\",\n      \"activity_description\": \"Analyze build/test logs to identify root causes of the increased WARN entries and map them to PMD/Sonar violations.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"Fix PMD/Sonar violations (U6)\",\n      \"activity_description\": \"Remediate the identified PMD and Sonar violations in the codebase and verify that WARN output returns to expected levels.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"Configure Sonar committer notifications (U6)\",\n      \"activity_description\": \"Configure SonarQube/CI notification rules so that the committer responsible for new violations is automatically notified.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"Provision Windows Bamboo environment and PowerShell access (U7)\",\n      \"activity_description\": \"Gain access to the existing Bamboo Windows environment, configure the agent, and verify PowerShell execution capabilities for CI tasks.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"Install and configure Windows services (U7)\",\n      \"activity_description\": \"Set up required services (Redis, RabbitMQ, and similar) on the Windows CI environment with automated start/stop scripts.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"Create Windows integration test CI task (U7)\",\n      \"activity_description\": \"Implement the Bamboo CI task that runs integration tests on Windows automatically on commit-triggered builds.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"Stabilize and validate Windows CI runs (U7)\",\n      \"activity_description\": \"Execute repeated Windows CI runs, fix environment-specific failures, and confirm consistent automated integration test results.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"Implement shared xd/lib dependency location (U8)\",\n      \"activity_description\": \"Implement/verify support for placing jars shared by two or more modules under xd/lib, including classloader behavior and documented guidance for bundling conflicting versions inside module uber-jars.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A22\",\n      \"activity_name\": \"Test shared library scenarios (U8)\",\n      \"activity_description\": \"Test multi-module deployments using xd/lib, including shared jars and modules bundling older/newer versions to work around classloader conflicts.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A23\",\n      \"activity_name\": \"Increment integration, regression testing, and release preparation\",\n      \"activity_description\": \"Integrate all stories, run full regression suites across CI environments, finalize documentation updates, and prepare the software increment for release.\",\n      \"most_likely_effort\": 4\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 74\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Target platform is a Spring XD-style distributed runtime with custom modules packaged as uber-jars; baseline is Spring Framework 6 on Java 17 per the specification.",
+      "U2: Host custom module uber-jars in a dedicated HDFS directory (e.g., /xd/modules) accessed via the Hadoop HDFS client; newly arriving containers resolve and download modules from HDFS into a local cache before classloading.",
+      "U3: Implement the WebSocket sink as a native sink module built on spring-websocket, exposing full-duplex channels over a single TCP connection with configurable port, path, and message codecs.",
+      "U8: Shared dependencies are placed under xd/lib and loaded by a shared parent classloader; modules requiring conflicting versions must embed those jars in their uber-jar to isolate them from the shared classloader.",
+      "U4/U5: CI builds remain Gradle-based via the Gradle wrapper (./gradlew); the Artifactory Gradle plugin task is replaced by a command task; npm-cache is evaluated and, if adopted, integrated to cache Node dependencies.",
+      "U6: Static analysis is centralized in SonarQube with quality gates; committer notifications are configured through SonarQube/CI hooks tied to the commit author.",
+      "U7: Windows integration tests run on a Bamboo agent on the existing Bamboo Windows server using PowerShell scripts; required services (Redis, RabbitMQ) are installed as Windows services and started by the CI task.",
+      "Testing approach: unit tests with JUnit, integration tests against embedded/minicluster Hadoop where feasible, plus end-to-end CI validation jobs on EC2 and Windows."
+    ],
+    "assumptions": [
+      "A single developer performs all work; estimates are in ideal workdays (8 hours each) and represent effort, not elapsed calendar time.",
+      "An existing Spring XD-like codebase with module deployment, containers, and the xd/lib directory already exists and is the baseline for this increment.",
+      "Access to an HDFS cluster (or Hadoop minicluster for tests), EC2 CI infrastructure, a Bamboo server with a Windows agent, and PowerShell is already available without procurement effort.",
+      "npm-cache is relevant only to portions of the build that use npm (front-end assets); the evaluation will confirm applicability before adoption.",
+      "The WebSocket sink is a stream sink module only; no user interface work is required.",
+      "Documentation (U1) is delivered as markdown/asciidoc within the project repository, including module packaging, HDFS deployment, and xd/lib guidance.",
+      "U8 requires implementing/verifying shared xd/lib loading behavior plus documented guidance for version conflicts, not a redesign of the module classloader.",
+      "Existing test suites are functional; effort includes fixing only the PMD/Sonar violations related to the WARN log increase, not a full codebase cleanup.",
+      "Infrastructure accounts, licenses, and credentials (SonarQube, Artifactory, Bamboo, cloud) are pre-provisioned."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Author custom module development documentation (U1)",
+        "activity_description": "Write developer-facing documentation describing recommended standards and patterns for building custom modules, including project layout, packaging as uber-jar, and references to xd/lib and HDFS deployment.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Design and implement HDFS hosting of module uber-jars (U2)",
+        "activity_description": "Implement HDFS-based storage for custom module uber-jars: directory layout, upload/publish path, configuration properties, and module metadata handling using the Hadoop HDFS client.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Implement module deployment to newly arriving containers (U2)",
+        "activity_description": "Implement resolution and distribution of modules from HDFS to newly arriving containers, including local caching, version handling, and integration with the module classloading lifecycle.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Test HDFS module hosting and deployment (U2)",
+        "activity_description": "Write and execute unit and integration tests for HDFS hosting and container deployment, using a Hadoop minicluster where appropriate, and verify failure/retry scenarios.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Implement native WebSocket sink module (U3)",
+        "activity_description": "Design and implement the WebSocket sink module on spring-websocket, providing full-duplex communication over a single TCP connection with configurable endpoint, port, and message handling.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Test WebSocket sink module (U3)",
+        "activity_description": "Write and run unit and integration tests for the WebSocket sink, covering connection lifecycle, concurrent clients, message delivery, and error handling.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Research CI dependency caching options (U4)",
+        "activity_description": "Spike npm-cache and comparable caching options, assess applicability to the current build, and produce a recommendation for improving CI build stability and reliability.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Integrate selected caching option into CI build (U4)",
+        "activity_description": "Implement and validate the chosen caching solution (e.g., npm-cache) in the CI build so dependencies are reused across builds instead of being downloaded each time.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Enable distributed JVM tests on EC2 CI (U5)",
+        "activity_description": "Configure and validate distributed JVM test execution in the EC2 CI infrastructure.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Replace Artifactory Gradle task with wrapper command task (U5)",
+        "activity_description": "Change CI build configuration from the Artifactory Gradle task to a command task that invokes ./gradlew, and update publishing steps accordingly.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Run CI tests with embedded Hadoop disabled (U5)",
+        "activity_description": "Adjust test configuration to run with embedded Hadoop off, fix resulting test/environment issues, and verify suite stability.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Enable and tune maxParallelForks (U5)",
+        "activity_description": "Turn on maxParallelForks for Gradle test execution, tune fork counts for EC2 agents, and confirm build time and stability improvements.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "Validate EC2 CI pipeline end-to-end (U5)",
+        "activity_description": "Run full commit-triggered builds on EC2 with all U5 changes applied and confirm reliable execution and functional assertions.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "Investigate WARN log increase (U6)",
+        "activity_description": "Analyze build/test logs to identify root causes of the increased WARN entries and map them to PMD/Sonar violations.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A15",
+        "activity_name": "Fix PMD/Sonar violations (U6)",
+        "activity_description": "Remediate the identified PMD and Sonar violations in the codebase and verify that WARN output returns to expected levels.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A16",
+        "activity_name": "Configure Sonar committer notifications (U6)",
+        "activity_description": "Configure SonarQube/CI notification rules so that the committer responsible for new violations is automatically notified.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A17",
+        "activity_name": "Provision Windows Bamboo environment and PowerShell access (U7)",
+        "activity_description": "Gain access to the existing Bamboo Windows environment, configure the agent, and verify PowerShell execution capabilities for CI tasks.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A18",
+        "activity_name": "Install and configure Windows services (U7)",
+        "activity_description": "Set up required services (Redis, RabbitMQ, and similar) on the Windows CI environment with automated start/stop scripts.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A19",
+        "activity_name": "Create Windows integration test CI task (U7)",
+        "activity_description": "Implement the Bamboo CI task that runs integration tests on Windows automatically on commit-triggered builds.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A20",
+        "activity_name": "Stabilize and validate Windows CI runs (U7)",
+        "activity_description": "Execute repeated Windows CI runs, fix environment-specific failures, and confirm consistent automated integration test results.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A21",
+        "activity_name": "Implement shared xd/lib dependency location (U8)",
+        "activity_description": "Implement/verify support for placing jars shared by two or more modules under xd/lib, including classloader behavior and documented guidance for bundling conflicting versions inside module uber-jars.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A22",
+        "activity_name": "Test shared library scenarios (U8)",
+        "activity_description": "Test multi-module deployments using xd/lib, including shared jars and modules bundling older/newer versions to work around classloader conflicts.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A23",
+        "activity_name": "Increment integration, regression testing, and release preparation",
+        "activity_description": "Integrate all stories, run full regression suites across CI environments, finalize documentation updates, and prepare the software increment for release.",
+        "most_likely_effort": 4
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 74
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1410,
+    "completion_tokens": 4097,
+    "total_tokens": 5507,
+    "cost": 0.0643026,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0643026,
+      "upstream_inference_prompt_cost": 0.0028476,
+      "upstream_inference_completions_cost": 0.061455
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1725,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789173280-2aHdtPOlA69dTtfbjh9L",
+    "object": "chat.completion",
+    "created": 1789173280,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user asks how many work-hours I consider equivalent to one estimated workday. In my previous response, I stated in the assumptions: \"estimates are in ideal workdays (8 hours each)\". So the answer is 8.\n\nI must not revise or restate the previous estimate. Just return the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user asks how many work-hours I consider equivalent to one estimated workday. In my previous response, I stated in the assumptions: \"estimates are in ideal workdays (8 hours each)\". So the answer is 8.\n\nI must not revise or restate the previous estimate. Just return the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3916,
+      "completion_tokens": 96,
+      "total_tokens": 4012,
+      "cost": 0.009732,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.009732,
+        "upstream_inference_prompt_cost": 0.008292,
+        "upstream_inference_completions_cost": 0.00144
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 64,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

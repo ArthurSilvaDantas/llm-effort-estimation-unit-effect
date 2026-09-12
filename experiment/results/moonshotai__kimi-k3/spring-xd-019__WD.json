@@ -1,0 +1,313 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-019",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789176741-CNazsFw0i6rrEUS0zr82",
+    "object": "chat.completion",
+    "created": 1789176741,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"All work is performed inside the existing Spring XD multi-module Gradle codebase, following its established module plugin SPI, test conventions (JUnit + Spring integration tests) and CI (Jenkins) setup.\",\n    \"U1 (Reactor processor plugin): Implement a Reactor processor module type following the same module-plugin pattern already used for Spark/RxJava modules; the minimal required metadata is the processor class name; additional configuration is exposed through standard module option metadata so it can be set with the known module option commands.\",\n    \"U2 (Reactor 2.0 RC1 upgrade): Bump the Reactor version in the central Gradle dependency management, align transitive dependencies to the versions required by RC1, and adapt XD code to breaking Reactor 2.0 API changes (e.g., Streams/Promise changes) with the smallest possible refactoring; no architectural redesign.\",\n    \"U3/U4 (Redis field-value counter aggregation): Use Spring Data Redis (RedisTemplate) with atomic Redis hash/counter operations (HINCRBY or a Lua script) so aggregation can be written continuously during ingestion; port the previous aggregate field-value counter spec, fill identified gaps, and update the reference documentation.\",\n    \"U5 (Hadoop test isolation): Create a dedicated Gradle subproject for Hadoop-dependent tests, move them out of the DIRT project, remove the Hadoop dependencies from DIRT, and fix the Eclipse classpath file generation.\",\n    \"U6 (XD+YARN on EC2 acceptance tests): Provide provisioning scripts for a small YARN cluster on EC2, implement acceptance tests covering simple XD features (stream deployment, basic source/sink processing) running on YARN, and hook the suite into the nightly CI build cycle rather than the per-commit build.\",\n    \"U7 (RxJava processor module): Implement an RxJava-based processor module using the same module SPI as in U1 so users can supply RxJava (Observable-based) computation logic for stream processing.\",\n    \"U8 (HTTP source message size): Expose the currently hard-coded 1MB HttpChunkAggregator limit as a configurable module property, wire it through the server configuration so it can be overridden in servers.yml, and keep 1MB as the default for backward compatibility.\"\n  ],\n  \"assumptions\": [\n    \"U3 and U4 are duplicates of the same requirement and are implemented once; effort is counted only once.\",\n    \"The generic Spring Framework 6 / Java 17 preamble is contextual; the increment targets the existing Spring XD platform, its current JDK level, and its existing Gradle build.\",\n    \"One developer performs all work; estimates are ideal engineering workdays (8 hours) of development effort, excluding elapsed calendar effects, release management, and meetings beyond normal development.\",\n    \"Each activity estimate includes its own unit tests; dedicated integration/system test activities are listed separately where relevant; a final cross-story integration and code-review activity is included.\",\n    \"Reactor 2.0 RC1 API changes are limited to what is needed for compilation and runtime compatibility; no redesign of XD stream processing is required.\",\n    \"EC2 credentials/budget and a small YARN test cluster are available for U6; test instability is covered by the stabilization activity.\",\n    \"A Redis instance (embedded or local) is available for development and tests of U3/U4.\",\n    \"Documentation effort covers only the reference documentation and module option docs explicitly mentioned in the stories; no full user-guide rewrite.\",\n    \"Existing Spark/RxJava module support code is available as a template for U1 and U7, reducing design uncertainty.\",\n    \"No clarifications are required; acceptance criteria are derived directly from the story texts and linked PR/wiki references.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Analysis and design of Reactor processor plugin\",\n      \"activity_description\": \"Analyze existing Spark/RxJava module plugin approach, design the Reactor processor module type, its minimal metadata (processor class) and how module options are declared and set via module option commands.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement Reactor processor module support\",\n      \"activity_description\": \"Implement base classes and module-plugin integration so a Reactor-based stream processor can be deployed by specifying only the processor class; wire into the XD module framework.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - Module option configuration support\",\n      \"activity_description\": \"Implement additional configuration of Reactor processor modules through well-known module option commands, including option metadata and validation.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U1 - Tests and documentation\",\n      \"activity_description\": \"Write unit and integration tests for the Reactor processor plugin and document usage and module options.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U2 - Reactor 2.0 RC1 dependency upgrade\",\n      \"activity_description\": \"Update Gradle dependency management to Reactor 2.0 RC1 and align dependent libraries to stable, synchronized versions.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 - Code migration and regression fixes\",\n      \"activity_description\": \"Fix compilation errors and adapt code to Reactor 2.0 RC1 API changes, run the full test suite and fix regressions.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U3/U4 - Port specs and gap analysis\",\n      \"activity_description\": \"Port the aggregate field-value counter specifications from the previous implementation wiki and identify functional gaps to be covered.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U3/U4 - Implement Redis aggregation over field-value counters\",\n      \"activity_description\": \"Implement the Redis-backed aggregation store using atomic Redis counter/hash operations so aggregated values are continuously written as data is ingested.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U3/U4 - Integrate aggregation with ingestion pipeline\",\n      \"activity_description\": \"Wire the Redis aggregation into the stream ingestion path (module/message-bus integration) so counters update continuously at runtime.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U3/U4 - Tests for Redis aggregation\",\n      \"activity_description\": \"Unit and integration tests (against embedded/local Redis) covering continuous aggregation, restart behavior, and the gaps identified in A7.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U3/U4 - Reference documentation update\",\n      \"activity_description\": \"Update the reference documentation describing the Redis-based field-value counter aggregation, options, and behavior.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U5 - Create separate Hadoop test project\",\n      \"activity_description\": \"Create a new Gradle subproject, move Hadoop-dependent tests out of the DIRT project, and adjust dependencies so DIRT no longer depends on Hadoop test artifacts.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"U5 - Build, CI and Eclipse classpath verification\",\n      \"activity_description\": \"Verify Gradle and CI builds pass, and confirm Eclipse classpath file generation is correct without the Hadoop dependencies.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"U6 - EC2/YARN test environment provisioning\",\n      \"activity_description\": \"Create/reuse scripts to provision a small YARN cluster on EC2 and install/configure XD for acceptance testing.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"U6 - Implement XD-on-YARN acceptance tests\",\n      \"activity_description\": \"Implement acceptance tests verifying simple XD features (stream creation/deployment, basic source-to-sink processing) running on YARN.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"U6 - CI integration and stabilization\",\n      \"activity_description\": \"Integrate the acceptance suite into the build cycle (nightly CI job), handle environment teardown, and stabilize flaky tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"U7 - Implement RxJava processor module\",\n      \"activity_description\": \"Design and implement the RxJava-based processor module using the module SPI so users can leverage RxJava APIs for data computations.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"U7 - Tests and documentation for RxJava module\",\n      \"activity_description\": \"Unit/integration tests for the RxJava processor module plus a usage sample and module documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"U8 - Expose HTTP source message-size property\",\n      \"activity_description\": \"Expose the hard-coded 1MB HttpChunkAggregator limit as a configurable property and wire it through server configuration so it can be overridden via servers.yml; default stays 1MB.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"U8 - Tests and documentation for HTTP override\",\n      \"activity_description\": \"Tests verifying the servers.yml override and default behavior, plus documentation of the new property.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"Cross-cutting integration, code review and build verification\",\n      \"activity_description\": \"Final integration of all stories, self code review cleanup, full multi-module build and regression run, and preparation of the increment for merge.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 56\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification carefully.\n\nThis is about Spring XD (Spring eXtreme Data) project, based on the references to:\n- Spring Framework\n- Reactor processors\n- Spark, RxJava\n- Redis aggregation over field-value counters\n- Hadoop tests isolation from DIRT project\n- XD + YARN on EC2 acceptance tests\n- HTTP source-module with servers.yml overrides\n\nThe user stories:\n- U1: Reactor-based stream processor plugin approach (similar to Spark and RxJava) - plugin should allow reactor processor module to specify bare minimum (processor class), explore additional configuration via module option commands\n- U2: Upgrade to Reactor 2.0 RC1 release to sync with stable dependencies\n- U3 & U4: Redis-based aggregation over field-value counters (duplicate stories - count once, but I should note the duplication as an assumption). Port specs from previous implementation, identify gaps, update reference documentation\n- U5: Isolate Hadoop tests in a different project so DIRT doesn't depend on it, eliminating incorrect classpath file generation in Eclipse\n- U6: Acceptance test coverage for XD + YARN on EC2 to verify simple XD features on YARN every build cycle\n- U7: RxJava-based processor module\n- U8: Option to extend default message handling behavior for HTTP source-module, override settings via servers.yml to control default message size (HttpChunkAggregator 1MB hard-coded limit → expose property)\n\nI need to:\n1. WBS breakdown into activities\n2. Technical/design decisions and assumptions\n3. Most likely effort per activity (single estimate in workdays)\n4. Total = sum\n\nLet me think about the activities. I'll structure by user story with sub-activities (analysis/design, implementation, unit tests, integration tests, documentation).\n\nLet me estimate:\n\n**U1: Reactor-based stream processor plugin**\n- Design & analysis of plugin architecture (comparing Spark/RxJava module approaches): 2 days\n- Implement reactor processor module support (base classes, module deployment integration): 4 days\n- Module option configuration support: 2 days\n- Unit + integration tests: 3 days\n- Documentation: 1 day\nTotal: ~12 days\n\n**U2: Upgrade to Reactor 2.0 RC1**\n- Dependency analysis, update build files (Gradle): 1 day\n- Fix API incompatibilities/compilation errors across codebase: 3 days\n- Run tests, fix regressions: 2 days\nTotal: ~6 days\n\n**U3/U4: Redis-based field-value counter aggregation** (duplicate stories → one increment)\n- Port specs from previous implementation & gap analysis: 2 days\n- Implement Redis aggregation repository/writer: 4 days\n- Integration with ingestion pipeline (message bus/module): 2 days\n- Unit + integration tests (with embedded Redis): 3 days\n- Reference documentation update: 1.5 days\nTotal: ~12.5 days\n\n**U5: Isolate Hadoop tests into separate project**\n- Create new Gradle subproject, move tests: 2 days\n- Fix build config, dependencies, Eclipse CP generation: 1.5 days\n- Verify CI build: 0.5 day\nTotal: ~4 days\n\n**U6: Acceptance tests for XD + YARN on EC2**\n- Design acceptance test suite, environment setup scripts (EC2 provisioning): 3 days\n- Implement tests for simple XD features on YARN: 4 days\n- Integrate into CI build cycle (Jenkins): 2 days\n- Stabilization/flakiness fixes: 2 days\nTotal: ~11 days\n\n**U7: RxJava-based processor module**\n- Design RxJava processor module API: 1.5 days\n- Implement module (integration with XD module framework): 3 days\n- Unit + integration tests: 2 days\n- Documentation/sample: 1 day\nTotal: ~7.5 days\n\n**U8: HTTP source module configurable message size**\n- Expose max content length/message size property from HttpChunkAggregator: 1 day\n- Wire property through servers.yml overrides: 1 day\n- Tests: 1 day\n- Documentation: 0.5 day\nTotal: ~3.5 days\n\nPlus cross-cutting:\n- Overall integration, code review, build verification: 3 days\n- Project management/sprint overhead? Maybe not needed since \"development effort\" — typically include some integration. Let me add integration & release verification: 3 days.\n\nLet me total: 12 + 6 + 12.5 + 4 + 11 + 7.5 + 3.5 + 3 = 59.5 days\n\nHmm, let me reconsider granularity. The schema wants activities with id, name, description, most_likely_effort. I can have ~20-30 activities. Let me create a cleaner WBS.\n\nLet me structure:\n\nA1. Requirements analysis & solution design for reactor processor plugin (U1) — 2\nA2. Implement Reactor processor module support & plugin integration (U1) — 5\nA3. Module option configuration for reactor processors (U1) — 2\nA4. Tests (unit/integration) + docs for U1 — 3\n\nU1 subtotal: 12\n\nA5. Reactor 2.0 RC1 dependency upgrade — build files & dependency alignment (U2) — 1\nA6. Code migration & regression fixes for Reactor 2.0 API changes (U2) — 4\n\nU2 subtotal: 5\n\nA7. Port specs & gap analysis for Redis field-value counter aggregation (U3/U4) — 2\nA8. Implement Redis aggregation store & counters — 4\nA9. Integration with stream ingestion pipeline — 2\nA10. Tests for Redis aggregation — 3\nA11. Reference documentation update — 1\n\nU3/U4 subtotal: 12\n\nA12. Create separate Hadoop test project & move tests (U5) — 2\nA13. Build/CI & Eclipse classpath verification (U5) — 1.5\n\nU5 subtotal: 3.5\n\nA14. EC2/YARN test environment provisioning scripts (U6) — 3\nA15. Implement YARN acceptance tests for core XD features (U6) — 4\nA16. CI integration & stabilization (U6) — 3\n\nU6 subtotal: 10\n\nA17. RxJava processor module design & implementation (U7) — 4\nA18. Tests & docs for RxJava module (U7) — 3\n\nU7 subtotal: 7\n\nA19. Expose HTTP message-size property & servers.yml override wiring (U8) — 2\nA20. Tests & docs for U8 — 1.5\n\nU8 subtotal: 3.5\n\nA21. Overall integration, code review, build verification — 3\n\nTotal: 12 + 5 + 12 + 3.5 + 10 + 7 + 3.5 + 3 = 56 days\n\nLet me add: 12+5=17; +12=29; +3.5=32.5; +10=42.5; +7=49.5; +3.5=53; +3=56.\n\nTotal = 56 workdays.\n\nThat's roughly 11-12 person-weeks, which seems plausible for this increment scope (Spring XD milestone with several modules).\n\nLet me double-check each estimate for reasonableness:\n\nU1: Building a new reactor processor module type — design 2d, implementation 5d (includes creating base classes similar to spark/rxjava module support, wiring into XD module framework), options 2d, tests+docs 3d = 12d. OK.\n\nU2: Reactor 2.0 RC1 upgrade — 1d dependency + 4d migration/regression. Reactor 2.0 had significant API changes from 1.x; 4-5 days seems fair. Total 5d.\n\nU3/U4: Duplicate stories, implement once: spec port & gaps 2d, implementation 4d, pipeline integration 2d, tests 3d, docs 1d = 12d. OK.\n\nU5: Test isolation: 2d + 1.5d = 3.5d. OK.\n\nU6: Acceptance tests on EC2 with YARN: env provisioning 3d, tests 4d, CI integration 3d = 10d. OK.\n\nU7: RxJava processor module: 4d + 3d = 7d. OK.\n\nU8: HTTP source config: 2d + 1.5d = 3.5d. OK.\n\nCross-cutting integration: 3d.\n\nTotal 56 workdays.\n\nTechnical and design decisions:\n- Java 17+, Spring Framework 6 baseline per spec context (though actually Spring XD era was Java 6/7... but the spec says Spring Framework 6.0 requires Java 17+; I'll note we target the existing Spring XD codebase — actually the spec preamble is generic Spring text. Hmm. The user stories are clearly Spring XD (~2015, Reactor 2.0 RC1). The preamble is generic. I'll assume development occurs within the existing Spring XD codebase with Gradle build, Java 8 (XD era)... but the preamble says Spring 6 requires Java 17+. To be safe, I can state: \"Target the existing Spring XD codebase using its Gradle build; align with the JDK level already used by the project\" — or adopt Java 17 per spec. I'll just make a reasonable assumption and record it. I'll say: use the existing Spring XD multi-module Gradle build; keep Java version consistent with project (assume Java 8+ per XD baseline; the generic Spring 6/Java 17 note in the preamble is treated as context, not a requirement for this increment). Actually simpler: assume existing codebase, Gradle build, and we follow its conventions.\n\nDesign decisions:\n- U1/U7: Implement processor module support following the existing module plugin SPI pattern used for Spark; reactor/rxjava processors implement a common Processor interface; modules declared via module config with processor class as minimum metadata; options via module option metadata/commands.\n- U2: Bump Reactor to 2.0.RC1 in gradle.properties/dependency management; align dependent libraries; adapt to breaking API changes (Streams, Promise → maybe). Run full regression.\n- U3/U4: Use Spring Data Redis + RedisTemplate; store per-counter hashes; atomic increments via HINCRBY/LUA; reuse AbstractMetricWriter-style repository pattern; Redis sink module writes continuously.\n- U5: New Gradle subproject (e.g., spring-xd-hadoop-test / spring-xd-dirt-hadoop tests moved out); adjust dependencies; regenerate Eclipse classpath.\n- U6: Use Gradle/Jenkins CI; provision EC2 via scripts (e.g., using existing spring-xd-ec2 tooling); run mini YARN cluster; acceptance tests tagged for nightly build.\n- U8: Expose maxContentLength/messageSize as module property; wire into HttpChunkAggregator via server configuration; allow servers.yml override; default remains 1MB for backward compatibility.\n\nAssumptions:\n- U3 and U4 are duplicates → implemented once.\n- Existing Spring XD codebase, Gradle multi-module build, CI (Jenkins), Git workflow; developer has access.\n- Single developer performing all work; effort in ideal workdays (8h), excludes elapsed time, meetings beyond normal, vacations.\n- Estimates include unit/integration testing and docs within each activity; code review included in integration activity.\n- No major upstream API instability beyond RC1 known changes; Reactor 2.0 RC1 upgrade limited to compile/runtime compat fixes, not redesign.\n- EC2/cloud costs and credentials available; YARN test uses a small cluster.\n- Redis available for tests (embedded or local instance).\n- Documentation updates limited to reference docs mentioned in stories; no user guide overhaul.\n- The preamble about Spring Framework 6/Java 17 is contextual; increment targets the existing XD platform and its current JDK/build.\n- No clarifications needed; acceptance criteria derived from story text.\n\nNow, format: valid JSON only, matching schema. Numbers for most_likely_effort. Total 56.\n\nLet me make sure activity ids are strings, descriptions concise.\n\nI could also include fractional 1.5 values — schema allows number. Fine.\n\nLet me count activities: 21. Good.\n\nWrite the JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification carefully.\n\nThis is about Spring XD (Spring eXtreme Data) project, based on the references to:\n- Spring Framework\n- Reactor processors\n- Spark, RxJava\n- Redis aggregation over field-value counters\n- Hadoop tests isolation from DIRT project\n- XD + YARN on EC2 acceptance tests\n- HTTP source-module with servers.yml overrides\n\nThe user stories:\n- U1: Reactor-based stream processor plugin approach (similar to Spark and RxJava) - plugin should allow reactor processor module to specify bare minimum (processor class), explore additional configuration via module option commands\n- U2: Upgrade to Reactor 2.0 RC1 release to sync with stable dependencies\n- U3 & U4: Redis-based aggregation over field-value counters (duplicate stories - count once, but I should note the duplication as an assumption). Port specs from previous implementation, identify gaps, update reference documentation\n- U5: Isolate Hadoop tests in a different project so DIRT doesn't depend on it, eliminating incorrect classpath file generation in Eclipse\n- U6: Acceptance test coverage for XD + YARN on EC2 to verify simple XD features on YARN every build cycle\n- U7: RxJava-based processor module\n- U8: Option to extend default message handling behavior for HTTP source-module, override settings via servers.yml to control default message size (HttpChunkAggregator 1MB hard-coded limit → expose property)\n\nI need to:\n1. WBS breakdown into activities\n2. Technical/design decisions and assumptions\n3. Most likely effort per activity (single estimate in workdays)\n4. Total = sum\n\nLet me think about the activities. I'll structure by user story with sub-activities (analysis/design, implementation, unit tests, integration tests, documentation).\n\nLet me estimate:\n\n**U1: Reactor-based stream processor plugin**\n- Design & analysis of plugin architecture (comparing Spark/RxJava module approaches): 2 days\n- Implement reactor processor module support (base classes, module deployment integration): 4 days\n- Module option configuration support: 2 days\n- Unit + integration tests: 3 days\n- Documentation: 1 day\nTotal: ~12 days\n\n**U2: Upgrade to Reactor 2.0 RC1**\n- Dependency analysis, update build files (Gradle): 1 day\n- Fix API incompatibilities/compilation errors across codebase: 3 days\n- Run tests, fix regressions: 2 days\nTotal: ~6 days\n\n**U3/U4: Redis-based field-value counter aggregation** (duplicate stories → one increment)\n- Port specs from previous implementation & gap analysis: 2 days\n- Implement Redis aggregation repository/writer: 4 days\n- Integration with ingestion pipeline (message bus/module): 2 days\n- Unit + integration tests (with embedded Redis): 3 days\n- Reference documentation update: 1.5 days\nTotal: ~12.5 days\n\n**U5: Isolate Hadoop tests into separate project**\n- Create new Gradle subproject, move tests: 2 days\n- Fix build config, dependencies, Eclipse CP generation: 1.5 days\n- Verify CI build: 0.5 day\nTotal: ~4 days\n\n**U6: Acceptance tests for XD + YARN on EC2**\n- Design acceptance test suite, environment setup scripts (EC2 provisioning): 3 days\n- Implement tests for simple XD features on YARN: 4 days\n- Integrate into CI build cycle (Jenkins): 2 days\n- Stabilization/flakiness fixes: 2 days\nTotal: ~11 days\n\n**U7: RxJava-based processor module**\n- Design RxJava processor module API: 1.5 days\n- Implement module (integration with XD module framework): 3 days\n- Unit + integration tests: 2 days\n- Documentation/sample: 1 day\nTotal: ~7.5 days\n\n**U8: HTTP source module configurable message size**\n- Expose max content length/message size property from HttpChunkAggregator: 1 day\n- Wire property through servers.yml overrides: 1 day\n- Tests: 1 day\n- Documentation: 0.5 day\nTotal: ~3.5 days\n\nPlus cross-cutting:\n- Overall integration, code review, build verification: 3 days\n- Project management/sprint overhead? Maybe not needed since \"development effort\" — typically include some integration. Let me add integration & release verification: 3 days.\n\nLet me total: 12 + 6 + 12.5 + 4 + 11 + 7.5 + 3.5 + 3 = 59.5 days\n\nHmm, let me reconsider granularity. The schema wants activities with id, name, description, most_likely_effort. I can have ~20-30 activities. Let me create a cleaner WBS.\n\nLet me structure:\n\nA1. Requirements analysis & solution design for reactor processor plugin (U1) — 2\nA2. Implement Reactor processor module support & plugin integration (U1) — 5\nA3. Module option configuration for reactor processors (U1) — 2\nA4. Tests (unit/integration) + docs for U1 — 3\n\nU1 subtotal: 12\n\nA5. Reactor 2.0 RC1 dependency upgrade — build files & dependency alignment (U2) — 1\nA6. Code migration & regression fixes for Reactor 2.0 API changes (U2) — 4\n\nU2 subtotal: 5\n\nA7. Port specs & gap analysis for Redis field-value counter aggregation (U3/U4) — 2\nA8. Implement Redis aggregation store & counters — 4\nA9. Integration with stream ingestion pipeline — 2\nA10. Tests for Redis aggregation — 3\nA11. Reference documentation update — 1\n\nU3/U4 subtotal: 12\n\nA12. Create separate Hadoop test project & move tests (U5) — 2\nA13. Build/CI & Eclipse classpath verification (U5) — 1.5\n\nU5 subtotal: 3.5\n\nA14. EC2/YARN test environment provisioning scripts (U6) — 3\nA15. Implement YARN acceptance tests for core XD features (U6) — 4\nA16. CI integration & stabilization (U6) — 3\n\nU6 subtotal: 10\n\nA17. RxJava processor module design & implementation (U7) — 4\nA18. Tests & docs for RxJava module (U7) — 3\n\nU7 subtotal: 7\n\nA19. Expose HTTP message-size property & servers.yml override wiring (U8) — 2\nA20. Tests & docs for U8 — 1.5\n\nU8 subtotal: 3.5\n\nA21. Overall integration, code review, build verification — 3\n\nTotal: 12 + 5 + 12 + 3.5 + 10 + 7 + 3.5 + 3 = 56 days\n\nLet me add: 12+5=17; +12=29; +3.5=32.5; +10=42.5; +7=49.5; +3.5=53; +3=56.\n\nTotal = 56 workdays.\n\nThat's roughly 11-12 person-weeks, which seems plausible for this increment scope (Spring XD milestone with several modules).\n\nLet me double-check each estimate for reasonableness:\n\nU1: Building a new reactor processor module type — design 2d, implementation 5d (includes creating base classes similar to spark/rxjava module support, wiring into XD module framework), options 2d, tests+docs 3d = 12d. OK.\n\nU2: Reactor 2.0 RC1 upgrade — 1d dependency + 4d migration/regression. Reactor 2.0 had significant API changes from 1.x; 4-5 days seems fair. Total 5d.\n\nU3/U4: Duplicate stories, implement once: spec port & gaps 2d, implementation 4d, pipeline integration 2d, tests 3d, docs 1d = 12d. OK.\n\nU5: Test isolation: 2d + 1.5d = 3.5d. OK.\n\nU6: Acceptance tests on EC2 with YARN: env provisioning 3d, tests 4d, CI integration 3d = 10d. OK.\n\nU7: RxJava processor module: 4d + 3d = 7d. OK.\n\nU8: HTTP source config: 2d + 1.5d = 3.5d. OK.\n\nCross-cutting integration: 3d.\n\nTotal 56 workdays.\n\nTechnical and design decisions:\n- Java 17+, Spring Framework 6 baseline per spec context (though actually Spring XD era was Java 6/7... but the spec says Spring Framework 6.0 requires Java 17+; I'll note we target the existing Spring XD codebase — actually the spec preamble is generic Spring text. Hmm. The user stories are clearly Spring XD (~2015, Reactor 2.0 RC1). The preamble is generic. I'll assume development occurs within the existing Spring XD codebase with Gradle build, Java 8 (XD era)... but the preamble says Spring 6 requires Java 17+. To be safe, I can state: \"Target the existing Spring XD codebase using its Gradle build; align with the JDK level already used by the project\" — or adopt Java 17 per spec. I'll just make a reasonable assumption and record it. I'll say: use the existing Spring XD multi-module Gradle build; keep Java version consistent with project (assume Java 8+ per XD baseline; the generic Spring 6/Java 17 note in the preamble is treated as context, not a requirement for this increment). Actually simpler: assume existing codebase, Gradle build, and we follow its conventions.\n\nDesign decisions:\n- U1/U7: Implement processor module support following the existing module plugin SPI pattern used for Spark; reactor/rxjava processors implement a common Processor interface; modules declared via module config with processor class as minimum metadata; options via module option metadata/commands.\n- U2: Bump Reactor to 2.0.RC1 in gradle.properties/dependency management; align dependent libraries; adapt to breaking API changes (Streams, Promise → maybe). Run full regression.\n- U3/U4: Use Spring Data Redis + RedisTemplate; store per-counter hashes; atomic increments via HINCRBY/LUA; reuse AbstractMetricWriter-style repository pattern; Redis sink module writes continuously.\n- U5: New Gradle subproject (e.g., spring-xd-hadoop-test / spring-xd-dirt-hadoop tests moved out); adjust dependencies; regenerate Eclipse classpath.\n- U6: Use Gradle/Jenkins CI; provision EC2 via scripts (e.g., using existing spring-xd-ec2 tooling); run mini YARN cluster; acceptance tests tagged for nightly build.\n- U8: Expose maxContentLength/messageSize as module property; wire into HttpChunkAggregator via server configuration; allow servers.yml override; default remains 1MB for backward compatibility.\n\nAssumptions:\n- U3 and U4 are duplicates → implemented once.\n- Existing Spring XD codebase, Gradle multi-module build, CI (Jenkins), Git workflow; developer has access.\n- Single developer performing all work; effort in ideal workdays (8h), excludes elapsed time, meetings beyond normal, vacations.\n- Estimates include unit/integration testing and docs within each activity; code review included in integration activity.\n- No major upstream API instability beyond RC1 known changes; Reactor 2.0 RC1 upgrade limited to compile/runtime compat fixes, not redesign.\n- EC2/cloud costs and credentials available; YARN test uses a small cluster.\n- Redis available for tests (embedded or local instance).\n- Documentation updates limited to reference docs mentioned in stories; no user guide overhaul.\n- The preamble about Spring Framework 6/Java 17 is contextual; increment targets the existing XD platform and its current JDK/build.\n- No clarifications needed; acceptance criteria derived from story text.\n\nNow, format: valid JSON only, matching schema. Numbers for most_likely_effort. Total 56.\n\nLet me make sure activity ids are strings, descriptions concise.\n\nI could also include fractional 1.5 values — schema allows number. Fine.\n\nLet me count activities: 21. Good.\n\nWrite the JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1408,
+      "completion_tokens": 4944,
+      "total_tokens": 6352,
+      "cost": 0.078384,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.078384,
+        "upstream_inference_prompt_cost": 0.004224,
+        "upstream_inference_completions_cost": 0.07416
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2627,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"All work is performed inside the existing Spring XD multi-module Gradle codebase, following its established module plugin SPI, test conventions (JUnit + Spring integration tests) and CI (Jenkins) setup.\",\n    \"U1 (Reactor processor plugin): Implement a Reactor processor module type following the same module-plugin pattern already used for Spark/RxJava modules; the minimal required metadata is the processor class name; additional configuration is exposed through standard module option metadata so it can be set with the known module option commands.\",\n    \"U2 (Reactor 2.0 RC1 upgrade): Bump the Reactor version in the central Gradle dependency management, align transitive dependencies to the versions required by RC1, and adapt XD code to breaking Reactor 2.0 API changes (e.g., Streams/Promise changes) with the smallest possible refactoring; no architectural redesign.\",\n    \"U3/U4 (Redis field-value counter aggregation): Use Spring Data Redis (RedisTemplate) with atomic Redis hash/counter operations (HINCRBY or a Lua script) so aggregation can be written continuously during ingestion; port the previous aggregate field-value counter spec, fill identified gaps, and update the reference documentation.\",\n    \"U5 (Hadoop test isolation): Create a dedicated Gradle subproject for Hadoop-dependent tests, move them out of the DIRT project, remove the Hadoop dependencies from DIRT, and fix the Eclipse classpath file generation.\",\n    \"U6 (XD+YARN on EC2 acceptance tests): Provide provisioning scripts for a small YARN cluster on EC2, implement acceptance tests covering simple XD features (stream deployment, basic source/sink processing) running on YARN, and hook the suite into the nightly CI build cycle rather than the per-commit build.\",\n    \"U7 (RxJava processor module): Implement an RxJava-based processor module using the same module SPI as in U1 so users can supply RxJava (Observable-based) computation logic for stream processing.\",\n    \"U8 (HTTP source message size): Expose the currently hard-coded 1MB HttpChunkAggregator limit as a configurable module property, wire it through the server configuration so it can be overridden in servers.yml, and keep 1MB as the default for backward compatibility.\"\n  ],\n  \"assumptions\": [\n    \"U3 and U4 are duplicates of the same requirement and are implemented once; effort is counted only once.\",\n    \"The generic Spring Framework 6 / Java 17 preamble is contextual; the increment targets the existing Spring XD platform, its current JDK level, and its existing Gradle build.\",\n    \"One developer performs all work; estimates are ideal engineering workdays (8 hours) of development effort, excluding elapsed calendar effects, release management, and meetings beyond normal development.\",\n    \"Each activity estimate includes its own unit tests; dedicated integration/system test activities are listed separately where relevant; a final cross-story integration and code-review activity is included.\",\n    \"Reactor 2.0 RC1 API changes are limited to what is needed for compilation and runtime compatibility; no redesign of XD stream processing is required.\",\n    \"EC2 credentials/budget and a small YARN test cluster are available for U6; test instability is covered by the stabilization activity.\",\n    \"A Redis instance (embedded or local) is available for development and tests of U3/U4.\",\n    \"Documentation effort covers only the reference documentation and module option docs explicitly mentioned in the stories; no full user-guide rewrite.\",\n    \"Existing Spark/RxJava module support code is available as a template for U1 and U7, reducing design uncertainty.\",\n    \"No clarifications are required; acceptance criteria are derived directly from the story texts and linked PR/wiki references.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Analysis and design of Reactor processor plugin\",\n      \"activity_description\": \"Analyze existing Spark/RxJava module plugin approach, design the Reactor processor module type, its minimal metadata (processor class) and how module options are declared and set via module option commands.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement Reactor processor module support\",\n      \"activity_description\": \"Implement base classes and module-plugin integration so a Reactor-based stream processor can be deployed by specifying only the processor class; wire into the XD module framework.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - Module option configuration support\",\n      \"activity_description\": \"Implement additional configuration of Reactor processor modules through well-known module option commands, including option metadata and validation.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U1 - Tests and documentation\",\n      \"activity_description\": \"Write unit and integration tests for the Reactor processor plugin and document usage and module options.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U2 - Reactor 2.0 RC1 dependency upgrade\",\n      \"activity_description\": \"Update Gradle dependency management to Reactor 2.0 RC1 and align dependent libraries to stable, synchronized versions.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 - Code migration and regression fixes\",\n      \"activity_description\": \"Fix compilation errors and adapt code to Reactor 2.0 RC1 API changes, run the full test suite and fix regressions.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U3/U4 - Port specs and gap analysis\",\n      \"activity_description\": \"Port the aggregate field-value counter specifications from the previous implementation wiki and identify functional gaps to be covered.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U3/U4 - Implement Redis aggregation over field-value counters\",\n      \"activity_description\": \"Implement the Redis-backed aggregation store using atomic Redis counter/hash operations so aggregated values are continuously written as data is ingested.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U3/U4 - Integrate aggregation with ingestion pipeline\",\n      \"activity_description\": \"Wire the Redis aggregation into the stream ingestion path (module/message-bus integration) so counters update continuously at runtime.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U3/U4 - Tests for Redis aggregation\",\n      \"activity_description\": \"Unit and integration tests (against embedded/local Redis) covering continuous aggregation, restart behavior, and the gaps identified in A7.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U3/U4 - Reference documentation update\",\n      \"activity_description\": \"Update the reference documentation describing the Redis-based field-value counter aggregation, options, and behavior.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U5 - Create separate Hadoop test project\",\n      \"activity_description\": \"Create a new Gradle subproject, move Hadoop-dependent tests out of the DIRT project, and adjust dependencies so DIRT no longer depends on Hadoop test artifacts.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"U5 - Build, CI and Eclipse classpath verification\",\n      \"activity_description\": \"Verify Gradle and CI builds pass, and confirm Eclipse classpath file generation is correct without the Hadoop dependencies.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"U6 - EC2/YARN test environment provisioning\",\n      \"activity_description\": \"Create/reuse scripts to provision a small YARN cluster on EC2 and install/configure XD for acceptance testing.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"U6 - Implement XD-on-YARN acceptance tests\",\n      \"activity_description\": \"Implement acceptance tests verifying simple XD features (stream creation/deployment, basic source-to-sink processing) running on YARN.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"U6 - CI integration and stabilization\",\n      \"activity_description\": \"Integrate the acceptance suite into the build cycle (nightly CI job), handle environment teardown, and stabilize flaky tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"U7 - Implement RxJava processor module\",\n      \"activity_description\": \"Design and implement the RxJava-based processor module using the module SPI so users can leverage RxJava APIs for data computations.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"U7 - Tests and documentation for RxJava module\",\n      \"activity_description\": \"Unit/integration tests for the RxJava processor module plus a usage sample and module documentation.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"U8 - Expose HTTP source message-size property\",\n      \"activity_description\": \"Expose the hard-coded 1MB HttpChunkAggregator limit as a configurable property and wire it through server configuration so it can be overridden via servers.yml; default stays 1MB.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"U8 - Tests and documentation for HTTP override\",\n      \"activity_description\": \"Tests verifying the servers.yml override and default behavior, plus documentation of the new property.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"Cross-cutting integration, code review and build verification\",\n      \"activity_description\": \"Final integration of all stories, self code review cleanup, full multi-module build and regression run, and preparation of the increment for merge.\",\n      \"most_likely_effort\": 3\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 56\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "All work is performed inside the existing Spring XD multi-module Gradle codebase, following its established module plugin SPI, test conventions (JUnit + Spring integration tests) and CI (Jenkins) setup.",
+      "U1 (Reactor processor plugin): Implement a Reactor processor module type following the same module-plugin pattern already used for Spark/RxJava modules; the minimal required metadata is the processor class name; additional configuration is exposed through standard module option metadata so it can be set with the known module option commands.",
+      "U2 (Reactor 2.0 RC1 upgrade): Bump the Reactor version in the central Gradle dependency management, align transitive dependencies to the versions required by RC1, and adapt XD code to breaking Reactor 2.0 API changes (e.g., Streams/Promise changes) with the smallest possible refactoring; no architectural redesign.",
+      "U3/U4 (Redis field-value counter aggregation): Use Spring Data Redis (RedisTemplate) with atomic Redis hash/counter operations (HINCRBY or a Lua script) so aggregation can be written continuously during ingestion; port the previous aggregate field-value counter spec, fill identified gaps, and update the reference documentation.",
+      "U5 (Hadoop test isolation): Create a dedicated Gradle subproject for Hadoop-dependent tests, move them out of the DIRT project, remove the Hadoop dependencies from DIRT, and fix the Eclipse classpath file generation.",
+      "U6 (XD+YARN on EC2 acceptance tests): Provide provisioning scripts for a small YARN cluster on EC2, implement acceptance tests covering simple XD features (stream deployment, basic source/sink processing) running on YARN, and hook the suite into the nightly CI build cycle rather than the per-commit build.",
+      "U7 (RxJava processor module): Implement an RxJava-based processor module using the same module SPI as in U1 so users can supply RxJava (Observable-based) computation logic for stream processing.",
+      "U8 (HTTP source message size): Expose the currently hard-coded 1MB HttpChunkAggregator limit as a configurable module property, wire it through the server configuration so it can be overridden in servers.yml, and keep 1MB as the default for backward compatibility."
+    ],
+    "assumptions": [
+      "U3 and U4 are duplicates of the same requirement and are implemented once; effort is counted only once.",
+      "The generic Spring Framework 6 / Java 17 preamble is contextual; the increment targets the existing Spring XD platform, its current JDK level, and its existing Gradle build.",
+      "One developer performs all work; estimates are ideal engineering workdays (8 hours) of development effort, excluding elapsed calendar effects, release management, and meetings beyond normal development.",
+      "Each activity estimate includes its own unit tests; dedicated integration/system test activities are listed separately where relevant; a final cross-story integration and code-review activity is included.",
+      "Reactor 2.0 RC1 API changes are limited to what is needed for compilation and runtime compatibility; no redesign of XD stream processing is required.",
+      "EC2 credentials/budget and a small YARN test cluster are available for U6; test instability is covered by the stabilization activity.",
+      "A Redis instance (embedded or local) is available for development and tests of U3/U4.",
+      "Documentation effort covers only the reference documentation and module option docs explicitly mentioned in the stories; no full user-guide rewrite.",
+      "Existing Spark/RxJava module support code is available as a template for U1 and U7, reducing design uncertainty.",
+      "No clarifications are required; acceptance criteria are derived directly from the story texts and linked PR/wiki references."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "U1 - Analysis and design of Reactor processor plugin",
+        "activity_description": "Analyze existing Spark/RxJava module plugin approach, design the Reactor processor module type, its minimal metadata (processor class) and how module options are declared and set via module option commands.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Implement Reactor processor module support",
+        "activity_description": "Implement base classes and module-plugin integration so a Reactor-based stream processor can be deployed by specifying only the processor class; wire into the XD module framework.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U1 - Module option configuration support",
+        "activity_description": "Implement additional configuration of Reactor processor modules through well-known module option commands, including option metadata and validation.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U1 - Tests and documentation",
+        "activity_description": "Write unit and integration tests for the Reactor processor plugin and document usage and module options.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U2 - Reactor 2.0 RC1 dependency upgrade",
+        "activity_description": "Update Gradle dependency management to Reactor 2.0 RC1 and align dependent libraries to stable, synchronized versions.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U2 - Code migration and regression fixes",
+        "activity_description": "Fix compilation errors and adapt code to Reactor 2.0 RC1 API changes, run the full test suite and fix regressions.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U3/U4 - Port specs and gap analysis",
+        "activity_description": "Port the aggregate field-value counter specifications from the previous implementation wiki and identify functional gaps to be covered.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U3/U4 - Implement Redis aggregation over field-value counters",
+        "activity_description": "Implement the Redis-backed aggregation store using atomic Redis counter/hash operations so aggregated values are continuously written as data is ingested.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U3/U4 - Integrate aggregation with ingestion pipeline",
+        "activity_description": "Wire the Redis aggregation into the stream ingestion path (module/message-bus integration) so counters update continuously at runtime.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "U3/U4 - Tests for Redis aggregation",
+        "activity_description": "Unit and integration tests (against embedded/local Redis) covering continuous aggregation, restart behavior, and the gaps identified in A7.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "U3/U4 - Reference documentation update",
+        "activity_description": "Update the reference documentation describing the Redis-based field-value counter aggregation, options, and behavior.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "U5 - Create separate Hadoop test project",
+        "activity_description": "Create a new Gradle subproject, move Hadoop-dependent tests out of the DIRT project, and adjust dependencies so DIRT no longer depends on Hadoop test artifacts.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "U5 - Build, CI and Eclipse classpath verification",
+        "activity_description": "Verify Gradle and CI builds pass, and confirm Eclipse classpath file generation is correct without the Hadoop dependencies.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "U6 - EC2/YARN test environment provisioning",
+        "activity_description": "Create/reuse scripts to provision a small YARN cluster on EC2 and install/configure XD for acceptance testing.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A15",
+        "activity_name": "U6 - Implement XD-on-YARN acceptance tests",
+        "activity_description": "Implement acceptance tests verifying simple XD features (stream creation/deployment, basic source-to-sink processing) running on YARN.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A16",
+        "activity_name": "U6 - CI integration and stabilization",
+        "activity_description": "Integrate the acceptance suite into the build cycle (nightly CI job), handle environment teardown, and stabilize flaky tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A17",
+        "activity_name": "U7 - Implement RxJava processor module",
+        "activity_description": "Design and implement the RxJava-based processor module using the module SPI so users can leverage RxJava APIs for data computations.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A18",
+        "activity_name": "U7 - Tests and documentation for RxJava module",
+        "activity_description": "Unit/integration tests for the RxJava processor module plus a usage sample and module documentation.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A19",
+        "activity_name": "U8 - Expose HTTP source message-size property",
+        "activity_description": "Expose the hard-coded 1MB HttpChunkAggregator limit as a configurable property and wire it through server configuration so it can be overridden via servers.yml; default stays 1MB.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A20",
+        "activity_name": "U8 - Tests and documentation for HTTP override",
+        "activity_description": "Tests verifying the servers.yml override and default behavior, plus documentation of the new property.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A21",
+        "activity_name": "Cross-cutting integration, code review and build verification",
+        "activity_description": "Final integration of all stories, self code review cleanup, full multi-module build and regression run, and preparation of the increment for merge.",
+        "most_likely_effort": 3
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 56
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1408,
+    "completion_tokens": 4944,
+    "total_tokens": 6352,
+    "cost": 0.078384,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.078384,
+      "upstream_inference_prompt_cost": 0.004224,
+      "upstream_inference_completions_cost": 0.07416
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2627,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789176876-GDcXrWE0rgYsuaPwNC1s",
+    "object": "chat.completion",
+    "created": 1789176876,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_a43245d1",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user asks how many work-hours per workday I considered. In my previous estimate, I stated \"estimates are ideal engineering workdays (8 hours)\". So the answer is 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user asks how many work-hours per workday I considered. In my previous estimate, I stated \"estimates are ideal engineering workdays (8 hours)\". So the answer is 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3859,
+      "completion_tokens": 72,
+      "total_tokens": 3931,
+      "cost": 0.009201,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.009201,
+        "upstream_inference_prompt_cost": 0.008121,
+        "upstream_inference_completions_cost": 0.00108
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 40,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

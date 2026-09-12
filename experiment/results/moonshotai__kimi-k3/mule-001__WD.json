@@ -1,0 +1,311 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "mule-001",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789156887-N7ynb6BvZSKO6hpNPMC1",
+    "object": "chat.completion",
+    "created": 1789156887,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"U1: Implement the WebSocket transport on top of an existing Java NIO framework (e.g., Grizzly/Netty) rather than writing a NIO layer from scratch; provide inbound endpoint, outbound endpoint, and message receiver/dispatcher components.\",\n    \"U1: Add a boolean toggle in deploy.properties (e.g., mule.transport.nio.enabled) that is read at deployment time to switch applicable transports from the classic (blocking IO) stack to the NIO stack, with blocking IO remaining the default for backward compatibility.\",\n    \"U1: Provide Spring XML schema extensions (ws:inbound-endpoint, ws:outbound-endpoint) so WebSocket components can be declared in Mule flows.\",\n    \"U2: Implement a Registry client module that communicates with the MuleSoft Registry over REST/HTTPS using the configured registry key; store the key in the Mule configuration and validate it at startup.\",\n    \"U2: On application deployment, scan deployed apps for HTTP inbound endpoints and register/update them with the paired Registry instance; deregister on undeploy. License checks are enforced through the existing license management facility.\",\n    \"U3: Implement the dynamic lookup component as a Mule message processor (dynamic router) that resolves outbound endpoints at runtime, including resolution via the Registry dynamic endpoint lookup API, with caching of resolved endpoints.\",\n    \"U4: Implement throttling as a configurable policy/interceptor applied to flow endpoints using a token-bucket algorithm; policies (rate limits, quotas) are retrieved from the Registry and applied at runtime with periodic refresh.\",\n    \"U5: Extend the business event notification/logging infrastructure so custom business events and transaction (correlation) IDs are emitted to the application log when a development/debug logging mode is enabled.\",\n    \"U6: Upgrade the MVEL dependency to version 2.1.8 in the build (Maven) descriptors and run the existing DataMapper/MVEL regression suites.\",\n    \"U7: Provide out-of-the-box JDBC datasource configurations and database dialect support for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 (MySQL already done), leveraging vendor JDBC drivers that the user supplies at runtime.\",\n    \"U8: Implement SQL query logging by wrapping the datasource/statement execution path with a logging interceptor that writes executed queries to the Mule log at DEBUG level, controlled by configuration.\",\n    \"All new components follow existing Mule 3.x conventions: Spring schema-based configuration, Mule lifecycle interfaces, JUnit-based unit tests, and functional/integration tests using the existing test infrastructure.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced developer (the estimator) performs all work and is already familiar with the Mule 3.x codebase and build system.\",\n    \"Estimates are effort in workdays (8 hours per workday), not elapsed calendar time, and include design, implementation, unit testing, and activity-level integration testing.\",\n    \"The referenced wiki specifications for U2 and U3 are available and sufficiently detailed; no additional requirements elicitation effort is needed.\",\n    \"A Registry service instance (or a stable mock/stub of its REST API) is available for development and testing of U2, U3, and U4.\",\n    \"Test environments/licenses for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 are available for JDBC integration testing; vendor JDBC drivers are provided externally and are not part of the deliverable.\",\n    \"MySQL support (U7) is already complete and requires no work.\",\n    \"An NIO framework (Grizzly/Netty) is already on the classpath or can be added as a dependency without licensing issues.\",\n    \"Existing continuous integration, code review, and release infrastructure is reused; no new tooling setup is required.\",\n    \"Effort for project management, release management, and marketing/documentation website updates is excluded; only developer-authored user documentation is included.\",\n    \"The MVEL upgrade (U6) introduces no breaking API changes beyond what the existing regression suite covers.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"NIO stack toggle via deploy.properties (U1)\",\n      \"activity_description\": \"Design and implement the deploy.properties flag that switches supported transports from the blocking IO stack to the NIO stack, including configuration parsing, default behavior, and unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"WebSocket transport implementation (U1)\",\n      \"activity_description\": \"Implement WebSocket connector, inbound and outbound endpoints, message receiver/dispatcher, and message adapters on top of the NIO framework, including handshake handling and frame processing.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"WebSocket/NIO schema and integration tests (U1)\",\n      \"activity_description\": \"Create Spring XML schema elements for the WebSocket components, sample flow configuration, and functional/integration tests covering WebSocket flows under both IO and NIO stacks.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Registry pairing client and key configuration (U2)\",\n      \"activity_description\": \"Implement the Registry REST client, registry key configuration and validation at startup, secure storage of the key, and connection/error handling.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"HTTP endpoint registration with Registry (U2)\",\n      \"activity_description\": \"Detect HTTP endpoints of all deployed applications, register/update them with the paired Registry on deployment, and deregister on undeploy, making them manageable from the Registry.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Registry license management support (U2)\",\n      \"activity_description\": \"Implement the license interaction aspects of the Registry pairing (entitlement verification and enforcement hooks) per the referenced specification.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Registry integration testing (U2)\",\n      \"activity_description\": \"Unit and integration tests for pairing, endpoint registration/deregistration, and license handling using a Registry stub/mock.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Dynamic lookup/router component (U3)\",\n      \"activity_description\": \"Implement the dynamic lookup message processor that resolves outbound endpoints at runtime, including Registry-based dynamic endpoint resolution and resolution caching.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Dynamic router schema and tests (U3)\",\n      \"activity_description\": \"Define the XML schema element for the dynamic lookup component and implement unit and functional tests covering dynamic resolution scenarios.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Throttling policy engine (U4)\",\n      \"activity_description\": \"Implement the throttling mechanism (token-bucket based rate limiting/quota enforcement) applicable to flow endpoints, including policy model and configuration.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Registry throttling policy retrieval and application (U4)\",\n      \"activity_description\": \"Retrieve throttling policies from the paired Registry, map them to ESB flow endpoints, apply them at runtime, and support policy refresh/updates.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Throttling tests (U4)\",\n      \"activity_description\": \"Unit and integration tests for throttling behavior, policy retrieval, and runtime policy application.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Business event and transaction ID logging (U5)\",\n      \"activity_description\": \"Emit custom business events and transaction/correlation IDs to the application logs in development/debug mode, with tests and configuration option.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"MVEL upgrade to 2.1.8 (U6)\",\n      \"activity_description\": \"Update the MVEL dependency to 2.1.8 in the build, resolve any incompatibilities in DataMapper/MVEL usage, and run regression suites.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"JDBC support: Oracle and PostgreSQL (U7)\",\n      \"activity_description\": \"Provide low-configuration JDBC datasource templates and dialect handling for Oracle and PostgreSQL, including connection validation and documentation snippets.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"JDBC support: Sybase, MS SQL Server, DB2 (U7)\",\n      \"activity_description\": \"Provide low-configuration JDBC datasource templates and dialect handling for Sybase, MS SQL Server, and DB2.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"JDBC integration tests across databases (U7)\",\n      \"activity_description\": \"Set up and run integration tests for each supported database (connectivity, basic CRUD queries, datasource configuration) in the test environments.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"SQL query DEBUG logging (U8)\",\n      \"activity_description\": \"Implement optional logging of all executed SQL queries to the Mule log at DEBUG level via a datasource/statement logging interceptor, with configuration toggle and tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"Cross-cutting system integration and hardening\",\n      \"activity_description\": \"End-to-end integration of all increment features, full regression run, interoperability checks (e.g., WebSocket with NIO, throttling with Registry pairing), and defect fixing.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"User documentation and configuration references\",\n      \"activity_description\": \"Write developer-authored user documentation: configuration references for new schema elements, deploy.properties toggle, registry key setup, throttling policies, JDBC datasources, and logging options.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 136\n  }\n}",
+          "refusal": null,
+          "reasoning": "The task: estimate software development effort in workdays using WBS, output JSON only. Need to break down the Mule ESB 3.5.0 increment with 8 user stories (U1-U8). Provide technical/design decisions, assumptions, activities with most likely effort, and total.\n\nLet me think about each user story and realistic effort:\n\nU1: NIO stack toggle via deploy.properties + new WebSocket components usable in flows. This includes WebSocket connector (inbound/outbound endpoints), NIO transport integration, config toggle. Big effort: maybe 30-45 days. Let's split: NIO toggle implementation, WebSocket transport implementation, tests.\n\nU2: Registry pairing via registry key; HTTP endpoints of deployed apps manageable with registry. Requires integration with Registry (external service), license management, endpoint registration. Large: 30-40 days.\n\nU3: Dynamic lookup component (dynamic router supporting registry dynamic endpoint resolution). Medium: 12-20 days.\n\nU4: Throttling policies applied to Mule ESB flow endpoints from Registry. Requires policy management, throttling filter/interceptor, policy retrieval from registry. Large: 20-30 days.\n\nU5: Custom business events and transaction IDs printed to logs (dev mode). Small: 3-5 days.\n\nU6: Upgrade MVEL to 2.1.8, regression tests. Small: 2-3 days.\n\nU7: JDBC connectivity to popular RDBMSs with little configuration: Oracle, PostgreSQL, Sybase, MS SQL Server, DB2 (MySQL done). Likely adds database-specific configs/dialects, datasource templates, testing against each DB. Medium: 15-25 days.\n\nU8: Option to log all queries run in connected RDB in DEBUG mode. Small: 3-5 days.\n\nTotal maybe ~150-200 days. Let me build a WBS with activities per story plus cross-cutting activities (integration, docs, release).\n\nLet me create activities:\n\nA1 (U1): Design and implement deploy.properties NIO toggle — 4 days.\nA2 (U1): Implement WebSocket transport/connector (inbound + outbound endpoints, message adapters) — 18 days.\nA3 (U1): XML schema/config elements + integration tests for WebSocket & NIO — 6 days.\n\nA4 (U2): Registry client (pairing with registry key, REST client, storage of key) — 8 days.\nA5 (U2): Endpoint registration/discovery: propagate HTTP endpoints of deployed apps to registry — 10 days.\nA6 (U2): License management support — 5 days.\nA7 (U2): Tests (unit + integration with registry mock) — 6 days.\n\nA8 (U3): Dynamic lookup/router component (dynamic endpoint resolution, registry integration) — 10 days.\nA9 (U3): Schema + tests — 4 days.\n\nA10 (U4): Throttling policy engine (rates, algorithms) — 8 days.\nA11 (U4): Registry policy retrieval + application to endpoints — 7 days.\nA12 (U4): Tests — 5 days.\n\nA13 (U5): Logging of custom business events and transaction IDs — 3 days.\n\nA14 (U6): MVEL 2.1.8 upgrade + regression testing — 3 days.\n\nA15 (U7): JDBC enhancements: connection templates/dialects for Oracle, PostgreSQL — 6 days.\nA16 (U7): Sybase, MS SQL Server, DB2 — 8 days.\nA17 (U7): Integration tests against each DB — 6 days.\n\nA18 (U8): Query logging in DEBUG mode (interceptor/logging of SQL statements) — 4 days.\n\nCross-cutting:\nA19: Overall integration, system testing, bug fixing — 10 days.\nA20: Documentation (user docs, config references) — 5 days.\n\nSum: 4+18+6=28; 8+10+5+6=29; 10+4=14; 8+7+5=20; 3; 3; 6+8+6=20; 4; 10+5=15.\n\nTotal = 28+29+14+20+3+3+20+4+15 = 136.\n\nLet me compute: 28+29=57; +14=71; +20=91; +3=94; +3=97; +20=117; +4=121; +15=136.\n\nTotal 136 workdays. That's reasonable for this scope for a single developer.\n\nAssumptions: single developer, Mule 3.x codebase familiarity, registry REST API available/stable, detailed specs accessible, existing test infrastructure, MySQL support already done (per U7), effort excludes elapsed time, includes unit/integration testing within activities, WebSocket implementation based on existing NIO framework (e.g., Grizzly/Netty) rather than from scratch, etc.\n\nTechnical decisions: use Netty/Grizzly NIO framework for WebSocket; deploy.properties flag switches transport; registry integration via REST client; throttling via token bucket; dynamic lookup implemented as message processor; MVEL bump with dependency management; JDBC via vendor JDBC drivers with Dialect classes; query logging via wrapping datasource / logging interceptor at DEBUG level.\n\nOutput only valid JSON. Make sure numbers sum to reported total 136.\n\nLet me double check activity list sums: \nA1 4\nA2 18\nA3 6\nA4 8\nA5 10\nA6 5\nA7 6\nA8 10\nA9 4\nA10 8\nA11 7\nA12 5\nA13 3\nA14 3\nA15 6\nA16 8\nA17 6\nA18 4\nA19 10\nA20 5\n\nSum: 4+18=22; +6=28; +8=36; +10=46; +5=51; +6=57; +10=67; +4=71; +8=79; +7=86; +5=91; +3=94; +3=97; +6=103; +8=111; +6=117; +4=121; +10=131; +5=136. Yes, 136.\n\nFormat: JSON only, no markdown fences? \"Return only valid JSON\" — I'll output raw JSON without code fences to be safe. Actually code fence with json might still parse but \"only valid JSON\" suggests raw JSON. I'll output raw JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The task: estimate software development effort in workdays using WBS, output JSON only. Need to break down the Mule ESB 3.5.0 increment with 8 user stories (U1-U8). Provide technical/design decisions, assumptions, activities with most likely effort, and total.\n\nLet me think about each user story and realistic effort:\n\nU1: NIO stack toggle via deploy.properties + new WebSocket components usable in flows. This includes WebSocket connector (inbound/outbound endpoints), NIO transport integration, config toggle. Big effort: maybe 30-45 days. Let's split: NIO toggle implementation, WebSocket transport implementation, tests.\n\nU2: Registry pairing via registry key; HTTP endpoints of deployed apps manageable with registry. Requires integration with Registry (external service), license management, endpoint registration. Large: 30-40 days.\n\nU3: Dynamic lookup component (dynamic router supporting registry dynamic endpoint resolution). Medium: 12-20 days.\n\nU4: Throttling policies applied to Mule ESB flow endpoints from Registry. Requires policy management, throttling filter/interceptor, policy retrieval from registry. Large: 20-30 days.\n\nU5: Custom business events and transaction IDs printed to logs (dev mode). Small: 3-5 days.\n\nU6: Upgrade MVEL to 2.1.8, regression tests. Small: 2-3 days.\n\nU7: JDBC connectivity to popular RDBMSs with little configuration: Oracle, PostgreSQL, Sybase, MS SQL Server, DB2 (MySQL done). Likely adds database-specific configs/dialects, datasource templates, testing against each DB. Medium: 15-25 days.\n\nU8: Option to log all queries run in connected RDB in DEBUG mode. Small: 3-5 days.\n\nTotal maybe ~150-200 days. Let me build a WBS with activities per story plus cross-cutting activities (integration, docs, release).\n\nLet me create activities:\n\nA1 (U1): Design and implement deploy.properties NIO toggle — 4 days.\nA2 (U1): Implement WebSocket transport/connector (inbound + outbound endpoints, message adapters) — 18 days.\nA3 (U1): XML schema/config elements + integration tests for WebSocket & NIO — 6 days.\n\nA4 (U2): Registry client (pairing with registry key, REST client, storage of key) — 8 days.\nA5 (U2): Endpoint registration/discovery: propagate HTTP endpoints of deployed apps to registry — 10 days.\nA6 (U2): License management support — 5 days.\nA7 (U2): Tests (unit + integration with registry mock) — 6 days.\n\nA8 (U3): Dynamic lookup/router component (dynamic endpoint resolution, registry integration) — 10 days.\nA9 (U3): Schema + tests — 4 days.\n\nA10 (U4): Throttling policy engine (rates, algorithms) — 8 days.\nA11 (U4): Registry policy retrieval + application to endpoints — 7 days.\nA12 (U4): Tests — 5 days.\n\nA13 (U5): Logging of custom business events and transaction IDs — 3 days.\n\nA14 (U6): MVEL 2.1.8 upgrade + regression testing — 3 days.\n\nA15 (U7): JDBC enhancements: connection templates/dialects for Oracle, PostgreSQL — 6 days.\nA16 (U7): Sybase, MS SQL Server, DB2 — 8 days.\nA17 (U7): Integration tests against each DB — 6 days.\n\nA18 (U8): Query logging in DEBUG mode (interceptor/logging of SQL statements) — 4 days.\n\nCross-cutting:\nA19: Overall integration, system testing, bug fixing — 10 days.\nA20: Documentation (user docs, config references) — 5 days.\n\nSum: 4+18+6=28; 8+10+5+6=29; 10+4=14; 8+7+5=20; 3; 3; 6+8+6=20; 4; 10+5=15.\n\nTotal = 28+29+14+20+3+3+20+4+15 = 136.\n\nLet me compute: 28+29=57; +14=71; +20=91; +3=94; +3=97; +20=117; +4=121; +15=136.\n\nTotal 136 workdays. That's reasonable for this scope for a single developer.\n\nAssumptions: single developer, Mule 3.x codebase familiarity, registry REST API available/stable, detailed specs accessible, existing test infrastructure, MySQL support already done (per U7), effort excludes elapsed time, includes unit/integration testing within activities, WebSocket implementation based on existing NIO framework (e.g., Grizzly/Netty) rather than from scratch, etc.\n\nTechnical decisions: use Netty/Grizzly NIO framework for WebSocket; deploy.properties flag switches transport; registry integration via REST client; throttling via token bucket; dynamic lookup implemented as message processor; MVEL bump with dependency management; JDBC via vendor JDBC drivers with Dialect classes; query logging via wrapping datasource / logging interceptor at DEBUG level.\n\nOutput only valid JSON. Make sure numbers sum to reported total 136.\n\nLet me double check activity list sums: \nA1 4\nA2 18\nA3 6\nA4 8\nA5 10\nA6 5\nA7 6\nA8 10\nA9 4\nA10 8\nA11 7\nA12 5\nA13 3\nA14 3\nA15 6\nA16 8\nA17 6\nA18 4\nA19 10\nA20 5\n\nSum: 4+18=22; +6=28; +8=36; +10=46; +5=51; +6=57; +10=67; +4=71; +8=79; +7=86; +5=91; +3=94; +3=97; +6=103; +8=111; +6=117; +4=121; +10=131; +5=136. Yes, 136.\n\nFormat: JSON only, no markdown fences? \"Return only valid JSON\" — I'll output raw JSON without code fences to be safe. Actually code fence with json might still parse but \"only valid JSON\" suggests raw JSON. I'll output raw JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1243,
+      "completion_tokens": 3733,
+      "total_tokens": 4976,
+      "cost": 0.059724,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.059724,
+        "upstream_inference_prompt_cost": 0.003729,
+        "upstream_inference_completions_cost": 0.055995
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1385,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"U1: Implement the WebSocket transport on top of an existing Java NIO framework (e.g., Grizzly/Netty) rather than writing a NIO layer from scratch; provide inbound endpoint, outbound endpoint, and message receiver/dispatcher components.\",\n    \"U1: Add a boolean toggle in deploy.properties (e.g., mule.transport.nio.enabled) that is read at deployment time to switch applicable transports from the classic (blocking IO) stack to the NIO stack, with blocking IO remaining the default for backward compatibility.\",\n    \"U1: Provide Spring XML schema extensions (ws:inbound-endpoint, ws:outbound-endpoint) so WebSocket components can be declared in Mule flows.\",\n    \"U2: Implement a Registry client module that communicates with the MuleSoft Registry over REST/HTTPS using the configured registry key; store the key in the Mule configuration and validate it at startup.\",\n    \"U2: On application deployment, scan deployed apps for HTTP inbound endpoints and register/update them with the paired Registry instance; deregister on undeploy. License checks are enforced through the existing license management facility.\",\n    \"U3: Implement the dynamic lookup component as a Mule message processor (dynamic router) that resolves outbound endpoints at runtime, including resolution via the Registry dynamic endpoint lookup API, with caching of resolved endpoints.\",\n    \"U4: Implement throttling as a configurable policy/interceptor applied to flow endpoints using a token-bucket algorithm; policies (rate limits, quotas) are retrieved from the Registry and applied at runtime with periodic refresh.\",\n    \"U5: Extend the business event notification/logging infrastructure so custom business events and transaction (correlation) IDs are emitted to the application log when a development/debug logging mode is enabled.\",\n    \"U6: Upgrade the MVEL dependency to version 2.1.8 in the build (Maven) descriptors and run the existing DataMapper/MVEL regression suites.\",\n    \"U7: Provide out-of-the-box JDBC datasource configurations and database dialect support for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 (MySQL already done), leveraging vendor JDBC drivers that the user supplies at runtime.\",\n    \"U8: Implement SQL query logging by wrapping the datasource/statement execution path with a logging interceptor that writes executed queries to the Mule log at DEBUG level, controlled by configuration.\",\n    \"All new components follow existing Mule 3.x conventions: Spring schema-based configuration, Mule lifecycle interfaces, JUnit-based unit tests, and functional/integration tests using the existing test infrastructure.\"\n  ],\n  \"assumptions\": [\n    \"A single experienced developer (the estimator) performs all work and is already familiar with the Mule 3.x codebase and build system.\",\n    \"Estimates are effort in workdays (8 hours per workday), not elapsed calendar time, and include design, implementation, unit testing, and activity-level integration testing.\",\n    \"The referenced wiki specifications for U2 and U3 are available and sufficiently detailed; no additional requirements elicitation effort is needed.\",\n    \"A Registry service instance (or a stable mock/stub of its REST API) is available for development and testing of U2, U3, and U4.\",\n    \"Test environments/licenses for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 are available for JDBC integration testing; vendor JDBC drivers are provided externally and are not part of the deliverable.\",\n    \"MySQL support (U7) is already complete and requires no work.\",\n    \"An NIO framework (Grizzly/Netty) is already on the classpath or can be added as a dependency without licensing issues.\",\n    \"Existing continuous integration, code review, and release infrastructure is reused; no new tooling setup is required.\",\n    \"Effort for project management, release management, and marketing/documentation website updates is excluded; only developer-authored user documentation is included.\",\n    \"The MVEL upgrade (U6) introduces no breaking API changes beyond what the existing regression suite covers.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"NIO stack toggle via deploy.properties (U1)\",\n      \"activity_description\": \"Design and implement the deploy.properties flag that switches supported transports from the blocking IO stack to the NIO stack, including configuration parsing, default behavior, and unit tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"WebSocket transport implementation (U1)\",\n      \"activity_description\": \"Implement WebSocket connector, inbound and outbound endpoints, message receiver/dispatcher, and message adapters on top of the NIO framework, including handshake handling and frame processing.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"WebSocket/NIO schema and integration tests (U1)\",\n      \"activity_description\": \"Create Spring XML schema elements for the WebSocket components, sample flow configuration, and functional/integration tests covering WebSocket flows under both IO and NIO stacks.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Registry pairing client and key configuration (U2)\",\n      \"activity_description\": \"Implement the Registry REST client, registry key configuration and validation at startup, secure storage of the key, and connection/error handling.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"HTTP endpoint registration with Registry (U2)\",\n      \"activity_description\": \"Detect HTTP endpoints of all deployed applications, register/update them with the paired Registry on deployment, and deregister on undeploy, making them manageable from the Registry.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Registry license management support (U2)\",\n      \"activity_description\": \"Implement the license interaction aspects of the Registry pairing (entitlement verification and enforcement hooks) per the referenced specification.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Registry integration testing (U2)\",\n      \"activity_description\": \"Unit and integration tests for pairing, endpoint registration/deregistration, and license handling using a Registry stub/mock.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Dynamic lookup/router component (U3)\",\n      \"activity_description\": \"Implement the dynamic lookup message processor that resolves outbound endpoints at runtime, including Registry-based dynamic endpoint resolution and resolution caching.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Dynamic router schema and tests (U3)\",\n      \"activity_description\": \"Define the XML schema element for the dynamic lookup component and implement unit and functional tests covering dynamic resolution scenarios.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Throttling policy engine (U4)\",\n      \"activity_description\": \"Implement the throttling mechanism (token-bucket based rate limiting/quota enforcement) applicable to flow endpoints, including policy model and configuration.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Registry throttling policy retrieval and application (U4)\",\n      \"activity_description\": \"Retrieve throttling policies from the paired Registry, map them to ESB flow endpoints, apply them at runtime, and support policy refresh/updates.\",\n      \"most_likely_effort\": 7\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Throttling tests (U4)\",\n      \"activity_description\": \"Unit and integration tests for throttling behavior, policy retrieval, and runtime policy application.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Business event and transaction ID logging (U5)\",\n      \"activity_description\": \"Emit custom business events and transaction/correlation IDs to the application logs in development/debug mode, with tests and configuration option.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"MVEL upgrade to 2.1.8 (U6)\",\n      \"activity_description\": \"Update the MVEL dependency to 2.1.8 in the build, resolve any incompatibilities in DataMapper/MVEL usage, and run regression suites.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"JDBC support: Oracle and PostgreSQL (U7)\",\n      \"activity_description\": \"Provide low-configuration JDBC datasource templates and dialect handling for Oracle and PostgreSQL, including connection validation and documentation snippets.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"JDBC support: Sybase, MS SQL Server, DB2 (U7)\",\n      \"activity_description\": \"Provide low-configuration JDBC datasource templates and dialect handling for Sybase, MS SQL Server, and DB2.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"JDBC integration tests across databases (U7)\",\n      \"activity_description\": \"Set up and run integration tests for each supported database (connectivity, basic CRUD queries, datasource configuration) in the test environments.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"SQL query DEBUG logging (U8)\",\n      \"activity_description\": \"Implement optional logging of all executed SQL queries to the Mule log at DEBUG level via a datasource/statement logging interceptor, with configuration toggle and tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"Cross-cutting system integration and hardening\",\n      \"activity_description\": \"End-to-end integration of all increment features, full regression run, interoperability checks (e.g., WebSocket with NIO, throttling with Registry pairing), and defect fixing.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"User documentation and configuration references\",\n      \"activity_description\": \"Write developer-authored user documentation: configuration references for new schema elements, deploy.properties toggle, registry key setup, throttling policies, JDBC datasources, and logging options.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 136\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "U1: Implement the WebSocket transport on top of an existing Java NIO framework (e.g., Grizzly/Netty) rather than writing a NIO layer from scratch; provide inbound endpoint, outbound endpoint, and message receiver/dispatcher components.",
+      "U1: Add a boolean toggle in deploy.properties (e.g., mule.transport.nio.enabled) that is read at deployment time to switch applicable transports from the classic (blocking IO) stack to the NIO stack, with blocking IO remaining the default for backward compatibility.",
+      "U1: Provide Spring XML schema extensions (ws:inbound-endpoint, ws:outbound-endpoint) so WebSocket components can be declared in Mule flows.",
+      "U2: Implement a Registry client module that communicates with the MuleSoft Registry over REST/HTTPS using the configured registry key; store the key in the Mule configuration and validate it at startup.",
+      "U2: On application deployment, scan deployed apps for HTTP inbound endpoints and register/update them with the paired Registry instance; deregister on undeploy. License checks are enforced through the existing license management facility.",
+      "U3: Implement the dynamic lookup component as a Mule message processor (dynamic router) that resolves outbound endpoints at runtime, including resolution via the Registry dynamic endpoint lookup API, with caching of resolved endpoints.",
+      "U4: Implement throttling as a configurable policy/interceptor applied to flow endpoints using a token-bucket algorithm; policies (rate limits, quotas) are retrieved from the Registry and applied at runtime with periodic refresh.",
+      "U5: Extend the business event notification/logging infrastructure so custom business events and transaction (correlation) IDs are emitted to the application log when a development/debug logging mode is enabled.",
+      "U6: Upgrade the MVEL dependency to version 2.1.8 in the build (Maven) descriptors and run the existing DataMapper/MVEL regression suites.",
+      "U7: Provide out-of-the-box JDBC datasource configurations and database dialect support for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 (MySQL already done), leveraging vendor JDBC drivers that the user supplies at runtime.",
+      "U8: Implement SQL query logging by wrapping the datasource/statement execution path with a logging interceptor that writes executed queries to the Mule log at DEBUG level, controlled by configuration.",
+      "All new components follow existing Mule 3.x conventions: Spring schema-based configuration, Mule lifecycle interfaces, JUnit-based unit tests, and functional/integration tests using the existing test infrastructure."
+    ],
+    "assumptions": [
+      "A single experienced developer (the estimator) performs all work and is already familiar with the Mule 3.x codebase and build system.",
+      "Estimates are effort in workdays (8 hours per workday), not elapsed calendar time, and include design, implementation, unit testing, and activity-level integration testing.",
+      "The referenced wiki specifications for U2 and U3 are available and sufficiently detailed; no additional requirements elicitation effort is needed.",
+      "A Registry service instance (or a stable mock/stub of its REST API) is available for development and testing of U2, U3, and U4.",
+      "Test environments/licenses for Oracle, PostgreSQL, Sybase, MS SQL Server, and DB2 are available for JDBC integration testing; vendor JDBC drivers are provided externally and are not part of the deliverable.",
+      "MySQL support (U7) is already complete and requires no work.",
+      "An NIO framework (Grizzly/Netty) is already on the classpath or can be added as a dependency without licensing issues.",
+      "Existing continuous integration, code review, and release infrastructure is reused; no new tooling setup is required.",
+      "Effort for project management, release management, and marketing/documentation website updates is excluded; only developer-authored user documentation is included.",
+      "The MVEL upgrade (U6) introduces no breaking API changes beyond what the existing regression suite covers."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "NIO stack toggle via deploy.properties (U1)",
+        "activity_description": "Design and implement the deploy.properties flag that switches supported transports from the blocking IO stack to the NIO stack, including configuration parsing, default behavior, and unit tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "WebSocket transport implementation (U1)",
+        "activity_description": "Implement WebSocket connector, inbound and outbound endpoints, message receiver/dispatcher, and message adapters on top of the NIO framework, including handshake handling and frame processing.",
+        "most_likely_effort": 18
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "WebSocket/NIO schema and integration tests (U1)",
+        "activity_description": "Create Spring XML schema elements for the WebSocket components, sample flow configuration, and functional/integration tests covering WebSocket flows under both IO and NIO stacks.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Registry pairing client and key configuration (U2)",
+        "activity_description": "Implement the Registry REST client, registry key configuration and validation at startup, secure storage of the key, and connection/error handling.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "HTTP endpoint registration with Registry (U2)",
+        "activity_description": "Detect HTTP endpoints of all deployed applications, register/update them with the paired Registry on deployment, and deregister on undeploy, making them manageable from the Registry.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Registry license management support (U2)",
+        "activity_description": "Implement the license interaction aspects of the Registry pairing (entitlement verification and enforcement hooks) per the referenced specification.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Registry integration testing (U2)",
+        "activity_description": "Unit and integration tests for pairing, endpoint registration/deregistration, and license handling using a Registry stub/mock.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Dynamic lookup/router component (U3)",
+        "activity_description": "Implement the dynamic lookup message processor that resolves outbound endpoints at runtime, including Registry-based dynamic endpoint resolution and resolution caching.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Dynamic router schema and tests (U3)",
+        "activity_description": "Define the XML schema element for the dynamic lookup component and implement unit and functional tests covering dynamic resolution scenarios.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Throttling policy engine (U4)",
+        "activity_description": "Implement the throttling mechanism (token-bucket based rate limiting/quota enforcement) applicable to flow endpoints, including policy model and configuration.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Registry throttling policy retrieval and application (U4)",
+        "activity_description": "Retrieve throttling policies from the paired Registry, map them to ESB flow endpoints, apply them at runtime, and support policy refresh/updates.",
+        "most_likely_effort": 7
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Throttling tests (U4)",
+        "activity_description": "Unit and integration tests for throttling behavior, policy retrieval, and runtime policy application.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "Business event and transaction ID logging (U5)",
+        "activity_description": "Emit custom business events and transaction/correlation IDs to the application logs in development/debug mode, with tests and configuration option.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "MVEL upgrade to 2.1.8 (U6)",
+        "activity_description": "Update the MVEL dependency to 2.1.8 in the build, resolve any incompatibilities in DataMapper/MVEL usage, and run regression suites.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A15",
+        "activity_name": "JDBC support: Oracle and PostgreSQL (U7)",
+        "activity_description": "Provide low-configuration JDBC datasource templates and dialect handling for Oracle and PostgreSQL, including connection validation and documentation snippets.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A16",
+        "activity_name": "JDBC support: Sybase, MS SQL Server, DB2 (U7)",
+        "activity_description": "Provide low-configuration JDBC datasource templates and dialect handling for Sybase, MS SQL Server, and DB2.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A17",
+        "activity_name": "JDBC integration tests across databases (U7)",
+        "activity_description": "Set up and run integration tests for each supported database (connectivity, basic CRUD queries, datasource configuration) in the test environments.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A18",
+        "activity_name": "SQL query DEBUG logging (U8)",
+        "activity_description": "Implement optional logging of all executed SQL queries to the Mule log at DEBUG level via a datasource/statement logging interceptor, with configuration toggle and tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A19",
+        "activity_name": "Cross-cutting system integration and hardening",
+        "activity_description": "End-to-end integration of all increment features, full regression run, interoperability checks (e.g., WebSocket with NIO, throttling with Registry pairing), and defect fixing.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A20",
+        "activity_name": "User documentation and configuration references",
+        "activity_description": "Write developer-authored user documentation: configuration references for new schema elements, deploy.properties toggle, registry key setup, throttling policies, JDBC datasources, and logging options.",
+        "most_likely_effort": 5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 136
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1243,
+    "completion_tokens": 3733,
+    "total_tokens": 4976,
+    "cost": 0.059724,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.059724,
+      "upstream_inference_prompt_cost": 0.003729,
+      "upstream_inference_completions_cost": 0.055995
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1385,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789156994-tylqfHraeOUimsoUhw5q",
+    "object": "chat.completion",
+    "created": 1789156994,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user is asking a simple conversion question: how many work-hours do I consider equivalent to one estimated workday. In my assumptions, I already stated \"Estimates are effort in workdays (8 hours per workday)\". So the answer is 8.\n\nThey said do not revise, recalculate, or restate the previous effort estimate. Just return the JSON.\n\nOutput valid JSON with work_hours_per_workday: 8.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple conversion question: how many work-hours do I consider equivalent to one estimated workday. In my assumptions, I already stated \"Estimates are effort in workdays (8 hours per workday)\". So the answer is 8.\n\nThey said do not revise, recalculate, or restate the previous effort estimate. Just return the JSON.\n\nOutput valid JSON with work_hours_per_workday: 8.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3725,
+      "completion_tokens": 116,
+      "total_tokens": 3841,
+      "cost": 0.0101502,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0101502,
+        "upstream_inference_prompt_cost": 0.0084102,
+        "upstream_inference_completions_cost": 0.00174
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 88,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

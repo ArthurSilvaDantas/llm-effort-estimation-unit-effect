@@ -1,0 +1,342 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-008",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789218866-KRfmjMIEyZ6Qavkcj1C7",
+    "object": "chat.completion",
+    "created": 1789218866,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_35be80b2",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: Use Apache Curator's built-in namespace/chroot support for ZooKeeper tenant isolation; the namespace is exposed as a configuration property (e.g., xd.zookeeper.namespace in servers.yml) and all ZK paths in the codebase are made namespace-relative.\",\n    \"U2: Implement HTTP Basic authentication on the Admin server REST endpoints; xd-shell prompts interactively for username/password on connect, holds credentials in memory only for the session, and never writes them to disk, shell history, or logs.\",\n    \"U3: Adopt a maintenance-branch model (e.g., branch '1.0.x') with semantic versioning; MINOR/patch releases are cut from the maintenance branch and fixes are selectively merged back to master; CI jobs are configured for the new branch.\",\n    \"U4: Remove deprecated module-registry functions (including download of module definitions) and their usages in Shell and Admin-UI; update or delete the corresponding tests; rely on the refactored registry API only.\",\n    \"U5: Use ZooKeeper-based service discovery rather than a direct shell-to-ZK data connection: the Admin server publishes an ephemeral ZK node containing host and the actual (random) Tomcat port at startup; xd-shell resolves the Admin server endpoint from that node. This remains compatible with adding a load balancer later.\",\n    \"U6: Migrate the Kafka message bus from the legacy consumer to the Kafka 0.9 new consumer API (org.apache.kafka.clients.consumer), adjusting offset management and configuration, then rerun and fix the previously failing tests.\",\n    \"U7: Implement audio/video ingestion as a Motion-JPEG (multipart/x-mixed-replace) stream source module written in pure Java; the module parses the stream into JPEG frames and emits them as messages (byte[]) on the message bus; facial detection is performed by downstream analytics modules, so no native OpenCV dependency is introduced (per the platform-compatibility note).\",\n    \"U8: Add a boolean configuration parameter (e.g., xd.ui.messageRates.enabled) in servers.yml; the value is exposed through an Admin endpoint and consumed by the Admin-UI cluster view to show or hide message rates.\",\n    \"Baseline: the increment is built on the existing Spring XD codebase (Spring Framework with Java 17+ per the stated Spring 6 baseline), using Maven/Gradle builds, embedded ZooKeeper and embedded Kafka for integration tests.\"\n  ],\n  \"assumptions\": [\n    \"All work is performed by a single developer (the author), so total effort equals the sum of individual activity efforts; no parallel work is assumed.\",\n    \"An existing Spring XD codebase is available with ZooKeeper (Curator) integration, xd-shell, Admin server, message-bus abstraction, Kafka message bus module, and an Angular-based Admin-UI.\",\n    \"Existing test infrastructure (embedded ZooKeeper, embedded Kafka, CI server) is available and functional.\",\n    \"U7 is treated primarily as ingestion enablement: development of the facial-detection algorithm itself is out of scope; the spike is assumed to confirm Motion-JPEG feasibility.\",\n    \"U3 involves SCM/CI and release-process setup only; no functional code changes are required beyond versioning configuration.\",\n    \"For U6, a Kafka 0.9-compatible broker/cluster is available for testing, and the failing tests referenced are the known message-bus integration tests.\",\n    \"Estimates include design, implementation, unit and integration testing, and activity-level documentation, but exclude elapsed-time delays such as environment outages or waiting on external reviews.\",\n    \"No changes to the overall UI technology stack are needed for U8; only conditional rendering in the existing cluster view.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Design tenant-aware ZK namespace configuration\",\n      \"activity_description\": \"Define the namespace configuration property, its semantics for tenant profiles, and how existing ZK paths become namespace-relative.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement ZK namespace support\",\n      \"activity_description\": \"Wire the configurable namespace into the Curator client (namespace/chroot) and adapt path handling across components that read/write ZK metadata.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - Namespace isolation tests\",\n      \"activity_description\": \"Unit and integration tests (embedded ZK) verifying metadata isolation between tenant namespaces and correct default behavior.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U2 - Admin server authentication\",\n      \"activity_description\": \"Add configurable Basic authentication to Admin server REST endpoints so credentials are supplied at runtime rather than stored in files.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U2 - Interactive shell credential prompt\",\n      \"activity_description\": \"Implement interactive username/password prompt in xd-shell when targeting the Admin server; keep credentials in memory only for the session.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 - Security verification and tests\",\n      \"activity_description\": \"Tests for authentication flows and verification that passwords are never persisted, echoed, or logged.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U3 - Maintenance branch setup\",\n      \"activity_description\": \"Create the maintenance branch (e.g., 1.0.x), set the MINOR/patch versioning scheme, configure CI builds, and document the backport workflow.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U4 - Remove deprecated module-definition download\",\n      \"activity_description\": \"Delete deprecated module-registry functions (including download of module definitions) and migrate remaining callers to the refactored registry API.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U4 - Clean Shell and Admin-UI deprecated code\",\n      \"activity_description\": \"Remove usages of deprecated functions from the Shell and Admin-UI modules and clean up dead code.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U4 - Regression fixes after cleanup\",\n      \"activity_description\": \"Update/remove affected tests and fix regressions caused by the cleanup.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U5 - Spike: discovery approach evaluation\",\n      \"activity_description\": \"Evaluate direct shell-to-ZK connection versus LB-mediated access versus ZK-based service discovery; document the decision.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U5 - Admin server endpoint registration\",\n      \"activity_description\": \"Publish the Admin server host and actual random Tomcat port as an ephemeral ZooKeeper node at startup.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"U5 - Shell discovery and targeting\",\n      \"activity_description\": \"Implement xd-shell lookup of the Admin server endpoint from ZK and a command to point the shell at the discovered server.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"U5 - Discovery flow tests\",\n      \"activity_description\": \"Integration tests covering startup registration, shell discovery, and reconnection behavior with random ports.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"U6 - Upgrade to Kafka 0.9 new consumer API\",\n      \"activity_description\": \"Migrate the Kafka message bus consumer code, configuration, and offset management to the Kafka 0.9 rewritten consumer.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"U6 - Rerun and fix failing Kafka tests\",\n      \"activity_description\": \"Rerun the previously failing message-bus tests against the new consumer and fix failures.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"U7 - Spike: Motion-JPEG feasibility and design\",\n      \"activity_description\": \"Research Motion-JPEG ingestion feasibility and produce the design specification for the stream source module.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"U7 - Implement Motion-JPEG source module\",\n      \"activity_description\": \"Implement a pure-Java MJPEG (multipart/x-mixed-replace) stream source that parses the stream into individual JPEG frames.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"U7 - Integrate frames with message bus and analytics hook\",\n      \"activity_description\": \"Emit frames as messages on the message bus and provide the integration point for downstream predictive-analytics (facial detection) modules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"U7 - MJPEG ingestion tests\",\n      \"activity_description\": \"Tests with sample MJPEG streams validating frame extraction, message emission, and error handling.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"U8 - Message-rates configuration parameter\",\n      \"activity_description\": \"Add the enable/disable message-rates parameter to servers.yml and bind it into the Admin server configuration.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A22\",\n      \"activity_name\": \"U8 - Apply toggle in cluster view\",\n      \"activity_description\": \"Expose the toggle via the Admin endpoint and update the Admin-UI cluster view to show/hide message rates accordingly.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A23\",\n      \"activity_name\": \"U8 - Toggle tests\",\n      \"activity_description\": \"Unit and UI-level tests for the enable/disable behavior.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A24\",\n      \"activity_name\": \"Increment integration and system testing\",\n      \"activity_description\": \"End-to-end testing of the combined increment across ZK, shell, Admin server, message bus, and Admin-UI.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A25\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update configuration reference and user documentation for the new properties, shell behavior, and ingestion module.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A26\",\n      \"activity_name\": \"Build verification and release preparation\",\n      \"activity_description\": \"Final build verification, merge coordination with the maintenance branch, and release preparation.\",\n      \"most_likely_effort\": 1\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 43\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze the specification. It's a set of user stories for what appears to be Spring XD (based on references to xd-shell, ZK = ZooKeeper, message bus, modules, streams, admin server, servers.yml). The intro about Spring Framework is context. The user stories U1-U8 describe a software increment.\n\nI need to:\n1. Break down into WBS activities.\n2. State technical/design decisions and assumptions.\n3. Give most likely effort per activity (workdays).\n4. Sum total.\n\nLet me interpret each story:\n\nU1: Configurable ZooKeeper namespace (chroot path) per tenant to isolate ZK metadata. Implementation: add configuration property for ZK namespace/chroot in servers.yml, wire into ZK connection factory (Curator client chroot), ensure all ZK paths are relative to namespace, tests.\n\nU2: Prompt-based username/password entry for Admin server access (interactive login in shell instead of config file). Implement security: basic auth on admin server, shell prompts for credentials, credentials not persisted/logged.\n\nU3: Maintenance branch strategy — this is process/SCM work: create maintenance branch, backport workflow, version scheme for MINOR releases (e.g., 1.0.x branch). Small effort, mostly branching setup, CI config.\n\nU4: Cleanup of deprecated functions (module registry refactoring follow-up): remove deprecated download of module definitions, clean Shell and Admin-UI modules. Code cleanup, remove dead code, update tests, verify.\n\nU5: Expose admin server's random tomcat port to xd-shell. Spike + implementation: publish admin server URL/port to ZooKeeper, shell discovers it (connect via ZK lookup rather than direct ZK connection), with option for LB later. Implementation: admin server registers its host/port in ZK on startup; shell command to target admin server using discovery.\n\nU6: Upgrade Kafka client to 0.9 new consumer API, rerun failing tests, fix issues. Integration test fixes.\n\nU7: Spike + implementation for streaming ingest of audio/video, Motion-JPEG source module, facial detection hook. The spike scope: research Motion-JPEG feasibility, design specs. Implement MJPEG stream source module (HTTP-based MJPEG parsing into frames), integrate with stream pipeline, maybe sample processor. Platform constraint: opencv not platform compatible — so avoid native opencv; do frame extraction in Java.\n\nU8: Config parameter in servers.yml to enable/disable message rates in cluster view. Add config property, propagate to admin UI endpoint, hide/show rates.\n\nNow WBS. I'll organize per user story with sub-activities (analysis/design, implementation, testing), plus integration/release-level activities.\n\nEstimates (workdays), single developer:\n\nU1 (ZK namespace per tenant):\n- Design & config property: 1\n- Implement namespace/chroot in ZK client config & path handling: 2\n- Tests (unit/integration with embedded ZK): 1.5\nTotal ~4.5\n\nU2 (interactive credentials):\n- Admin server basic auth config: 2\n- Shell interactive username/password prompt, in-memory only: 2\n- Ensure no logging of credentials, tests: 1.5\nTotal ~5.5\n\nU3 (maintenance branch):\n- Branch setup, versioning scheme, CI config, docs: 1.5\n\nU4 (cleanup deprecated):\n- Identify deprecated code, remove module-definition download: 2\n- Clean Shell & Admin-UI modules: 1.5\n- Test fixes, regression: 1\nTotal ~4.5\n\nU5 (random port access via shell):\n- Spike: evaluate direct-ZK vs LB vs discovery: 1\n- Admin server publishes address to ZK on startup: 1.5\n- Shell command to discover & target admin server: 2\n- Tests: 1\nTotal ~5.5\n\nU6 (Kafka 0.9 consumer):\n- Upgrade client deps/config to new consumer API: 2\n- Rerun & fix failing tests: 3\nTotal 5\n\nU7 (MJPEG streaming):\n- Spike: Motion-JPEG feasibility, design spec: 2\n- Implement MJPEG source module (frame parsing): 4\n- Frame-to-message conversion & integration with bus: 2\n- Sample processor hook for analytics (without opencv native): 1.5\n- Tests with sample streams: 1.5\nTotal ~11 — hmm, maybe trim: spike 2, implementation 4, integration 2, tests 1.5 = 9.5. Facial detection algorithm itself probably out of scope (they apply algorithms downstream); scope is ingest. Keep ~9.\n\nU8 (config toggle for message rates):\n- Config property in servers.yml + binding: 0.5\n- Propagate to cluster view endpoint/UI: 1\n- Tests: 0.5\nTotal 2\n\nCross-cutting:\n- Requirements/design consolidation across increment: maybe included per story.\n- Integration & system testing across increment: 2\n- Documentation updates (reference docs, config docs): 1.5\n- Build/release coordination, merge to maintenance branch: 1\n\nLet me structure activities maybe as a flat list with IDs like A1... or grouped WBS IDs (1.1, 1.2...). The schema only needs activity_id, name, description, most_likely_effort.\n\nLet me produce a reasonable WBS:\n\nPhase per story, with sub-activities:\n\n1. U1: \n- A1: Design tenant-aware ZK namespace configuration (1)\n- A2: Implement namespace support in ZK client/path handling (2.5)\n- A3: Unit/integration tests for namespace isolation (1.5)\n=> 5\n\n2. U2:\n- A4: Admin server authentication (basic auth) configuration (2)\n- A5: Shell interactive credential prompt (2)\n- A6: Security tests, verify no credential logging (1.5)\n=> 5.5\n\n3. U3:\n- A7: Create maintenance branch, versioning & CI setup (1.5)\n\n4. U4:\n- A8: Remove deprecated module-definition download functions (2)\n- A9: Clean Shell and Admin-UI deprecated code (1.5)\n- A10: Regression test fixes after cleanup (1)\n=> 4.5\n\n5. U5:\n- A11: Spike: evaluate ZK-direct vs LB vs discovery approach (1)\n- A12: Admin server registers random port/address in ZK (1.5)\n- A13: xd-shell discovery & target command (2)\n- A14: Tests for discovery flow (1)\n=> 5.5\n\n6. U6:\n- A15: Upgrade to Kafka 0.9 new consumer API (2)\n- A16: Rerun and fix failing Kafka message bus tests (3)\n=> 5\n\n7. U7:\n- A17: Spike: Motion-JPEG feasibility & design spec (2)\n- A18: Implement MJPEG source module (frame extraction) (4)\n- A19: Integrate frames with message bus & analytics processor hook (2)\n- A20: Tests with sample MJPEG streams (1.5)\n=> 9.5\n\n8. U8:\n- A21: Add enable/disable message-rates config in servers.yml (0.5)\n- A22: Apply toggle in cluster view (UI/endpoint) (1)\n- A23: Tests (0.5)\n=> 2\n\n9. Increment-level:\n- A24: Cross-increment integration & system testing (2)\n- A25: Documentation updates (config reference, user docs) (1.5)\n- A26: Build verification, merge/release prep (1)\n=> 4.5\n\nTotal: 5+5.5+1.5+4.5+5.5+5+9.5+2+4.5 = 43 workdays.\n\nLet me double check sums: 5+5.5=10.5; +1.5=12; +4.5=16.5; +5.5=22; +5=27; +9.5=36.5; +2=38.5; +4.5=43. Total 43 workdays.\n\nTechnical and design decisions:\n- Use Curator's namespace/chroot feature for tenant isolation (ZooKeeper chroot).\n- Basic authentication on admin REST endpoints; shell prompts interactively via console; credentials kept in memory only, never written to disk/logs.\n- Maintenance branch named e.g. 1.0.x with semantic versioning; MINOR patches backported from master.\n- Admin server service discovery via ZK ephemeral node containing host/port (not direct shell-to-ZK data access); LB-compatible later.\n- Kafka 0.9 new consumer API (org.apache.kafka.clients.consumer) replacing legacy high-level consumer.\n- MJPEG ingestion implemented as a source module parsing multipart/x-mixed-replace streams into JPEG frames; frames emitted as byte[] messages; facial detection performed downstream (no native OpenCV dependency).\n- servers.yml property spring.xd... e.g., xd.ui.messageRates.enabled toggle exposed via admin endpoint consumed by Admin-UI.\n- Java 17/Spring 6 baseline per spec context... Actually the spec is Spring XD era (Java 7/8), but the intro says Spring 6 requires Java 17. I'll state assumption that the increment targets the existing Spring XD codebase built on Spring Framework; note Java 17+ baseline if Spring 6 used. Keep simpler: assume existing Spring XD codebase (Java 8 era) — but the intro explicitly mentions Spring Framework 6 requiring Java 17. I'll mention baseline alignment with Java 17 and Spring 6 where applicable.\n\nAssumptions:\n- Existing Spring XD codebase with ZK (Curator), xd-shell, admin server, message bus modules, Admin-UI.\n- Team = 1 developer (the estimator) performing all work; effort excludes review by others? Include own testing.\n- U7 spike outcome assumed positive; facial detection algorithm development is out of scope (only ingestion pipeline and hook).\n- U3 is SCM/process work only; no code change beyond versioning config.\n- U6: Kafka 0.9 cluster available for testing.\n- Test infrastructure (embedded ZK, embedded Kafka) exists.\n- No UI framework change; Admin-UI is existing Angular-based UI.\n- Estimates include unit + integration testing and documentation per activity.\n\nOutput only valid JSON per schema. Numbers > 0.\n\nLet me finalize the activities list with descriptions. Ensure exclusiveMinimum 0 satisfied.\n\nTotal 43. Good.\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze the specification. It's a set of user stories for what appears to be Spring XD (based on references to xd-shell, ZK = ZooKeeper, message bus, modules, streams, admin server, servers.yml). The intro about Spring Framework is context. The user stories U1-U8 describe a software increment.\n\nI need to:\n1. Break down into WBS activities.\n2. State technical/design decisions and assumptions.\n3. Give most likely effort per activity (workdays).\n4. Sum total.\n\nLet me interpret each story:\n\nU1: Configurable ZooKeeper namespace (chroot path) per tenant to isolate ZK metadata. Implementation: add configuration property for ZK namespace/chroot in servers.yml, wire into ZK connection factory (Curator client chroot), ensure all ZK paths are relative to namespace, tests.\n\nU2: Prompt-based username/password entry for Admin server access (interactive login in shell instead of config file). Implement security: basic auth on admin server, shell prompts for credentials, credentials not persisted/logged.\n\nU3: Maintenance branch strategy — this is process/SCM work: create maintenance branch, backport workflow, version scheme for MINOR releases (e.g., 1.0.x branch). Small effort, mostly branching setup, CI config.\n\nU4: Cleanup of deprecated functions (module registry refactoring follow-up): remove deprecated download of module definitions, clean Shell and Admin-UI modules. Code cleanup, remove dead code, update tests, verify.\n\nU5: Expose admin server's random tomcat port to xd-shell. Spike + implementation: publish admin server URL/port to ZooKeeper, shell discovers it (connect via ZK lookup rather than direct ZK connection), with option for LB later. Implementation: admin server registers its host/port in ZK on startup; shell command to target admin server using discovery.\n\nU6: Upgrade Kafka client to 0.9 new consumer API, rerun failing tests, fix issues. Integration test fixes.\n\nU7: Spike + implementation for streaming ingest of audio/video, Motion-JPEG source module, facial detection hook. The spike scope: research Motion-JPEG feasibility, design specs. Implement MJPEG stream source module (HTTP-based MJPEG parsing into frames), integrate with stream pipeline, maybe sample processor. Platform constraint: opencv not platform compatible — so avoid native opencv; do frame extraction in Java.\n\nU8: Config parameter in servers.yml to enable/disable message rates in cluster view. Add config property, propagate to admin UI endpoint, hide/show rates.\n\nNow WBS. I'll organize per user story with sub-activities (analysis/design, implementation, testing), plus integration/release-level activities.\n\nEstimates (workdays), single developer:\n\nU1 (ZK namespace per tenant):\n- Design & config property: 1\n- Implement namespace/chroot in ZK client config & path handling: 2\n- Tests (unit/integration with embedded ZK): 1.5\nTotal ~4.5\n\nU2 (interactive credentials):\n- Admin server basic auth config: 2\n- Shell interactive username/password prompt, in-memory only: 2\n- Ensure no logging of credentials, tests: 1.5\nTotal ~5.5\n\nU3 (maintenance branch):\n- Branch setup, versioning scheme, CI config, docs: 1.5\n\nU4 (cleanup deprecated):\n- Identify deprecated code, remove module-definition download: 2\n- Clean Shell & Admin-UI modules: 1.5\n- Test fixes, regression: 1\nTotal ~4.5\n\nU5 (random port access via shell):\n- Spike: evaluate direct-ZK vs LB vs discovery: 1\n- Admin server publishes address to ZK on startup: 1.5\n- Shell command to discover & target admin server: 2\n- Tests: 1\nTotal ~5.5\n\nU6 (Kafka 0.9 consumer):\n- Upgrade client deps/config to new consumer API: 2\n- Rerun & fix failing tests: 3\nTotal 5\n\nU7 (MJPEG streaming):\n- Spike: Motion-JPEG feasibility, design spec: 2\n- Implement MJPEG source module (frame parsing): 4\n- Frame-to-message conversion & integration with bus: 2\n- Sample processor hook for analytics (without opencv native): 1.5\n- Tests with sample streams: 1.5\nTotal ~11 — hmm, maybe trim: spike 2, implementation 4, integration 2, tests 1.5 = 9.5. Facial detection algorithm itself probably out of scope (they apply algorithms downstream); scope is ingest. Keep ~9.\n\nU8 (config toggle for message rates):\n- Config property in servers.yml + binding: 0.5\n- Propagate to cluster view endpoint/UI: 1\n- Tests: 0.5\nTotal 2\n\nCross-cutting:\n- Requirements/design consolidation across increment: maybe included per story.\n- Integration & system testing across increment: 2\n- Documentation updates (reference docs, config docs): 1.5\n- Build/release coordination, merge to maintenance branch: 1\n\nLet me structure activities maybe as a flat list with IDs like A1... or grouped WBS IDs (1.1, 1.2...). The schema only needs activity_id, name, description, most_likely_effort.\n\nLet me produce a reasonable WBS:\n\nPhase per story, with sub-activities:\n\n1. U1: \n- A1: Design tenant-aware ZK namespace configuration (1)\n- A2: Implement namespace support in ZK client/path handling (2.5)\n- A3: Unit/integration tests for namespace isolation (1.5)\n=> 5\n\n2. U2:\n- A4: Admin server authentication (basic auth) configuration (2)\n- A5: Shell interactive credential prompt (2)\n- A6: Security tests, verify no credential logging (1.5)\n=> 5.5\n\n3. U3:\n- A7: Create maintenance branch, versioning & CI setup (1.5)\n\n4. U4:\n- A8: Remove deprecated module-definition download functions (2)\n- A9: Clean Shell and Admin-UI deprecated code (1.5)\n- A10: Regression test fixes after cleanup (1)\n=> 4.5\n\n5. U5:\n- A11: Spike: evaluate ZK-direct vs LB vs discovery approach (1)\n- A12: Admin server registers random port/address in ZK (1.5)\n- A13: xd-shell discovery & target command (2)\n- A14: Tests for discovery flow (1)\n=> 5.5\n\n6. U6:\n- A15: Upgrade to Kafka 0.9 new consumer API (2)\n- A16: Rerun and fix failing Kafka message bus tests (3)\n=> 5\n\n7. U7:\n- A17: Spike: Motion-JPEG feasibility & design spec (2)\n- A18: Implement MJPEG source module (frame extraction) (4)\n- A19: Integrate frames with message bus & analytics processor hook (2)\n- A20: Tests with sample MJPEG streams (1.5)\n=> 9.5\n\n8. U8:\n- A21: Add enable/disable message-rates config in servers.yml (0.5)\n- A22: Apply toggle in cluster view (UI/endpoint) (1)\n- A23: Tests (0.5)\n=> 2\n\n9. Increment-level:\n- A24: Cross-increment integration & system testing (2)\n- A25: Documentation updates (config reference, user docs) (1.5)\n- A26: Build verification, merge/release prep (1)\n=> 4.5\n\nTotal: 5+5.5+1.5+4.5+5.5+5+9.5+2+4.5 = 43 workdays.\n\nLet me double check sums: 5+5.5=10.5; +1.5=12; +4.5=16.5; +5.5=22; +5=27; +9.5=36.5; +2=38.5; +4.5=43. Total 43 workdays.\n\nTechnical and design decisions:\n- Use Curator's namespace/chroot feature for tenant isolation (ZooKeeper chroot).\n- Basic authentication on admin REST endpoints; shell prompts interactively via console; credentials kept in memory only, never written to disk/logs.\n- Maintenance branch named e.g. 1.0.x with semantic versioning; MINOR patches backported from master.\n- Admin server service discovery via ZK ephemeral node containing host/port (not direct shell-to-ZK data access); LB-compatible later.\n- Kafka 0.9 new consumer API (org.apache.kafka.clients.consumer) replacing legacy high-level consumer.\n- MJPEG ingestion implemented as a source module parsing multipart/x-mixed-replace streams into JPEG frames; frames emitted as byte[] messages; facial detection performed downstream (no native OpenCV dependency).\n- servers.yml property spring.xd... e.g., xd.ui.messageRates.enabled toggle exposed via admin endpoint consumed by Admin-UI.\n- Java 17/Spring 6 baseline per spec context... Actually the spec is Spring XD era (Java 7/8), but the intro says Spring 6 requires Java 17. I'll state assumption that the increment targets the existing Spring XD codebase built on Spring Framework; note Java 17+ baseline if Spring 6 used. Keep simpler: assume existing Spring XD codebase (Java 8 era) — but the intro explicitly mentions Spring Framework 6 requiring Java 17. I'll mention baseline alignment with Java 17 and Spring 6 where applicable.\n\nAssumptions:\n- Existing Spring XD codebase with ZK (Curator), xd-shell, admin server, message bus modules, Admin-UI.\n- Team = 1 developer (the estimator) performing all work; effort excludes review by others? Include own testing.\n- U7 spike outcome assumed positive; facial detection algorithm development is out of scope (only ingestion pipeline and hook).\n- U3 is SCM/process work only; no code change beyond versioning config.\n- U6: Kafka 0.9 cluster available for testing.\n- Test infrastructure (embedded ZK, embedded Kafka) exists.\n- No UI framework change; Admin-UI is existing Angular-based UI.\n- Estimates include unit + integration testing and documentation per activity.\n\nOutput only valid JSON per schema. Numbers > 0.\n\nLet me finalize the activities list with descriptions. Ensure exclusiveMinimum 0 satisfied.\n\nTotal 43. Good.\n",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1556,
+      "completion_tokens": 4752,
+      "total_tokens": 6308,
+      "cost": 0.075948,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.075948,
+        "upstream_inference_prompt_cost": 0.004668,
+        "upstream_inference_completions_cost": 0.07128
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2208,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: Use Apache Curator's built-in namespace/chroot support for ZooKeeper tenant isolation; the namespace is exposed as a configuration property (e.g., xd.zookeeper.namespace in servers.yml) and all ZK paths in the codebase are made namespace-relative.\",\n    \"U2: Implement HTTP Basic authentication on the Admin server REST endpoints; xd-shell prompts interactively for username/password on connect, holds credentials in memory only for the session, and never writes them to disk, shell history, or logs.\",\n    \"U3: Adopt a maintenance-branch model (e.g., branch '1.0.x') with semantic versioning; MINOR/patch releases are cut from the maintenance branch and fixes are selectively merged back to master; CI jobs are configured for the new branch.\",\n    \"U4: Remove deprecated module-registry functions (including download of module definitions) and their usages in Shell and Admin-UI; update or delete the corresponding tests; rely on the refactored registry API only.\",\n    \"U5: Use ZooKeeper-based service discovery rather than a direct shell-to-ZK data connection: the Admin server publishes an ephemeral ZK node containing host and the actual (random) Tomcat port at startup; xd-shell resolves the Admin server endpoint from that node. This remains compatible with adding a load balancer later.\",\n    \"U6: Migrate the Kafka message bus from the legacy consumer to the Kafka 0.9 new consumer API (org.apache.kafka.clients.consumer), adjusting offset management and configuration, then rerun and fix the previously failing tests.\",\n    \"U7: Implement audio/video ingestion as a Motion-JPEG (multipart/x-mixed-replace) stream source module written in pure Java; the module parses the stream into JPEG frames and emits them as messages (byte[]) on the message bus; facial detection is performed by downstream analytics modules, so no native OpenCV dependency is introduced (per the platform-compatibility note).\",\n    \"U8: Add a boolean configuration parameter (e.g., xd.ui.messageRates.enabled) in servers.yml; the value is exposed through an Admin endpoint and consumed by the Admin-UI cluster view to show or hide message rates.\",\n    \"Baseline: the increment is built on the existing Spring XD codebase (Spring Framework with Java 17+ per the stated Spring 6 baseline), using Maven/Gradle builds, embedded ZooKeeper and embedded Kafka for integration tests.\"\n  ],\n  \"assumptions\": [\n    \"All work is performed by a single developer (the author), so total effort equals the sum of individual activity efforts; no parallel work is assumed.\",\n    \"An existing Spring XD codebase is available with ZooKeeper (Curator) integration, xd-shell, Admin server, message-bus abstraction, Kafka message bus module, and an Angular-based Admin-UI.\",\n    \"Existing test infrastructure (embedded ZooKeeper, embedded Kafka, CI server) is available and functional.\",\n    \"U7 is treated primarily as ingestion enablement: development of the facial-detection algorithm itself is out of scope; the spike is assumed to confirm Motion-JPEG feasibility.\",\n    \"U3 involves SCM/CI and release-process setup only; no functional code changes are required beyond versioning configuration.\",\n    \"For U6, a Kafka 0.9-compatible broker/cluster is available for testing, and the failing tests referenced are the known message-bus integration tests.\",\n    \"Estimates include design, implementation, unit and integration testing, and activity-level documentation, but exclude elapsed-time delays such as environment outages or waiting on external reviews.\",\n    \"No changes to the overall UI technology stack are needed for U8; only conditional rendering in the existing cluster view.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"U1 - Design tenant-aware ZK namespace configuration\",\n      \"activity_description\": \"Define the namespace configuration property, its semantics for tenant profiles, and how existing ZK paths become namespace-relative.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Implement ZK namespace support\",\n      \"activity_description\": \"Wire the configurable namespace into the Curator client (namespace/chroot) and adapt path handling across components that read/write ZK metadata.\",\n      \"most_likely_effort\": 2.5\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1 - Namespace isolation tests\",\n      \"activity_description\": \"Unit and integration tests (embedded ZK) verifying metadata isolation between tenant namespaces and correct default behavior.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U2 - Admin server authentication\",\n      \"activity_description\": \"Add configurable Basic authentication to Admin server REST endpoints so credentials are supplied at runtime rather than stored in files.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U2 - Interactive shell credential prompt\",\n      \"activity_description\": \"Implement interactive username/password prompt in xd-shell when targeting the Admin server; keep credentials in memory only for the session.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U2 - Security verification and tests\",\n      \"activity_description\": \"Tests for authentication flows and verification that passwords are never persisted, echoed, or logged.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U3 - Maintenance branch setup\",\n      \"activity_description\": \"Create the maintenance branch (e.g., 1.0.x), set the MINOR/patch versioning scheme, configure CI builds, and document the backport workflow.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U4 - Remove deprecated module-definition download\",\n      \"activity_description\": \"Delete deprecated module-registry functions (including download of module definitions) and migrate remaining callers to the refactored registry API.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U4 - Clean Shell and Admin-UI deprecated code\",\n      \"activity_description\": \"Remove usages of deprecated functions from the Shell and Admin-UI modules and clean up dead code.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U4 - Regression fixes after cleanup\",\n      \"activity_description\": \"Update/remove affected tests and fix regressions caused by the cleanup.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"U5 - Spike: discovery approach evaluation\",\n      \"activity_description\": \"Evaluate direct shell-to-ZK connection versus LB-mediated access versus ZK-based service discovery; document the decision.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"U5 - Admin server endpoint registration\",\n      \"activity_description\": \"Publish the Admin server host and actual random Tomcat port as an ephemeral ZooKeeper node at startup.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"U5 - Shell discovery and targeting\",\n      \"activity_description\": \"Implement xd-shell lookup of the Admin server endpoint from ZK and a command to point the shell at the discovered server.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"U5 - Discovery flow tests\",\n      \"activity_description\": \"Integration tests covering startup registration, shell discovery, and reconnection behavior with random ports.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A15\",\n      \"activity_name\": \"U6 - Upgrade to Kafka 0.9 new consumer API\",\n      \"activity_description\": \"Migrate the Kafka message bus consumer code, configuration, and offset management to the Kafka 0.9 rewritten consumer.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A16\",\n      \"activity_name\": \"U6 - Rerun and fix failing Kafka tests\",\n      \"activity_description\": \"Rerun the previously failing message-bus tests against the new consumer and fix failures.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A17\",\n      \"activity_name\": \"U7 - Spike: Motion-JPEG feasibility and design\",\n      \"activity_description\": \"Research Motion-JPEG ingestion feasibility and produce the design specification for the stream source module.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A18\",\n      \"activity_name\": \"U7 - Implement Motion-JPEG source module\",\n      \"activity_description\": \"Implement a pure-Java MJPEG (multipart/x-mixed-replace) stream source that parses the stream into individual JPEG frames.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A19\",\n      \"activity_name\": \"U7 - Integrate frames with message bus and analytics hook\",\n      \"activity_description\": \"Emit frames as messages on the message bus and provide the integration point for downstream predictive-analytics (facial detection) modules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A20\",\n      \"activity_name\": \"U7 - MJPEG ingestion tests\",\n      \"activity_description\": \"Tests with sample MJPEG streams validating frame extraction, message emission, and error handling.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A21\",\n      \"activity_name\": \"U8 - Message-rates configuration parameter\",\n      \"activity_description\": \"Add the enable/disable message-rates parameter to servers.yml and bind it into the Admin server configuration.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A22\",\n      \"activity_name\": \"U8 - Apply toggle in cluster view\",\n      \"activity_description\": \"Expose the toggle via the Admin endpoint and update the Admin-UI cluster view to show/hide message rates accordingly.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A23\",\n      \"activity_name\": \"U8 - Toggle tests\",\n      \"activity_description\": \"Unit and UI-level tests for the enable/disable behavior.\",\n      \"most_likely_effort\": 0.5\n    },\n    {\n      \"activity_id\": \"A24\",\n      \"activity_name\": \"Increment integration and system testing\",\n      \"activity_description\": \"End-to-end testing of the combined increment across ZK, shell, Admin server, message bus, and Admin-UI.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A25\",\n      \"activity_name\": \"Documentation updates\",\n      \"activity_description\": \"Update configuration reference and user documentation for the new properties, shell behavior, and ingestion module.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A26\",\n      \"activity_name\": \"Build verification and release preparation\",\n      \"activity_description\": \"Final build verification, merge coordination with the maintenance branch, and release preparation.\",\n      \"most_likely_effort\": 1\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 43\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "U1: Use Apache Curator's built-in namespace/chroot support for ZooKeeper tenant isolation; the namespace is exposed as a configuration property (e.g., xd.zookeeper.namespace in servers.yml) and all ZK paths in the codebase are made namespace-relative.",
+      "U2: Implement HTTP Basic authentication on the Admin server REST endpoints; xd-shell prompts interactively for username/password on connect, holds credentials in memory only for the session, and never writes them to disk, shell history, or logs.",
+      "U3: Adopt a maintenance-branch model (e.g., branch '1.0.x') with semantic versioning; MINOR/patch releases are cut from the maintenance branch and fixes are selectively merged back to master; CI jobs are configured for the new branch.",
+      "U4: Remove deprecated module-registry functions (including download of module definitions) and their usages in Shell and Admin-UI; update or delete the corresponding tests; rely on the refactored registry API only.",
+      "U5: Use ZooKeeper-based service discovery rather than a direct shell-to-ZK data connection: the Admin server publishes an ephemeral ZK node containing host and the actual (random) Tomcat port at startup; xd-shell resolves the Admin server endpoint from that node. This remains compatible with adding a load balancer later.",
+      "U6: Migrate the Kafka message bus from the legacy consumer to the Kafka 0.9 new consumer API (org.apache.kafka.clients.consumer), adjusting offset management and configuration, then rerun and fix the previously failing tests.",
+      "U7: Implement audio/video ingestion as a Motion-JPEG (multipart/x-mixed-replace) stream source module written in pure Java; the module parses the stream into JPEG frames and emits them as messages (byte[]) on the message bus; facial detection is performed by downstream analytics modules, so no native OpenCV dependency is introduced (per the platform-compatibility note).",
+      "U8: Add a boolean configuration parameter (e.g., xd.ui.messageRates.enabled) in servers.yml; the value is exposed through an Admin endpoint and consumed by the Admin-UI cluster view to show or hide message rates.",
+      "Baseline: the increment is built on the existing Spring XD codebase (Spring Framework with Java 17+ per the stated Spring 6 baseline), using Maven/Gradle builds, embedded ZooKeeper and embedded Kafka for integration tests."
+    ],
+    "assumptions": [
+      "All work is performed by a single developer (the author), so total effort equals the sum of individual activity efforts; no parallel work is assumed.",
+      "An existing Spring XD codebase is available with ZooKeeper (Curator) integration, xd-shell, Admin server, message-bus abstraction, Kafka message bus module, and an Angular-based Admin-UI.",
+      "Existing test infrastructure (embedded ZooKeeper, embedded Kafka, CI server) is available and functional.",
+      "U7 is treated primarily as ingestion enablement: development of the facial-detection algorithm itself is out of scope; the spike is assumed to confirm Motion-JPEG feasibility.",
+      "U3 involves SCM/CI and release-process setup only; no functional code changes are required beyond versioning configuration.",
+      "For U6, a Kafka 0.9-compatible broker/cluster is available for testing, and the failing tests referenced are the known message-bus integration tests.",
+      "Estimates include design, implementation, unit and integration testing, and activity-level documentation, but exclude elapsed-time delays such as environment outages or waiting on external reviews.",
+      "No changes to the overall UI technology stack are needed for U8; only conditional rendering in the existing cluster view."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "U1 - Design tenant-aware ZK namespace configuration",
+        "activity_description": "Define the namespace configuration property, its semantics for tenant profiles, and how existing ZK paths become namespace-relative.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Implement ZK namespace support",
+        "activity_description": "Wire the configurable namespace into the Curator client (namespace/chroot) and adapt path handling across components that read/write ZK metadata.",
+        "most_likely_effort": 2.5
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U1 - Namespace isolation tests",
+        "activity_description": "Unit and integration tests (embedded ZK) verifying metadata isolation between tenant namespaces and correct default behavior.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U2 - Admin server authentication",
+        "activity_description": "Add configurable Basic authentication to Admin server REST endpoints so credentials are supplied at runtime rather than stored in files.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U2 - Interactive shell credential prompt",
+        "activity_description": "Implement interactive username/password prompt in xd-shell when targeting the Admin server; keep credentials in memory only for the session.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U2 - Security verification and tests",
+        "activity_description": "Tests for authentication flows and verification that passwords are never persisted, echoed, or logged.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U3 - Maintenance branch setup",
+        "activity_description": "Create the maintenance branch (e.g., 1.0.x), set the MINOR/patch versioning scheme, configure CI builds, and document the backport workflow.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U4 - Remove deprecated module-definition download",
+        "activity_description": "Delete deprecated module-registry functions (including download of module definitions) and migrate remaining callers to the refactored registry API.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U4 - Clean Shell and Admin-UI deprecated code",
+        "activity_description": "Remove usages of deprecated functions from the Shell and Admin-UI modules and clean up dead code.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "U4 - Regression fixes after cleanup",
+        "activity_description": "Update/remove affected tests and fix regressions caused by the cleanup.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "U5 - Spike: discovery approach evaluation",
+        "activity_description": "Evaluate direct shell-to-ZK connection versus LB-mediated access versus ZK-based service discovery; document the decision.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "U5 - Admin server endpoint registration",
+        "activity_description": "Publish the Admin server host and actual random Tomcat port as an ephemeral ZooKeeper node at startup.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "U5 - Shell discovery and targeting",
+        "activity_description": "Implement xd-shell lookup of the Admin server endpoint from ZK and a command to point the shell at the discovered server.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "U5 - Discovery flow tests",
+        "activity_description": "Integration tests covering startup registration, shell discovery, and reconnection behavior with random ports.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A15",
+        "activity_name": "U6 - Upgrade to Kafka 0.9 new consumer API",
+        "activity_description": "Migrate the Kafka message bus consumer code, configuration, and offset management to the Kafka 0.9 rewritten consumer.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A16",
+        "activity_name": "U6 - Rerun and fix failing Kafka tests",
+        "activity_description": "Rerun the previously failing message-bus tests against the new consumer and fix failures.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A17",
+        "activity_name": "U7 - Spike: Motion-JPEG feasibility and design",
+        "activity_description": "Research Motion-JPEG ingestion feasibility and produce the design specification for the stream source module.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A18",
+        "activity_name": "U7 - Implement Motion-JPEG source module",
+        "activity_description": "Implement a pure-Java MJPEG (multipart/x-mixed-replace) stream source that parses the stream into individual JPEG frames.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A19",
+        "activity_name": "U7 - Integrate frames with message bus and analytics hook",
+        "activity_description": "Emit frames as messages on the message bus and provide the integration point for downstream predictive-analytics (facial detection) modules.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A20",
+        "activity_name": "U7 - MJPEG ingestion tests",
+        "activity_description": "Tests with sample MJPEG streams validating frame extraction, message emission, and error handling.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A21",
+        "activity_name": "U8 - Message-rates configuration parameter",
+        "activity_description": "Add the enable/disable message-rates parameter to servers.yml and bind it into the Admin server configuration.",
+        "most_likely_effort": 0.5
+      },
+      {
+        "activity_id": "A22",
+        "activity_name": "U8 - Apply toggle in cluster view",
+        "activity_description": "Expose the toggle via the Admin endpoint and update the Admin-UI cluster view to show/hide message rates accordingly.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A23",
+        "activity_name": "U8 - Toggle tests",
+        "activity_description": "Unit and UI-level tests for the enable/disable behavior.",
+        "most_likely_effort": 0.5
+      },
+      {
+        "activity_id": "A24",
+        "activity_name": "Increment integration and system testing",
+        "activity_description": "End-to-end testing of the combined increment across ZK, shell, Admin server, message bus, and Admin-UI.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A25",
+        "activity_name": "Documentation updates",
+        "activity_description": "Update configuration reference and user documentation for the new properties, shell behavior, and ingestion module.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A26",
+        "activity_name": "Build verification and release preparation",
+        "activity_description": "Final build verification, merge coordination with the maintenance branch, and release preparation.",
+        "most_likely_effort": 1
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 43
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1556,
+    "completion_tokens": 4752,
+    "total_tokens": 6308,
+    "cost": 0.075948,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.075948,
+      "upstream_inference_prompt_cost": 0.004668,
+      "upstream_inference_completions_cost": 0.07128
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2208,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789218984-oPv9ca9yzTLIBK5gG5xF",
+    "object": "chat.completion",
+    "created": 1789218984,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_35be80b2",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking a simple question: how many work-hours per workday do I consider equivalent. Standard answer is 8 hours per workday. Return only valid JSON matching the schema.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple question: how many work-hours per workday do I consider equivalent. Standard answer is 8 hours per workday. Return only valid JSON matching the schema.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 4234,
+      "completion_tokens": 71,
+      "total_tokens": 4305,
+      "cost": 0.0096198,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1536,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0096198,
+        "upstream_inference_prompt_cost": 0.0085548,
+        "upstream_inference_completions_cost": 0.001065
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 39,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

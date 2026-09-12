@@ -1,0 +1,261 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "hyperledger-011",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789156345-ft5Yxb4dn3AYA0rsLW2x",
+    "object": "chat.completion",
+    "created": 1789156345,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the increment in Go as an extension of an existing channel-configuration client library that wraps Hyperledger Fabric protobuf types (common.Config, common.ConfigUpdate, common.ConfigGroup).\",\n    \"Use a two-phase API design: (1) pure functions that take an existing Config (or config block) and return a modified Config (e.g., AddOrdererEndpoint, RemoveOrdererEndpoint, AddACL, RemoveACL, Add/RemoveCapabilities), and (2) a ComputeConfigUpdate(original, updated, channelID) function that produces a ConfigUpdateEnvelope ready for the standard Fabric signature workflow (marshaling, signing, ConfigSignature construction).\",\n    \"Use protolator/deep JSON marshaling where needed to safely navigate and mutate nested ConfigGroup/ConfigValue/ConfigPolicy structures, and reuse Fabric utilities (e.g., configtx update computation, cauthdsl policy handling) rather than reimplementing them.\",\n    \"Represent orderer endpoints inside each orderer org's config group under the Endpoints value; add/remove functions validate org existence and endpoint duplicates/absence before mutating.\",\n    \"Implement GetPolicies as a generic org-scoped lookup that resolves the org group by name across channel-level, application-level, orderer-level, and consortiums-level groups, returning the policies map without exposing raw protobuf traversal.\",\n    \"Implement capability retrieval returning a typed Capabilities struct aggregating application, orderer, and channel capabilities; capability add/remove validates keys against the set of known/supported capability keys (toggle-style helper functions for known capabilities, e.g., EnableV2_0ApplicationCapabilities/Disable..., plus validated generic Add/Remove), rejecting unsupported keys by design decision.\",\n    \"ACL updates operate on the application group's ACLs value map keyed by resource name, referencing existing policy keys; validate that referenced policies exist in the target org.\",\n    \"Demonstrate every new feature via Go example tests (Example... functions) against committed fixture config blocks; split the existing monolithic end-to-end example into focused examples per U8 (orderer config, application values, org management, MSP modifications, capabilities).\"\n  ],\n  \"assumptions\": [\n    \"A baseline library already exists that can parse an existing channel config block/transaction into a workable model and compute a ConfigUpdate from original vs. updated configs; this increment adds the new functions and examples on top of it.\",\n    \"Development is a single Go module with unit/example tests driven by committed sample config fixtures (system channel and application channel blocks); no live Fabric network is required for testing.\",\n    \"The developer is already proficient with Hyperledger Fabric channel configuration structures, protobuf, and Go; no ramp-up time is included.\",\n    \"Estimates cover design, implementation, unit/example tests, documentation, code review, and rework, but exclude CI pipeline changes, release management, and upstreaming/community review latency.\",\n    \"Test fixtures representative of real Fabric channel configs (with orderer orgs, application orgs, consortiums, ACLs, and capabilities) are available or can be generated with configtxgen as part of the test-harness activity.\",\n    \"Only the five example categories listed in U8 plus demonstrations for U1-U7 are in scope for the example-test refactor; no other examples are rewritten.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Analysis and API design\",\n      \"activity_description\": \"Review the existing library code and protobuf structures, confirm scope of U1-U8, and define the public function signatures (endpoint add/remove, policy retrieval, capability get/add/remove, application retrieval, ACL add/remove) plus the internal config-group navigation helpers.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Test fixtures and test harness\",\n      \"activity_description\": \"Create/generate representative sample config blocks and ConfigUpdate fixtures (system channel and application channel) and shared test helpers for building, mutating, and comparing config transactions used by all subsequent unit and example tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1: Add orderer endpoint\",\n      \"activity_description\": \"Implement AddOrdererEndpoint(ordererOrg, endpoint) on a config transaction, including validation (org exists, endpoint not duplicated) and unit tests verifying the modified config and that a ConfigUpdate ready for the signature workflow can be computed from it.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U2: Remove orderer endpoint\",\n      \"activity_description\": \"Implement RemoveOrdererEndpoint(ordererOrg, endpoint) mirroring the add logic with existence validation, plus unit tests covering removal, missing-endpoint, and missing-org cases.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U3: Retrieve organization policies\",\n      \"activity_description\": \"Implement a GetPolicies(orgName) helper that locates an org group regardless of type (application, orderer, consortium) and returns its policies map; add unit tests for each org type and for unknown org names.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U4: Retrieve capabilities\",\n      \"activity_description\": \"Implement retrieval of orderer, application, and channel capabilities from a config transaction returning a typed config.Capabilities aggregate, with unit tests across fixture configs that have differing capability sets.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U5: Add/remove capabilities\",\n      \"activity_description\": \"Implement add/remove of application, orderer, and channel capabilities including known-capability toggle helpers and validated generic add/remove rejecting unsupported keys; unit tests covering each capability level, unsupported-key errors, and further updates on the modified transaction.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U6: Retrieve application configuration\",\n      \"activity_description\": \"Implement a function returning a typed config.Application (orgs, ACLs, capabilities, policies) from a config transaction without manual parsing, with unit tests on application-channel fixtures and error cases (e.g., no application group).\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U7: Add/remove application ACLs\",\n      \"activity_description\": \"Implement functions to add and remove ACL entries in the application group's ACLs map with policy-reference validation, plus unit tests for add, remove, overwrite, and missing-policy cases.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U8: Split and extend example tests\",\n      \"activity_description\": \"Replace the single end-to-end example with focused example tests for orderer configuration (incl. orderer policies), application values (incl. application policies), organization management (orgs, anchor peers, orderer endpoints), MSP modifications, and capabilities; add example usages for all new U1-U7 functions.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"End-to-end ConfigUpdate verification\",\n      \"activity_description\": \"Integration-level tests exercising each new function followed by computing a ConfigUpdateEnvelope and verifying it is correctly formed for the signature workflow (read-set/write-set versions, mod policy, marshaling), including chained updates on modified transactions.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Write godoc comments for all new exported functions and update the package README/documentation with the new capabilities and example pointers.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Code review, rework, and final QA\",\n      \"activity_description\": \"Self-review against acceptance criteria, run the full test suite (unit, example, integration), fix defects, address review feedback, and finalize the increment.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 23.5\n  }\n}",
+          "refusal": null,
+          "reasoning": "The user wants a WBS-based effort estimate for implementing a software increment for Hyperledger Fabric channel configuration library. This looks like the actual \"configtxgen\"/\"configtx\" library work from Hyperledger Fabric — the spec matches the real Fabric \"config\" package (github.com/hyperledger/fabric-config) that provides functions like AddOrdererEndpoint, RemoveOrdererEndpoint, GetPolicies, Capabilities, etc.\n\nI need to:\n1. Break down into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide most likely effort per activity in workdays\n4. Sum total\n\nLet me think about the work:\n\nThe library is Go-based, working with Hyperledger Fabric protobuf config structures (common.Config, ConfigUpdate, etc.). Activities:\n\n- Project setup / environment: repo setup, dependencies, test fixtures (existing Config blocks for tests). Maybe 1-2 days.\n- Core helpers: parsing config transaction into an internal model (configtx.ConfigTx), computing ConfigUpdate from modified config (this infrastructure likely needed). Actually the spec assumes an existing library exists (fabric-config). The user stories are incremental features on top. But acceptance says \"compute a ConfigUpdate transaction that is ready for a signature workflow\" — maybe that infra already exists. Hmm. The spec says \"fit-for-purpose library that can modify an existing channel configuration\" — the library presumably already can compute ConfigUpdate. The stories add functions: AddOrdererEndpoint, RemoveOrdererEndpoint, GetPolicies (for org regardless of type), GetCapabilities (orderer, application, channel), Add/Remove capabilities, GetApplication, Add/Remove ACLs, and split example tests.\n\nLet me design WBS activities:\n\nA1: Project setup and analysis: review existing codebase, set up dev env, define API signatures. 1 day.\n\nA2: Test fixtures & test harness: sample config blocks for tests (system channel, app channel), helper to build/parse. 2 days. Maybe combine.\n\nA3: U1: AddOrdererEndpoint implementation + unit tests. 2 days.\n\nA4: U2: RemoveOrdererEndpoint + unit tests. 1 day (similar to add).\n\nA5: U3: GetPolicies for org (application/orderer/consortium) + unit tests. 2 days.\n\nA6: U4: Retrieve capabilities (orderer, application, channel) returning config.Capabilities + tests. 1.5 days.\n\nA7: U5: Add/Remove capabilities (application, orderer, channel) with validation of supported capabilities + tests. 3 days.\n\nA8: U6: GetApplication config + tests. 1 day.\n\nA9: U7: Add/Remove ACLs + tests. 2 days.\n\nA10: U8: Example tests refactoring: split into focused examples (orderer config, application values, org management, MSP, capabilities) plus add examples for new features (U1-U7 examples). 4 days.\n\nA11: Integration & end-to-end verification: compute ConfigUpdate workflow, signature workflow readiness checks, full test suite runs. 1.5 days.\n\nA12: Documentation: godoc comments, README updates. 1 day.\n\nA13: Code review, rework, final QA. 1.5 days.\n\nTotal: let's sum: 1 + 2 + 2 + 1 + 2 + 1.5 + 3 + 1 + 2 + 4 + 1.5 + 1 + 1.5 = 23.5 days.\n\nLet me refine: maybe make each estimate integers or halves. That's fine.\n\nTechnical/design decisions:\n- Implement in Go as part of a channel config library wrapping Fabric protobufs (cb.Config, cb.ConfigUpdate).\n- Use protolator for JSON marshaling of config for modification; compute ConfigUpdate via configtx computation (compare original vs updated config groups) using existing Fabric utilities (configtx.ComputeUpdate / cauthdsl).\n- API design: functions operate on a Config transaction/block, return modified Config; a separate ComputeConfigUpdate(original, updated, channelID) produces ConfigUpdateEnvelope ready for signatures.\n- Capabilities: validate against known capability keys; unsupported keys produce error (toggle-like typed functions or Add/Remove with validation).\n- ACLs: operate on application group ACLs map, keyed by resource names with policy references.\n- Examples as Go example tests (ExampleXxx) each demonstrating one scenario.\n\nAssumptions:\n- Existing library baseline already supports parsing a config block into a model and computing ConfigUpdate; stories build on it.\n- Single Go module; unit tests with generated sample configs; no live Fabric network needed for tests.\n- Developer is familiar with Fabric config structures and protobuf.\n- Estimates exclude deployment/CI pipeline changes beyond basic test runs.\n- Example test uses committed test fixtures (sample config blocks for system and app channels).\n- No changes needed to Fabric core; only the client library.\n\nTotal 23.5 workdays. Provide JSON only.\n\nLet me finalize activity list with IDs, names, descriptions, efforts.\n\nA1 Setup & analysis — 1\nA2 Test fixtures/harness — 2\nA3 U1 add orderer endpoint — 2\nA4 U2 remove orderer endpoint — 1\nA5 U3 get org policies — 2\nA6 U4 get capabilities — 1.5\nA7 U5 add/remove capabilities — 3\nA8 U6 get application config — 1\nA9 U7 ACL add/remove — 2\nA10 U8 example tests split + new examples — 4\nA11 Integration verification (ConfigUpdate flow) — 1.5\nA12 Documentation — 1\nA13 Review & rework — 1.5\n\nSum: 1+2=3; +2=5; +1=6; +2=8; +1.5=9.5; +3=12.5; +1=13.5; +2=15.5; +4=19.5; +1.5=21; +1=22; +1.5=23.5. Yes 23.5.\n\nOutput only valid JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user wants a WBS-based effort estimate for implementing a software increment for Hyperledger Fabric channel configuration library. This looks like the actual \"configtxgen\"/\"configtx\" library work from Hyperledger Fabric — the spec matches the real Fabric \"config\" package (github.com/hyperledger/fabric-config) that provides functions like AddOrdererEndpoint, RemoveOrdererEndpoint, GetPolicies, Capabilities, etc.\n\nI need to:\n1. Break down into activities (WBS)\n2. State technical/design decisions and assumptions\n3. Provide most likely effort per activity in workdays\n4. Sum total\n\nLet me think about the work:\n\nThe library is Go-based, working with Hyperledger Fabric protobuf config structures (common.Config, ConfigUpdate, etc.). Activities:\n\n- Project setup / environment: repo setup, dependencies, test fixtures (existing Config blocks for tests). Maybe 1-2 days.\n- Core helpers: parsing config transaction into an internal model (configtx.ConfigTx), computing ConfigUpdate from modified config (this infrastructure likely needed). Actually the spec assumes an existing library exists (fabric-config). The user stories are incremental features on top. But acceptance says \"compute a ConfigUpdate transaction that is ready for a signature workflow\" — maybe that infra already exists. Hmm. The spec says \"fit-for-purpose library that can modify an existing channel configuration\" — the library presumably already can compute ConfigUpdate. The stories add functions: AddOrdererEndpoint, RemoveOrdererEndpoint, GetPolicies (for org regardless of type), GetCapabilities (orderer, application, channel), Add/Remove capabilities, GetApplication, Add/Remove ACLs, and split example tests.\n\nLet me design WBS activities:\n\nA1: Project setup and analysis: review existing codebase, set up dev env, define API signatures. 1 day.\n\nA2: Test fixtures & test harness: sample config blocks for tests (system channel, app channel), helper to build/parse. 2 days. Maybe combine.\n\nA3: U1: AddOrdererEndpoint implementation + unit tests. 2 days.\n\nA4: U2: RemoveOrdererEndpoint + unit tests. 1 day (similar to add).\n\nA5: U3: GetPolicies for org (application/orderer/consortium) + unit tests. 2 days.\n\nA6: U4: Retrieve capabilities (orderer, application, channel) returning config.Capabilities + tests. 1.5 days.\n\nA7: U5: Add/Remove capabilities (application, orderer, channel) with validation of supported capabilities + tests. 3 days.\n\nA8: U6: GetApplication config + tests. 1 day.\n\nA9: U7: Add/Remove ACLs + tests. 2 days.\n\nA10: U8: Example tests refactoring: split into focused examples (orderer config, application values, org management, MSP, capabilities) plus add examples for new features (U1-U7 examples). 4 days.\n\nA11: Integration & end-to-end verification: compute ConfigUpdate workflow, signature workflow readiness checks, full test suite runs. 1.5 days.\n\nA12: Documentation: godoc comments, README updates. 1 day.\n\nA13: Code review, rework, final QA. 1.5 days.\n\nTotal: let's sum: 1 + 2 + 2 + 1 + 2 + 1.5 + 3 + 1 + 2 + 4 + 1.5 + 1 + 1.5 = 23.5 days.\n\nLet me refine: maybe make each estimate integers or halves. That's fine.\n\nTechnical/design decisions:\n- Implement in Go as part of a channel config library wrapping Fabric protobufs (cb.Config, cb.ConfigUpdate).\n- Use protolator for JSON marshaling of config for modification; compute ConfigUpdate via configtx computation (compare original vs updated config groups) using existing Fabric utilities (configtx.ComputeUpdate / cauthdsl).\n- API design: functions operate on a Config transaction/block, return modified Config; a separate ComputeConfigUpdate(original, updated, channelID) produces ConfigUpdateEnvelope ready for signatures.\n- Capabilities: validate against known capability keys; unsupported keys produce error (toggle-like typed functions or Add/Remove with validation).\n- ACLs: operate on application group ACLs map, keyed by resource names with policy references.\n- Examples as Go example tests (ExampleXxx) each demonstrating one scenario.\n\nAssumptions:\n- Existing library baseline already supports parsing a config block into a model and computing ConfigUpdate; stories build on it.\n- Single Go module; unit tests with generated sample configs; no live Fabric network needed for tests.\n- Developer is familiar with Fabric config structures and protobuf.\n- Estimates exclude deployment/CI pipeline changes beyond basic test runs.\n- Example test uses committed test fixtures (sample config blocks for system and app channels).\n- No changes needed to Fabric core; only the client library.\n\nTotal 23.5 workdays. Provide JSON only.\n\nLet me finalize activity list with IDs, names, descriptions, efforts.\n\nA1 Setup & analysis — 1\nA2 Test fixtures/harness — 2\nA3 U1 add orderer endpoint — 2\nA4 U2 remove orderer endpoint — 1\nA5 U3 get org policies — 2\nA6 U4 get capabilities — 1.5\nA7 U5 add/remove capabilities — 3\nA8 U6 get application config — 1\nA9 U7 ACL add/remove — 2\nA10 U8 example tests split + new examples — 4\nA11 Integration verification (ConfigUpdate flow) — 1.5\nA12 Documentation — 1\nA13 Review & rework — 1.5\n\nSum: 1+2=3; +2=5; +1=6; +2=8; +1.5=9.5; +3=12.5; +1=13.5; +2=15.5; +4=19.5; +1.5=21; +1=22; +1.5=23.5. Yes 23.5.\n\nOutput only valid JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1426,
+      "completion_tokens": 3110,
+      "total_tokens": 4536,
+      "cost": 0.050928,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.050928,
+        "upstream_inference_prompt_cost": 0.004278,
+        "upstream_inference_completions_cost": 0.04665
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1276,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "{\n  \"technical_and_design_decisions\": [\n    \"Implement the increment in Go as an extension of an existing channel-configuration client library that wraps Hyperledger Fabric protobuf types (common.Config, common.ConfigUpdate, common.ConfigGroup).\",\n    \"Use a two-phase API design: (1) pure functions that take an existing Config (or config block) and return a modified Config (e.g., AddOrdererEndpoint, RemoveOrdererEndpoint, AddACL, RemoveACL, Add/RemoveCapabilities), and (2) a ComputeConfigUpdate(original, updated, channelID) function that produces a ConfigUpdateEnvelope ready for the standard Fabric signature workflow (marshaling, signing, ConfigSignature construction).\",\n    \"Use protolator/deep JSON marshaling where needed to safely navigate and mutate nested ConfigGroup/ConfigValue/ConfigPolicy structures, and reuse Fabric utilities (e.g., configtx update computation, cauthdsl policy handling) rather than reimplementing them.\",\n    \"Represent orderer endpoints inside each orderer org's config group under the Endpoints value; add/remove functions validate org existence and endpoint duplicates/absence before mutating.\",\n    \"Implement GetPolicies as a generic org-scoped lookup that resolves the org group by name across channel-level, application-level, orderer-level, and consortiums-level groups, returning the policies map without exposing raw protobuf traversal.\",\n    \"Implement capability retrieval returning a typed Capabilities struct aggregating application, orderer, and channel capabilities; capability add/remove validates keys against the set of known/supported capability keys (toggle-style helper functions for known capabilities, e.g., EnableV2_0ApplicationCapabilities/Disable..., plus validated generic Add/Remove), rejecting unsupported keys by design decision.\",\n    \"ACL updates operate on the application group's ACLs value map keyed by resource name, referencing existing policy keys; validate that referenced policies exist in the target org.\",\n    \"Demonstrate every new feature via Go example tests (Example... functions) against committed fixture config blocks; split the existing monolithic end-to-end example into focused examples per U8 (orderer config, application values, org management, MSP modifications, capabilities).\"\n  ],\n  \"assumptions\": [\n    \"A baseline library already exists that can parse an existing channel config block/transaction into a workable model and compute a ConfigUpdate from original vs. updated configs; this increment adds the new functions and examples on top of it.\",\n    \"Development is a single Go module with unit/example tests driven by committed sample config fixtures (system channel and application channel blocks); no live Fabric network is required for testing.\",\n    \"The developer is already proficient with Hyperledger Fabric channel configuration structures, protobuf, and Go; no ramp-up time is included.\",\n    \"Estimates cover design, implementation, unit/example tests, documentation, code review, and rework, but exclude CI pipeline changes, release management, and upstreaming/community review latency.\",\n    \"Test fixtures representative of real Fabric channel configs (with orderer orgs, application orgs, consortiums, ACLs, and capabilities) are available or can be generated with configtxgen as part of the test-harness activity.\",\n    \"Only the five example categories listed in U8 plus demonstrations for U1-U7 are in scope for the example-test refactor; no other examples are rewritten.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Analysis and API design\",\n      \"activity_description\": \"Review the existing library code and protobuf structures, confirm scope of U1-U8, and define the public function signatures (endpoint add/remove, policy retrieval, capability get/add/remove, application retrieval, ACL add/remove) plus the internal config-group navigation helpers.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Test fixtures and test harness\",\n      \"activity_description\": \"Create/generate representative sample config blocks and ConfigUpdate fixtures (system channel and application channel) and shared test helpers for building, mutating, and comparing config transactions used by all subsequent unit and example tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U1: Add orderer endpoint\",\n      \"activity_description\": \"Implement AddOrdererEndpoint(ordererOrg, endpoint) on a config transaction, including validation (org exists, endpoint not duplicated) and unit tests verifying the modified config and that a ConfigUpdate ready for the signature workflow can be computed from it.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U2: Remove orderer endpoint\",\n      \"activity_description\": \"Implement RemoveOrdererEndpoint(ordererOrg, endpoint) mirroring the add logic with existence validation, plus unit tests covering removal, missing-endpoint, and missing-org cases.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U3: Retrieve organization policies\",\n      \"activity_description\": \"Implement a GetPolicies(orgName) helper that locates an org group regardless of type (application, orderer, consortium) and returns its policies map; add unit tests for each org type and for unknown org names.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U4: Retrieve capabilities\",\n      \"activity_description\": \"Implement retrieval of orderer, application, and channel capabilities from a config transaction returning a typed config.Capabilities aggregate, with unit tests across fixture configs that have differing capability sets.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U5: Add/remove capabilities\",\n      \"activity_description\": \"Implement add/remove of application, orderer, and channel capabilities including known-capability toggle helpers and validated generic add/remove rejecting unsupported keys; unit tests covering each capability level, unsupported-key errors, and further updates on the modified transaction.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U6: Retrieve application configuration\",\n      \"activity_description\": \"Implement a function returning a typed config.Application (orgs, ACLs, capabilities, policies) from a config transaction without manual parsing, with unit tests on application-channel fixtures and error cases (e.g., no application group).\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"U7: Add/remove application ACLs\",\n      \"activity_description\": \"Implement functions to add and remove ACL entries in the application group's ACLs map with policy-reference validation, plus unit tests for add, remove, overwrite, and missing-policy cases.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"U8: Split and extend example tests\",\n      \"activity_description\": \"Replace the single end-to-end example with focused example tests for orderer configuration (incl. orderer policies), application values (incl. application policies), organization management (orgs, anchor peers, orderer endpoints), MSP modifications, and capabilities; add example usages for all new U1-U7 functions.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"End-to-end ConfigUpdate verification\",\n      \"activity_description\": \"Integration-level tests exercising each new function followed by computing a ConfigUpdateEnvelope and verifying it is correctly formed for the signature workflow (read-set/write-set versions, mod policy, marshaling), including chained updates on modified transactions.\",\n      \"most_likely_effort\": 1.5\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Write godoc comments for all new exported functions and update the package README/documentation with the new capabilities and example pointers.\",\n      \"most_likely_effort\": 1\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"Code review, rework, and final QA\",\n      \"activity_description\": \"Self-review against acceptance criteria, run the full test suite (unit, example, integration), fix defects, address review feedback, and finalize the increment.\",\n      \"most_likely_effort\": 1.5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 23.5\n  }\n}",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Implement the increment in Go as an extension of an existing channel-configuration client library that wraps Hyperledger Fabric protobuf types (common.Config, common.ConfigUpdate, common.ConfigGroup).",
+      "Use a two-phase API design: (1) pure functions that take an existing Config (or config block) and return a modified Config (e.g., AddOrdererEndpoint, RemoveOrdererEndpoint, AddACL, RemoveACL, Add/RemoveCapabilities), and (2) a ComputeConfigUpdate(original, updated, channelID) function that produces a ConfigUpdateEnvelope ready for the standard Fabric signature workflow (marshaling, signing, ConfigSignature construction).",
+      "Use protolator/deep JSON marshaling where needed to safely navigate and mutate nested ConfigGroup/ConfigValue/ConfigPolicy structures, and reuse Fabric utilities (e.g., configtx update computation, cauthdsl policy handling) rather than reimplementing them.",
+      "Represent orderer endpoints inside each orderer org's config group under the Endpoints value; add/remove functions validate org existence and endpoint duplicates/absence before mutating.",
+      "Implement GetPolicies as a generic org-scoped lookup that resolves the org group by name across channel-level, application-level, orderer-level, and consortiums-level groups, returning the policies map without exposing raw protobuf traversal.",
+      "Implement capability retrieval returning a typed Capabilities struct aggregating application, orderer, and channel capabilities; capability add/remove validates keys against the set of known/supported capability keys (toggle-style helper functions for known capabilities, e.g., EnableV2_0ApplicationCapabilities/Disable..., plus validated generic Add/Remove), rejecting unsupported keys by design decision.",
+      "ACL updates operate on the application group's ACLs value map keyed by resource name, referencing existing policy keys; validate that referenced policies exist in the target org.",
+      "Demonstrate every new feature via Go example tests (Example... functions) against committed fixture config blocks; split the existing monolithic end-to-end example into focused examples per U8 (orderer config, application values, org management, MSP modifications, capabilities)."
+    ],
+    "assumptions": [
+      "A baseline library already exists that can parse an existing channel config block/transaction into a workable model and compute a ConfigUpdate from original vs. updated configs; this increment adds the new functions and examples on top of it.",
+      "Development is a single Go module with unit/example tests driven by committed sample config fixtures (system channel and application channel blocks); no live Fabric network is required for testing.",
+      "The developer is already proficient with Hyperledger Fabric channel configuration structures, protobuf, and Go; no ramp-up time is included.",
+      "Estimates cover design, implementation, unit/example tests, documentation, code review, and rework, but exclude CI pipeline changes, release management, and upstreaming/community review latency.",
+      "Test fixtures representative of real Fabric channel configs (with orderer orgs, application orgs, consortiums, ACLs, and capabilities) are available or can be generated with configtxgen as part of the test-harness activity.",
+      "Only the five example categories listed in U8 plus demonstrations for U1-U7 are in scope for the example-test refactor; no other examples are rewritten."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Analysis and API design",
+        "activity_description": "Review the existing library code and protobuf structures, confirm scope of U1-U8, and define the public function signatures (endpoint add/remove, policy retrieval, capability get/add/remove, application retrieval, ACL add/remove) plus the internal config-group navigation helpers.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Test fixtures and test harness",
+        "activity_description": "Create/generate representative sample config blocks and ConfigUpdate fixtures (system channel and application channel) and shared test helpers for building, mutating, and comparing config transactions used by all subsequent unit and example tests.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U1: Add orderer endpoint",
+        "activity_description": "Implement AddOrdererEndpoint(ordererOrg, endpoint) on a config transaction, including validation (org exists, endpoint not duplicated) and unit tests verifying the modified config and that a ConfigUpdate ready for the signature workflow can be computed from it.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U2: Remove orderer endpoint",
+        "activity_description": "Implement RemoveOrdererEndpoint(ordererOrg, endpoint) mirroring the add logic with existence validation, plus unit tests covering removal, missing-endpoint, and missing-org cases.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U3: Retrieve organization policies",
+        "activity_description": "Implement a GetPolicies(orgName) helper that locates an org group regardless of type (application, orderer, consortium) and returns its policies map; add unit tests for each org type and for unknown org names.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U4: Retrieve capabilities",
+        "activity_description": "Implement retrieval of orderer, application, and channel capabilities from a config transaction returning a typed config.Capabilities aggregate, with unit tests across fixture configs that have differing capability sets.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U5: Add/remove capabilities",
+        "activity_description": "Implement add/remove of application, orderer, and channel capabilities including known-capability toggle helpers and validated generic add/remove rejecting unsupported keys; unit tests covering each capability level, unsupported-key errors, and further updates on the modified transaction.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U6: Retrieve application configuration",
+        "activity_description": "Implement a function returning a typed config.Application (orgs, ACLs, capabilities, policies) from a config transaction without manual parsing, with unit tests on application-channel fixtures and error cases (e.g., no application group).",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "U7: Add/remove application ACLs",
+        "activity_description": "Implement functions to add and remove ACL entries in the application group's ACLs map with policy-reference validation, plus unit tests for add, remove, overwrite, and missing-policy cases.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "U8: Split and extend example tests",
+        "activity_description": "Replace the single end-to-end example with focused example tests for orderer configuration (incl. orderer policies), application values (incl. application policies), organization management (orgs, anchor peers, orderer endpoints), MSP modifications, and capabilities; add example usages for all new U1-U7 functions.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "End-to-end ConfigUpdate verification",
+        "activity_description": "Integration-level tests exercising each new function followed by computing a ConfigUpdateEnvelope and verifying it is correctly formed for the signature workflow (read-set/write-set versions, mod policy, marshaling), including chained updates on modified transactions.",
+        "most_likely_effort": 1.5
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Documentation",
+        "activity_description": "Write godoc comments for all new exported functions and update the package README/documentation with the new capabilities and example pointers.",
+        "most_likely_effort": 1
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "Code review, rework, and final QA",
+        "activity_description": "Self-review against acceptance criteria, run the full test suite (unit, example, integration), fix defects, address review feedback, and finalize the increment.",
+        "most_likely_effort": 1.5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 23.5
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1426,
+    "completion_tokens": 3110,
+    "total_tokens": 4536,
+    "cost": 0.050928,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.050928,
+      "upstream_inference_prompt_cost": 0.004278,
+      "upstream_inference_completions_cost": 0.04665
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1276,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789156446-C5SiFgmquYOZ90x2DB1b",
+    "object": "chat.completion",
+    "created": 1789156446,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"work_hours_per_workday\": 8\n}",
+          "refusal": null,
+          "reasoning": "The user asks: how many work-hours do I consider equivalent to one estimated workday? Standard answer: 8 hours per workday.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user asks: how many work-hours do I consider equivalent to one estimated workday? Standard answer: 8 hours per workday.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3394,
+      "completion_tokens": 57,
+      "total_tokens": 3451,
+      "cost": 0.007581,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.007581,
+        "upstream_inference_prompt_cost": 0.006726,
+        "upstream_inference_completions_cost": 0.000855
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 29,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "{\n  \"work_hours_per_workday\": 8\n}",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

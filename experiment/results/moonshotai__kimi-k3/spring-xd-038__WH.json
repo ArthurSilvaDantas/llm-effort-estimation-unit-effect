@@ -1,0 +1,421 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-038",
+  "treatment": "WH",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789161218-2O9zGPwV5XGXfAQxHAsn",
+    "object": "chat.completion",
+    "created": 1789161218,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: The existing Reactor-based gpfdist sink implementation from the spring-xd-modules repository will be migrated into the spring-xd core codebase with package refactoring to core namespaces, preserving the Reactor-based architecture rather than rewriting it, and wiring it into the core module build (Gradle) and module metadata so it can be used natively without the external repo.\",\n    \"U2: A GitHub-backed ModuleRegistry implementation will be created behind the existing ModuleRegistry SPI, using the GitHub REST API (contents/commits) for reads and authenticated commits for module uploads, with a local filesystem cache in each admin/container node so runtime resolution tolerates transient GitHub unavailability while keeping the repo as the single source of truth.\",\n    \"U3: The RabbitMQ scalability benchmark will reuse the existing XD performance test harness, executed on Rackspace VMs provisioned manually (no automation of cloud provisioning beyond scripts), scaling xd-container nodes incrementally and measuring throughput/latency.\",\n    \"U4: Flo parser endpoint improvements will introduce a structured error-reporting model (machine-readable error objects with position/context) returned by existing parser endpoints, keeping backward compatibility of endpoint contracts.\",\n    \"U5: The Mail source module will expose a java-mail-properties option that accepts a properties definition (as in the <util:properties/> example) and passes it through to the Spring Integration mail adapters, enabling SSL/TLS (imaps/smtps) without changing module internals beyond configuration plumbing.\",\n    \"U6: An HDFS-backed ModuleRegistry will become the default distributed remote location, reusing the existing hadoop config fs settings in XD; xd-shell and REST-API module upload endpoints will write to HDFS; the custom-modules.zip artifact will be removed from the YARN distribution build.\",\n    \"U7: xd-shell will auto-execute an init file (e.g. /etc/springxd/conf/xd-shell.init) at startup, implemented by reusing the existing 'script --file' command execution path, with support for an explicit override location via a command-line/environment setting.\",\n    \"U8: Graceful stream shutdown will be implemented via ordered lifecycle shutdown on undeploy: stop inbound sources first, allow in-flight messages to drain through channels to sinks within a configurable timeout, then force-stop remaining components; DLQ behavior remains as fallback for genuinely failed messages.\"\n  ],\n  \"assumptions\": [\n    \"The increment builds on the Spring XD 1.x codebase (Java 8, Spring Integration 4.x, Project Reactor) as implied by the user stories; the general Spring Framework 6/Java 17 background text is treated as context only, not as a migration requirement.\",\n    \"A single senior-level developer familiar with Spring XD, Spring Integration and the module architecture performs all work; estimates include design, implementation, unit/integration testing and documentation.\",\n    \"Estimates exclude elapsed-time effects (waiting on CI, infrastructure provisioning lead time, third-party response times) and exclude project management, release management and production deployment activities beyond a final regression pass.\",\n    \"Required test infrastructure is available at no extra setup cost beyond the listed activities: a GPDB/HAWQ instance for gpfdist integration tests, a Rackspace account for benchmarking, SSL/TLS-enabled IMAP/SMTP test servers, a Hadoop/HDFS test cluster, and a GitHub test repository.\",\n    \"Module upload via GitHub (U2) assumes a dedicated repository with credentials supplied through XD configuration; no GitHub-side workflow (PRs/reviews) is required.\",\n    \"Graceful shutdown (U8) is best-effort within a configurable timeout; exactly-once semantics are not guaranteed.\",\n    \"The scope covers only the eight listed user stories plus a final cross-cutting integration/regression activity; no other backlog items are included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1.1\",\n      \"activity_name\": \"U1 - Analyze existing gpfdist module and design migration\",\n      \"activity_description\": \"Review the Reactor-based gpfdist sink in spring-xd-modules, identify dependencies and gaps versus core requirements, and define the target package/build structure in core.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A1.2\",\n      \"activity_name\": \"U1 - Migrate and refactor gpfdist sink into core\",\n      \"activity_description\": \"Move the gpfdist sink source into the spring-xd core codebase, refactor packages/imports, resolve dependency differences, and adapt to core module conventions.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A1.3\",\n      \"activity_name\": \"U1 - Build, packaging and module metadata integration\",\n      \"activity_description\": \"Integrate the migrated sink into the Gradle build, module registry metadata and distribution packaging so it is available natively in stream definitions.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A1.4\",\n      \"activity_name\": \"U1 - Unit tests for gpfdist sink in core\",\n      \"activity_description\": \"Port and extend unit tests covering gpfdist sink behavior, configuration options and error handling in the core codebase.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A1.5\",\n      \"activity_name\": \"U1 - Integration tests against GPDB/HAWQ\",\n      \"activity_description\": \"Implement and execute end-to-end integration tests writing data from a stream to GPDB/HAWQ via the gpfdist sink.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A1.6\",\n      \"activity_name\": \"U1 - Documentation for gpfdist sink\",\n      \"activity_description\": \"Write reference documentation and usage examples for the gpfdist sink as a core module.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A2.1\",\n      \"activity_name\": \"U2 - Design GitHub-backed ModuleRegistry\",\n      \"activity_description\": \"Design the GitHub-backed ModuleRegistry implementation against the existing ModuleRegistry SPI, including repository layout, authentication and caching strategy.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A2.2\",\n      \"activity_name\": \"U2 - Implement GitHub registry read path\",\n      \"activity_description\": \"Implement module listing and resolution by reading module bits and metadata from the centralized GitHub repository via the GitHub API.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A2.3\",\n      \"activity_name\": \"U2 - Implement module upload (push) to GitHub\",\n      \"activity_description\": \"Implement the module upload path so new modules are committed and pushed to the centralized GitHub repository, keeping the cluster in sync.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A2.4\",\n      \"activity_name\": \"U2 - Cluster synchronization and local caching\",\n      \"activity_description\": \"Implement local caching and refresh logic on admin/container nodes so all nodes resolve modules from the same registry state.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A2.5\",\n      \"activity_name\": \"U2 - Unit tests for GitHub registry\",\n      \"activity_description\": \"Unit tests for read, upload, authentication, and cache behavior using mocked GitHub API interactions.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2.6\",\n      \"activity_name\": \"U2 - Integration tests for GitHub registry\",\n      \"activity_description\": \"Integration tests against a real test GitHub repository covering upload, resolution from multiple nodes, and sync behavior.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A2.7\",\n      \"activity_name\": \"U2 - Documentation for GitHub module registry\",\n      \"activity_description\": \"Document configuration of the centralized GitHub module registry for admins.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3.1\",\n      \"activity_name\": \"U3 - Provision Rackspace benchmark infrastructure\",\n      \"activity_description\": \"Provision and prepare Rackspace VM nodes (OS, networking, JVM, RabbitMQ) needed for the benchmark cluster.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A3.2\",\n      \"activity_name\": \"U3 - Deploy and configure XD cluster for benchmarking\",\n      \"activity_description\": \"Install and configure xd-admin and xd-container nodes with RabbitMQ transport on the Rackspace infrastructure.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A3.3\",\n      \"activity_name\": \"U3 - Develop benchmark scenarios and tooling\",\n      \"activity_description\": \"Create benchmark stream definitions, load generation scripts and metrics collection tooling.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A3.4\",\n      \"activity_name\": \"U3 - Execute benchmark runs scaling xd-container nodes\",\n      \"activity_description\": \"Run benchmark iterations while incrementally adding xd-container nodes, capturing throughput and latency data.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A3.5\",\n      \"activity_name\": \"U3 - Analyze results and produce scalability report\",\n      \"activity_description\": \"Analyze collected metrics, identify scaling characteristics/bottlenecks, and write the benchmark report.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4.1\",\n      \"activity_name\": \"U4 - Analyze Flo parser endpoints and current error handling\",\n      \"activity_description\": \"Review existing Flo parser endpoints and error reporting behavior, and define the improved error model.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A4.2\",\n      \"activity_name\": \"U4 - Implement improved parser error reporting\",\n      \"activity_description\": \"Implement streamlined, structured error reporting in the Flo parser endpoints, including position/context details.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A4.3\",\n      \"activity_name\": \"U4 - Unit tests for parser error reporting\",\n      \"activity_description\": \"Unit tests covering valid and invalid parse inputs and the structure/content of reported errors.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4.4\",\n      \"activity_name\": \"U4 - Integration tests for parser endpoints\",\n      \"activity_description\": \"Integration tests exercising the parser endpoints end-to-end to validate the new error reporting strategy.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A4.5\",\n      \"activity_name\": \"U4 - Documentation for parser error reporting\",\n      \"activity_description\": \"Update Flo parser endpoint documentation with the new error format.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A5.1\",\n      \"activity_name\": \"U5 - Analyze Mail source and Spring Integration mail configuration\",\n      \"activity_description\": \"Review the Mail source module and Spring Integration mail adapters to determine how to inject java-mail properties for SSL/TLS.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5.2\",\n      \"activity_name\": \"U5 - Implement java-mail-properties support in Mail source\",\n      \"activity_description\": \"Add a java-mail-properties option to the Mail source module that passes SSL/TLS properties (per the <util:properties/> example) to the mail adapters for secured IMAP/SMTP.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A5.3\",\n      \"activity_name\": \"U5 - Unit tests for Mail source properties\",\n      \"activity_description\": \"Unit tests verifying property parsing and propagation into mail session configuration.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5.4\",\n      \"activity_name\": \"U5 - Integration tests with secured IMAP/SMTP servers\",\n      \"activity_description\": \"Integration tests connecting the Mail source to SSL/TLS-enabled IMAP and SMTP test servers.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5.5\",\n      \"activity_name\": \"U5 - Documentation for secured Mail source\",\n      \"activity_description\": \"Document the java-mail-properties option with SSL/TLS configuration examples.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6.1\",\n      \"activity_name\": \"U6 - Design HDFS-based default module registry\",\n      \"activity_description\": \"Design the HDFS-backed ModuleRegistry and the approach for making it the default distributed remote location.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A6.2\",\n      \"activity_name\": \"U6 - Implement HDFS registry and set as default\",\n      \"activity_description\": \"Implement the HDFS-backed ModuleRegistry reusing XD's hadoop fs configuration and wire it as the default custom module location.\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A6.3\",\n      \"activity_name\": \"U6 - Module upload via xd-shell and REST API to HDFS\",\n      \"activity_description\": \"Enable direct upload of custom module bits to the HDFS registry through xd-shell commands and the REST API.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A6.4\",\n      \"activity_name\": \"U6 - Remove custom-modules.zip from YARN distribution\",\n      \"activity_description\": \"Remove the custom-modules.zip artifact and related packaging steps from the YARN distribution build.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A6.5\",\n      \"activity_name\": \"U6 - Unit tests for HDFS registry\",\n      \"activity_description\": \"Unit tests for HDFS registry operations and upload endpoints.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6.6\",\n      \"activity_name\": \"U6 - Integration tests on HDFS cluster\",\n      \"activity_description\": \"Integration tests of upload and module resolution against a real HDFS cluster, including YARN distribution verification.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A6.7\",\n      \"activity_name\": \"U6 - Documentation for HDFS default registry\",\n      \"activity_description\": \"Document the HDFS default registry behavior, upload commands and YARN distribution change.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7.1\",\n      \"activity_name\": \"U7 - Design xd-shell init file mechanism\",\n      \"activity_description\": \"Design automatic initialization of xd-shell from a commands file (e.g. /etc/springxd/conf/xd-shell.init).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7.2\",\n      \"activity_name\": \"U7 - Implement automatic init file execution at startup\",\n      \"activity_description\": \"Implement execution of the init file at shell startup by reusing the existing script execution path (admin config server, hadoop config fs commands).\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A7.3\",\n      \"activity_name\": \"U7 - Support init file locations and overrides\",\n      \"activity_description\": \"Support a well-known default location plus explicit override via option or environment variable, with graceful handling when the file is absent.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7.4\",\n      \"activity_name\": \"U7 - Unit tests for shell auto-configuration\",\n      \"activity_description\": \"Unit tests for init file discovery, parsing and execution ordering.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7.5\",\n      \"activity_name\": \"U7 - Integration tests for shell auto-configuration\",\n      \"activity_description\": \"Integration tests starting xd-shell with an init file against a running admin server and HDFS config.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7.6\",\n      \"activity_name\": \"U7 - Documentation for shell auto-configuration\",\n      \"activity_description\": \"Document the init file location, format and startup behavior.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8.1\",\n      \"activity_name\": \"U8 - Analyze current undeploy behavior and DLQ issue\",\n      \"activity_description\": \"Investigate the current stream undeploy lifecycle and reproduce the in-flight message loss/DLQ behavior described in the use case.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8.2\",\n      \"activity_name\": \"U8 - Design graceful shutdown mechanism\",\n      \"activity_description\": \"Design ordered shutdown (stop sources, drain channels to sinks, configurable timeout, forced stop fallback) integrated with the deployer lifecycle.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A8.3\",\n      \"activity_name\": \"U8 - Implement graceful stream shutdown\",\n      \"activity_description\": \"Implement the lifecycle changes so in-flight messages complete their journey to the sink before module components are stopped on undeploy.\",\n      \"most_likely_effort\": 30\n    },\n    {\n      \"activity_id\": \"A8.4\",\n      \"activity_name\": \"U8 - Implement timeout and forced shutdown fallback\",\n      \"activity_description\": \"Implement configurable drain timeout and forced shutdown for messages that cannot complete, preserving existing DLQ behavior as fallback.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8.5\",\n      \"activity_name\": \"U8 - Unit tests for graceful shutdown\",\n      \"activity_description\": \"Unit tests for the ordered shutdown lifecycle, drain logic and timeout handling.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A8.6\",\n      \"activity_name\": \"U8 - Integration tests for graceful undeploy\",\n      \"activity_description\": \"Integration tests undeploying streams with in-flight long-running processing (e.g. archive extraction scenario) verifying messages reach the sink.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A8.7\",\n      \"activity_name\": \"U8 - Documentation for graceful shutdown\",\n      \"activity_description\": \"Document the graceful undeploy behavior and timeout configuration options.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9.1\",\n      \"activity_name\": \"Cross-cutting - Overall integration and final regression\",\n      \"activity_description\": \"Integrate all eight increments, resolve cross-feature conflicts, run the full build and regression test suite.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A9.2\",\n      \"activity_name\": \"Cross-cutting - Code reviews and rework\",\n      \"activity_description\": \"Perform self-review/peer-review cycles for all stories and implement review feedback and fixes.\",\n      \"most_likely_effort\": 16\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 551\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this task. I need to estimate software development effort for 8 user stories related to Spring XD (Spring Data eXtension for data pipelines). Let me break down each user story:\n\nU1: Move project reactor-based gpfdist sink from spring-xd-modules repo to core - to natively write to GPDB/HAWQ\nU2: Module registry located in centralized GitHub repository - cluster always in sync\nU3: Bench Rabbit on Rackspace infrastructure - scalability testing with xd-container nodes\nU4: Improvements to Flo parser endpoints - streamline error reporting strategy\nU5: Mail source with secured IMAP/SMTP (SSL/TLS properties) - java-mail-properties attribute\nU6: Default to HDFS as distributed remote location for custom module registry; remove custom-modules.zip from YARN distribution\nU7: Shell auto-configuration against environment (init file for commands)\nU8: Graceful shutdown of streams - complete message journey to sink before XD stops stream\n\nLet me create a WBS for each user story with activities and effort estimates in work-hours.\n\nFor each user story, I'll break into typical activities:\n- Analysis/design\n- Implementation\n- Unit testing\n- Integration testing\n- Documentation\n- Code review/refinement\n\nLet me estimate:\n\n**U1: Migrate gpfdist sink to core**\n- Analysis of existing spring-xd-modules gpfdist code: 8h\n- Code migration and refactoring to core (reactor-based): 24h\n- Adaptation to core module structure, package renaming, build integration: 16h\n- Unit tests: 16h\n- Integration tests with GPDB/HAWQ: 16h\n- Documentation: 8h\nTotal U1: ~88h\n\n**U2: GitHub-based module registry**\n- Design GitHub registry implementation: 12h\n- Implement GitHub-backed ModuleRegistry (read modules from repo): 40h\n- Implement push/upload to GitHub repo on module upload: 24h\n- Sync/caching for containers: 16h\n- Unit tests: 16h\n- Integration tests: 16h\n- Documentation: 6h\nTotal U2: ~130h\n\n**U3: Bench Rabbit on Rackspace**\n- Setup Rackspace infrastructure (provision nodes): 16h\n- Configure XD cluster with containers: 16h\n- Create benchmark scripts/scenarios: 16h\n- Run benchmarks, collect results: 24h\n- Analyze and report: 8h\nTotal U3: ~80h\n\n**U4: Flo parser endpoint improvements**\n- Analyze existing parser endpoints and error reporting: 6h\n- Implement improved error reporting: 20h\n- Unit tests: 10h\n- Integration tests: 6h\n- Documentation: 2h\nTotal U4: ~44h\n\n**U5: Mail source SSL/TLS support**\n- Analyze mail source configuration: 4h\n- Add java-mail-properties support to mail source module: 12h\n- Unit tests: 6h\n- Integration tests with secured IMAP/SMTP: 10h\n- Documentation: 4h\nTotal U5: ~36h\n\n**U6: HDFS default module registry**\n- Design HDFS-backed registry: 8h\n- Implement HDFS module registry default: 24h\n- xd-shell and REST API upload support: 16h\n- Remove custom-modules.zip from YARN distribution: 6h\n- Unit tests: 12h\n- Integration tests: 12h\n- Documentation: 4h\nTotal U6: ~82h\n\n**U7: Shell auto-configuration via init file**\n- Design init file loading mechanism: 4h\n- Implement automatic execution of init script at shell startup: 12h\n- Support well-known location (/etc/springxd/conf/xd-shell.init): 6h\n- Unit tests: 6h\n- Integration tests: 6h\n- Documentation: 3h\nTotal U7: ~37h\n\n**U8: Graceful stream shutdown**\n- Analyze current undeploy behavior and DLQ issue: 8h\n- Design graceful shutdown mechanism (lifecycle hooks): 12h\n- Implement graceful shutdown (stop sources, drain channels, complete processing): 32h\n- Handle timeout/force shutdown fallback: 10h\n- Unit tests: 12h\n- Integration tests: 14h\n- Documentation: 4h\nTotal U8: ~92h\n\nPlus overall project activities:\n- Overall integration, release build, final QA: 24h\n\nLet me total: 88 + 130 + 80 + 44 + 36 + 82 + 37 + 92 + 24 = 613\n\nLet me structure the WBS more carefully with a reasonable number of activities per story. I'll create activity IDs like A1.1, A1.2, etc.\n\nLet me finalize estimates:\n\nU1 (gpfdist migration to core): \n- A1.1 Codebase analysis & migration design: 8\n- A1.2 Migrate & refactor reactor-based gpfdist sink code into core: 24\n- A1.3 Build system integration, packaging, metadata: 10\n- A1.4 Unit tests: 14\n- A1.5 Integration tests against GPDB/HAWQ: 16\n- A1.6 Documentation: 6\nSubtotal: 78\n\nU2 (GitHub module registry):\n- A2.1 Design of GitHub-backed registry SPI: 10\n- A2.2 Implement GitHub registry read path: 28\n- A2.3 Implement upload/push to GitHub repo: 20\n- A2.4 Cluster sync & local caching: 12\n- A2.5 Unit tests: 16\n- A2.6 Integration tests: 14\n- A2.7 Documentation: 5\nSubtotal: 105\n\nU3 (Rabbit benchmark on Rackspace):\n- A3.1 Provision Rackspace infrastructure: 12\n- A3.2 Deploy & configure XD cluster: 12\n- A3.3 Benchmark scenario & tooling: 14\n- A3.4 Execute benchmark runs & scale containers: 20\n- A3.5 Analyze results & report: 8\nSubtotal: 66\n\nU4 (Flo parser improvements):\n- A4.1 Analyze parser endpoints & error strategy: 6\n- A4.2 Implement error reporting improvements: 18\n- A4.3 Unit tests: 8\n- A4.4 Integration/acceptance tests: 6\n- A4.5 Documentation: 2\nSubtotal: 40\n\nU5 (Mail source SSL/TLS):\n- A5.1 Analyze mail source & Spring Integration mail support: 4\n- A5.2 Implement java-mail-properties support: 10\n- A5.3 Unit tests: 5\n- A5.4 Integration tests w/ secured servers: 8\n- A5.5 Documentation: 3\nSubtotal: 30\n\nU6 (HDFS module registry default):\n- A6.1 Design HDFS registry default: 8\n- A6.2 Implement HDFS registry & make default: 22\n- A6.3 xd-shell/REST upload support: 14\n- A6.4 Remove custom-modules.zip from YARN distro: 6\n- A6.5 Unit tests: 10\n- A6.6 Integration tests: 12\n- A6.7 Documentation: 4\nSubtotal: 76\n\nU7 (Shell auto-config):\n- A7.1 Design init file mechanism: 4\n- A7.2 Implement auto-exec of init file at startup: 12\n- A7.3 Support standard locations & precedence: 5\n- A7.4 Unit tests: 5\n- A7.5 Integration tests: 5\n- A7.6 Documentation: 3\nSubtotal: 34\n\nU8 (Graceful shutdown):\n- A8.1 Analyze undeploy/DLQ behavior: 8\n- A8.2 Design graceful shutdown: 10\n- A8.3 Implement lifecycle/drain mechanism: 30\n- A8.4 Timeout & forced shutdown fallback: 8\n- A8.5 Unit tests: 12\n- A8.6 Integration tests: 14\n- A8.7 Documentation: 4\nSubtotal: 86\n\nCross-cutting:\n- A9.1 Overall integration, release build, final regression: 20\n- A9.2 Code reviews & rework: 16\n\nSubtotals: 78+105+66+40+30+76+34+86 = 515; +36 = 551\n\nLet me compute: 78+105=183; +66=249; +40=289; +30=319; +76=395; +34=429; +86=515; +20=535; +16=551.\n\nTotal: 551 hours.\n\nTechnical and design decisions:\n- Java 8+ (Spring XD era) — well the spec mentions Spring 6 requires Java 17+, but Spring XD is an older project; assume Java 8 with Spring XD codebase. Hmm, the spec text describes Spring Framework generally. The user stories are Spring XD stories. I'll state assumption that the increment builds on Spring XD 1.x codebase using Java 8, Spring Integration 4.x, Reactor 1.x/2.x.\n- Keep reactor-based gpfdist implementation but repackage into spring-xd core modules.\n- GitHub registry uses REST API v3 with content commits; credentials via config.\n- HDFS registry leverages existing hadoop fs config in XD.\n- Graceful shutdown uses Spring Integration lifecycle (stop order: sources first, drain channels with timeout).\n- Flo parser error reporting via structured error objects.\n- Mail source exposes java-mail-properties option mapping to <util:properties>.\n\nAssumptions:\n- Single developer, senior-level, familiar with Spring XD.\n- Effort excludes calendar time, meetings overhead, PM.\n- Infrastructure (GPDB/HAWQ, Rackspace account, mail servers) available.\n- No major API redesign needed.\n- Estimates include unit/integration testing and documentation but not production rollout.\n- Code review included.\n\nResponse must be valid JSON matching schema. Only JSON output.\n\nLet me make sure each activity has activity_id, activity_name, activity_description, most_likely_effort. All numbers > 0. Total = sum.\n\nLet me recount each:\nU1: 8+24+10+14+16+6 = 78 ✓\nU2: 10+28+20+12+16+14+5 = 105 ✓\nU3: 12+12+14+20+8 = 66 ✓\nU4: 6+18+8+6+2 = 40 ✓\nU5: 4+10+5+8+3 = 30 ✓\nU6: 8+22+14+6+10+12+4 = 76 ✓\nU7: 4+12+5+5+5+3 = 34 ✓\nU8: 8+10+30+8+12+14+4 = 86 ✓\nCross: 20+16 = 36\nTotal: 551 ✓\n\nOutput only JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this task. I need to estimate software development effort for 8 user stories related to Spring XD (Spring Data eXtension for data pipelines). Let me break down each user story:\n\nU1: Move project reactor-based gpfdist sink from spring-xd-modules repo to core - to natively write to GPDB/HAWQ\nU2: Module registry located in centralized GitHub repository - cluster always in sync\nU3: Bench Rabbit on Rackspace infrastructure - scalability testing with xd-container nodes\nU4: Improvements to Flo parser endpoints - streamline error reporting strategy\nU5: Mail source with secured IMAP/SMTP (SSL/TLS properties) - java-mail-properties attribute\nU6: Default to HDFS as distributed remote location for custom module registry; remove custom-modules.zip from YARN distribution\nU7: Shell auto-configuration against environment (init file for commands)\nU8: Graceful shutdown of streams - complete message journey to sink before XD stops stream\n\nLet me create a WBS for each user story with activities and effort estimates in work-hours.\n\nFor each user story, I'll break into typical activities:\n- Analysis/design\n- Implementation\n- Unit testing\n- Integration testing\n- Documentation\n- Code review/refinement\n\nLet me estimate:\n\n**U1: Migrate gpfdist sink to core**\n- Analysis of existing spring-xd-modules gpfdist code: 8h\n- Code migration and refactoring to core (reactor-based): 24h\n- Adaptation to core module structure, package renaming, build integration: 16h\n- Unit tests: 16h\n- Integration tests with GPDB/HAWQ: 16h\n- Documentation: 8h\nTotal U1: ~88h\n\n**U2: GitHub-based module registry**\n- Design GitHub registry implementation: 12h\n- Implement GitHub-backed ModuleRegistry (read modules from repo): 40h\n- Implement push/upload to GitHub repo on module upload: 24h\n- Sync/caching for containers: 16h\n- Unit tests: 16h\n- Integration tests: 16h\n- Documentation: 6h\nTotal U2: ~130h\n\n**U3: Bench Rabbit on Rackspace**\n- Setup Rackspace infrastructure (provision nodes): 16h\n- Configure XD cluster with containers: 16h\n- Create benchmark scripts/scenarios: 16h\n- Run benchmarks, collect results: 24h\n- Analyze and report: 8h\nTotal U3: ~80h\n\n**U4: Flo parser endpoint improvements**\n- Analyze existing parser endpoints and error reporting: 6h\n- Implement improved error reporting: 20h\n- Unit tests: 10h\n- Integration tests: 6h\n- Documentation: 2h\nTotal U4: ~44h\n\n**U5: Mail source SSL/TLS support**\n- Analyze mail source configuration: 4h\n- Add java-mail-properties support to mail source module: 12h\n- Unit tests: 6h\n- Integration tests with secured IMAP/SMTP: 10h\n- Documentation: 4h\nTotal U5: ~36h\n\n**U6: HDFS default module registry**\n- Design HDFS-backed registry: 8h\n- Implement HDFS module registry default: 24h\n- xd-shell and REST API upload support: 16h\n- Remove custom-modules.zip from YARN distribution: 6h\n- Unit tests: 12h\n- Integration tests: 12h\n- Documentation: 4h\nTotal U6: ~82h\n\n**U7: Shell auto-configuration via init file**\n- Design init file loading mechanism: 4h\n- Implement automatic execution of init script at shell startup: 12h\n- Support well-known location (/etc/springxd/conf/xd-shell.init): 6h\n- Unit tests: 6h\n- Integration tests: 6h\n- Documentation: 3h\nTotal U7: ~37h\n\n**U8: Graceful stream shutdown**\n- Analyze current undeploy behavior and DLQ issue: 8h\n- Design graceful shutdown mechanism (lifecycle hooks): 12h\n- Implement graceful shutdown (stop sources, drain channels, complete processing): 32h\n- Handle timeout/force shutdown fallback: 10h\n- Unit tests: 12h\n- Integration tests: 14h\n- Documentation: 4h\nTotal U8: ~92h\n\nPlus overall project activities:\n- Overall integration, release build, final QA: 24h\n\nLet me total: 88 + 130 + 80 + 44 + 36 + 82 + 37 + 92 + 24 = 613\n\nLet me structure the WBS more carefully with a reasonable number of activities per story. I'll create activity IDs like A1.1, A1.2, etc.\n\nLet me finalize estimates:\n\nU1 (gpfdist migration to core): \n- A1.1 Codebase analysis & migration design: 8\n- A1.2 Migrate & refactor reactor-based gpfdist sink code into core: 24\n- A1.3 Build system integration, packaging, metadata: 10\n- A1.4 Unit tests: 14\n- A1.5 Integration tests against GPDB/HAWQ: 16\n- A1.6 Documentation: 6\nSubtotal: 78\n\nU2 (GitHub module registry):\n- A2.1 Design of GitHub-backed registry SPI: 10\n- A2.2 Implement GitHub registry read path: 28\n- A2.3 Implement upload/push to GitHub repo: 20\n- A2.4 Cluster sync & local caching: 12\n- A2.5 Unit tests: 16\n- A2.6 Integration tests: 14\n- A2.7 Documentation: 5\nSubtotal: 105\n\nU3 (Rabbit benchmark on Rackspace):\n- A3.1 Provision Rackspace infrastructure: 12\n- A3.2 Deploy & configure XD cluster: 12\n- A3.3 Benchmark scenario & tooling: 14\n- A3.4 Execute benchmark runs & scale containers: 20\n- A3.5 Analyze results & report: 8\nSubtotal: 66\n\nU4 (Flo parser improvements):\n- A4.1 Analyze parser endpoints & error strategy: 6\n- A4.2 Implement error reporting improvements: 18\n- A4.3 Unit tests: 8\n- A4.4 Integration/acceptance tests: 6\n- A4.5 Documentation: 2\nSubtotal: 40\n\nU5 (Mail source SSL/TLS):\n- A5.1 Analyze mail source & Spring Integration mail support: 4\n- A5.2 Implement java-mail-properties support: 10\n- A5.3 Unit tests: 5\n- A5.4 Integration tests w/ secured servers: 8\n- A5.5 Documentation: 3\nSubtotal: 30\n\nU6 (HDFS module registry default):\n- A6.1 Design HDFS registry default: 8\n- A6.2 Implement HDFS registry & make default: 22\n- A6.3 xd-shell/REST upload support: 14\n- A6.4 Remove custom-modules.zip from YARN distro: 6\n- A6.5 Unit tests: 10\n- A6.6 Integration tests: 12\n- A6.7 Documentation: 4\nSubtotal: 76\n\nU7 (Shell auto-config):\n- A7.1 Design init file mechanism: 4\n- A7.2 Implement auto-exec of init file at startup: 12\n- A7.3 Support standard locations & precedence: 5\n- A7.4 Unit tests: 5\n- A7.5 Integration tests: 5\n- A7.6 Documentation: 3\nSubtotal: 34\n\nU8 (Graceful shutdown):\n- A8.1 Analyze undeploy/DLQ behavior: 8\n- A8.2 Design graceful shutdown: 10\n- A8.3 Implement lifecycle/drain mechanism: 30\n- A8.4 Timeout & forced shutdown fallback: 8\n- A8.5 Unit tests: 12\n- A8.6 Integration tests: 14\n- A8.7 Documentation: 4\nSubtotal: 86\n\nCross-cutting:\n- A9.1 Overall integration, release build, final regression: 20\n- A9.2 Code reviews & rework: 16\n\nSubtotals: 78+105+66+40+30+76+34+86 = 515; +36 = 551\n\nLet me compute: 78+105=183; +66=249; +40=289; +30=319; +76=395; +34=429; +86=515; +20=535; +16=551.\n\nTotal: 551 hours.\n\nTechnical and design decisions:\n- Java 8+ (Spring XD era) — well the spec mentions Spring 6 requires Java 17+, but Spring XD is an older project; assume Java 8 with Spring XD codebase. Hmm, the spec text describes Spring Framework generally. The user stories are Spring XD stories. I'll state assumption that the increment builds on Spring XD 1.x codebase using Java 8, Spring Integration 4.x, Reactor 1.x/2.x.\n- Keep reactor-based gpfdist implementation but repackage into spring-xd core modules.\n- GitHub registry uses REST API v3 with content commits; credentials via config.\n- HDFS registry leverages existing hadoop fs config in XD.\n- Graceful shutdown uses Spring Integration lifecycle (stop order: sources first, drain channels with timeout).\n- Flo parser error reporting via structured error objects.\n- Mail source exposes java-mail-properties option mapping to <util:properties>.\n\nAssumptions:\n- Single developer, senior-level, familiar with Spring XD.\n- Effort excludes calendar time, meetings overhead, PM.\n- Infrastructure (GPDB/HAWQ, Rackspace account, mail servers) available.\n- No major API redesign needed.\n- Estimates include unit/integration testing and documentation but not production rollout.\n- Code review included.\n\nResponse must be valid JSON matching schema. Only JSON output.\n\nLet me make sure each activity has activity_id, activity_name, activity_description, most_likely_effort. All numbers > 0. Total = sum.\n\nLet me recount each:\nU1: 8+24+10+14+16+6 = 78 ✓\nU2: 10+28+20+12+16+14+5 = 105 ✓\nU3: 12+12+14+20+8 = 66 ✓\nU4: 6+18+8+6+2 = 40 ✓\nU5: 4+10+5+8+3 = 30 ✓\nU6: 8+22+14+6+10+12+4 = 76 ✓\nU7: 4+12+5+5+5+3 = 34 ✓\nU8: 8+10+30+8+12+14+4 = 86 ✓\nCross: 20+16 = 36\nTotal: 551 ✓\n\nOutput only JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1781,
+      "completion_tokens": 6722,
+      "total_tokens": 8503,
+      "cost": 0.1047906,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.1047906,
+        "upstream_inference_prompt_cost": 0.0039606,
+        "upstream_inference_completions_cost": 0.10083
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 2413,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1: The existing Reactor-based gpfdist sink implementation from the spring-xd-modules repository will be migrated into the spring-xd core codebase with package refactoring to core namespaces, preserving the Reactor-based architecture rather than rewriting it, and wiring it into the core module build (Gradle) and module metadata so it can be used natively without the external repo.\",\n    \"U2: A GitHub-backed ModuleRegistry implementation will be created behind the existing ModuleRegistry SPI, using the GitHub REST API (contents/commits) for reads and authenticated commits for module uploads, with a local filesystem cache in each admin/container node so runtime resolution tolerates transient GitHub unavailability while keeping the repo as the single source of truth.\",\n    \"U3: The RabbitMQ scalability benchmark will reuse the existing XD performance test harness, executed on Rackspace VMs provisioned manually (no automation of cloud provisioning beyond scripts), scaling xd-container nodes incrementally and measuring throughput/latency.\",\n    \"U4: Flo parser endpoint improvements will introduce a structured error-reporting model (machine-readable error objects with position/context) returned by existing parser endpoints, keeping backward compatibility of endpoint contracts.\",\n    \"U5: The Mail source module will expose a java-mail-properties option that accepts a properties definition (as in the <util:properties/> example) and passes it through to the Spring Integration mail adapters, enabling SSL/TLS (imaps/smtps) without changing module internals beyond configuration plumbing.\",\n    \"U6: An HDFS-backed ModuleRegistry will become the default distributed remote location, reusing the existing hadoop config fs settings in XD; xd-shell and REST-API module upload endpoints will write to HDFS; the custom-modules.zip artifact will be removed from the YARN distribution build.\",\n    \"U7: xd-shell will auto-execute an init file (e.g. /etc/springxd/conf/xd-shell.init) at startup, implemented by reusing the existing 'script --file' command execution path, with support for an explicit override location via a command-line/environment setting.\",\n    \"U8: Graceful stream shutdown will be implemented via ordered lifecycle shutdown on undeploy: stop inbound sources first, allow in-flight messages to drain through channels to sinks within a configurable timeout, then force-stop remaining components; DLQ behavior remains as fallback for genuinely failed messages.\"\n  ],\n  \"assumptions\": [\n    \"The increment builds on the Spring XD 1.x codebase (Java 8, Spring Integration 4.x, Project Reactor) as implied by the user stories; the general Spring Framework 6/Java 17 background text is treated as context only, not as a migration requirement.\",\n    \"A single senior-level developer familiar with Spring XD, Spring Integration and the module architecture performs all work; estimates include design, implementation, unit/integration testing and documentation.\",\n    \"Estimates exclude elapsed-time effects (waiting on CI, infrastructure provisioning lead time, third-party response times) and exclude project management, release management and production deployment activities beyond a final regression pass.\",\n    \"Required test infrastructure is available at no extra setup cost beyond the listed activities: a GPDB/HAWQ instance for gpfdist integration tests, a Rackspace account for benchmarking, SSL/TLS-enabled IMAP/SMTP test servers, a Hadoop/HDFS test cluster, and a GitHub test repository.\",\n    \"Module upload via GitHub (U2) assumes a dedicated repository with credentials supplied through XD configuration; no GitHub-side workflow (PRs/reviews) is required.\",\n    \"Graceful shutdown (U8) is best-effort within a configurable timeout; exactly-once semantics are not guaranteed.\",\n    \"The scope covers only the eight listed user stories plus a final cross-cutting integration/regression activity; no other backlog items are included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1.1\",\n      \"activity_name\": \"U1 - Analyze existing gpfdist module and design migration\",\n      \"activity_description\": \"Review the Reactor-based gpfdist sink in spring-xd-modules, identify dependencies and gaps versus core requirements, and define the target package/build structure in core.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A1.2\",\n      \"activity_name\": \"U1 - Migrate and refactor gpfdist sink into core\",\n      \"activity_description\": \"Move the gpfdist sink source into the spring-xd core codebase, refactor packages/imports, resolve dependency differences, and adapt to core module conventions.\",\n      \"most_likely_effort\": 24\n    },\n    {\n      \"activity_id\": \"A1.3\",\n      \"activity_name\": \"U1 - Build, packaging and module metadata integration\",\n      \"activity_description\": \"Integrate the migrated sink into the Gradle build, module registry metadata and distribution packaging so it is available natively in stream definitions.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A1.4\",\n      \"activity_name\": \"U1 - Unit tests for gpfdist sink in core\",\n      \"activity_description\": \"Port and extend unit tests covering gpfdist sink behavior, configuration options and error handling in the core codebase.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A1.5\",\n      \"activity_name\": \"U1 - Integration tests against GPDB/HAWQ\",\n      \"activity_description\": \"Implement and execute end-to-end integration tests writing data from a stream to GPDB/HAWQ via the gpfdist sink.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A1.6\",\n      \"activity_name\": \"U1 - Documentation for gpfdist sink\",\n      \"activity_description\": \"Write reference documentation and usage examples for the gpfdist sink as a core module.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A2.1\",\n      \"activity_name\": \"U2 - Design GitHub-backed ModuleRegistry\",\n      \"activity_description\": \"Design the GitHub-backed ModuleRegistry implementation against the existing ModuleRegistry SPI, including repository layout, authentication and caching strategy.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A2.2\",\n      \"activity_name\": \"U2 - Implement GitHub registry read path\",\n      \"activity_description\": \"Implement module listing and resolution by reading module bits and metadata from the centralized GitHub repository via the GitHub API.\",\n      \"most_likely_effort\": 28\n    },\n    {\n      \"activity_id\": \"A2.3\",\n      \"activity_name\": \"U2 - Implement module upload (push) to GitHub\",\n      \"activity_description\": \"Implement the module upload path so new modules are committed and pushed to the centralized GitHub repository, keeping the cluster in sync.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A2.4\",\n      \"activity_name\": \"U2 - Cluster synchronization and local caching\",\n      \"activity_description\": \"Implement local caching and refresh logic on admin/container nodes so all nodes resolve modules from the same registry state.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A2.5\",\n      \"activity_name\": \"U2 - Unit tests for GitHub registry\",\n      \"activity_description\": \"Unit tests for read, upload, authentication, and cache behavior using mocked GitHub API interactions.\",\n      \"most_likely_effort\": 16\n    },\n    {\n      \"activity_id\": \"A2.6\",\n      \"activity_name\": \"U2 - Integration tests for GitHub registry\",\n      \"activity_description\": \"Integration tests against a real test GitHub repository covering upload, resolution from multiple nodes, and sync behavior.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A2.7\",\n      \"activity_name\": \"U2 - Documentation for GitHub module registry\",\n      \"activity_description\": \"Document configuration of the centralized GitHub module registry for admins.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A3.1\",\n      \"activity_name\": \"U3 - Provision Rackspace benchmark infrastructure\",\n      \"activity_description\": \"Provision and prepare Rackspace VM nodes (OS, networking, JVM, RabbitMQ) needed for the benchmark cluster.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A3.2\",\n      \"activity_name\": \"U3 - Deploy and configure XD cluster for benchmarking\",\n      \"activity_description\": \"Install and configure xd-admin and xd-container nodes with RabbitMQ transport on the Rackspace infrastructure.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A3.3\",\n      \"activity_name\": \"U3 - Develop benchmark scenarios and tooling\",\n      \"activity_description\": \"Create benchmark stream definitions, load generation scripts and metrics collection tooling.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A3.4\",\n      \"activity_name\": \"U3 - Execute benchmark runs scaling xd-container nodes\",\n      \"activity_description\": \"Run benchmark iterations while incrementally adding xd-container nodes, capturing throughput and latency data.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A3.5\",\n      \"activity_name\": \"U3 - Analyze results and produce scalability report\",\n      \"activity_description\": \"Analyze collected metrics, identify scaling characteristics/bottlenecks, and write the benchmark report.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4.1\",\n      \"activity_name\": \"U4 - Analyze Flo parser endpoints and current error handling\",\n      \"activity_description\": \"Review existing Flo parser endpoints and error reporting behavior, and define the improved error model.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A4.2\",\n      \"activity_name\": \"U4 - Implement improved parser error reporting\",\n      \"activity_description\": \"Implement streamlined, structured error reporting in the Flo parser endpoints, including position/context details.\",\n      \"most_likely_effort\": 18\n    },\n    {\n      \"activity_id\": \"A4.3\",\n      \"activity_name\": \"U4 - Unit tests for parser error reporting\",\n      \"activity_description\": \"Unit tests covering valid and invalid parse inputs and the structure/content of reported errors.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A4.4\",\n      \"activity_name\": \"U4 - Integration tests for parser endpoints\",\n      \"activity_description\": \"Integration tests exercising the parser endpoints end-to-end to validate the new error reporting strategy.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A4.5\",\n      \"activity_name\": \"U4 - Documentation for parser error reporting\",\n      \"activity_description\": \"Update Flo parser endpoint documentation with the new error format.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A5.1\",\n      \"activity_name\": \"U5 - Analyze Mail source and Spring Integration mail configuration\",\n      \"activity_description\": \"Review the Mail source module and Spring Integration mail adapters to determine how to inject java-mail properties for SSL/TLS.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5.2\",\n      \"activity_name\": \"U5 - Implement java-mail-properties support in Mail source\",\n      \"activity_description\": \"Add a java-mail-properties option to the Mail source module that passes SSL/TLS properties (per the <util:properties/> example) to the mail adapters for secured IMAP/SMTP.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A5.3\",\n      \"activity_name\": \"U5 - Unit tests for Mail source properties\",\n      \"activity_description\": \"Unit tests verifying property parsing and propagation into mail session configuration.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5.4\",\n      \"activity_name\": \"U5 - Integration tests with secured IMAP/SMTP servers\",\n      \"activity_description\": \"Integration tests connecting the Mail source to SSL/TLS-enabled IMAP and SMTP test servers.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A5.5\",\n      \"activity_name\": \"U5 - Documentation for secured Mail source\",\n      \"activity_description\": \"Document the java-mail-properties option with SSL/TLS configuration examples.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A6.1\",\n      \"activity_name\": \"U6 - Design HDFS-based default module registry\",\n      \"activity_description\": \"Design the HDFS-backed ModuleRegistry and the approach for making it the default distributed remote location.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A6.2\",\n      \"activity_name\": \"U6 - Implement HDFS registry and set as default\",\n      \"activity_description\": \"Implement the HDFS-backed ModuleRegistry reusing XD's hadoop fs configuration and wire it as the default custom module location.\",\n      \"most_likely_effort\": 22\n    },\n    {\n      \"activity_id\": \"A6.3\",\n      \"activity_name\": \"U6 - Module upload via xd-shell and REST API to HDFS\",\n      \"activity_description\": \"Enable direct upload of custom module bits to the HDFS registry through xd-shell commands and the REST API.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A6.4\",\n      \"activity_name\": \"U6 - Remove custom-modules.zip from YARN distribution\",\n      \"activity_description\": \"Remove the custom-modules.zip artifact and related packaging steps from the YARN distribution build.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A6.5\",\n      \"activity_name\": \"U6 - Unit tests for HDFS registry\",\n      \"activity_description\": \"Unit tests for HDFS registry operations and upload endpoints.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A6.6\",\n      \"activity_name\": \"U6 - Integration tests on HDFS cluster\",\n      \"activity_description\": \"Integration tests of upload and module resolution against a real HDFS cluster, including YARN distribution verification.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A6.7\",\n      \"activity_name\": \"U6 - Documentation for HDFS default registry\",\n      \"activity_description\": \"Document the HDFS default registry behavior, upload commands and YARN distribution change.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7.1\",\n      \"activity_name\": \"U7 - Design xd-shell init file mechanism\",\n      \"activity_description\": \"Design automatic initialization of xd-shell from a commands file (e.g. /etc/springxd/conf/xd-shell.init).\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7.2\",\n      \"activity_name\": \"U7 - Implement automatic init file execution at startup\",\n      \"activity_description\": \"Implement execution of the init file at shell startup by reusing the existing script execution path (admin config server, hadoop config fs commands).\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A7.3\",\n      \"activity_name\": \"U7 - Support init file locations and overrides\",\n      \"activity_description\": \"Support a well-known default location plus explicit override via option or environment variable, with graceful handling when the file is absent.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7.4\",\n      \"activity_name\": \"U7 - Unit tests for shell auto-configuration\",\n      \"activity_description\": \"Unit tests for init file discovery, parsing and execution ordering.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7.5\",\n      \"activity_name\": \"U7 - Integration tests for shell auto-configuration\",\n      \"activity_description\": \"Integration tests starting xd-shell with an init file against a running admin server and HDFS config.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7.6\",\n      \"activity_name\": \"U7 - Documentation for shell auto-configuration\",\n      \"activity_description\": \"Document the init file location, format and startup behavior.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8.1\",\n      \"activity_name\": \"U8 - Analyze current undeploy behavior and DLQ issue\",\n      \"activity_description\": \"Investigate the current stream undeploy lifecycle and reproduce the in-flight message loss/DLQ behavior described in the use case.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8.2\",\n      \"activity_name\": \"U8 - Design graceful shutdown mechanism\",\n      \"activity_description\": \"Design ordered shutdown (stop sources, drain channels to sinks, configurable timeout, forced stop fallback) integrated with the deployer lifecycle.\",\n      \"most_likely_effort\": 10\n    },\n    {\n      \"activity_id\": \"A8.3\",\n      \"activity_name\": \"U8 - Implement graceful stream shutdown\",\n      \"activity_description\": \"Implement the lifecycle changes so in-flight messages complete their journey to the sink before module components are stopped on undeploy.\",\n      \"most_likely_effort\": 30\n    },\n    {\n      \"activity_id\": \"A8.4\",\n      \"activity_name\": \"U8 - Implement timeout and forced shutdown fallback\",\n      \"activity_description\": \"Implement configurable drain timeout and forced shutdown for messages that cannot complete, preserving existing DLQ behavior as fallback.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8.5\",\n      \"activity_name\": \"U8 - Unit tests for graceful shutdown\",\n      \"activity_description\": \"Unit tests for the ordered shutdown lifecycle, drain logic and timeout handling.\",\n      \"most_likely_effort\": 12\n    },\n    {\n      \"activity_id\": \"A8.6\",\n      \"activity_name\": \"U8 - Integration tests for graceful undeploy\",\n      \"activity_description\": \"Integration tests undeploying streams with in-flight long-running processing (e.g. archive extraction scenario) verifying messages reach the sink.\",\n      \"most_likely_effort\": 14\n    },\n    {\n      \"activity_id\": \"A8.7\",\n      \"activity_name\": \"U8 - Documentation for graceful shutdown\",\n      \"activity_description\": \"Document the graceful undeploy behavior and timeout configuration options.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A9.1\",\n      \"activity_name\": \"Cross-cutting - Overall integration and final regression\",\n      \"activity_description\": \"Integrate all eight increments, resolve cross-feature conflicts, run the full build and regression test suite.\",\n      \"most_likely_effort\": 20\n    },\n    {\n      \"activity_id\": \"A9.2\",\n      \"activity_name\": \"Cross-cutting - Code reviews and rework\",\n      \"activity_description\": \"Perform self-review/peer-review cycles for all stories and implement review feedback and fixes.\",\n      \"most_likely_effort\": 16\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 551\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "U1: The existing Reactor-based gpfdist sink implementation from the spring-xd-modules repository will be migrated into the spring-xd core codebase with package refactoring to core namespaces, preserving the Reactor-based architecture rather than rewriting it, and wiring it into the core module build (Gradle) and module metadata so it can be used natively without the external repo.",
+      "U2: A GitHub-backed ModuleRegistry implementation will be created behind the existing ModuleRegistry SPI, using the GitHub REST API (contents/commits) for reads and authenticated commits for module uploads, with a local filesystem cache in each admin/container node so runtime resolution tolerates transient GitHub unavailability while keeping the repo as the single source of truth.",
+      "U3: The RabbitMQ scalability benchmark will reuse the existing XD performance test harness, executed on Rackspace VMs provisioned manually (no automation of cloud provisioning beyond scripts), scaling xd-container nodes incrementally and measuring throughput/latency.",
+      "U4: Flo parser endpoint improvements will introduce a structured error-reporting model (machine-readable error objects with position/context) returned by existing parser endpoints, keeping backward compatibility of endpoint contracts.",
+      "U5: The Mail source module will expose a java-mail-properties option that accepts a properties definition (as in the <util:properties/> example) and passes it through to the Spring Integration mail adapters, enabling SSL/TLS (imaps/smtps) without changing module internals beyond configuration plumbing.",
+      "U6: An HDFS-backed ModuleRegistry will become the default distributed remote location, reusing the existing hadoop config fs settings in XD; xd-shell and REST-API module upload endpoints will write to HDFS; the custom-modules.zip artifact will be removed from the YARN distribution build.",
+      "U7: xd-shell will auto-execute an init file (e.g. /etc/springxd/conf/xd-shell.init) at startup, implemented by reusing the existing 'script --file' command execution path, with support for an explicit override location via a command-line/environment setting.",
+      "U8: Graceful stream shutdown will be implemented via ordered lifecycle shutdown on undeploy: stop inbound sources first, allow in-flight messages to drain through channels to sinks within a configurable timeout, then force-stop remaining components; DLQ behavior remains as fallback for genuinely failed messages."
+    ],
+    "assumptions": [
+      "The increment builds on the Spring XD 1.x codebase (Java 8, Spring Integration 4.x, Project Reactor) as implied by the user stories; the general Spring Framework 6/Java 17 background text is treated as context only, not as a migration requirement.",
+      "A single senior-level developer familiar with Spring XD, Spring Integration and the module architecture performs all work; estimates include design, implementation, unit/integration testing and documentation.",
+      "Estimates exclude elapsed-time effects (waiting on CI, infrastructure provisioning lead time, third-party response times) and exclude project management, release management and production deployment activities beyond a final regression pass.",
+      "Required test infrastructure is available at no extra setup cost beyond the listed activities: a GPDB/HAWQ instance for gpfdist integration tests, a Rackspace account for benchmarking, SSL/TLS-enabled IMAP/SMTP test servers, a Hadoop/HDFS test cluster, and a GitHub test repository.",
+      "Module upload via GitHub (U2) assumes a dedicated repository with credentials supplied through XD configuration; no GitHub-side workflow (PRs/reviews) is required.",
+      "Graceful shutdown (U8) is best-effort within a configurable timeout; exactly-once semantics are not guaranteed.",
+      "The scope covers only the eight listed user stories plus a final cross-cutting integration/regression activity; no other backlog items are included."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1.1",
+        "activity_name": "U1 - Analyze existing gpfdist module and design migration",
+        "activity_description": "Review the Reactor-based gpfdist sink in spring-xd-modules, identify dependencies and gaps versus core requirements, and define the target package/build structure in core.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A1.2",
+        "activity_name": "U1 - Migrate and refactor gpfdist sink into core",
+        "activity_description": "Move the gpfdist sink source into the spring-xd core codebase, refactor packages/imports, resolve dependency differences, and adapt to core module conventions.",
+        "most_likely_effort": 24
+      },
+      {
+        "activity_id": "A1.3",
+        "activity_name": "U1 - Build, packaging and module metadata integration",
+        "activity_description": "Integrate the migrated sink into the Gradle build, module registry metadata and distribution packaging so it is available natively in stream definitions.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A1.4",
+        "activity_name": "U1 - Unit tests for gpfdist sink in core",
+        "activity_description": "Port and extend unit tests covering gpfdist sink behavior, configuration options and error handling in the core codebase.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A1.5",
+        "activity_name": "U1 - Integration tests against GPDB/HAWQ",
+        "activity_description": "Implement and execute end-to-end integration tests writing data from a stream to GPDB/HAWQ via the gpfdist sink.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A1.6",
+        "activity_name": "U1 - Documentation for gpfdist sink",
+        "activity_description": "Write reference documentation and usage examples for the gpfdist sink as a core module.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A2.1",
+        "activity_name": "U2 - Design GitHub-backed ModuleRegistry",
+        "activity_description": "Design the GitHub-backed ModuleRegistry implementation against the existing ModuleRegistry SPI, including repository layout, authentication and caching strategy.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A2.2",
+        "activity_name": "U2 - Implement GitHub registry read path",
+        "activity_description": "Implement module listing and resolution by reading module bits and metadata from the centralized GitHub repository via the GitHub API.",
+        "most_likely_effort": 28
+      },
+      {
+        "activity_id": "A2.3",
+        "activity_name": "U2 - Implement module upload (push) to GitHub",
+        "activity_description": "Implement the module upload path so new modules are committed and pushed to the centralized GitHub repository, keeping the cluster in sync.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A2.4",
+        "activity_name": "U2 - Cluster synchronization and local caching",
+        "activity_description": "Implement local caching and refresh logic on admin/container nodes so all nodes resolve modules from the same registry state.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A2.5",
+        "activity_name": "U2 - Unit tests for GitHub registry",
+        "activity_description": "Unit tests for read, upload, authentication, and cache behavior using mocked GitHub API interactions.",
+        "most_likely_effort": 16
+      },
+      {
+        "activity_id": "A2.6",
+        "activity_name": "U2 - Integration tests for GitHub registry",
+        "activity_description": "Integration tests against a real test GitHub repository covering upload, resolution from multiple nodes, and sync behavior.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A2.7",
+        "activity_name": "U2 - Documentation for GitHub module registry",
+        "activity_description": "Document configuration of the centralized GitHub module registry for admins.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A3.1",
+        "activity_name": "U3 - Provision Rackspace benchmark infrastructure",
+        "activity_description": "Provision and prepare Rackspace VM nodes (OS, networking, JVM, RabbitMQ) needed for the benchmark cluster.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A3.2",
+        "activity_name": "U3 - Deploy and configure XD cluster for benchmarking",
+        "activity_description": "Install and configure xd-admin and xd-container nodes with RabbitMQ transport on the Rackspace infrastructure.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A3.3",
+        "activity_name": "U3 - Develop benchmark scenarios and tooling",
+        "activity_description": "Create benchmark stream definitions, load generation scripts and metrics collection tooling.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A3.4",
+        "activity_name": "U3 - Execute benchmark runs scaling xd-container nodes",
+        "activity_description": "Run benchmark iterations while incrementally adding xd-container nodes, capturing throughput and latency data.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A3.5",
+        "activity_name": "U3 - Analyze results and produce scalability report",
+        "activity_description": "Analyze collected metrics, identify scaling characteristics/bottlenecks, and write the benchmark report.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A4.1",
+        "activity_name": "U4 - Analyze Flo parser endpoints and current error handling",
+        "activity_description": "Review existing Flo parser endpoints and error reporting behavior, and define the improved error model.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A4.2",
+        "activity_name": "U4 - Implement improved parser error reporting",
+        "activity_description": "Implement streamlined, structured error reporting in the Flo parser endpoints, including position/context details.",
+        "most_likely_effort": 18
+      },
+      {
+        "activity_id": "A4.3",
+        "activity_name": "U4 - Unit tests for parser error reporting",
+        "activity_description": "Unit tests covering valid and invalid parse inputs and the structure/content of reported errors.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A4.4",
+        "activity_name": "U4 - Integration tests for parser endpoints",
+        "activity_description": "Integration tests exercising the parser endpoints end-to-end to validate the new error reporting strategy.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A4.5",
+        "activity_name": "U4 - Documentation for parser error reporting",
+        "activity_description": "Update Flo parser endpoint documentation with the new error format.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A5.1",
+        "activity_name": "U5 - Analyze Mail source and Spring Integration mail configuration",
+        "activity_description": "Review the Mail source module and Spring Integration mail adapters to determine how to inject java-mail properties for SSL/TLS.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5.2",
+        "activity_name": "U5 - Implement java-mail-properties support in Mail source",
+        "activity_description": "Add a java-mail-properties option to the Mail source module that passes SSL/TLS properties (per the <util:properties/> example) to the mail adapters for secured IMAP/SMTP.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A5.3",
+        "activity_name": "U5 - Unit tests for Mail source properties",
+        "activity_description": "Unit tests verifying property parsing and propagation into mail session configuration.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A5.4",
+        "activity_name": "U5 - Integration tests with secured IMAP/SMTP servers",
+        "activity_description": "Integration tests connecting the Mail source to SSL/TLS-enabled IMAP and SMTP test servers.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A5.5",
+        "activity_name": "U5 - Documentation for secured Mail source",
+        "activity_description": "Document the java-mail-properties option with SSL/TLS configuration examples.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A6.1",
+        "activity_name": "U6 - Design HDFS-based default module registry",
+        "activity_description": "Design the HDFS-backed ModuleRegistry and the approach for making it the default distributed remote location.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A6.2",
+        "activity_name": "U6 - Implement HDFS registry and set as default",
+        "activity_description": "Implement the HDFS-backed ModuleRegistry reusing XD's hadoop fs configuration and wire it as the default custom module location.",
+        "most_likely_effort": 22
+      },
+      {
+        "activity_id": "A6.3",
+        "activity_name": "U6 - Module upload via xd-shell and REST API to HDFS",
+        "activity_description": "Enable direct upload of custom module bits to the HDFS registry through xd-shell commands and the REST API.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A6.4",
+        "activity_name": "U6 - Remove custom-modules.zip from YARN distribution",
+        "activity_description": "Remove the custom-modules.zip artifact and related packaging steps from the YARN distribution build.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A6.5",
+        "activity_name": "U6 - Unit tests for HDFS registry",
+        "activity_description": "Unit tests for HDFS registry operations and upload endpoints.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A6.6",
+        "activity_name": "U6 - Integration tests on HDFS cluster",
+        "activity_description": "Integration tests of upload and module resolution against a real HDFS cluster, including YARN distribution verification.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A6.7",
+        "activity_name": "U6 - Documentation for HDFS default registry",
+        "activity_description": "Document the HDFS default registry behavior, upload commands and YARN distribution change.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7.1",
+        "activity_name": "U7 - Design xd-shell init file mechanism",
+        "activity_description": "Design automatic initialization of xd-shell from a commands file (e.g. /etc/springxd/conf/xd-shell.init).",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7.2",
+        "activity_name": "U7 - Implement automatic init file execution at startup",
+        "activity_description": "Implement execution of the init file at shell startup by reusing the existing script execution path (admin config server, hadoop config fs commands).",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A7.3",
+        "activity_name": "U7 - Support init file locations and overrides",
+        "activity_description": "Support a well-known default location plus explicit override via option or environment variable, with graceful handling when the file is absent.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A7.4",
+        "activity_name": "U7 - Unit tests for shell auto-configuration",
+        "activity_description": "Unit tests for init file discovery, parsing and execution ordering.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A7.5",
+        "activity_name": "U7 - Integration tests for shell auto-configuration",
+        "activity_description": "Integration tests starting xd-shell with an init file against a running admin server and HDFS config.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A7.6",
+        "activity_name": "U7 - Documentation for shell auto-configuration",
+        "activity_description": "Document the init file location, format and startup behavior.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A8.1",
+        "activity_name": "U8 - Analyze current undeploy behavior and DLQ issue",
+        "activity_description": "Investigate the current stream undeploy lifecycle and reproduce the in-flight message loss/DLQ behavior described in the use case.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A8.2",
+        "activity_name": "U8 - Design graceful shutdown mechanism",
+        "activity_description": "Design ordered shutdown (stop sources, drain channels to sinks, configurable timeout, forced stop fallback) integrated with the deployer lifecycle.",
+        "most_likely_effort": 10
+      },
+      {
+        "activity_id": "A8.3",
+        "activity_name": "U8 - Implement graceful stream shutdown",
+        "activity_description": "Implement the lifecycle changes so in-flight messages complete their journey to the sink before module components are stopped on undeploy.",
+        "most_likely_effort": 30
+      },
+      {
+        "activity_id": "A8.4",
+        "activity_name": "U8 - Implement timeout and forced shutdown fallback",
+        "activity_description": "Implement configurable drain timeout and forced shutdown for messages that cannot complete, preserving existing DLQ behavior as fallback.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A8.5",
+        "activity_name": "U8 - Unit tests for graceful shutdown",
+        "activity_description": "Unit tests for the ordered shutdown lifecycle, drain logic and timeout handling.",
+        "most_likely_effort": 12
+      },
+      {
+        "activity_id": "A8.6",
+        "activity_name": "U8 - Integration tests for graceful undeploy",
+        "activity_description": "Integration tests undeploying streams with in-flight long-running processing (e.g. archive extraction scenario) verifying messages reach the sink.",
+        "most_likely_effort": 14
+      },
+      {
+        "activity_id": "A8.7",
+        "activity_name": "U8 - Documentation for graceful shutdown",
+        "activity_description": "Document the graceful undeploy behavior and timeout configuration options.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A9.1",
+        "activity_name": "Cross-cutting - Overall integration and final regression",
+        "activity_description": "Integrate all eight increments, resolve cross-feature conflicts, run the full build and regression test suite.",
+        "most_likely_effort": 20
+      },
+      {
+        "activity_id": "A9.2",
+        "activity_name": "Cross-cutting - Code reviews and rework",
+        "activity_description": "Perform self-review/peer-review cycles for all stories and implement review feedback and fixes.",
+        "most_likely_effort": 16
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 551
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1781,
+    "completion_tokens": 6722,
+    "total_tokens": 8503,
+    "cost": 0.1047906,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.1047906,
+      "upstream_inference_prompt_cost": 0.0039606,
+      "upstream_inference_completions_cost": 0.10083
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2413,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3"
+}

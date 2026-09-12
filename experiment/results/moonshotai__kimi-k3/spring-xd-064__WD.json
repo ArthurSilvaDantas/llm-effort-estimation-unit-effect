@@ -1,0 +1,255 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-064",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789153022-4FQp0EKenq2jGEzOZBpM",
+    "object": "chat.completion",
+    "created": 1789153022,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1 (multiple connections per binding type): Implement multi-binder support in Spring Cloud Stream by allowing multiple named binder configurations of the same binder type, each instantiated in its own isolated child application context with its own connection/provisioning infrastructure; binders selected per binding via configuration properties.\",\n    \"U2 (HDFS namenode HA): Replace the non-HA proxy creation (NameNodeProxies.createNonHAProxy) with an HA-aware Hadoop FileSystem configuration for the custom module location: pass nameservice-based HDFS properties (fs.defaultFS with nameservice id, dfs.nameservices, dfs.ha.namenodes.*, failover proxy provider) so the module resolver uses Hadoop's HA failover handling.\",\n    \"U3 (cassandra sink port): Create a new spring-cloud-stream app starter 'cassandra' sink in the s-c-s app-starters repository using @EnableBinding(Sink.class), Spring Boot auto-configuration and @ConfigurationProperties for Cassandra connection/write options, reusing the XD module's core logic.\",\n    \"U4 (analytic-pmml processor port): Create a new 'analytic-pmml' processor app starter using @EnableBinding(Processor.class), keeping the existing PMML evaluation logic (JPMML-based evaluator) and exposing model location/input-output field mapping via configuration properties.\",\n    \"U5/U6 (REST endpoints): Extend the Spring XD admin REST layer with a job-composition controller exposing (a) a lightweight endpoint returning a composed/standalone flag per job and (b) an endpoint returning the job composition graph as a JSON DTO of nodes (jobs) and directed edges (parent-child composition links), built by traversing stored job definitions and their composition references.\",\n    \"U7/U8 (UI): Implement changes in the AngularJS-based Spring XD admin UI jobs list: render a distinct visual indicator for composed jobs versus single jobs, and make the row/detail navigation work uniformly by resolving the selected entity (single job or composed job node) to its detail route.\",\n    \"Testing approach: unit tests per component, plus integration tests using an embedded/fake binder for U1, an HDFS HA mini-cluster (two namenodes + ZooKeeper failover controller) for U2, an embedded/test-instance Cassandra for U3, sample PMML models for U4, MockMvc/WebMvc tests for the REST endpoints, and Jasmine/protractor-style tests for the UI.\"\n  ],\n  \"assumptions\": [\n    \"Work is performed against the existing codebases: spring-xd (admin server, module registry), spring-xd-ui, spring-cloud-stream (s-c-s) core and the s-c-s app-starters/modules repository; no upgrade of the underlying Spring Framework/Java baseline (e.g., to Spring 6 / Java 17) is included in this increment.\",\n    \"One workday equals 8 hours of development effort; estimates are pure effort, not elapsed duration, and include implementation, self-review, and unit testing within each activity.\",\n    \"U1 is delivered as a Spring Cloud Stream core enhancement; no changes to third-party binder implementations (e.g., Kafka/Rabbit) beyond verifying configuration are required.\",\n    \"For U2, the referenced spring-xd-ambari issue describes the defect; an HA-capable HDFS test environment (two namenodes, ZooKeeper) can be provisioned locally/CI via mini-cluster within the environment-setup activity.\",\n    \"For U3 and U4, the existing XD modules' code is available for reuse; 's-c-s repo' means the spring-cloud-stream app-starters/modules repository; Cassandra driver and JPMML dependencies are license-compatible and require no legal review.\",\n    \"For U5-U8, job composition information is already persisted by XD's job definition/deployment model, so no database schema migration is required; the UI is the existing Spring XD admin UI.\",\n    \"Documentation covers user reference docs for new endpoints and app starters; no marketing/release-note production is included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Technical analysis and solution design\",\n      \"activity_description\": \"Analyze all eight user stories, inspect the spring-xd, spring-xd-ui, spring-cloud-stream and app-starters codebases, and produce the technical design: multi-binder configuration model, HDFS HA configuration approach, cassandra/pmml app-starter structure, REST DTOs/endpoints for job composition, and UI changes.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Multi-binder support for same binding type\",\n      \"activity_description\": \"Implement support for configuring and using multiple external systems of the same binder type: named binder configurations, isolated binder child contexts, per-binding binder selection via properties, plus unit and integration tests verifying read-from-one/write-to-another flows.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - HDFS namenode HA support for custom module location\",\n      \"activity_description\": \"Fix custom module resolution to work with an HA-configured namenode by building the HDFS FileSystem from HA-aware configuration (nameservice, failover proxy provider) instead of the non-HA proxy; add integration tests against an HDFS HA mini-cluster with namenode failover.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Port cassandra module to s-c-s as sink\",\n      \"activity_description\": \"Create the cassandra sink app starter in the spring-cloud-stream app-starters repository: port the XD module logic to @EnableBinding(Sink.class), add Spring Boot auto-configuration and configuration properties for connection/write options, integration tests with a test Cassandra instance, and starter metadata.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4b\",\n      \"activity_name\": \"U4 - Port analytic-pmml module to s-c-s as processor\",\n      \"activity_description\": \"Create the analytic-pmml processor app starter: port PMML evaluation logic to @EnableBinding(Processor.class), expose model location and input/output field mapping as configuration properties, and add tests with sample PMML models.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - REST endpoint returning job composition flag\",\n      \"activity_description\": \"Add an admin REST endpoint that returns whether a given job is composed (parent/child) or standalone; implement controller, service lookup over job definitions, response DTO, and MockMvc tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - REST endpoint returning job composition graph\",\n      \"activity_description\": \"Add an admin REST endpoint returning the job composition graph: traverse job definitions and composition references to build a nodes/edges graph DTO representing parent-child relationships; include cycle/safety handling and MockMvc tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 - UI visual differentiation of composed vs single jobs\",\n      \"activity_description\": \"Update the Spring XD admin UI jobs list to consume the composition flag endpoint and visually distinguish job-composition workflows from single jobs (icon/badge/styling), with corresponding UI unit tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - UI navigation to job detail for singular and composed jobs\",\n      \"activity_description\": \"Make the jobs list click-through navigate to the correct detail page whether the selected entity is a standalone job or part of a composed job, resolving the entity type and routing accordingly; include UI tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Integration and end-to-end testing\",\n      \"activity_description\": \"Cross-feature integration and end-to-end verification: build a streaming pipeline with the ported cassandra sink and pmml processor, verify multi-binder read/write across two systems, validate HDFS HA module resolution with failover, and exercise REST endpoints together with the UI flows; fix defects found.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Write reference documentation: multi-binder configuration guide, HDFS HA configuration notes, cassandra sink and analytic-pmml processor options, new REST endpoint API docs, and updated UI behavior notes.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Test environment and CI setup\",\n      \"activity_description\": \"Provision and wire test infrastructure needed by the increment: HDFS HA mini-cluster configuration, Cassandra test instance, sample PMML models, and CI build jobs/profiles for the new app starters and integration tests.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 44\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "Let me analyze this specification. It's about Spring Framework / Spring XD / Spring Cloud Stream. The user stories are:\n\nU1: Connect to multiple external systems for same binding type (multiple bindings) - this relates to Spring Cloud Stream multi-binder support.\nU2: HDFS custom module location with namenode HA support (spring-xd-ambari issue).\nU3: Move cassandra module from XD to spring-cloud-stream (s-c-s) repo as a sink.\nU4: Port analytic-pmml module from XD to s-c-s repo as a processor.\nU5: REST endpoint returning job composition flag.\nU6: REST endpoint returning job composition graph.\nU7: UI to visually differentiate job-composition workflow vs single job.\nU8: UI click-through to job detail page regardless of singular or composed job.\n\nSo this is a software increment combining backend (REST API), module ports (cassandra sink, pmml processor), HDFS HA fix, multi-binder support, and UI changes (Spring XD admin UI).\n\nI need to produce a WBS-based estimate in workdays, with activities, each with a most likely effort, and a total.\n\nLet me think about the activities:\n\n1. Requirements analysis & design (overall architecture/design for the increment).\n2. U1: Multi-binder support implementation (Spring Cloud Stream multiple binders of same type) - configure multiple connection factories, binder configuration, tests.\n3. U2: HDFS namenode HA support for custom module location - implement HA-aware filesystem configuration (FSHDFS / hadoop config), tests.\n4. U3: Port cassandra module to s-c-s repo as sink - create spring-cloud-starter-stream-sink-cassandra, port code, adapt to new model, tests, docs.\n5. U4: Port analytic-pmml module as processor - similar.\n6. U5: REST endpoint for job composition flag - backend controller, service, DTO, tests.\n7. U6: REST endpoint for job composition graph - backend graph model, traversal, tests.\n8. U7: UI differentiate composed vs single job - admin UI changes.\n9. U8: UI navigation to detail page for composed/single jobs.\n10. Integration testing / E2E.\n11. Documentation.\n12. Build/CI, release config.\n\nLet me estimate effort in workdays:\n\n- A1: Analysis & design: 3 days.\n- A2 (U1 multi-binder): 8 days (design, implementation, config properties, tests).\n- A3 (U2 HDFS HA): 4 days.\n- A4 (U3 cassandra sink port): 5 days.\n- A5 (U4 pmml processor port): 5 days.\n- A6 (U5 composition flag endpoint): 2 days.\n- A7 (U6 composition graph endpoint): 4 days.\n- A8 (U7 UI differentiation): 3 days.\n- A9 (U8 UI navigation): 2 days.\n- A10: Integration testing: 4 days.\n- A11: Documentation: 2 days.\n- A12: Build/CI setup for new repos: 2 days.\n\nTotal: 3+8+4+5+5+2+4+3+2+4+2+2 = 44 days.\n\nLet me sum: 3+8=11; +4=15; +5=20; +5=25; +2=27; +4=31; +3=34; +2=36; +4=40; +2=42; +2=44.\n\nTotal 44 workdays.\n\nMaybe add project/technical setup activity: 1 day. Could include in A1. Let me keep 44 or adjust. Maybe add \"Developer testing/code review\" incorporated in each.\n\nAlternatively, add an activity for test environment setup (HDFS HA cluster, Cassandra instance): 2 days. Then total 46.\n\nLet me structure:\n\nA1: Technical analysis and solution design — 3\nA2: U1 multi-binder support — 8\nA3: U2 HDFS namenode HA support — 4\nA4: U3 cassandra sink port — 5\nA5: U4 analytic-pmml processor port — 5\nA6: U5 job composition flag REST endpoint — 2\nA7: U6 job composition graph REST endpoint — 4\nA8: U7 UI visual differentiation — 3\nA9: U8 UI detail navigation — 2\nA10: Integration/E2E testing — 4\nA11: Documentation — 2\nA12: Test environment & CI setup — 2\n\nTotal = 3+8+4+5+5+2+4+3+2+4+2+2 = 44.\n\nTechnical and design decisions:\n\n- Implement multi-binder support via Spring Cloud Stream binder configuration allowing multiple binder configurations of same type, with isolated application contexts per binder.\n- For HDFS HA, use Hadoop FileSystem with nameservice-based configuration (fs.defaultFS with nameservice ID and HA properties) rather than NameNodeProxies.createNonHAProxy; leverage spring-data-hadoop FSHDFS Shell? Actually spring-xd used hadoop FileSystem with HA config. Decision: configure HDFS with HA-aware configuration properties (dfs.nameservices etc.) passed to module resolver.\n- Port modules to spring-cloud-stream repo model: create new starter modules based on spring-cloud-stream app starters (cassandra sink, pmml processor) using @EnableBinding, Spring Boot auto-configuration, and annotation-based configuration properties.\n- REST endpoints added to spring-xd admin REST controller layer (JobDefinitionController?) returning JSON DTOs: composition flag boolean and graph of nodes/edges.\n- UI changes in spring-xd-ui (AngularJS) jobs page: show badge/icon for composed jobs and enable navigation.\n- Java 17+ / Spring 6? Hmm, Spring XD is older (Spring 4). The spec text says Spring Framework 6.0 requires Java 17. But Spring XD used Java 8. This is a mix; I'll assume the codebase versions as-is (Spring XD 1.x, Spring Cloud Stream 1.x). Actually the spec text is generic Spring description. I'll note assumption that the target codebases are the existing Spring XD / spring-cloud-stream repositories at their current versions, and Java 17/Spring 6 constraint applies only if upgrading; assumption: no framework upgrade included.\n\nAssumptions:\n\n- Existing repos: spring-xd, spring-cloud-stream (s-c-s), spring-cloud-stream-modules (app starters), spring-xd-ui.\n- Single developer, effort in workdays (8h).\n- No legacy framework upgrade (e.g., to Spring 6/Java 17) included; work is done on current baseline versions.\n- Test environments: HDFS HA cluster (2 namenodes, zookeeper), Cassandra instance available or set up within CI activity.\n- PMML module port includes evaluator library integration (JPMML) licensing compatible.\n- UI is AngularJS-based admin UI of Spring XD.\n- Code reviews are performed by the developer's peers? The prompt says personally perform all development work; reviews can be part of the flow but not counted? I'll include self-review within activities.\n\nResponse must be valid JSON matching schema. Only JSON output.\n\nLet me write the activity descriptions clearly.\n\nEnsure numbers > 0. Provide reported_total = 44.\n\nLet me double check arithmetic: 3+8=11; 11+4=15; 15+5=20; 20+5=25; 25+2=27; 27+4=31; 31+3=34; 34+2=36; 36+4=40; 40+2=42; 42+2=44. Yes, 44.\n\nI'll produce JSON only.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Let me analyze this specification. It's about Spring Framework / Spring XD / Spring Cloud Stream. The user stories are:\n\nU1: Connect to multiple external systems for same binding type (multiple bindings) - this relates to Spring Cloud Stream multi-binder support.\nU2: HDFS custom module location with namenode HA support (spring-xd-ambari issue).\nU3: Move cassandra module from XD to spring-cloud-stream (s-c-s) repo as a sink.\nU4: Port analytic-pmml module from XD to s-c-s repo as a processor.\nU5: REST endpoint returning job composition flag.\nU6: REST endpoint returning job composition graph.\nU7: UI to visually differentiate job-composition workflow vs single job.\nU8: UI click-through to job detail page regardless of singular or composed job.\n\nSo this is a software increment combining backend (REST API), module ports (cassandra sink, pmml processor), HDFS HA fix, multi-binder support, and UI changes (Spring XD admin UI).\n\nI need to produce a WBS-based estimate in workdays, with activities, each with a most likely effort, and a total.\n\nLet me think about the activities:\n\n1. Requirements analysis & design (overall architecture/design for the increment).\n2. U1: Multi-binder support implementation (Spring Cloud Stream multiple binders of same type) - configure multiple connection factories, binder configuration, tests.\n3. U2: HDFS namenode HA support for custom module location - implement HA-aware filesystem configuration (FSHDFS / hadoop config), tests.\n4. U3: Port cassandra module to s-c-s repo as sink - create spring-cloud-starter-stream-sink-cassandra, port code, adapt to new model, tests, docs.\n5. U4: Port analytic-pmml module as processor - similar.\n6. U5: REST endpoint for job composition flag - backend controller, service, DTO, tests.\n7. U6: REST endpoint for job composition graph - backend graph model, traversal, tests.\n8. U7: UI differentiate composed vs single job - admin UI changes.\n9. U8: UI navigation to detail page for composed/single jobs.\n10. Integration testing / E2E.\n11. Documentation.\n12. Build/CI, release config.\n\nLet me estimate effort in workdays:\n\n- A1: Analysis & design: 3 days.\n- A2 (U1 multi-binder): 8 days (design, implementation, config properties, tests).\n- A3 (U2 HDFS HA): 4 days.\n- A4 (U3 cassandra sink port): 5 days.\n- A5 (U4 pmml processor port): 5 days.\n- A6 (U5 composition flag endpoint): 2 days.\n- A7 (U6 composition graph endpoint): 4 days.\n- A8 (U7 UI differentiation): 3 days.\n- A9 (U8 UI navigation): 2 days.\n- A10: Integration testing: 4 days.\n- A11: Documentation: 2 days.\n- A12: Build/CI setup for new repos: 2 days.\n\nTotal: 3+8+4+5+5+2+4+3+2+4+2+2 = 44 days.\n\nLet me sum: 3+8=11; +4=15; +5=20; +5=25; +2=27; +4=31; +3=34; +2=36; +4=40; +2=42; +2=44.\n\nTotal 44 workdays.\n\nMaybe add project/technical setup activity: 1 day. Could include in A1. Let me keep 44 or adjust. Maybe add \"Developer testing/code review\" incorporated in each.\n\nAlternatively, add an activity for test environment setup (HDFS HA cluster, Cassandra instance): 2 days. Then total 46.\n\nLet me structure:\n\nA1: Technical analysis and solution design — 3\nA2: U1 multi-binder support — 8\nA3: U2 HDFS namenode HA support — 4\nA4: U3 cassandra sink port — 5\nA5: U4 analytic-pmml processor port — 5\nA6: U5 job composition flag REST endpoint — 2\nA7: U6 job composition graph REST endpoint — 4\nA8: U7 UI visual differentiation — 3\nA9: U8 UI detail navigation — 2\nA10: Integration/E2E testing — 4\nA11: Documentation — 2\nA12: Test environment & CI setup — 2\n\nTotal = 3+8+4+5+5+2+4+3+2+4+2+2 = 44.\n\nTechnical and design decisions:\n\n- Implement multi-binder support via Spring Cloud Stream binder configuration allowing multiple binder configurations of same type, with isolated application contexts per binder.\n- For HDFS HA, use Hadoop FileSystem with nameservice-based configuration (fs.defaultFS with nameservice ID and HA properties) rather than NameNodeProxies.createNonHAProxy; leverage spring-data-hadoop FSHDFS Shell? Actually spring-xd used hadoop FileSystem with HA config. Decision: configure HDFS with HA-aware configuration properties (dfs.nameservices etc.) passed to module resolver.\n- Port modules to spring-cloud-stream repo model: create new starter modules based on spring-cloud-stream app starters (cassandra sink, pmml processor) using @EnableBinding, Spring Boot auto-configuration, and annotation-based configuration properties.\n- REST endpoints added to spring-xd admin REST controller layer (JobDefinitionController?) returning JSON DTOs: composition flag boolean and graph of nodes/edges.\n- UI changes in spring-xd-ui (AngularJS) jobs page: show badge/icon for composed jobs and enable navigation.\n- Java 17+ / Spring 6? Hmm, Spring XD is older (Spring 4). The spec text says Spring Framework 6.0 requires Java 17. But Spring XD used Java 8. This is a mix; I'll assume the codebase versions as-is (Spring XD 1.x, Spring Cloud Stream 1.x). Actually the spec text is generic Spring description. I'll note assumption that the target codebases are the existing Spring XD / spring-cloud-stream repositories at their current versions, and Java 17/Spring 6 constraint applies only if upgrading; assumption: no framework upgrade included.\n\nAssumptions:\n\n- Existing repos: spring-xd, spring-cloud-stream (s-c-s), spring-cloud-stream-modules (app starters), spring-xd-ui.\n- Single developer, effort in workdays (8h).\n- No legacy framework upgrade (e.g., to Spring 6/Java 17) included; work is done on current baseline versions.\n- Test environments: HDFS HA cluster (2 namenodes, zookeeper), Cassandra instance available or set up within CI activity.\n- PMML module port includes evaluator library integration (JPMML) licensing compatible.\n- UI is AngularJS-based admin UI of Spring XD.\n- Code reviews are performed by the developer's peers? The prompt says personally perform all development work; reviews can be part of the flow but not counted? I'll include self-review within activities.\n\nResponse must be valid JSON matching schema. Only JSON output.\n\nLet me write the activity descriptions clearly.\n\nEnsure numbers > 0. Provide reported_total = 44.\n\nLet me double check arithmetic: 3+8=11; 11+4=15; 15+5=20; 20+5=25; 25+2=27; 27+4=31; 31+3=34; 34+2=36; 36+4=40; 40+2=42; 42+2=44. Yes, 44.\n\nI'll produce JSON only.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1303,
+      "completion_tokens": 3633,
+      "total_tokens": 4936,
+      "cost": 0.058404,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.058404,
+        "upstream_inference_prompt_cost": 0.003909,
+        "upstream_inference_completions_cost": 0.054495
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1635,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"U1 (multiple connections per binding type): Implement multi-binder support in Spring Cloud Stream by allowing multiple named binder configurations of the same binder type, each instantiated in its own isolated child application context with its own connection/provisioning infrastructure; binders selected per binding via configuration properties.\",\n    \"U2 (HDFS namenode HA): Replace the non-HA proxy creation (NameNodeProxies.createNonHAProxy) with an HA-aware Hadoop FileSystem configuration for the custom module location: pass nameservice-based HDFS properties (fs.defaultFS with nameservice id, dfs.nameservices, dfs.ha.namenodes.*, failover proxy provider) so the module resolver uses Hadoop's HA failover handling.\",\n    \"U3 (cassandra sink port): Create a new spring-cloud-stream app starter 'cassandra' sink in the s-c-s app-starters repository using @EnableBinding(Sink.class), Spring Boot auto-configuration and @ConfigurationProperties for Cassandra connection/write options, reusing the XD module's core logic.\",\n    \"U4 (analytic-pmml processor port): Create a new 'analytic-pmml' processor app starter using @EnableBinding(Processor.class), keeping the existing PMML evaluation logic (JPMML-based evaluator) and exposing model location/input-output field mapping via configuration properties.\",\n    \"U5/U6 (REST endpoints): Extend the Spring XD admin REST layer with a job-composition controller exposing (a) a lightweight endpoint returning a composed/standalone flag per job and (b) an endpoint returning the job composition graph as a JSON DTO of nodes (jobs) and directed edges (parent-child composition links), built by traversing stored job definitions and their composition references.\",\n    \"U7/U8 (UI): Implement changes in the AngularJS-based Spring XD admin UI jobs list: render a distinct visual indicator for composed jobs versus single jobs, and make the row/detail navigation work uniformly by resolving the selected entity (single job or composed job node) to its detail route.\",\n    \"Testing approach: unit tests per component, plus integration tests using an embedded/fake binder for U1, an HDFS HA mini-cluster (two namenodes + ZooKeeper failover controller) for U2, an embedded/test-instance Cassandra for U3, sample PMML models for U4, MockMvc/WebMvc tests for the REST endpoints, and Jasmine/protractor-style tests for the UI.\"\n  ],\n  \"assumptions\": [\n    \"Work is performed against the existing codebases: spring-xd (admin server, module registry), spring-xd-ui, spring-cloud-stream (s-c-s) core and the s-c-s app-starters/modules repository; no upgrade of the underlying Spring Framework/Java baseline (e.g., to Spring 6 / Java 17) is included in this increment.\",\n    \"One workday equals 8 hours of development effort; estimates are pure effort, not elapsed duration, and include implementation, self-review, and unit testing within each activity.\",\n    \"U1 is delivered as a Spring Cloud Stream core enhancement; no changes to third-party binder implementations (e.g., Kafka/Rabbit) beyond verifying configuration are required.\",\n    \"For U2, the referenced spring-xd-ambari issue describes the defect; an HA-capable HDFS test environment (two namenodes, ZooKeeper) can be provisioned locally/CI via mini-cluster within the environment-setup activity.\",\n    \"For U3 and U4, the existing XD modules' code is available for reuse; 's-c-s repo' means the spring-cloud-stream app-starters/modules repository; Cassandra driver and JPMML dependencies are license-compatible and require no legal review.\",\n    \"For U5-U8, job composition information is already persisted by XD's job definition/deployment model, so no database schema migration is required; the UI is the existing Spring XD admin UI.\",\n    \"Documentation covers user reference docs for new endpoints and app starters; no marketing/release-note production is included.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Technical analysis and solution design\",\n      \"activity_description\": \"Analyze all eight user stories, inspect the spring-xd, spring-xd-ui, spring-cloud-stream and app-starters codebases, and produce the technical design: multi-binder configuration model, HDFS HA configuration approach, cassandra/pmml app-starter structure, REST DTOs/endpoints for job composition, and UI changes.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"U1 - Multi-binder support for same binding type\",\n      \"activity_description\": \"Implement support for configuring and using multiple external systems of the same binder type: named binder configurations, isolated binder child contexts, per-binding binder selection via properties, plus unit and integration tests verifying read-from-one/write-to-another flows.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"U2 - HDFS namenode HA support for custom module location\",\n      \"activity_description\": \"Fix custom module resolution to work with an HA-configured namenode by building the HDFS FileSystem from HA-aware configuration (nameservice, failover proxy provider) instead of the non-HA proxy; add integration tests against an HDFS HA mini-cluster with namenode failover.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"U3 - Port cassandra module to s-c-s as sink\",\n      \"activity_description\": \"Create the cassandra sink app starter in the spring-cloud-stream app-starters repository: port the XD module logic to @EnableBinding(Sink.class), add Spring Boot auto-configuration and configuration properties for connection/write options, integration tests with a test Cassandra instance, and starter metadata.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A4b\",\n      \"activity_name\": \"U4 - Port analytic-pmml module to s-c-s as processor\",\n      \"activity_description\": \"Create the analytic-pmml processor app starter: port PMML evaluation logic to @EnableBinding(Processor.class), expose model location and input/output field mapping as configuration properties, and add tests with sample PMML models.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"U5 - REST endpoint returning job composition flag\",\n      \"activity_description\": \"Add an admin REST endpoint that returns whether a given job is composed (parent/child) or standalone; implement controller, service lookup over job definitions, response DTO, and MockMvc tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"U6 - REST endpoint returning job composition graph\",\n      \"activity_description\": \"Add an admin REST endpoint returning the job composition graph: traverse job definitions and composition references to build a nodes/edges graph DTO representing parent-child relationships; include cycle/safety handling and MockMvc tests.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"U7 - UI visual differentiation of composed vs single jobs\",\n      \"activity_description\": \"Update the Spring XD admin UI jobs list to consume the composition flag endpoint and visually distinguish job-composition workflows from single jobs (icon/badge/styling), with corresponding UI unit tests.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"U8 - UI navigation to job detail for singular and composed jobs\",\n      \"activity_description\": \"Make the jobs list click-through navigate to the correct detail page whether the selected entity is a standalone job or part of a composed job, resolving the entity type and routing accordingly; include UI tests.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Integration and end-to-end testing\",\n      \"activity_description\": \"Cross-feature integration and end-to-end verification: build a streaming pipeline with the ported cassandra sink and pmml processor, verify multi-binder read/write across two systems, validate HDFS HA module resolution with failover, and exercise REST endpoints together with the UI flows; fix defects found.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Documentation\",\n      \"activity_description\": \"Write reference documentation: multi-binder configuration guide, HDFS HA configuration notes, cassandra sink and analytic-pmml processor options, new REST endpoint API docs, and updated UI behavior notes.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Test environment and CI setup\",\n      \"activity_description\": \"Provision and wire test infrastructure needed by the increment: HDFS HA mini-cluster configuration, Cassandra test instance, sample PMML models, and CI build jobs/profiles for the new app starters and integration tests.\",\n      \"most_likely_effort\": 2\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 44\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "U1 (multiple connections per binding type): Implement multi-binder support in Spring Cloud Stream by allowing multiple named binder configurations of the same binder type, each instantiated in its own isolated child application context with its own connection/provisioning infrastructure; binders selected per binding via configuration properties.",
+      "U2 (HDFS namenode HA): Replace the non-HA proxy creation (NameNodeProxies.createNonHAProxy) with an HA-aware Hadoop FileSystem configuration for the custom module location: pass nameservice-based HDFS properties (fs.defaultFS with nameservice id, dfs.nameservices, dfs.ha.namenodes.*, failover proxy provider) so the module resolver uses Hadoop's HA failover handling.",
+      "U3 (cassandra sink port): Create a new spring-cloud-stream app starter 'cassandra' sink in the s-c-s app-starters repository using @EnableBinding(Sink.class), Spring Boot auto-configuration and @ConfigurationProperties for Cassandra connection/write options, reusing the XD module's core logic.",
+      "U4 (analytic-pmml processor port): Create a new 'analytic-pmml' processor app starter using @EnableBinding(Processor.class), keeping the existing PMML evaluation logic (JPMML-based evaluator) and exposing model location/input-output field mapping via configuration properties.",
+      "U5/U6 (REST endpoints): Extend the Spring XD admin REST layer with a job-composition controller exposing (a) a lightweight endpoint returning a composed/standalone flag per job and (b) an endpoint returning the job composition graph as a JSON DTO of nodes (jobs) and directed edges (parent-child composition links), built by traversing stored job definitions and their composition references.",
+      "U7/U8 (UI): Implement changes in the AngularJS-based Spring XD admin UI jobs list: render a distinct visual indicator for composed jobs versus single jobs, and make the row/detail navigation work uniformly by resolving the selected entity (single job or composed job node) to its detail route.",
+      "Testing approach: unit tests per component, plus integration tests using an embedded/fake binder for U1, an HDFS HA mini-cluster (two namenodes + ZooKeeper failover controller) for U2, an embedded/test-instance Cassandra for U3, sample PMML models for U4, MockMvc/WebMvc tests for the REST endpoints, and Jasmine/protractor-style tests for the UI."
+    ],
+    "assumptions": [
+      "Work is performed against the existing codebases: spring-xd (admin server, module registry), spring-xd-ui, spring-cloud-stream (s-c-s) core and the s-c-s app-starters/modules repository; no upgrade of the underlying Spring Framework/Java baseline (e.g., to Spring 6 / Java 17) is included in this increment.",
+      "One workday equals 8 hours of development effort; estimates are pure effort, not elapsed duration, and include implementation, self-review, and unit testing within each activity.",
+      "U1 is delivered as a Spring Cloud Stream core enhancement; no changes to third-party binder implementations (e.g., Kafka/Rabbit) beyond verifying configuration are required.",
+      "For U2, the referenced spring-xd-ambari issue describes the defect; an HA-capable HDFS test environment (two namenodes, ZooKeeper) can be provisioned locally/CI via mini-cluster within the environment-setup activity.",
+      "For U3 and U4, the existing XD modules' code is available for reuse; 's-c-s repo' means the spring-cloud-stream app-starters/modules repository; Cassandra driver and JPMML dependencies are license-compatible and require no legal review.",
+      "For U5-U8, job composition information is already persisted by XD's job definition/deployment model, so no database schema migration is required; the UI is the existing Spring XD admin UI.",
+      "Documentation covers user reference docs for new endpoints and app starters; no marketing/release-note production is included."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Technical analysis and solution design",
+        "activity_description": "Analyze all eight user stories, inspect the spring-xd, spring-xd-ui, spring-cloud-stream and app-starters codebases, and produce the technical design: multi-binder configuration model, HDFS HA configuration approach, cassandra/pmml app-starter structure, REST DTOs/endpoints for job composition, and UI changes.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "U1 - Multi-binder support for same binding type",
+        "activity_description": "Implement support for configuring and using multiple external systems of the same binder type: named binder configurations, isolated binder child contexts, per-binding binder selection via properties, plus unit and integration tests verifying read-from-one/write-to-another flows.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "U2 - HDFS namenode HA support for custom module location",
+        "activity_description": "Fix custom module resolution to work with an HA-configured namenode by building the HDFS FileSystem from HA-aware configuration (nameservice, failover proxy provider) instead of the non-HA proxy; add integration tests against an HDFS HA mini-cluster with namenode failover.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "U3 - Port cassandra module to s-c-s as sink",
+        "activity_description": "Create the cassandra sink app starter in the spring-cloud-stream app-starters repository: port the XD module logic to @EnableBinding(Sink.class), add Spring Boot auto-configuration and configuration properties for connection/write options, integration tests with a test Cassandra instance, and starter metadata.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A4b",
+        "activity_name": "U4 - Port analytic-pmml module to s-c-s as processor",
+        "activity_description": "Create the analytic-pmml processor app starter: port PMML evaluation logic to @EnableBinding(Processor.class), expose model location and input/output field mapping as configuration properties, and add tests with sample PMML models.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "U5 - REST endpoint returning job composition flag",
+        "activity_description": "Add an admin REST endpoint that returns whether a given job is composed (parent/child) or standalone; implement controller, service lookup over job definitions, response DTO, and MockMvc tests.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "U6 - REST endpoint returning job composition graph",
+        "activity_description": "Add an admin REST endpoint returning the job composition graph: traverse job definitions and composition references to build a nodes/edges graph DTO representing parent-child relationships; include cycle/safety handling and MockMvc tests.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "U7 - UI visual differentiation of composed vs single jobs",
+        "activity_description": "Update the Spring XD admin UI jobs list to consume the composition flag endpoint and visually distinguish job-composition workflows from single jobs (icon/badge/styling), with corresponding UI unit tests.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "U8 - UI navigation to job detail for singular and composed jobs",
+        "activity_description": "Make the jobs list click-through navigate to the correct detail page whether the selected entity is a standalone job or part of a composed job, resolving the entity type and routing accordingly; include UI tests.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Integration and end-to-end testing",
+        "activity_description": "Cross-feature integration and end-to-end verification: build a streaming pipeline with the ported cassandra sink and pmml processor, verify multi-binder read/write across two systems, validate HDFS HA module resolution with failover, and exercise REST endpoints together with the UI flows; fix defects found.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Documentation",
+        "activity_description": "Write reference documentation: multi-binder configuration guide, HDFS HA configuration notes, cassandra sink and analytic-pmml processor options, new REST endpoint API docs, and updated UI behavior notes.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Test environment and CI setup",
+        "activity_description": "Provision and wire test infrastructure needed by the increment: HDFS HA mini-cluster configuration, Cassandra test instance, sample PMML models, and CI build jobs/profiles for the new app starters and integration tests.",
+        "most_likely_effort": 2
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 44
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1303,
+    "completion_tokens": 3633,
+    "total_tokens": 4936,
+    "cost": 0.058404,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.058404,
+      "upstream_inference_prompt_cost": 0.003909,
+      "upstream_inference_completions_cost": 0.054495
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1635,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789153137-9nmgilEyFgxNk0xjmXjT",
+    "object": "chat.completion",
+    "created": 1789153137,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking a simple question: how many work-hours do I consider equivalent to one estimated workday? In my previous estimate, I stated in assumptions: \"One workday equals 8 hours of development effort\". So the answer is 8.\n\nI should return only valid JSON matching the schema, without revising the previous estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a simple question: how many work-hours do I consider equivalent to one estimated workday? In my previous estimate, I stated in assumptions: \"One workday equals 8 hours of development effort\". So the answer is 8.\n\nI should return only valid JSON matching the schema, without revising the previous estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3435,
+      "completion_tokens": 101,
+      "total_tokens": 3536,
+      "cost": 0.008364,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1280,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.008364,
+        "upstream_inference_prompt_cost": 0.006849,
+        "upstream_inference_completions_cost": 0.001515
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 69,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}

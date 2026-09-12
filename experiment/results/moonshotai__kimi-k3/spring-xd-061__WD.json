@@ -1,0 +1,267 @@
+{
+  "model_id": "moonshotai/kimi-k3",
+  "spec_id": "spring-xd-061",
+  "treatment": "WD",
+  "collection": {
+    "estimation": {
+      "status": "received",
+      "attempts": 1
+    },
+    "conversion": {
+      "status": "received",
+      "attempts": 1
+    }
+  },
+  "processing": {
+    "estimation": "parsed",
+    "conversion": "parsed"
+  },
+  "attempt_log": [],
+  "processing_log": [],
+  "estimation_response": {
+    "id": "gen-1789154153-KgVXmKF8ZqXP65pJ9nud",
+    "object": "chat.completion",
+    "created": 1789154153,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Migrate each Spring XD module into a standalone Spring Boot application starter following the Spring Cloud Stream app-starter conventions: a core library (auto-configuration + properties) plus a thin executable app per module.\",\n    \"Implement modules on the current baseline implied by the specification: Spring Framework 6.x, Spring Boot 3.x, Spring Cloud Stream 4.x, Java 17.\",\n    \"Reuse the existing Spring Integration channel adapters/handlers used by the XD modules (syslog inbound adapter, IMAP/mail adapters, TCP inbound adapters and connection factories, Gpfdist message handler, HDFS dataset writer, Mongo outbound adapter) and repackage them instead of rewriting from scratch.\",\n    \"Replace XD module options and option metadata with typed @ConfigurationProperties classes, with metadata generated via spring-boot-configuration-processor.\",\n    \"Wire each module to the Spring Cloud Stream binding model (functional bean style: Supplier for sources, Consumer for sinks) so modules are binder-agnostic (Kafka/Rabbit).\",\n    \"Each module gets its own Maven module, unit tests (JUnit 5, Mockito), integration tests (Testcontainers/Docker or embedded servers: GreenMail for mail, embedded Mongo or Testcontainers, in-memory TCP/syslog endpoints, HDFS MiniCluster), and an Asciidoc README documenting options.\",\n    \"Common conventions (naming, package layout under org.springframework.cloud.stream.app.*, parent POM, code style) are established once and reused for all 8 modules.\"\n  ],\n  \"assumptions\": [\n    \"All development work is performed personally by one experienced developer; estimates are effort (workdays), not calendar time, and exclude waiting time (code review queues, CI backlog).\",\n    \"The original Spring XD module source code, tests, and documentation are available and can be consulted freely.\",\n    \"The target 's-c-s' repository (spring-cloud-stream app starters) exists with a parent build, contribution guidelines, and release process to plug into.\",\n    \"External systems needed for testing (mail server, MongoDB, gpfdist/Greenplum emulator, HDFS) can be satisfied with embedded servers, Docker/Testcontainers, or MiniCluster locally; no provisioning of real infrastructure is required.\",\n    \"No UI, security hardening audits, performance benchmarking, or production deployment work is in scope; scope ends at merged, tested, documented, releasable modules.\",\n    \"Kafka and Rabbit binders are available for end-to-end pipeline verification via Testcontainers or existing shared test infrastructure.\",\n    \"Effort per module includes porting code, writing configuration properties/metadata, unit tests, and module-level integration tests.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Analysis and migration design\",\n      \"activity_description\": \"Review the 8 XD modules (syslog, mail, tcp, tcp-client, gpfdist, hdfs-dataset, mongo), map XD options to configuration properties, and define the common migration pattern (package layout, binding style, properties conventions, testing strategy).\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository and build scaffolding\",\n      \"activity_description\": \"Create Maven module structure under the s-c-s app-starters repo, parent POMs, dependency management, code style/check configuration, and skeleton app-starter packaging to be reused by all modules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Migrate syslog source (U1)\",\n      \"activity_description\": \"Port XD syslog module to a Spring Cloud Stream source: auto-configuration, typed properties (host, port, protocol UDP/TCP, buffer sizes), Supplier/binding wiring, unit and integration tests with in-memory syslog endpoints, module README.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Migrate mail source (U2)\",\n      \"activity_description\": \"Port XD mail source module: IMAP-idle/polling inbound adapter configuration, properties (store URL, folder, credentials, polling options), binding wiring, tests using GreenMail, module README.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Migrate tcp source (U3)\",\n      \"activity_description\": \"Port XD tcp source module: TCP server inbound adapter and connection factory configuration, serializers/deserializers, properties (port, framing, socket options), binding wiring, unit and socket-level integration tests, module README.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Migrate tcp-client source (U4)\",\n      \"activity_description\": \"Port XD tcp-client source module: client connection factory, reconnect/retry behavior, serializers, properties, binding wiring, tests against a local TCP echo/test server, module README.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Migrate gpfdist sink (U5)\",\n      \"activity_description\": \"Port XD gpfdist sink module: Gpfdist message handler and its embedded HTTP server, Greenplum gpfdist protocol handling, flush/segment logic, properties (host, port, batch, delimiter, column mapping), binding wiring, tests against a gpfdist client/test double, module README. High complexity due to protocol and server lifecycle.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Migrate hdfs-dataset sink (U6)\",\n      \"activity_description\": \"Port XD hdfs-dataset sink module: dataset (Avro/Parquet) writing via the dataset SDK, partitioning and rollover, properties (FS URI, format, partition keys, batch size), binding wiring, integration tests against HDFS MiniCluster, module README. High complexity due to Hadoop dependencies and test environment.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Migrate mail sink (U7)\",\n      \"activity_description\": \"Port XD mail sink module: SMTP outbound adapter configuration, properties (host, port, auth, from/to/subject templating), binding wiring, tests using GreenMail, module README.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Migrate mongo sink (U8)\",\n      \"activity_description\": \"Port XD mongo sink module: Mongo outbound adapter/message handler, properties (URI, database, collection, write concern), binding wiring, tests against embedded or Testcontainers MongoDB, module README.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration and end-to-end verification\",\n      \"activity_description\": \"Verify each migrated module runs as a standalone app in real streaming pipelines with Kafka and Rabbit binders (Testcontainers/local Docker): source-to-sink flows, serialization checks, error/restart behavior; fix integration defects.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Reference documentation\",\n      \"activity_description\": \"Write/aggregate Asciidoc reference documentation for all 8 app starters (options tables generated from properties metadata, usage examples) and update the repo-level index/readme.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"CI and release configuration\",\n      \"activity_description\": \"Add the new modules to CI build plans, configure test execution for Docker-based suites, artifact publishing, and release/milestone configuration for the new starters.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Review, refactoring and hardening\",\n      \"activity_description\": \"Self-review and peer-review iterations across all modules: align naming/conventions, remove XD-isms, add missing metadata and validation, address review feedback, stabilize flaky tests, final polish before merge/release.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 66\n  }\n}\n```",
+          "refusal": null,
+          "reasoning": "The task: estimate effort in workdays for migrating 8 modules from Spring XD to Spring Cloud Stream (s-c-s) repo:\n- U1: syslog source\n- U2: mail source\n- U3: tcp source\n- U4: tcp-client source\n- U5: gpfdist sink\n- U6: hdfs-dataset sink\n- U7: mail sink\n- U8: mongo sink\n\nThis is based on real historical work (spring-cloud-stream-modules / spring-cloud-stream-app-starters). Modules migration involves: creating module project structure (Spring Boot app, Spring Cloud Stream binder config), porting XD module options/metadata to configuration properties (@ConfigurationProperties), adapting channel adapters to use Spring Integration with @EnableBinding/@InboundChannelAdapter, tests (unit + integration), docs (asciidoc README), build config (Maven poms, parent), CI.\n\nI should produce a WBS with activities per module plus common activities (setup, infrastructure, testing, documentation, release). Each activity with most likely effort. Sum total.\n\nLet me create reasonable estimates:\n\nCommon activities:\n- A0.1 Project setup: repo structure, parent POMs, build infra, code styles: 3 days\n- A0.2 Establish common migration pattern/template (first module spike): could be embedded in first module.\n\nPer module effort varies by complexity:\n- syslog source: port adapter (SyslogReceivingChannelAdapterFactoryBean), properties, tests: 5 days\n- mail source: IMAP idle adapter, properties: 4 days\n- tcp source: TCP inbound adapter, connection factories, serializers: 5 days\n- tcp-client source: 5 days\n- gpfdist sink: complex (GpfdistMessageHandler, reactor/netty, tests against gpfdist protocol): 8 days\n- hdfs-dataset sink: complex (dataset writing with kite sdk, parquet/avro, partitioning): 8 days\n- mail sink: 3 days\n- mongo sink: 4 days\n\nPlus:\n- Documentation (asciidoc for each): 3 days total\n- Integration/end-to-end testing with binders (kafka/rabbit), docker-compose test env: 5 days\n- CI setup (Jenkins/Concourse pipelines), release automation: 2 days\n- Code review & refactoring iterations: included per module? Add separate 4 days.\n\nLet me structure WBS:\n\n1. Requirements & design analysis (migration strategy, review XD modules): 3\n2. Project/repo scaffolding & build setup: 2\n3. Common migration pattern established (base classes, properties conventions, app starter packaging): 2\n\nModule migrations (each includes implementation + unit tests):\n4. syslog source: 4\n5. mail source: 4\n6. tcp source: 5\n7. tcp-client source: 5\n8. gpfdist sink: 8\n9. hdfs-dataset sink: 8\n10. mail sink: 3\n11. mongo sink: 4\n\nCross-cutting:\n12. Integration & end-to-end tests (with embedded/external middleware): 6\n13. Documentation (README/asciidoc reference docs per module): 4\n14. CI pipeline & release configuration: 3\n15. Code review, refactoring, hardening: 5\n\nTotal: 3+2+2+4+4+5+5+8+8+3+4+6+4+3+5 = 66.\n\nLet me sum: 3+2+2=7; 4+4=8 →15; 5+5=10 →25; 8+8=16 →41; 3+4=7 →48; 6 →54; 4 →58; 3 →61; 5 →66. Total 66 workdays.\n\nTechnical decisions:\n- Migrate each XD module to a standalone Spring Boot app starter following spring-cloud-stream-app-starters conventions: separate core library (e.g., spring-cloud-starter-stream-source-syslog) auto-configuration via @ConfigurationProperties + @EnableBinding.\n- Use Spring Integration channel adapters from XD, repackaged under org.springframework.cloud.stream.app packages.\n- Replace XD module options with typed @ConfigurationProperties with metadata generation (spring-boot-configuration-processor).\n- Use Java 8 (historical) — but spec says Spring Framework 6 requires Java 17... The spec mentions Spring 6.0 requires Java 17+. But Spring XD migration happened on Spring Boot 1.5. However given spec background, assume modern baseline: Spring Framework 6, Java 17, Spring Cloud Stream 4.x with functional binding model. Actually better to align with spec: assume target is current Spring Cloud Stream with Java 17. I'll state that assumption.\n\nAssumptions:\n- Team of one developer (myself), effort not duration.\n- Existing XD modules code available and understood.\n- Target repo: spring-cloud-stream (s-c-s) app starters monorepo.\n- External systems for integration tests available via Docker (mongo, mail server greenmail, gpfdist container, hdfs via embedded minicluster).\n- No UI work.\n- Estimates exclude elapsed-time waits (CI queues).\n\nProvide JSON only. Activity IDs like \"A1\" etc.\n\nDescriptions should be concise. Let me write final JSON.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The task: estimate effort in workdays for migrating 8 modules from Spring XD to Spring Cloud Stream (s-c-s) repo:\n- U1: syslog source\n- U2: mail source\n- U3: tcp source\n- U4: tcp-client source\n- U5: gpfdist sink\n- U6: hdfs-dataset sink\n- U7: mail sink\n- U8: mongo sink\n\nThis is based on real historical work (spring-cloud-stream-modules / spring-cloud-stream-app-starters). Modules migration involves: creating module project structure (Spring Boot app, Spring Cloud Stream binder config), porting XD module options/metadata to configuration properties (@ConfigurationProperties), adapting channel adapters to use Spring Integration with @EnableBinding/@InboundChannelAdapter, tests (unit + integration), docs (asciidoc README), build config (Maven poms, parent), CI.\n\nI should produce a WBS with activities per module plus common activities (setup, infrastructure, testing, documentation, release). Each activity with most likely effort. Sum total.\n\nLet me create reasonable estimates:\n\nCommon activities:\n- A0.1 Project setup: repo structure, parent POMs, build infra, code styles: 3 days\n- A0.2 Establish common migration pattern/template (first module spike): could be embedded in first module.\n\nPer module effort varies by complexity:\n- syslog source: port adapter (SyslogReceivingChannelAdapterFactoryBean), properties, tests: 5 days\n- mail source: IMAP idle adapter, properties: 4 days\n- tcp source: TCP inbound adapter, connection factories, serializers: 5 days\n- tcp-client source: 5 days\n- gpfdist sink: complex (GpfdistMessageHandler, reactor/netty, tests against gpfdist protocol): 8 days\n- hdfs-dataset sink: complex (dataset writing with kite sdk, parquet/avro, partitioning): 8 days\n- mail sink: 3 days\n- mongo sink: 4 days\n\nPlus:\n- Documentation (asciidoc for each): 3 days total\n- Integration/end-to-end testing with binders (kafka/rabbit), docker-compose test env: 5 days\n- CI setup (Jenkins/Concourse pipelines), release automation: 2 days\n- Code review & refactoring iterations: included per module? Add separate 4 days.\n\nLet me structure WBS:\n\n1. Requirements & design analysis (migration strategy, review XD modules): 3\n2. Project/repo scaffolding & build setup: 2\n3. Common migration pattern established (base classes, properties conventions, app starter packaging): 2\n\nModule migrations (each includes implementation + unit tests):\n4. syslog source: 4\n5. mail source: 4\n6. tcp source: 5\n7. tcp-client source: 5\n8. gpfdist sink: 8\n9. hdfs-dataset sink: 8\n10. mail sink: 3\n11. mongo sink: 4\n\nCross-cutting:\n12. Integration & end-to-end tests (with embedded/external middleware): 6\n13. Documentation (README/asciidoc reference docs per module): 4\n14. CI pipeline & release configuration: 3\n15. Code review, refactoring, hardening: 5\n\nTotal: 3+2+2+4+4+5+5+8+8+3+4+6+4+3+5 = 66.\n\nLet me sum: 3+2+2=7; 4+4=8 →15; 5+5=10 →25; 8+8=16 →41; 3+4=7 →48; 6 →54; 4 →58; 3 →61; 5 →66. Total 66 workdays.\n\nTechnical decisions:\n- Migrate each XD module to a standalone Spring Boot app starter following spring-cloud-stream-app-starters conventions: separate core library (e.g., spring-cloud-starter-stream-source-syslog) auto-configuration via @ConfigurationProperties + @EnableBinding.\n- Use Spring Integration channel adapters from XD, repackaged under org.springframework.cloud.stream.app packages.\n- Replace XD module options with typed @ConfigurationProperties with metadata generation (spring-boot-configuration-processor).\n- Use Java 8 (historical) — but spec says Spring Framework 6 requires Java 17... The spec mentions Spring 6.0 requires Java 17+. But Spring XD migration happened on Spring Boot 1.5. However given spec background, assume modern baseline: Spring Framework 6, Java 17, Spring Cloud Stream 4.x with functional binding model. Actually better to align with spec: assume target is current Spring Cloud Stream with Java 17. I'll state that assumption.\n\nAssumptions:\n- Team of one developer (myself), effort not duration.\n- Existing XD modules code available and understood.\n- Target repo: spring-cloud-stream (s-c-s) app starters monorepo.\n- External systems for integration tests available via Docker (mongo, mail server greenmail, gpfdist container, hdfs via embedded minicluster).\n- No UI work.\n- Estimates exclude elapsed-time waits (CI queues).\n\nProvide JSON only. Activity IDs like \"A1\" etc.\n\nDescriptions should be concise. Let me write final JSON.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1260,
+      "completion_tokens": 2920,
+      "total_tokens": 4180,
+      "cost": 0.0461976,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 512,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0461976,
+        "upstream_inference_prompt_cost": 0.0023976,
+        "upstream_inference_completions_cost": 0.0438
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1097,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "estimation_raw": "```json\n{\n  \"technical_and_design_decisions\": [\n    \"Migrate each Spring XD module into a standalone Spring Boot application starter following the Spring Cloud Stream app-starter conventions: a core library (auto-configuration + properties) plus a thin executable app per module.\",\n    \"Implement modules on the current baseline implied by the specification: Spring Framework 6.x, Spring Boot 3.x, Spring Cloud Stream 4.x, Java 17.\",\n    \"Reuse the existing Spring Integration channel adapters/handlers used by the XD modules (syslog inbound adapter, IMAP/mail adapters, TCP inbound adapters and connection factories, Gpfdist message handler, HDFS dataset writer, Mongo outbound adapter) and repackage them instead of rewriting from scratch.\",\n    \"Replace XD module options and option metadata with typed @ConfigurationProperties classes, with metadata generated via spring-boot-configuration-processor.\",\n    \"Wire each module to the Spring Cloud Stream binding model (functional bean style: Supplier for sources, Consumer for sinks) so modules are binder-agnostic (Kafka/Rabbit).\",\n    \"Each module gets its own Maven module, unit tests (JUnit 5, Mockito), integration tests (Testcontainers/Docker or embedded servers: GreenMail for mail, embedded Mongo or Testcontainers, in-memory TCP/syslog endpoints, HDFS MiniCluster), and an Asciidoc README documenting options.\",\n    \"Common conventions (naming, package layout under org.springframework.cloud.stream.app.*, parent POM, code style) are established once and reused for all 8 modules.\"\n  ],\n  \"assumptions\": [\n    \"All development work is performed personally by one experienced developer; estimates are effort (workdays), not calendar time, and exclude waiting time (code review queues, CI backlog).\",\n    \"The original Spring XD module source code, tests, and documentation are available and can be consulted freely.\",\n    \"The target 's-c-s' repository (spring-cloud-stream app starters) exists with a parent build, contribution guidelines, and release process to plug into.\",\n    \"External systems needed for testing (mail server, MongoDB, gpfdist/Greenplum emulator, HDFS) can be satisfied with embedded servers, Docker/Testcontainers, or MiniCluster locally; no provisioning of real infrastructure is required.\",\n    \"No UI, security hardening audits, performance benchmarking, or production deployment work is in scope; scope ends at merged, tested, documented, releasable modules.\",\n    \"Kafka and Rabbit binders are available for end-to-end pipeline verification via Testcontainers or existing shared test infrastructure.\",\n    \"Effort per module includes porting code, writing configuration properties/metadata, unit tests, and module-level integration tests.\"\n  ],\n  \"activities\": [\n    {\n      \"activity_id\": \"A1\",\n      \"activity_name\": \"Analysis and migration design\",\n      \"activity_description\": \"Review the 8 XD modules (syslog, mail, tcp, tcp-client, gpfdist, hdfs-dataset, mongo), map XD options to configuration properties, and define the common migration pattern (package layout, binding style, properties conventions, testing strategy).\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A2\",\n      \"activity_name\": \"Repository and build scaffolding\",\n      \"activity_description\": \"Create Maven module structure under the s-c-s app-starters repo, parent POMs, dependency management, code style/check configuration, and skeleton app-starter packaging to be reused by all modules.\",\n      \"most_likely_effort\": 2\n    },\n    {\n      \"activity_id\": \"A3\",\n      \"activity_name\": \"Migrate syslog source (U1)\",\n      \"activity_description\": \"Port XD syslog module to a Spring Cloud Stream source: auto-configuration, typed properties (host, port, protocol UDP/TCP, buffer sizes), Supplier/binding wiring, unit and integration tests with in-memory syslog endpoints, module README.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A4\",\n      \"activity_name\": \"Migrate mail source (U2)\",\n      \"activity_description\": \"Port XD mail source module: IMAP-idle/polling inbound adapter configuration, properties (store URL, folder, credentials, polling options), binding wiring, tests using GreenMail, module README.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A5\",\n      \"activity_name\": \"Migrate tcp source (U3)\",\n      \"activity_description\": \"Port XD tcp source module: TCP server inbound adapter and connection factory configuration, serializers/deserializers, properties (port, framing, socket options), binding wiring, unit and socket-level integration tests, module README.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A6\",\n      \"activity_name\": \"Migrate tcp-client source (U4)\",\n      \"activity_description\": \"Port XD tcp-client source module: client connection factory, reconnect/retry behavior, serializers, properties, binding wiring, tests against a local TCP echo/test server, module README.\",\n      \"most_likely_effort\": 5\n    },\n    {\n      \"activity_id\": \"A7\",\n      \"activity_name\": \"Migrate gpfdist sink (U5)\",\n      \"activity_description\": \"Port XD gpfdist sink module: Gpfdist message handler and its embedded HTTP server, Greenplum gpfdist protocol handling, flush/segment logic, properties (host, port, batch, delimiter, column mapping), binding wiring, tests against a gpfdist client/test double, module README. High complexity due to protocol and server lifecycle.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A8\",\n      \"activity_name\": \"Migrate hdfs-dataset sink (U6)\",\n      \"activity_description\": \"Port XD hdfs-dataset sink module: dataset (Avro/Parquet) writing via the dataset SDK, partitioning and rollover, properties (FS URI, format, partition keys, batch size), binding wiring, integration tests against HDFS MiniCluster, module README. High complexity due to Hadoop dependencies and test environment.\",\n      \"most_likely_effort\": 8\n    },\n    {\n      \"activity_id\": \"A9\",\n      \"activity_name\": \"Migrate mail sink (U7)\",\n      \"activity_description\": \"Port XD mail sink module: SMTP outbound adapter configuration, properties (host, port, auth, from/to/subject templating), binding wiring, tests using GreenMail, module README.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A10\",\n      \"activity_name\": \"Migrate mongo sink (U8)\",\n      \"activity_description\": \"Port XD mongo sink module: Mongo outbound adapter/message handler, properties (URI, database, collection, write concern), binding wiring, tests against embedded or Testcontainers MongoDB, module README.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A11\",\n      \"activity_name\": \"Cross-module integration and end-to-end verification\",\n      \"activity_description\": \"Verify each migrated module runs as a standalone app in real streaming pipelines with Kafka and Rabbit binders (Testcontainers/local Docker): source-to-sink flows, serialization checks, error/restart behavior; fix integration defects.\",\n      \"most_likely_effort\": 6\n    },\n    {\n      \"activity_id\": \"A12\",\n      \"activity_name\": \"Reference documentation\",\n      \"activity_description\": \"Write/aggregate Asciidoc reference documentation for all 8 app starters (options tables generated from properties metadata, usage examples) and update the repo-level index/readme.\",\n      \"most_likely_effort\": 4\n    },\n    {\n      \"activity_id\": \"A13\",\n      \"activity_name\": \"CI and release configuration\",\n      \"activity_description\": \"Add the new modules to CI build plans, configure test execution for Docker-based suites, artifact publishing, and release/milestone configuration for the new starters.\",\n      \"most_likely_effort\": 3\n    },\n    {\n      \"activity_id\": \"A14\",\n      \"activity_name\": \"Review, refactoring and hardening\",\n      \"activity_description\": \"Self-review and peer-review iterations across all modules: align naming/conventions, remove XD-isms, add missing metadata and validation, address review feedback, stabilize flaky tests, final polish before merge/release.\",\n      \"most_likely_effort\": 5\n    }\n  ],\n  \"reported_total\": {\n    \"most_likely_effort\": 66\n  }\n}\n```",
+  "estimation": {
+    "technical_and_design_decisions": [
+      "Migrate each Spring XD module into a standalone Spring Boot application starter following the Spring Cloud Stream app-starter conventions: a core library (auto-configuration + properties) plus a thin executable app per module.",
+      "Implement modules on the current baseline implied by the specification: Spring Framework 6.x, Spring Boot 3.x, Spring Cloud Stream 4.x, Java 17.",
+      "Reuse the existing Spring Integration channel adapters/handlers used by the XD modules (syslog inbound adapter, IMAP/mail adapters, TCP inbound adapters and connection factories, Gpfdist message handler, HDFS dataset writer, Mongo outbound adapter) and repackage them instead of rewriting from scratch.",
+      "Replace XD module options and option metadata with typed @ConfigurationProperties classes, with metadata generated via spring-boot-configuration-processor.",
+      "Wire each module to the Spring Cloud Stream binding model (functional bean style: Supplier for sources, Consumer for sinks) so modules are binder-agnostic (Kafka/Rabbit).",
+      "Each module gets its own Maven module, unit tests (JUnit 5, Mockito), integration tests (Testcontainers/Docker or embedded servers: GreenMail for mail, embedded Mongo or Testcontainers, in-memory TCP/syslog endpoints, HDFS MiniCluster), and an Asciidoc README documenting options.",
+      "Common conventions (naming, package layout under org.springframework.cloud.stream.app.*, parent POM, code style) are established once and reused for all 8 modules."
+    ],
+    "assumptions": [
+      "All development work is performed personally by one experienced developer; estimates are effort (workdays), not calendar time, and exclude waiting time (code review queues, CI backlog).",
+      "The original Spring XD module source code, tests, and documentation are available and can be consulted freely.",
+      "The target 's-c-s' repository (spring-cloud-stream app starters) exists with a parent build, contribution guidelines, and release process to plug into.",
+      "External systems needed for testing (mail server, MongoDB, gpfdist/Greenplum emulator, HDFS) can be satisfied with embedded servers, Docker/Testcontainers, or MiniCluster locally; no provisioning of real infrastructure is required.",
+      "No UI, security hardening audits, performance benchmarking, or production deployment work is in scope; scope ends at merged, tested, documented, releasable modules.",
+      "Kafka and Rabbit binders are available for end-to-end pipeline verification via Testcontainers or existing shared test infrastructure.",
+      "Effort per module includes porting code, writing configuration properties/metadata, unit tests, and module-level integration tests."
+    ],
+    "activities": [
+      {
+        "activity_id": "A1",
+        "activity_name": "Analysis and migration design",
+        "activity_description": "Review the 8 XD modules (syslog, mail, tcp, tcp-client, gpfdist, hdfs-dataset, mongo), map XD options to configuration properties, and define the common migration pattern (package layout, binding style, properties conventions, testing strategy).",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A2",
+        "activity_name": "Repository and build scaffolding",
+        "activity_description": "Create Maven module structure under the s-c-s app-starters repo, parent POMs, dependency management, code style/check configuration, and skeleton app-starter packaging to be reused by all modules.",
+        "most_likely_effort": 2
+      },
+      {
+        "activity_id": "A3",
+        "activity_name": "Migrate syslog source (U1)",
+        "activity_description": "Port XD syslog module to a Spring Cloud Stream source: auto-configuration, typed properties (host, port, protocol UDP/TCP, buffer sizes), Supplier/binding wiring, unit and integration tests with in-memory syslog endpoints, module README.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A4",
+        "activity_name": "Migrate mail source (U2)",
+        "activity_description": "Port XD mail source module: IMAP-idle/polling inbound adapter configuration, properties (store URL, folder, credentials, polling options), binding wiring, tests using GreenMail, module README.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A5",
+        "activity_name": "Migrate tcp source (U3)",
+        "activity_description": "Port XD tcp source module: TCP server inbound adapter and connection factory configuration, serializers/deserializers, properties (port, framing, socket options), binding wiring, unit and socket-level integration tests, module README.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A6",
+        "activity_name": "Migrate tcp-client source (U4)",
+        "activity_description": "Port XD tcp-client source module: client connection factory, reconnect/retry behavior, serializers, properties, binding wiring, tests against a local TCP echo/test server, module README.",
+        "most_likely_effort": 5
+      },
+      {
+        "activity_id": "A7",
+        "activity_name": "Migrate gpfdist sink (U5)",
+        "activity_description": "Port XD gpfdist sink module: Gpfdist message handler and its embedded HTTP server, Greenplum gpfdist protocol handling, flush/segment logic, properties (host, port, batch, delimiter, column mapping), binding wiring, tests against a gpfdist client/test double, module README. High complexity due to protocol and server lifecycle.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A8",
+        "activity_name": "Migrate hdfs-dataset sink (U6)",
+        "activity_description": "Port XD hdfs-dataset sink module: dataset (Avro/Parquet) writing via the dataset SDK, partitioning and rollover, properties (FS URI, format, partition keys, batch size), binding wiring, integration tests against HDFS MiniCluster, module README. High complexity due to Hadoop dependencies and test environment.",
+        "most_likely_effort": 8
+      },
+      {
+        "activity_id": "A9",
+        "activity_name": "Migrate mail sink (U7)",
+        "activity_description": "Port XD mail sink module: SMTP outbound adapter configuration, properties (host, port, auth, from/to/subject templating), binding wiring, tests using GreenMail, module README.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A10",
+        "activity_name": "Migrate mongo sink (U8)",
+        "activity_description": "Port XD mongo sink module: Mongo outbound adapter/message handler, properties (URI, database, collection, write concern), binding wiring, tests against embedded or Testcontainers MongoDB, module README.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A11",
+        "activity_name": "Cross-module integration and end-to-end verification",
+        "activity_description": "Verify each migrated module runs as a standalone app in real streaming pipelines with Kafka and Rabbit binders (Testcontainers/local Docker): source-to-sink flows, serialization checks, error/restart behavior; fix integration defects.",
+        "most_likely_effort": 6
+      },
+      {
+        "activity_id": "A12",
+        "activity_name": "Reference documentation",
+        "activity_description": "Write/aggregate Asciidoc reference documentation for all 8 app starters (options tables generated from properties metadata, usage examples) and update the repo-level index/readme.",
+        "most_likely_effort": 4
+      },
+      {
+        "activity_id": "A13",
+        "activity_name": "CI and release configuration",
+        "activity_description": "Add the new modules to CI build plans, configure test execution for Docker-based suites, artifact publishing, and release/milestone configuration for the new starters.",
+        "most_likely_effort": 3
+      },
+      {
+        "activity_id": "A14",
+        "activity_name": "Review, refactoring and hardening",
+        "activity_description": "Self-review and peer-review iterations across all modules: align naming/conventions, remove XD-isms, add missing metadata and validation, address review feedback, stabilize flaky tests, final polish before merge/release.",
+        "most_likely_effort": 5
+      }
+    ],
+    "reported_total": {
+      "most_likely_effort": 66
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1260,
+    "completion_tokens": 2920,
+    "total_tokens": 4180,
+    "cost": 0.0461976,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 512,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0461976,
+      "upstream_inference_prompt_cost": 0.0023976,
+      "upstream_inference_completions_cost": 0.0438
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1097,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "model_used": "moonshotai/kimi-k3",
+  "conversion_response": {
+    "id": "gen-1789154249-NFZhBAZR8KOJb55lRzUW",
+    "object": "chat.completion",
+    "created": 1789154249,
+    "model": "moonshotai/kimi-k3",
+    "provider": "Moonshot AI",
+    "system_fingerprint": "fpv0_48e7f6ca",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+          "refusal": null,
+          "reasoning": "The user is asking how many work-hours I consider equivalent to one workday in the context of my previous estimate. Standard convention in software estimation is typically 8 hours per workday. I should just return the JSON with that value, without revising the previous estimate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking how many work-hours I consider equivalent to one workday in the context of my previous estimate. Standard convention in software estimation is typically 8 hours per workday. I should just return the JSON with that value, without revising the previous estimate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3217,
+      "completion_tokens": 87,
+      "total_tokens": 3304,
+      "cost": 0.0081912,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1024,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0081912,
+        "upstream_inference_prompt_cost": 0.0068862,
+        "upstream_inference_completions_cost": 0.001305
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 55,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "conversion_raw": "```json\n{\n  \"work_hours_per_workday\": 8\n}\n```",
+  "conversion": {
+    "work_hours_per_workday": 8
+  }
+}
